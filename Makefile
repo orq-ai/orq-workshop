@@ -43,6 +43,9 @@ redteam-gate: ## Security regression gate with evaluatorq static red team. Used 
 mcp-server: ## Run the refund MCP server locally on :8000 (module 10)
 	$(RUN) python app/mcp_server.py
 
+og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
+	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
+
 docs-serve: ## Live docs at http://127.0.0.1:8000
 	$(RUN) mkdocs serve
 
@@ -60,4 +63,4 @@ modules: ## List modules
 m%: ## Run the solution of module NN (e.g. make m03)
 	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; $(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server og-card docs-serve docs-build slides modules

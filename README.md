@@ -1,8 +1,16 @@
+<p align="center">
+  <img src="docs/assets/og-image.png" alt="orq workshop" width="820">
+</p>
+
 # orq.ai workshop
 
 Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app, a customer-support refund agent, grows module by module: through the AI Gateway, behind guardrails, into traces, under evaluation, as a managed agent with a knowledge base and MCP tools, attacked by simulated users and red teams, gated in CI, and driven by coding agents.
 
 Docs site: **https://orq-ai.github.io/orq-workshop** · Slides for a live session: `slides/`
+
+<a href="https://orq-ai.github.io/orq-workshop">
+  <img src="docs/assets/docs-home.png" alt="The workshop docs site" width="820">
+</a>
 
 ## Quickstart
 
