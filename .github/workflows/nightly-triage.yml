@@ -1,0 +1,84 @@
+# Nightly triage (module 12, step 5). A headless orqi run reads yesterday's error traces
+# through the orq MCP tools, groups them by root cause and writes a markdown report that lands
+# in the job summary. Optionally opens a GitHub issue when the report has at least one section.
+#
+# Local equivalent (module 12 README):
+#   set -a; source .env; set +a; CI=1 orqi "List the traces with errors ..." > triage.md
+name: nightly-triage
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5" # 06:00 UTC, Monday to Friday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: nightly-triage
+  cancel-in-progress: false
+
+env:
+  ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
+  ORQ_PROJECT: orq-workshop
+  # orqi is alpha: pin the release tag so a nightly job does not break on a new build.
+  ORQI_VERSION: "0.1.0"
+  # A non-empty CI suppresses orqi's daily update check (and the "new release" banner).
+  CI: "1"
+  # Leave unset to skip issue creation. Set to a token with issues:write to enable it.
+  GH_TOKEN: ${{ secrets.TRIAGE_ISSUE_TOKEN }}
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Install orq CLI
+        # --no-setup: do not start the interactive `orq setup`. Auth comes from ORQ_API_KEY.
+        run: |
+          curl -fsSL https://cli.orq.ai/install.sh | sh -s -- --no-setup --no-modify-path
+          echo "$HOME/.orq/bin" >> "$GITHUB_PATH"
+
+      - name: Install orqi
+        # install.sh honours ORQI_VERSION and installs to ~/.local/bin.
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/orq-ai/orqi/main/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Sanity
+        run: |
+          orq --version
+          orqi --version
+          orq status --json | jq '{authenticated, active_workspace_key}'
+
+      - name: Triage yesterday's errors
+        # One-shot mode: orqi prints and exits. The prompt asks for stdout only because orqi
+        # otherwise writes the report to a file in the working directory.
+        run: |
+          orqi "List the traces with errors from the last 24 hours, group them by root cause, and write a markdown report with one section per root cause and a suggested fix each. Print the report as your final answer. Do not create any files." > triage.md
+          test -s triage.md
+
+      - name: Publish the report in the job summary
+        run: |
+          echo "## Nightly trace triage ($(date -u +%F))" >> "$GITHUB_STEP_SUMMARY"
+          cat triage.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: triage-${{ github.run_id }}
+          path: triage.md
+
+      - name: Open an issue when there is something to fix
+        # Only when a token is configured and the report has at least one root-cause section.
+        if: env.GH_TOKEN != ''
+        run: |
+          if grep -q '^## ' triage.md; then
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "Trace triage $(date -u +%F)" \
+              --label triage \
+              --body-file triage.md
+          else
+            echo "no root-cause sections in the report, no issue opened"
+          fi

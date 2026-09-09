@@ -1,0 +1,70 @@
+# PR failure analysis (module 12, step 5). Label a pull request `analyze-traces` and a headless
+# Claude Code session, launched through `orq launch claude`, runs the analyze-trace-failures
+# skill over the traces tagged `traffic` and writes a short report into the job summary.
+#
+# Why --no-mcp: `orq launch` wires the orq MCP server for interactive sessions. In CI there is
+# no browser for an OAuth handshake and the run must not touch a home-directory config, so the
+# skill falls back to the orq CLI (`orq traces search`, `orq traces list-spans`) and the REST
+# API with ORQ_API_KEY, which is what --allowedTools permits below.
+name: pr-failure-analysis
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-failure-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
+  ORQ_PROJECT: orq-workshop
+
+jobs:
+  analyze:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'analyze-traces'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install orq CLI
+        run: |
+          curl -fsSL https://cli.orq.ai/install.sh | sh -s -- --no-setup --no-modify-path
+          echo "$HOME/.orq/bin" >> "$GITHUB_PATH"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Claude Code
+        run: npm i -g @anthropic-ai/claude-code
+
+      - name: Show the resolved launch (key redacted, nothing runs)
+        run: orq launch claude --no-mcp --dry-run -- -p "noop"
+
+      - name: Analyze traces
+        # `orq launch claude` sets ANTHROPIC_BASE_URL to the orq gateway and links the orq skills
+        # into ./.claude/skills for the session. Everything after `--` goes to claude as-is.
+        run: |
+          orq launch claude --no-mcp --model anthropic/claude-sonnet-5 -- \
+            -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours and write a short markdown report. Use the orq CLI (orq traces search --from 24h --to now --json, orq traces list-spans) to read traces. Print the report as your final answer, do not create files." \
+            --allowedTools "Bash(orq:*),Bash(jq:*),Read,Glob,Grep" \
+            > analysis.md
+          test -s analysis.md
+
+      - name: Publish the report in the job summary
+        run: |
+          echo "## Trace failure analysis for ${{ github.event.pull_request.html_url || github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          cat analysis.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-analysis-${{ github.run_id }}
+          path: analysis.md

@@ -1,0 +1,82 @@
+# Evals in CI (module 12). Two gates, both exit 1 on regression:
+#   quality  -> evals/regression.py   (dataset + scorers + LLM judge, thresholds are means)
+#   security -> evals/redteam_gate.py (static red team, fixed attack set, resistance rate gate)
+#
+# Secrets: ORQ_API_KEY is a project-scoped key with a budget (module 05). Fork PRs do not
+# receive secrets, so both jobs skip on forks instead of failing with "API key is empty".
+name: evals
+
+on:
+  pull_request:
+    paths:
+      - "app/data/*_instructions.md"
+      - "app/**"
+      - "evals/**"
+      - ".github/workflows/evals.yml"
+  workflow_dispatch:
+
+# One run per branch. A new push cancels the run still going for the previous commit.
+concurrency:
+  group: evals-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
+  ORQ_PROJECT: orq-workshop
+  WS_PREFIX: ws
+  MODEL: openai/gpt-4o-mini
+  JUDGE_MODEL: openai/gpt-4o-mini
+  EMBEDDING_MODEL: openai/text-embedding-3-small
+
+jobs:
+  quality:
+    name: quality regression (make eval)
+    # Secrets are not available to pull requests from forks. Skip rather than fail.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: uv sync --frozen
+      - name: Regression gate
+        # Prints the evaluatorq table, writes evals/results/latest.json, appends a markdown
+        # summary to $GITHUB_STEP_SUMMARY, exits 1 when a scorer mean is below its threshold.
+        run: uv run python -m evals.regression
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/latest.json
+          if-no-files-found: ignore
+
+  security:
+    name: security regression (make redteam-gate)
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: uv sync --frozen
+      - name: Red-team gate
+        # Static mode only: replays evals/redteam_static.json against agent ws-refund-agent.
+        # Dynamic (LLM-generated) attacks cost more and are not deterministic; keep them in module 11.
+        run: uv run python -m evals.redteam_gate --max-static-datapoints 8
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: redteam-results
+          path: evals/results/redteam.json
+          if-no-files-found: ignore
