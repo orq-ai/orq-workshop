@@ -1,0 +1,1 @@
+Read AGENTS.md. Run `orq connect --status`. Then use the setup-observability skill on this repo and tell me the three changes you would make, without applying them. For each change say which file, why, and what it adds to the trace (metadata, thread, identity, span names). End with the `orq traces search` command I would run to verify the first change worked.

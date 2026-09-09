@@ -1,0 +1,1 @@
+Connect the `ws-refund-gateway` MCP gateway to this coding-agent session (`claude mcp add --transport http refund https://my.orq.ai/v3/mcp/ws-refund-gateway --header "Authorization: Bearer $ORQ_API_KEY"`, then restart or `/mcp` to load it) and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
