@@ -1,0 +1,108 @@
+site_name: orq.ai workshop
+site_description: Hands-on training for orq.ai. Gateway, guardrails, tracing, evals, agents, RAG, MCP, simulation, red teaming, coding agents.
+site_url: https://orq-ai.github.io/orq-workshop/
+repo_url: https://github.com/orq-ai/orq-workshop
+repo_name: orq-ai/orq-workshop
+docs_dir: docs
+copyright: "© 2026 Orq AI · MIT License"
+
+theme:
+  name: material
+  custom_dir: overrides
+  logo: assets/orq-mark-white.svg
+  favicon: assets/orq-favicon.svg
+  font: false
+  features:
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.tabs
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle: { icon: material/brightness-7, name: Switch dark mode }
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle: { icon: material/brightness-4, name: Switch light mode }
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - js/keyboard.js
+
+plugins:
+  - search
+  - termynal:
+      prompt_literal_start:
+        - "$"
+        - ">>>"
+
+markdown_extensions:
+  - tables
+  - attr_list
+  - md_in_html
+  - admonition
+  - abbr
+  - footnotes
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Start here:
+      - Agenda: agenda.md
+      - What's new in orq: whats-new.md
+      - 12-Factor Agents map: twelve-factor.md
+  - Day 1:
+      - 00 Setup: modules/00.md
+      - 01 Gateway: modules/01.md
+      - 02 Tracing: modules/02.md
+      - 03 Smart routing: modules/03.md
+      - 04 Guardrails: modules/04.md
+      - 05 Budgets and keys: modules/05.md
+      - 06 Troubleshooting with orqi: modules/06.md
+      - 07 Failure analysis to experiments: modules/07.md
+  - Day 2:
+      - 08 Managed agents: modules/08.md
+      - 09 Knowledge base and RAG: modules/09.md
+      - 10 MCP servers and gateway: modules/10.md
+      - 11 Simulation and red teaming: modules/11.md
+      - 12 Evals and agents in CI: modules/12.md
+      - 13 Coding agents and wrap-up: modules/13.md
+  - Instructor:
+      - Facilitator notes: instructor/index.md
+      - Seeded failures: instructor/seeded-failures.md
+  - Reference:
+      - Cheat sheet: reference/cheat-sheet.md
+      - Troubleshooting: reference/troubleshooting.md
+      - Glossary: reference/glossary.md
