@@ -17,7 +17,7 @@ Concept in two minutes, live demo with the exact command from the README, partic
 
 ## What to cut when a room runs slow
 
-Day 1: fold 05 into a five-minute demo, skip step 4 of 01 (load balancer), skip the annotation step of 02. Day 2: skip the external knowledge base demo in 09, run only static mode in 11, show 12 as a walkthrough of the workflow files.
+AI Gateway track: fold 05 into a short demo, skip step 4 of 01 (load balancer), skip the annotation step of 02. Managed Agents track: skip the external knowledge base demo in 09, run only static mode in 11, show 12 as a walkthrough of the workflow files.
 
 ## Reset between sessions
 

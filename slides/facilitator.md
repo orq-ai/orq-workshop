@@ -1,4 +1,4 @@
-# Facilitator guide for the 3-hour session
+# Facilitator guide for a live session
 
 ## Timing
 

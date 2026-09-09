@@ -11,7 +11,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 <div class="grid cards" markdown>
 
--   :material-router:{ .lg .middle } **Day 1 · Control plane**
+-   :material-router:{ .lg .middle } **AI Gateway track**
 
     ---
 
@@ -19,7 +19,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     [:octicons-arrow-right-24: Modules 00 to 07](modules/00.md)
 
--   :material-robot:{ .lg .middle } **Day 2 · Agents**
+-   :material-robot:{ .lg .middle } **Managed Agents track**
 
     ---
 
@@ -47,7 +47,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Facilitator notes, seeded failures, reset commands, and the 3-hour live-session deck.
+    Facilitator notes, seeded failures, reset commands, and the live-session deck.
 
     [:octicons-arrow-right-24: Facilitator notes](instructor/index.md)
 
@@ -65,4 +65,4 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 Each module has a `README.md` (the lesson), a `run.py` (the starter), a `solution/` (the finished exercise) and an `agent_prompt.md` (the same exercise handed to a coding agent). Every module ends with a **Done when** checklist that you can verify in the Studio. Modules build on each other, but `make seed` creates every prerequisite entity so you can jump in anywhere.
 
-Two tracks run side by side. **By hand**: the SDK, the CLI, the Studio. **With your coding agent**: `orq launch claude` (or `opencode`, `pi`, `codex`) and paste the prompt. Both leave the same traces.
+Two ways to work, side by side. **By hand**: the SDK, the CLI, the Studio. **With your coding agent**: `orq launch claude` (or `opencode`, `pi`, `codex`) and paste the prompt. Both leave the same traces.

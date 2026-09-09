@@ -14,7 +14,7 @@ footer: "orq.ai workshop · github.com/orq-ai/orq-workshop"
 
 **Gateway · Guardrails · Tracing · Evals · Agents · RAG · MCP · Simulation · Red teaming · Coding agents**
 
-3 hours · one refund agent · your priorities decide the order
+one refund agent · your priorities decide the order
 
 <!--
 Timing: 0:00. Welcome, names, one line each on what they build. This deck is a spine, not a script.

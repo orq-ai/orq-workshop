@@ -83,7 +83,7 @@ nav:
       - Agenda: agenda.md
       - What's new in orq: whats-new.md
       - 12-Factor Agents map: twelve-factor.md
-  - Day 1:
+  - AI Gateway:
       - 00 Setup: modules/00.md
       - 01 Gateway: modules/01.md
       - 02 Tracing: modules/02.md
@@ -92,7 +92,7 @@ nav:
       - 05 Budgets and keys: modules/05.md
       - 06 Troubleshooting with orqi: modules/06.md
       - 07 Failure analysis to experiments: modules/07.md
-  - Day 2:
+  - Managed Agents:
       - 08 Managed agents: modules/08.md
       - 09 Knowledge base and RAG: modules/09.md
       - 10 MCP servers and gateway: modules/10.md
