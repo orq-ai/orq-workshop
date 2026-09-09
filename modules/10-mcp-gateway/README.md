@@ -13,18 +13,7 @@ Tools leak. A coding agent that can look up orders can also refund them if both 
 
 Three entities, one direction of trust.
 
-```text
-client (coding agent, agent, script)
-   |  https://my.orq.ai/v3/mcp/<gateway-key>   Authorization: Bearer ORQ_API_KEY
-   v
-MCP Gateway  ws-refund-gateway     mode DIRECT, tool exposure SELECTED, alias "refund"
-   |  server link -> tool_ids [lookup_order, get_policy]      issue_refund not exposed
-   v
-MCP Server   ws-refund-mcp         public upstream URL, auth NONE, synced tool catalogue
-   |
-   v
-app/mcp_server.py                  MCPServer + @server.tool over app.refund_agent.tools
-```
+![Diagram: the MCP trust chain. An MCP client calls the MCP Gateway with a bearer key; the gateway exposes two of the three tools synced from the MCP Server, which fronts app/mcp_server.py over HTTPS; a managed agent attaches to the MCP Server directly by tool id.](assets/mcp-trust-chain.png)
 
 The MCP Server is the upstream registration. The Gateway is what clients connect to. The upstream URL must be reachable from orq: loopback and private addresses are rejected, so `http://127.0.0.1:8000/mcp` cannot be registered. Set `MCP_SERVER_URL` in `.env` to the deployed server. When it is empty the solution registers a public no-auth MCP server (DeepWiki, three read-only tools) as a stand-in so every step still runs.
 

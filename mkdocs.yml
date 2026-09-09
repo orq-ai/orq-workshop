@@ -39,6 +39,8 @@ extra_css:
   - stylesheets/extra.css
 extra_javascript:
   - js/keyboard.js
+hooks:
+  - scripts/mkdocs_hooks.py
 
 plugins:
   - search

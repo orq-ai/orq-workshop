@@ -61,6 +61,12 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 </div>
 
+## How the pieces fit
+
+One credential opens every door: your code and your coding agent both go through the AI Gateway, the managed agent hands its tool calls back to your code, and everything lands as traces in the Studio.
+
+![Diagram: how the workshop pieces fit. The refund agent and a coding agent on your machine call the orq AI Gateway, which routes to model providers, hosts the managed agent whose function_call items come back to your code, and sends traces to the Studio; the coding agent also talks to the orq MCP server.](assets/diagrams/workshop-map.png)
+
 ## How to work through it
 
 Each module has a `README.md` (the lesson), a `run.py` (the starter), a `solution/` (the finished exercise) and an `agent_prompt.md` (the same exercise handed to a coding agent). Every module ends with a **Done when** checklist that you can verify in the Studio. Modules build on each other, but `make seed` creates every prerequisite entity so you can jump in anywhere.

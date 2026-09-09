@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop map · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Workshop map</p>
+    <h1>How the pieces fit</h1>
+
+    <svg viewBox="0 0 960 496" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="workshop-map-title workshop-map-desc">
+      <title id="workshop-map-title">How the workshop pieces fit together</title>
+      <desc id="workshop-map-desc">Architecture diagram showing the refund agent and a coding agent on your machine calling the orq AI Gateway, which routes to model providers, hosts the managed agent whose tool calls come back to your code, and feeds traces to the Studio, while the coding agent also talks to the orq MCP server.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Zone: your machine -->
+      <rect x="24" y="40" width="192" height="368" rx="8" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <rect x="40" y="44" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="84" y="53" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">YOUR MACHINE</text>
+
+      <!-- Zone: orq.ai -->
+      <rect x="240" y="40" width="496" height="368" rx="8" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <rect x="256" y="44" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="284" y="53" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">ORQ.AI</text>
+
+      <!-- Zone: providers -->
+      <rect x="760" y="40" width="176" height="128" rx="8" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <rect x="776" y="44" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="812" y="53" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">PROVIDERS</text>
+
+      <!-- Arrows first -->
+      <!-- 1. app -> gateway -->
+      <line x1="200" y1="112" x2="264" y2="112" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- 2. gateway -> providers -->
+      <line x1="472" y1="112" x2="776" y2="112" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- 3. gateway -> managed agent -->
+      <line x1="320" y1="152" x2="320" y2="200" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- 4. gateway -> studio (traces, passive) -->
+      <path d="M 416,152 V 176 Q 416,184 424,184 H 600 Q 608,184 608,192 V 200" fill="none" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <!-- 5. managed agent -> app (function_call items come back), dashed return, hops over arrow 6 -->
+      <path d="M 264,232 H 240 a 8,8 0 0,1 -16,0 H 128 Q 120,232 120,224 V 152" fill="none" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <!-- 6. coding agent -> gateway -->
+      <path d="M 200,336 H 224 Q 232,336 232,328 V 144 Q 232,136 240,136 H 264" fill="none" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- 7. coding agent -> orq MCP server -->
+      <line x1="200" y1="360" x2="264" y2="360" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+
+      <!-- Arrow labels -->
+      <rect x="208" y="92" width="48" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="232" y="101" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ROUTER</text>
+
+      <rect x="580" y="92" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="624" y="101" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PROVIDER CALL</text>
+
+      <rect x="332" y="164" width="68" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="336" y="173" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">RESPONSES</text>
+
+      <rect x="488" y="164" width="52" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="514" y="173" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TRACES</text>
+
+      <rect x="136" y="212" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="180" y="221" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FUNCTION_CALL</text>
+
+      <rect x="244" y="280" width="80" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="248" y="289" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">MESSAGES API</text>
+
+      <rect x="216" y="340" width="32" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="232" y="349" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">MCP</text>
+
+      <!-- Node: Refund agent (your code, backend) -->
+      <rect x="40" y="72" width="160" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="72" width="160" height="80" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="48" y="80" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="62" y="89" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="120" y="112" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Refund agent</text>
+      <text x="120" y="128" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">app/refund_agent</text>
+      <text x="120" y="142" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">run_turn + 3 tools</text>
+
+      <!-- Node: AI Gateway (focal) -->
+      <rect x="264" y="72" width="208" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="264" y="72" width="208" height="80" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="272" y="80" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="286" y="89" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GW</text>
+      <text x="368" y="112" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">AI Gateway</text>
+      <text x="368" y="128" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">/v3/router · /v3/anthropic</text>
+      <text x="368" y="142" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">routing · guardrails · budgets</text>
+
+      <!-- Node: Model providers (external) -->
+      <rect x="776" y="80" width="144" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="776" y="80" width="144" height="64" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="784" y="88" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="798" y="97" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+      <text x="848" y="116" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Model providers</text>
+      <text x="848" y="132" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">openai · anthropic · …</text>
+
+      <!-- Node: Managed agent (orq entity, store) -->
+      <rect x="264" y="200" width="192" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="264" y="200" width="192" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="272" y="208" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="286" y="217" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">AGT</text>
+      <text x="360" y="236" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Managed agent</text>
+      <text x="360" y="252" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">agent/ws-refund-agent</text>
+
+      <!-- Node: Studio + CLI (orq entity, store) -->
+      <rect x="520" y="200" width="176" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="520" y="200" width="176" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="528" y="208" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="542" y="217" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">UI</text>
+      <text x="608" y="236" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Studio + CLI</text>
+      <text x="608" y="252" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">traces · experiments</text>
+
+      <!-- Node: Coding agent (outside client, input) -->
+      <rect x="40" y="320" width="160" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="320" width="160" height="64" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="328" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="337" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+      <text x="120" y="356" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Coding agent</text>
+      <text x="120" y="372" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">orq launch claude</text>
+
+      <!-- Node: orq MCP server (orq entity, store) -->
+      <rect x="264" y="320" width="192" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="264" y="320" width="192" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="272" y="328" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="286" y="337" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">MCP</text>
+      <text x="360" y="356" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">orq MCP server</text>
+      <text x="360" y="372" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">/v2/mcp · tools + skills</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="436" x2="920" y2="436" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="452" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="468" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">AI Gateway (every call)</text>
+
+      <rect x="200" y="468" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="220" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Your code</text>
+
+      <rect x="300" y="468" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="320" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">orq entity</text>
+
+      <rect x="400" y="468" width="14" height="10" rx="2" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="420" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Outside client</text>
+
+      <rect x="516" y="468" width="14" height="10" rx="2" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <text x="536" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">External</text>
+
+      <line x1="608" y1="474" x2="636" y2="474" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="644" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">HTTP call</text>
+
+      <line x1="716" y1="474" x2="744" y2="474" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="752" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Internal</text>
+
+      <line x1="812" y1="474" x2="840" y2="474" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="848" y="476" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Return / passive</text>
+    </svg>
+  </div>
+</body>
+</html>

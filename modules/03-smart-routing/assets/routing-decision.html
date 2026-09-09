@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routing decision · Flowchart</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Flowchart · Module 03</p>
+    <h1>Which model answers</h1>
+
+    <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="routing-decision-title routing-decision-desc">
+      <title id="routing-decision-title">Routing decision: rule, Smart Router, or the requested model</title>
+      <desc id="routing-decision-desc">Flowchart showing how the gateway picks the model for a request: a matching routing rule replaces the request entirely, otherwise a Smart Router reference lets the router pick a band, otherwise the requested model is used, and in every case span.chat_completion names the winner.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first -->
+      <!-- start -> D1 -->
+      <line x1="480" y1="80" x2="480" y2="112" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- D1 yes -> R1 (focal path) -->
+      <line x1="592" y1="152" x2="656" y2="152" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- D1 no -> D2 -->
+      <line x1="480" y1="192" x2="480" y2="240" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- D2 yes -> R2 -->
+      <line x1="592" y1="280" x2="656" y2="280" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- D2 no -> R3 -->
+      <line x1="480" y1="320" x2="480" y2="368" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- R3 -> merge -->
+      <line x1="480" y1="416" x2="480" y2="444" stroke="#025558" stroke-width="1.2"/>
+      <!-- R2 -> merge (from the right) -->
+      <path d="M 768,312 V 440 Q 768,448 760,448 H 488" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- merge -> end -->
+      <line x1="480" y1="452" x2="480" y2="480" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- R1 -> end (right of everything, into the oval's right edge) -->
+      <path d="M 880,152 H 904 Q 912,152 912,160 V 492 Q 912,500 904,500 H 624" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Branch labels -->
+      <rect x="608" y="132" width="32" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="624" y="141" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+
+      <rect x="492" y="208" width="24" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="504" y="217" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO</text>
+
+      <rect x="608" y="260" width="32" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="624" y="269" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+
+      <rect x="492" y="336" width="24" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="504" y="345" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO</text>
+
+      <!-- Start oval -->
+      <rect x="336" y="40" width="288" height="40" rx="20" fill="#f9f8f6"/>
+      <rect x="336" y="40" width="288" height="40" rx="20" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="480" y="56" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Request arrives</text>
+      <text x="480" y="70" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">model · metadata · identity · headers</text>
+
+      <!-- D1: routing rule matches? (focal decision) -->
+      <path d="M 480,112 L 592,152 L 480,192 L 368,152 Z" fill="#f9f8f6"/>
+      <path d="M 480,112 L 592,152 L 480,192 L 368,152 Z" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="480" y="150" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Routing rule matches?</text>
+      <text x="480" y="166" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">CEL on metadata · model</text>
+
+      <!-- R1: rule replaces the request -->
+      <rect x="656" y="120" width="224" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="656" y="120" width="224" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="768" y="144" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Rule replaces the request</text>
+      <text x="768" y="160" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">model · load_balancer · fallbacks</text>
+      <text x="768" y="174" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">span.load_balancer</text>
+
+      <!-- D2: smart router ref? -->
+      <path d="M 480,240 L 592,280 L 480,320 L 368,280 Z" fill="#f9f8f6"/>
+      <path d="M 480,240 L 592,280 L 480,320 L 368,280 Z" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="480" y="278" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Smart Router ref?</text>
+      <text x="480" y="294" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">&lt;ws&gt;@orq/&lt;key&gt;</text>
+
+      <!-- R2: router picks the band -->
+      <rect x="656" y="248" width="224" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="656" y="248" width="224" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="768" y="272" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Router picks a pool model</text>
+      <text x="768" y="288" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">profile COST · BALANCED · QUALITY</text>
+      <text x="768" y="302" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">span.auto_router</text>
+
+      <!-- R3: requested model as-is -->
+      <rect x="368" y="368" width="224" height="48" rx="6" fill="#f9f8f6"/>
+      <rect x="368" y="368" width="224" height="48" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="480" y="388" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Requested model, as-is</text>
+      <text x="480" y="404" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">e.g. openai/gpt-4o-mini</text>
+
+      <!-- Merge dot -->
+      <circle cx="480" cy="448" r="4" fill="#25232e"/>
+
+      <!-- End oval -->
+      <rect x="336" y="480" width="288" height="40" rx="20" fill="#f9f8f6"/>
+      <rect x="336" y="480" width="288" height="40" rx="20" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="480" y="496" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">span.chat_completion names the winner</text>
+      <text x="480" y="510" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">every path leaves its decision in the trace</text>
+
+      <!-- Editorial callout (left margin) -->
+      <text x="48" y="264" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">A matching rule does not merge:</text>
+      <text x="48" y="282" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">it replaces model, load balancer</text>
+      <text x="48" y="300" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">and fallbacks from the request.</text>
+      <path d="M 200,248 Q 260,180 368,152" fill="none" stroke="rgba(223,83,37,0.50)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="368" cy="152" r="2" fill="#df5325"/>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="544" x2="920" y2="544" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="560" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <path d="M 47,576 L 61,583 L 47,590 L 33,583 Z" transform="translate(8,0)" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="76" y="586" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">The decision that overrides everything</text>
+
+      <path d="M 252,576 L 266,583 L 252,590 L 238,583 Z" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="276" y="586" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Decision</text>
+
+      <rect x="352" y="578" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="372" y="586" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Gateway step, with its span</text>
+
+      <rect x="528" y="578" width="20" height="10" rx="5" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="556" y="586" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Start / end</text>
+
+      <circle cx="644" cy="583" r="4" fill="#25232e"/>
+      <text x="656" y="586" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Paths rejoin</text>
+    </svg>
+  </div>
+</body>
+</html>

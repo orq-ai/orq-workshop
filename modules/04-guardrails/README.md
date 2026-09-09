@@ -19,6 +19,8 @@ Three controls travel on the same request, and they differ in what they are allo
 | `guardrails: [{"id": ..., "execute_on": ...}]` | Judges content with an evaluator. Pass or block, never rewrite. | Always blocks. On the router the block is HTTP `400 guardrail_error`; on agents and deployments it is `422`. |
 | Guardrail rule (Studio or API) | Same as `guardrails`, attached by a CEL match on `model`, `metadata`, `identity`, `project` or `headers`. | Same. The request body carries nothing. |
 
+![Diagram: the guarded request path. The refund app sends chat.completions with extra_body; inside the orq AI Gateway the PII redaction plugin rewrites the input, input guardrails judge it, the provider sees only placeholders, and the output guardrail either lets PII restore return the answer or blocks with HTTP 400 and the app hands the case to a human.](assets/guarded-request.png)
+
 ```python
 client.chat.completions.create(
     model=settings.model, messages=messages, tools=TOOL_SCHEMAS,

@@ -21,6 +21,8 @@ class MyTarget(AgentTarget):                                      # full control
     def new(self) -> "MyTarget": ...                              # fresh instance per conversation
 ```
 
+![Diagram: the simulation and red-team loop. A user simulator or OWASP attacker exchanges turns with the target under test; the transcript accumulates up to max_turns; the judge reads the transcript text only and writes one row per conversation into an Experiment run; the target's tool calls hit the order store, which holds the ground truth.](assets/simulation-loop.png)
+
 The judge reads the transcript text. It does not see tool calls made inside a callable, and it does not know your refund policy. Both facts matter below.
 
 ## Steps

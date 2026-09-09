@@ -51,7 +51,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 ```
 app/refund_agent/   the sample app (never changes across modules)
 app/data/           orders, policy docs, dataset, agent instructions
-modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md
+modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams)
 evals/              CI regression gate (evaluatorq) and red-team gate
 .github/workflows/  evals.yml · nightly-triage.yml · pr-failure-analysis.yml · docs.yml
 docs/               MkDocs site (module pages include the module READMEs)

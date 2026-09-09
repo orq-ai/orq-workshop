@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fallback chain · Sequence</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Sequence · Module 01</p>
+    <h1>One request, two models, one trace</h1>
+
+    <svg viewBox="0 0 960 552" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fallback-chain-title fallback-chain-desc">
+      <title id="fallback-chain-title">Fallback chain: primary times out, fallback answers</title>
+      <desc id="fallback-chain-desc">Sequence diagram showing the refund app calling the AI Gateway with timeout, fallbacks, retry and cache in extra_body; the primary model gpt-4.1 times out after 900 ms, the gateway records a fallback span and calls gpt-4.1-nano, which answers, and the app receives the response.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Lifelines: app 120 · gateway 360 · gpt-4.1 600 · gpt-4.1-nano 840 -->
+      <line x1="120" y1="96" x2="120" y2="464" stroke="rgba(37,35,46,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="360" y1="96" x2="360" y2="464" stroke="rgba(37,35,46,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="600" y1="96" x2="600" y2="464" stroke="rgba(37,35,46,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="840" y1="96" x2="840" y2="464" stroke="rgba(37,35,46,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Activation bars -->
+      <rect x="356" y="136" width="8" height="280" fill="rgba(37,35,46,0.06)" stroke="#025558" stroke-width="0.8"/>
+      <rect x="596" y="176" width="8" height="48" fill="rgba(37,35,46,0.06)" stroke="#025558" stroke-width="0.8"/>
+      <rect x="836" y="320" width="8" height="48" fill="rgba(37,35,46,0.06)" stroke="#025558" stroke-width="0.8"/>
+
+      <!-- Messages, time flows down -->
+      <!-- M1 app -> gateway -->
+      <line x1="120" y1="136" x2="356" y2="136" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- M2 gateway -> gpt-4.1 -->
+      <line x1="364" y1="176" x2="596" y2="176" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- M3 gpt-4.1 -> gateway, timeout (return, dashed) -->
+      <line x1="596" y1="224" x2="364" y2="224" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <!-- M4 gateway self-message: span.fallback_selected -->
+      <path d="M 364,260 H 400 V 284 H 364" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- M5 gateway -> gpt-4.1-nano -->
+      <line x1="364" y1="320" x2="836" y2="320" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- M6 gpt-4.1-nano -> gateway, headline success (accent) -->
+      <line x1="836" y1="368" x2="364" y2="368" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- M7 gateway -> app, response (return, dashed) -->
+      <line x1="356" y1="416" x2="120" y2="416" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+
+      <!-- Message labels (masked, 8px above the stroke) -->
+      <rect x="200" y="116" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="238" y="125" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">COMPLETIONS</text>
+      <!-- M1 sublabel: the extra_body fields, 8px below the stroke -->
+      <rect x="140" y="144" width="196" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="238" y="153" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle">timeout 900 ms · fallbacks · retry · cache</text>
+
+      <rect x="440" y="156" width="80" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="480" y="165" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CALL GPT-4.1</text>
+
+      <rect x="436" y="204" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="480" y="213" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">408 · 1201 MS</text>
+
+
+      <rect x="676" y="300" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="720" y="309" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CALL 4.1-NANO</text>
+
+      <rect x="684" y="348" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="720" y="357" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">OK · 706 MS</text>
+
+      <rect x="188" y="396" width="100" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="238" y="405" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">200 · 4.1-NANO</text>
+
+      <!-- Span names in the trace, beside the lifelines (mono, muted) -->
+      <rect x="612" y="192" width="132" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="616" y="201" fill="#6b6975" font-size="8" font-family="'Kurrent Mono', monospace">span.chat_completion · error</text>
+      <rect x="712" y="380" width="124" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="832" y="389" fill="#6b6975" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="end">span.chat_completion · ok</text>
+      <rect x="408" y="266" width="128" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="412" y="275" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace">span.fallback_selected</text>
+
+      <!-- Editorial callout: cache on the second identical request -->
+      <path d="M 464,436 Q 412,432 352,418" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="348" cy="416" r="2" fill="#25232e"/>
+      <text x="472" y="446" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">Send it again within ttl 600 s:</text>
+      <text x="472" y="464" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">cache hit, zero provider cost.</text>
+
+      <!-- Actor boxes -->
+      <!-- Refund app (your code) -->
+      <rect x="48" y="40" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="48" y="40" width="144" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="56" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="70" y="57" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="120" y="72" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Refund app</text>
+      <text x="120" y="87" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">OpenAI SDK · extra_body</text>
+
+      <!-- AI Gateway (focal) -->
+      <rect x="288" y="40" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="288" y="40" width="144" height="56" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="296" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="310" y="57" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GW</text>
+      <text x="360" y="72" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">AI Gateway</text>
+      <text x="360" y="87" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">/v3/router</text>
+
+      <!-- gpt-4.1 (external, primary) -->
+      <rect x="528" y="40" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="40" width="144" height="56" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="536" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="550" y="57" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+      <text x="600" y="72" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Primary model</text>
+      <text x="600" y="87" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">openai/gpt-4.1</text>
+
+      <!-- gpt-4.1-nano (external, fallback) -->
+      <rect x="768" y="40" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="768" y="40" width="144" height="56" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="776" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="790" y="57" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+      <text x="840" y="72" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Fallback model</text>
+      <text x="840" y="87" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">openai/gpt-4.1-nano</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="492" x2="920" y2="492" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="508" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="524" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Gateway (decides)</text>
+
+      <rect x="180" y="524" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="200" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Your code</text>
+
+      <rect x="292" y="524" width="14" height="10" rx="2" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <text x="312" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Provider model</text>
+
+      <line x1="428" y1="530" x2="456" y2="530" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="464" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">HTTP call</text>
+
+      <line x1="552" y1="530" x2="580" y2="530" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <text x="588" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Return</text>
+
+      <line x1="656" y1="530" x2="684" y2="530" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <text x="692" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">The answer that counts</text>
+
+      <rect x="828" y="525" width="8" height="10" fill="rgba(37,35,46,0.06)" stroke="#025558" stroke-width="0.8"/>
+      <text x="844" y="532" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Holds control</text>
+    </svg>
+  </div>
+</body>
+</html>

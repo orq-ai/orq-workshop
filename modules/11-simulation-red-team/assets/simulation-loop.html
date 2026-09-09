@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation loop · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 11</p>
+    <h1>Three models around one target</h1>
+
+    <svg viewBox="0 0 960 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="simulation-loop-title simulation-loop-desc">
+      <title id="simulation-loop-title">Simulation and red-team loop around the refund agent</title>
+      <desc id="simulation-loop-desc">Architecture diagram showing a user simulator or attacker exchanging turns with the target under test, the transcript accumulating up to max_turns, a judge scoring the transcript text only into one Experiment row per conversation, while the target's tool calls hit the order store that holds the ground truth.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first -->
+      <!-- simulator -> target (turn), upper attach point -->
+      <line x1="216" y1="80" x2="264" y2="80" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- target -> simulator (reply), dashed return, lower attach point -->
+      <line x1="264" y1="112" x2="216" y2="112" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <!-- target -> transcript -->
+      <line x1="440" y1="96" x2="504" y2="96" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- transcript -> judge -->
+      <line x1="648" y1="96" x2="712" y2="96" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- judge -> experiment run (HTTP upload) -->
+      <line x1="800" y1="136" x2="800" y2="208" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- target -> order store (tool calls) -->
+      <line x1="352" y1="136" x2="352" y2="208" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow labels (mask + 8px gap from the stroke) -->
+      <rect x="220" y="60" width="40" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="240" y="69" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TURN</text>
+
+      <rect x="216" y="120" width="48" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="240" y="129" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REPLY</text>
+
+      <rect x="448" y="76" width="48" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="472" y="85" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">APPEND</text>
+
+      <rect x="648" y="76" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="680" y="85" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TEXT ONLY</text>
+
+      <rect x="812" y="166" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="816" y="175" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">1 ROW/CONV</text>
+
+      <rect x="364" y="166" width="68" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="368" y="175" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">TOOL CALLS</text>
+
+      <!-- Node: User simulator / attacker (input) -->
+      <rect x="40" y="56" width="176" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="56" width="176" height="80" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="64" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="73" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SIM</text>
+      <text x="128" y="96" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">User simulator</text>
+      <text x="128" y="112" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">persona · scenario · goal</text>
+      <text x="128" y="126" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">red team: OWASP attacker</text>
+
+      <!-- Node: Target under test (focal) -->
+      <rect x="264" y="56" width="176" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="264" y="56" width="176" height="80" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="272" y="64" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="286" y="73" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TGT</text>
+      <text x="352" y="96" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Target under test</text>
+      <text x="352" y="112" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">run_turn(messages) -&gt; str</text>
+      <text x="352" y="126" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">agent:&lt;key&gt; · AgentTarget</text>
+
+      <!-- Node: Transcript (store) -->
+      <rect x="504" y="56" width="144" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="504" y="56" width="144" height="80" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="512" y="64" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="526" y="73" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TXT</text>
+      <text x="576" y="96" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Transcript</text>
+      <text x="576" y="112" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">up to max_turns</text>
+      <text x="576" y="126" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">text, no tool calls</text>
+
+      <!-- Node: Judge (model, backend) -->
+      <rect x="712" y="56" width="176" height="80" rx="6" fill="#f9f8f6"/>
+      <rect x="712" y="56" width="176" height="80" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="720" y="64" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="734" y="73" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+      <text x="800" y="96" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Judge</text>
+      <text x="800" y="112" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">criteria · goal_achieved</text>
+      <text x="800" y="126" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">red team: OWASP judge</text>
+
+      <!-- Node: Order store (store, ground truth) -->
+      <rect x="264" y="208" width="176" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="264" y="208" width="176" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="272" y="216" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="286" y="225" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DB</text>
+      <text x="352" y="244" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Order store</text>
+      <text x="352" y="260" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">tool results = ground truth</text>
+
+      <!-- Node: Experiment run (orq entity, store) -->
+      <rect x="712" y="208" width="176" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="712" y="208" width="176" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="720" y="216" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="734" y="225" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXP</text>
+      <text x="800" y="244" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Experiment run</text>
+      <text x="800" y="260" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">one row per conversation</text>
+
+      <!-- Callout 1: the judge's blind spot (under the transcript) -->
+      <path d="M 576,136 V 172" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="576" cy="136" r="2" fill="#25232e"/>
+      <text x="576" y="196" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">The judge reads text.</text>
+      <text x="576" y="214" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">It never sees a tool call.</text>
+
+      <!-- Callout 2: every model call goes through the router (under the simulator) -->
+      <path d="M 128,136 V 172" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="128" cy="136" r="2" fill="#25232e"/>
+      <text x="128" y="196" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">All three models call the</text>
+      <text x="128" y="214" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">orq router with your key.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="300" x2="920" y2="300" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="316" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="332" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Target under test</text>
+
+      <rect x="180" y="332" width="14" height="10" rx="2" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="200" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Simulated user or attacker</text>
+
+      <rect x="340" y="332" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="360" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Model</text>
+
+      <rect x="440" y="332" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="460" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">State / orq entity</text>
+
+      <line x1="580" y1="338" x2="608" y2="338" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="616" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Call</text>
+
+      <line x1="680" y1="338" x2="708" y2="338" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="716" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Reply</text>
+
+      <line x1="780" y1="338" x2="808" y2="338" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="816" y="340" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Upload to Studio</text>
+    </svg>
+  </div>
+</body>
+</html>

@@ -2,9 +2,9 @@ name: docs
 on:
   push:
     branches: [main]
-    paths: ["docs/**", "modules/**/README.md", "mkdocs.yml", "overrides/**"]
+    paths: ["docs/**", "modules/**/README.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py"]
   pull_request:
-    paths: ["docs/**", "modules/**/README.md", "mkdocs.yml", "overrides/**"]
+    paths: ["docs/**", "modules/**/README.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py"]
   workflow_dispatch:
 permissions:
   contents: read

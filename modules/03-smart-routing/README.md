@@ -24,6 +24,8 @@ orq.routing_rules.create(display_name="ws-route-mini-to-nano", project_id=PROJEC
     models_config={"mode": "weighted", "models": [{"model": "openai/gpt-4.1-nano", "weight": 1.0}]}, priority=50)
 ```
 
+![Diagram: how the gateway decides which model answers. A matching routing rule replaces the model, load balancer and fallbacks of the request and leaves a span.load_balancer span; otherwise a Smart Router reference lets the router pick a pool model by profile and leaves a span.auto_router span; otherwise the requested model is used. In every case span.chat_completion names the winner.](assets/routing-decision.png)
+
 ## Steps
 
 Open `modules/03-smart-routing/run.py`. Fill the `TODO`s; the solution is in `solution/run.py`.

@@ -27,6 +27,8 @@ client.chat.completions.create(
 )
 ```
 
+![Diagram: the fallback chain as a sequence. The refund app sends chat.completions with timeout, fallbacks, retry and cache in extra_body; the gateway calls gpt-4.1, which times out after 1201 ms, records a span.fallback_selected, calls gpt-4.1-nano, which answers in 706 ms, and returns the response to the app. The same request again within the ttl is a cache hit with zero provider cost.](assets/fallback-chain.png)
+
 ## Steps
 
 Open `modules/01-gateway/run.py`. Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.

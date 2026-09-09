@@ -26,6 +26,8 @@ def refund_turn(text):
     return chat(text)   # run_turn sends traceparent, the gateway nests under this span
 ```
 
+![Diagram: who produces which span. Your app emits the @traced root span refund_turn and its three tool spans and ships them over OTLP; the gateway emits one chat.openai trace per model call with a span.chat_completion child, nested under the root because run_turn sends the W3C traceparent header; the request body fields name, identity, thread and metadata become filters in the Traces view and the CLI.](assets/span-ownership.png)
+
 ## Steps
 
 Open `modules/02-tracing/run.py`. Each step is a function with a `TODO`. The solution is in `solution/run.py`.

@@ -24,6 +24,8 @@ r = orq.responses.create(
 )
 ```
 
+![Diagram: the Responses API tool loop. Your app calls responses.create on agent/ws-refund-agent; the agent runs the model and returns a function_call item with a call_id; your app executes it with tools.dispatch and sends a function_call_output with previous_response_id; the loop repeats until a message item with a trace id comes back.](assets/responses-tool-loop.png)
+
 Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`) also emit a `function_call` item, followed by an `orq:<tool>` item carrying the result; those are not yours to answer. Every call returns `telemetry.trace_id`.
 
 ## Steps

@@ -20,6 +20,8 @@ context = "\n\n".join(m.text for m in matches)          # Factor 13: fetched bef
 client.chat.completions.create(model=..., messages=[{"role": "system", "content": f"Answer only from:\n{context}"}, ...])
 ```
 
+![Diagram: where retrieval runs. One knowledge base, three callers: your code pre-fetches chunks into a system message before a gateway chat call (592 prompt tokens); the gateway can be asked to inject knowledge on a plain chat call but injected nothing here (26 tokens); a managed agent searches through its server tools and the retrieval shows in the trace (3662 tokens).](assets/where-retrieval-runs.png)
+
 ## Steps
 
 Open `modules/09-knowledge-base-rag/run.py`. The solution is in `solution/run.py`.

@@ -232,3 +232,11 @@ html { font-size: 100%; }
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   margin: 1em 0;
 }
+
+/* Diagrams (modules/*/assets/*.png, exported from the diagram-design HTML sources).
+   The PNG carries its own sand paper, so round it off and edge it on dark pages. */
+.md-typeset img[alt^="Diagram"] {
+  border-radius: 8px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  margin: 0.5em 0 1em;
+}
