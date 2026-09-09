@@ -1,0 +1,1 @@
+Use orqi to find the most expensive trace of the last 24 hours and explain why it cost that much. Use `list_traces` sorted by cost, then `list_spans` on the winner, and report the model, the prompt and completion tokens, the cache read and cache write split, and which span carried the cost. If the trace belongs to a coding-agent session, say so and give the session id.
