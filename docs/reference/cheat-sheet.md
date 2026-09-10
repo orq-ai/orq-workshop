@@ -70,3 +70,15 @@ make redteam-gate               # static red team gate
 make reset                      # delete everything with WS_PREFIX
 make docs-serve slides          # docs site, deck
 ```
+
+## Docs
+
+| Topic | Page |
+|---|---|
+| Gateway request fields | [Retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries) · [Timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts) · [Cache](https://docs.orq.ai/docs/ai-gateway/features/cache) · [Load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing) · [Request metadata](https://docs.orq.ai/docs/ai-gateway/request-metadata) |
+| Control plane | [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) · [Routing rules](https://docs.orq.ai/docs/ai-gateway/configuration/routing-rules) · [Guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails) · [Guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules) · [PII redaction](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction) · [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets) |
+| Observability | [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces) · [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes) · [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities) · [Annotations](https://docs.orq.ai/docs/ai-studio/observability/annotations) |
+| Quality | [Evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators) · [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets) · [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments) · [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations) · [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming) |
+| Agents | [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents) · [Run agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) · [Responses API](https://docs.orq.ai/docs/ai-gateway/features/responses-api) · [Memory stores](https://docs.orq.ai/docs/ai-studio/ai-engineering/memory-stores) · [Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases) |
+| MCP and coding agents | [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers) · [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways) · [Orq MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp) · [Orq Skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills) · [CLI](https://docs.orq.ai/reference/cli) |
+| API and SDK | [REST reference](https://docs.orq.ai/reference/client-libraries) · [Python SDK: traces](https://docs.orq.ai/reference/sdk/traces) · [Changelog](https://docs.orq.ai/docs/changelog) |

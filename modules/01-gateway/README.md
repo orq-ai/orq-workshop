@@ -11,7 +11,7 @@ Most teams start with orq as a proxy: point the OpenAI SDK at `https://my.orq.ai
 
 ## The one concept to understand first
 
-Everything in this module is a field in `extra_body`. The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The native `orq_ai_sdk` exposes the same fields as arguments on `orq.router.chat.completions.create`.
+Everything in this module is a field in `extra_body` ([retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing)). The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The native `orq_ai_sdk` exposes the same fields as arguments on `orq.router.chat.completions.create`.
 
 ```python
 client.chat.completions.create(
@@ -128,3 +128,5 @@ orq.router.chat.completions.create(model=..., messages=..., fallbacks=[{"model":
 ```
 
 Pick one client per code base. Frameworks (LangGraph, Strands, CrewAI) already speak OpenAI, so for them the gateway URL is the integration.
+
+Docs: [Retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [Timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [Cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [Load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api).

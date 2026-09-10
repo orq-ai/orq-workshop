@@ -241,3 +241,5 @@ Codex sessions are captured as traces and the Studio's getting-started flow offe
 ## Go further
 
 `ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from module 05 and you have a spend cap per developer.
+
+Docs: [orq CLI reference](https://docs.orq.ai/reference/cli), [Claude Code](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/claude-code), [OpenCode](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/opencode), [Codex](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/codex), [Orq MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp), [Orq Skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills), [Anthropic Messages API on the gateway](https://docs.orq.ai/docs/ai-gateway/features/anthropic-messages-api).

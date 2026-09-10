@@ -11,7 +11,7 @@ The refund agent touches customer data and money. Two things must never leave th
 
 ## The one concept to understand first
 
-Three controls travel on the same request, and they differ in what they are allowed to do:
+Three controls travel on the same request, and they differ in what they are allowed to do ([PII redaction plugin](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction), [guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails), [guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules)):
 
 | Field | Does | On failure |
 |---|---|---|
@@ -189,3 +189,5 @@ Every trace now shows which guardrails and evaluators ran on a span (the shield 
 ## Go further
 
 The same `pii_redaction` config can be switched on for the whole workspace under Settings > Plugins, and a request can only make it stricter, never looser. `GET /v2/pii/capabilities` is the live catalog of entity types and regions.
+
+Docs: [Guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails), [Guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules), [PII redaction plugin](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction), [Evaluators (guardrail error response)](https://docs.orq.ai/docs/ai-studio/optimize/evaluators), [Trace evaluations](https://docs.orq.ai/docs/ai-studio/observability/trace-evaluations).

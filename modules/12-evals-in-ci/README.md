@@ -11,7 +11,7 @@ Module 07 measured the refund agent once. Nobody re-runs a notebook before mergi
 
 ## The one concept to understand first
 
-A gate is three things: a fixed input set, a scorer per failure mode, and a threshold on the mean. `evals/regression.py` runs the local agent over `app/data/dataset.jsonl`, scores every row with the three scorers in `evals/scorers.py`, and exits 1 when a mean drops below its threshold. `evals/redteam_gate.py` does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
+A gate is three things ([evaluatorq](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)): a fixed input set, a scorer per failure mode, and a threshold on the mean. `evals/regression.py` runs the local agent over `app/data/dataset.jsonl`, scores every row with the three scorers in `evals/scorers.py`, and exits 1 when a mean drops below its threshold. `evals/redteam_gate.py` does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
 
 ```python
 THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.70}   # evals/regression.py
@@ -253,3 +253,5 @@ Red teaming shipped in evaluatorq with OWASP LLM Top 10 and Agentic categories, 
 ## Go further
 
 Replace the local `chat()` in `evals/regression.py` with `RefundAgentTarget` from `evals/refund_target.py` and you gate the managed agent instead of the local loop, with the same scorers. Then add `--previous-run` style comparison: read the previous `latest.json` artifact and fail when any mean drops by more than 0.10, even if it is still above the bar.
+
+Docs: [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [Automate evals with Claude Code](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/automate-evals-and-observability-with-claude-code), [orq CLI reference](https://docs.orq.ai/reference/cli).

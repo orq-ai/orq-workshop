@@ -262,3 +262,5 @@ Paste `agent_prompt.md`:
 ## Go further
 
 `orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
+
+Docs: [orq CLI reference](https://docs.orq.ai/reference/cli), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).

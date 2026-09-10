@@ -11,7 +11,7 @@ Tools leak. A coding agent that can look up orders can also refund them if both 
 
 ## The one concept to understand first
 
-Three entities, one direction of trust.
+Three entities, one direction of trust ([MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers), [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways)).
 
 ![Diagram: the MCP trust chain. An MCP client calls the MCP Gateway with a bearer key; the gateway exposes two of the three tools synced from the MCP Server, which fronts app/mcp_server.py over HTTPS; a managed agent attaches to the MCP Server directly by tool id.](assets/mcp-trust-chain.png)
 
@@ -182,3 +182,5 @@ The MCP Portal is new in 4.14: MCP Servers and MCP Gateway share one area, the o
 ## Go further
 
 Create a **Toolset** on the gateway (a named subset of tools across servers) and bind an API key to it with `mcp_access.toolset_ids`. The key then sees only the intersection of what the gateway exposes and what the toolset contains, which is how one gateway serves several teams.
+
+Docs: [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers), [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways), [API keys (MCP access)](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [MCP cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/chatbots/insurance-claims-mcp-cookbook).

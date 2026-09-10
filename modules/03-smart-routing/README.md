@@ -11,7 +11,7 @@
 
 ## The one concept to understand first
 
-A Smart Router is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-4o-mini`. The profile (`COST`, `BALANCED`, `QUALITY`) shifts how aggressively it prefers the cheap band. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
+A [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-4o-mini`. The profile (`COST`, `BALANCED`, `QUALITY`) shifts how aggressively it prefers the cheap band. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
 
 A routing rule sits in front of that: `expression.cel` decides if it applies, `models_config` says where the request goes instead. The CEL variables are `model`, `metadata["key"]`, `identity`, `headers["name"]` and `project`. When a rule matches it replaces the request's `model`, `load_balancer` and `fallbacks` entirely.
 
@@ -128,3 +128,5 @@ The Smart Router got its own page in the AI Gateway: every router, the band each
 ## Go further
 
 Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from module 01 on the request for the days a provider is down.
+
+Docs: [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router), [Routing rules](https://docs.orq.ai/docs/ai-gateway/configuration/routing-rules), [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes).

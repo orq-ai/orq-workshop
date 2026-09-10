@@ -11,7 +11,7 @@ The refund agent will run in CI and in production under different keys, and it w
 
 ## The one concept to understand first
 
-Two credentials, two jobs. An **API key** calls models. A **Management Key** administers API keys and budgets, and cannot call models. The demo key in `.env` is an all-projects API key; it can list identities and traces, and it gets `403` on `/v2/budgets`. Budgets are scoped to one of six targets (workspace, project, identity, API key, provider, model), carry a period limit in USD or tokens, and optionally a rolling requests-per-minute cap. The most restrictive matching budget wins.
+Two credentials, two jobs ([API keys](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets)). An **API key** calls models. A **Management Key** administers API keys and budgets, and cannot call models. The demo key in `.env` is an all-projects API key; it can list identities and traces, and it gets `403` on `/v2/budgets`. Budgets are scoped to one of six targets (workspace, project, identity, API key, provider, model), carry a period limit in USD or tokens, and optionally a rolling requests-per-minute cap. The most restrictive matching budget wins.
 
 ```python
 mgmt = Orq(api_key=os.environ["ORQ_MANAGEMENT_KEY"])
@@ -176,3 +176,7 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 ## New in orq 4.11
 
 Budgets became a first-class entity with six scopes, cost, token and requests-per-minute limits, threshold alerts to notifiers, and Management Keys to administer them from code. 4.12 added an activity overview per model and API key.
+
+## Go further
+
+Docs: [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [API keys](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys), [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities).

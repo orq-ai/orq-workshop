@@ -11,7 +11,7 @@ Every later module asserts its result by looking at a trace. Setup exists so tha
 
 ## The one concept to understand first
 
-`orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq MCP server and the orq skills. Learn it once, use it in every module.
+[`orq` the CLI](https://docs.orq.ai/reference/cli) is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq MCP server and the orq skills. Learn it once, use it in every module.
 
 ## Steps
 
@@ -114,3 +114,7 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 ## New in orq 4.14
 
 The Studio onboarding now offers a CLI path. `orq setup` is the same flow the product shows to new users.
+
+## Go further
+
+Docs: [orq CLI reference](https://docs.orq.ai/reference/cli), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).

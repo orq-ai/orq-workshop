@@ -11,7 +11,7 @@ Half of the traffic this module reads was produced by a prompt with three lines 
 
 ## The one concept to understand first
 
-Error analysis comes before evaluators. Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
+Error analysis comes before [evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators). Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
 
 ![Diagram: the error analysis loop. Traces from make traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
 
@@ -214,3 +214,5 @@ Evaluator and guardrail results now show as indicators on every trace span, with
 ## Go further
 
 Write the judge that this module says is missing: a binary `ws-refund-decision-judge` whose prompt receives the tool results as well as the answer, label 40 rows by hand (the `details` block in `evals/results/latest.json` after module 12 is a good start), and compute TPR and TNR before you let it into CI.
+
+Docs: [Evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators), [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Align evaluators cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/align-evaluators), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).
