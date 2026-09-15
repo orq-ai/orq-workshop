@@ -5,7 +5,7 @@ This is a training repo for orq.ai. Participants run it with Claude Code, OpenCo
 ## Layout
 
 - `app/refund_agent/` is the sample app. It does not change between modules. Compose it, do not edit it, unless a module says so.
-- `modules/NN-name/` is one exercise each: `README.md` (the lesson), `run.py` (starter), `solution/` (finished), `agent_prompt.md` (prompt for a coding agent), optional `assets/` (a diagram as `.html` source plus the exported `.png` the README embeds).
+- `modules/NN-name/` is one exercise each: `README.md` (the lesson), `run.py` (starter), `solution/` (finished), `agent_prompt.md` (prompt for a coding agent), optional `assets/` (a diagram as `.html` source plus the exported `.png` the README embeds). Where `solution/run.py` is written in Jupytext percent format (`# %%` cells, top-level code, no `__main__`), `make notebooks` generates a gitignored `notebook.ipynb` next to it; keep new step code top-level and put the explanation in `# %% [markdown]` cells so script and notebook stay one source.
 - `docs/` is the MkDocs site. Module pages include `modules/NN-name/README.md` via snippets, so edit the module README, not the docs page. A diagram goes in `modules/NN-name/assets/<slug>.html`, drawn with the `diagram-design` skill (the orq skin is the `.diagram-design` profile), exported with `make diagrams`, and embedded as `![Diagram: ...](assets/<slug>.png)`; `scripts/mkdocs_hooks.py` serves those PNGs on the site.
 - `evals/` is the CI regression gate. `slides/` is the live-session deck.
 

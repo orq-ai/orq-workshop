@@ -1,10 +1,18 @@
-"""Module 08 solution: the refund agent as a managed orq Agent.
+# %% [markdown]
+# # 08 · Managed agents
+#
+# The refund agent as a managed orq Agent. Modules 01 to 07 kept the loop in `app/refund_agent/agent.py`; here instructions, model, tools, limits, knowledge base and memory become one versioned entity, and the app shrinks to "execute this tool call and send the result back". Five steps: inspect the agent, invoke it through the Responses API and run its `function_call` items locally, stream a reply, give it memory per customer, publish a version and pin it with `@version`.
+#
+# | | |
+# |---|---|
+# | **Time** | 40 min |
+# | **Prerequisites** | modules 00 to 02, `make seed` |
+# | **You will have** | the refund agent invoked through the Responses API with a local tool loop, streamed, given memory, versioned and pinned by `@version` |
+#
+# This file is both the solution script (`make m08`) and the notebook source (`make notebooks`).
+# Run the cells top to bottom.
 
-Factor 4: tools are structured outputs. The agent emits `function_call` items; this file executes them.
-Factor 6: launch / pause / resume. Every turn is a Responses API call, state lives server-side.
-Factor 10: small, focused agents. One agent, three tools, eight iterations max.
-"""
-
+# %%
 from __future__ import annotations
 
 import json
@@ -22,34 +30,46 @@ QUESTION = "Refund ord_a2 please, the dock does not fit."
 
 orq = make_orq()
 
+# %% [markdown]
+# ## Step 1 · Inspect the agent
+#
+# `make seed` created `ws-refund-agent` with the three function tools. Reads and writes have
+# different shapes: a GET returns tools as `{action_type, id, key, requires_approval}`; a create or
+# update wants `{"type": "function", "key": "ws-lookup-order"}`. PATCHing a GET body back is
+# rejected by the SDK. Inline function schemas are rejected too: register the tool once
+# (`orq tools create`), then reference it by key.
 
-# ---------------------------------------------------------------- step 1: inspect
+# %%
+a = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
+s = a["settings"]
+print(f"[1] {a['key']} v{a['version']} model={a['model']['id']} status={a['status']}")
+print(f"    max_iterations={s['max_iterations']} max_execution_time={s['max_execution_time']}s tool_approval_required={s['tool_approval_required']}")
+print(f"    tools (as READ): {[(t['action_type'], t.get('key', t['display_name']), t['id'][-6:]) for t in s['tools']]}")
+print(f"    knowledge_bases={a['knowledge_bases']} memory_stores={a['memory_stores']}")
+try:
+    orq.agents.update(agent_key=AGENT, settings=s)
+except Exception as exc:  # noqa: BLE001
+    print(f"    PATCH of the GET body -> {type(exc).__name__}: {str(exc)[:70]}...")
+print("    write shape: settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]")
 
-def step_1_inspect() -> None:
-    a = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
-    s = a["settings"]
-    print(f"[1] {a['key']} v{a['version']} model={a['model']['id']} status={a['status']}")
-    print(f"    max_iterations={s['max_iterations']} max_execution_time={s['max_execution_time']}s tool_approval_required={s['tool_approval_required']}")
-    print(f"    tools (as READ): {[(t['action_type'], t['key'], t['id'][-6:]) for t in s['tools']]}")
-    print(f"    knowledge_bases={a['knowledge_bases']} memory_stores={a['memory_stores']}")
-    # Reads and writes have different shapes. A GET body PATCHed back is rejected by the SDK.
-    try:
-        orq.agents.update(agent_key=AGENT, settings=s)
-    except Exception as exc:  # noqa: BLE001
-        print(f"    PATCH of the GET body -> {type(exc).__name__}: {str(exc)[:70]}...")
-    print("    write shape: settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]")
+# %% [markdown]
+# ## Step 2 · Invoke it and execute the tool calls
+#
+# `orq.responses.create(model="agent/<key>", input=...)` returns output items. A `function_call`
+# item is ours to execute; we answer with a `function_call_output` item and
+# `previous_response_id`, and the agent continues. Server-side tools (memory, advisor,
+# `current_date`) also emit a `function_call`, followed by an `orq:<tool>` item with the result:
+# only calls without a server result are ours.
+#
+# **Try it first:** write the loop before reading `run_agent`.
 
-
-# ---------------------------------------------------------------- step 2: invoke + tool loop
-
+# %%
 def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_steps: int = 8, **kw: Any) -> dict[str, Any]:
     """One customer turn. Executes every `function_call` locally and continues with previous_response_id."""
     store = store or OrderStore()
     r = orq.responses.create(model=f"agent/{agent}", input=text, **kw).model_dump(by_alias=True)
     traces, called = [r["telemetry"]["trace_id"]], []
     for _ in range(max_steps):
-        # Server-side tools (memory, advisor, current_date...) also emit a function_call item, followed by an
-        # `orq:<tool>` item with the result. Only calls without a server result are ours to execute.
         done_by_server = {o.get("call_id") for o in r["output"] if o["type"].startswith("orq:")}
         calls = [o for o in r["output"] if o["type"] == "function_call" and o["call_id"] not in done_by_server]
         if not calls:
@@ -65,39 +85,52 @@ def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_ste
     return {"text": text_out, "tool_calls": called, "traces": traces, "response_id": r["id"], "model": r["model"], "usage": r["usage"]}
 
 
-def step_2_invoke() -> None:
-    t0 = time.time()
-    out = run_agent(AGENT, QUESTION)
-    print(f"[2] tools={out['tool_calls']} steps={len(out['traces'])} {time.time() - t0:.1f}s cost=${out['usage']['total_cost']:.5f}")
-    print(f"    answer: {out['text'][:110]}")
-    print(f"    first trace: {out['traces'][0]}   last trace: {out['traces'][-1]}")
-    print(f"    $ orq traces thread {out['traces'][-1]}")
+t0 = time.time()
+out = run_agent(AGENT, QUESTION)
+print(f"[2] tools={out['tool_calls']} steps={len(out['traces'])} {time.time() - t0:.1f}s cost=${out['usage']['total_cost']:.5f}")
+print(f"    answer: {out['text'][:110]}")
+print(f"    first trace: {out['traces'][0]}   last trace: {out['traces'][-1]}")
+print(f"    $ orq traces thread {out['traces'][-1]}")
 
+# %% [markdown]
+# Four requests, four traces: each Responses call is its own trace. The last one renders the whole
+# conversation because state is server-side. The model sometimes confirms the order first and waits
+# ("Would you like to proceed?"): that is the instructions working, not a bug.
+#
+# ## Step 3 · Stream
+#
+# `stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a
+# `function_call` arrives as `response.function_call_arguments.delta` and `.done`.
 
-# ---------------------------------------------------------------- step 3: streaming
+# %%
+t0 = time.time()
+first, tokens, n = None, [], 0
+with orq.responses.create(model=f"agent/{AGENT}", input="In one sentence, what is the refund window?", stream=True) as events:
+    for ev in events:
+        n += 1
+        d = ev.model_dump(by_alias=True).get("data", {})
+        if d.get("type") == "response.output_text.delta":
+            first = first or time.time() - t0
+            tokens.append(d["delta"])
+print(f"[3] stream: {n} events, first token at {first:.2f}s, first tokens={tokens[:6]}")
+print(f"    text: {''.join(tokens)}")
 
-def step_3_stream() -> None:
-    t0 = time.time()
-    first, tokens, n = None, [], 0
-    with orq.responses.create(model=f"agent/{AGENT}", input="In one sentence, what is the refund window?", stream=True) as events:
-        for ev in events:
-            n += 1
-            d = ev.model_dump(by_alias=True).get("data", {})
-            if d.get("type") == "response.output_text.delta":
-                first = first or time.time() - t0
-                tokens.append(d["delta"])
-    print(f"[3] stream: {n} events, first token at {first:.2f}s, first tokens={tokens[:6]}")
-    print(f"    text: {''.join(tokens)}")
+# %% [markdown]
+# ## Step 4 · Memory
+#
+# A memory store is an embedding-backed store of documents per `entity_id`. The agent reads and
+# writes it through server-side tools, so it needs three things: the store attached, the tools
+# `retrieve_memory_stores`, `query_memory_store`, `write_memory_store` in `settings.tools`, and
+# instructions that say when to save and when to query. Each call then carries
+# `memory={"entity_id": ...}`.
+#
+# Two deliberate choices: the store key is `ws_refund_memory` (memory keys reject `-`), and the
+# memory goes on a copy, `ws-refund-agent-memory`. Once an agent has memory tools, every call
+# without `memory.entity_id` is a 400, which would break every other module that invokes
+# `agent/ws-refund-agent`.
 
-
-# ---------------------------------------------------------------- step 4: memory
-
+# %%
 def ensure_memory_agent() -> str:
-    """A copy of the refund agent with a memory store and the memory tools.
-
-    Not attached to ws-refund-agent itself: an agent with memory tools returns 400 unless every call
-    carries memory.entity_id, which would break the other modules that invoke agent/ws-refund-agent.
-    """
     from app.refund_agent.entities import agent_payload
 
     if not any(m.key == MEMORY_STORE for m in orq.memory_stores.list(limit=100).data or []):
@@ -125,41 +158,50 @@ def ensure_memory_agent() -> str:
     return MEMORY_AGENT
 
 
-def step_4_memory() -> None:
-    agent = ensure_memory_agent()
-    entity = {"entity_id": f"{settings.identity_id}-{int(time.time())}"}   # fresh entity per run, so recall is not stale
-    a = run_agent(agent, "Hi, my name is Jane Okafor. Please remember that I prefer store credit over card refunds.", memory=entity)
-    b = run_agent(agent, "Quick check: do you remember my name and how I like my refunds?", memory=entity)
-    print(f"[4] memory entity={entity['entity_id']}")
-    print(f"    turn 1: {a['text'][:100]}")
-    print(f"    turn 2: {b['text'][:100]}")
-    print(f"    trace 2: {b['traces'][-1]}  (spans: retrieve_memory_stores, query_memory_store)")
+agent = ensure_memory_agent()
+entity = {"entity_id": f"{settings.identity_id}-{int(time.time())}"}   # fresh entity per run, so recall is not stale
+a = run_agent(agent, "Hi, my name is Jane Okafor. Please remember that I prefer store credit over card refunds.", memory=entity)
+b = run_agent(agent, "Quick check: do you remember my name and how I like my refunds?", memory=entity)
+print(f"[4] memory entity={entity['entity_id']}")
+print(f"    turn 1: {a['text'][:100]}")
+print(f"    turn 2: {b['text'][:100]}")
+print(f"    trace 2: {b['traces'][-1]}  (spans: retrieve_memory_stores, query_memory_store)")
 
+# %% [markdown]
+# Check the store: `orq memory-stores list-memories ws_refund_memory`.
+#
+# ## Step 5 · Versions and `@version` routing
+#
+# `orq.agents.update(..., version_increment="minor", version_description=...)` publishes a
+# version. Invoke a pinned version with `agent/<key>@<version>`, an environment with
+# `agent/<key>@<environment>`; no suffix means `latest`. `@production` resolves once you assign the
+# environment in the Studio (**Agents** > `ws-refund-agent` > **Versions**). The bump only changes
+# the description and is skipped on re-runs.
 
-# ---------------------------------------------------------------- step 5: versions
+# %%
+a = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
+marker = "[m08 v-bump]"
+if marker not in (a["description"] or ""):
+    a = orq.agents.update(agent_key=AGENT, description=f"{a['description']} {marker}", version_increment="minor",
+                          version_description="Module 08: minor bump to demo @version routing").model_dump(by_alias=True)
+    print(f"[5] bumped {AGENT} -> v{a['version']}")
+else:
+    print(f"[5] {AGENT} already at v{a['version']} (bump skipped, idempotent)")
+for suffix in ("@1.0.0", f"@{a['version']}", "@latest", "@production"):
+    try:
+        r = orq.responses.create(model=f"agent/{AGENT}{suffix}", input="One sentence: what is the refund window?").model_dump(by_alias=True)
+        print(f"    agent/{AGENT}{suffix:<12} ok   trace={r['telemetry']['trace_id']}")
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc).split('"message":"')[-1].split('"')[0]
+        print(f"    agent/{AGENT}{suffix:<12} {msg[:60]}")
 
-def step_5_versions() -> None:
-    a = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
-    marker = "[m08 v-bump]"
-    if marker not in (a["description"] or ""):
-        a = orq.agents.update(agent_key=AGENT, description=f"{a['description']} {marker}", version_increment="minor",
-                              version_description="Module 08: minor bump to demo @version routing").model_dump(by_alias=True)
-        print(f"[5] bumped {AGENT} -> v{a['version']}")
-    else:
-        print(f"[5] {AGENT} already at v{a['version']} (bump skipped, idempotent)")
-    for suffix in ("@1.0.0", f"@{a['version']}", "@latest", "@production"):
-        try:
-            r = orq.responses.create(model=f"agent/{AGENT}{suffix}", input="One sentence: what is the refund window?").model_dump(by_alias=True)
-            print(f"    agent/{AGENT}{suffix:<12} ok   trace={r['telemetry']['trace_id']}")
-        except Exception as exc:  # noqa: BLE001
-            msg = str(exc).split('"message":"')[-1].split('"')[0]
-            print(f"    agent/{AGENT}{suffix:<12} {msg[:60]}")
+# %% [markdown]
+# ## Step 6 · The same from the CLI
+#
+# ```bash
+# orq responses create --model agent/ws-refund-agent --input '"One sentence: what is the refund window?"' -o json | jq '{trace: .telemetry.trace_id, text: .output[0].content[0].text}'
+# orq traces search --from 5m --to now -o json | jq '.data[] | select(.name == "ws-refund-agent") | .trace_id' | head -3
+# ```
 
-
-if __name__ == "__main__":
-    step_1_inspect()
-    step_2_invoke()
-    step_3_stream()
-    step_4_memory()
-    step_5_versions()
-    print(f"open {settings.base_url}/traces and search a trace id, or run: orq traces search --from 5m --to now")
+# %%
+print(f"open {settings.base_url}/traces and search a trace id, or run: orq traces search --from 5m --to now")

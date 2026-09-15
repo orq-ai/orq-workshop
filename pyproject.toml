@@ -19,6 +19,8 @@ langgraph = ["langgraph>=0.2", "langchain-openai>=0.3", "langchain-core>=0.3"]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.5"]
+# tornado 6.5.9 breaks jupyter-server 2.21 (500 on every static asset, blank Lab UI); drop the pin once jupyter-server > 2.21 fixes it
+notebooks = ["jupytext>=1.16", "jupyterlab>=4.2", "nbconvert>=7", "ipykernel>=6", "tornado<6.5.9"]
 docs = [
     "mkdocs>=1.6",
     "mkdocs-material>=9.5",

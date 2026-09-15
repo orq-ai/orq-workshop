@@ -49,6 +49,15 @@ og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + lin
 diagrams: ## Re-export the docs diagrams (modules/*/assets/*.html) to PNG
 	$(UV) run --with playwright python scripts/export_diagrams.py
 
+# Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.
+NB_SOURCES := $(shell grep -l "^\# %%" modules/*/solution/run.py 2>/dev/null)
+
+notebooks: ## Generate modules/NN-*/notebook.ipynb from every percent-format solution
+	@for src in $(NB_SOURCES); do dir=$${src%/solution/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
+
+lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
+	$(RUN) jupyter lab
+
 docs-serve: ## Live docs at http://127.0.0.1:8000
 	$(RUN) mkdocs serve
 
@@ -64,6 +73,11 @@ modules: ## List modules
 
 # m00 .. m13: run a module's solution, e.g. `make m01`
 m%: ## Run the solution of module NN (e.g. make m03)
-	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; $(RUN) python $$dir/solution/run.py
+	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; \
+	echo "Module dir:  $$dir"; \
+	echo "Source file: $$dir/solution/run.py"; \
+	echo "Full command: $(RUN) python $$dir/solution/run.py"; \
+	echo; \
+	$(RUN) python $$dir/solution/run.py
 
 .PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server og-card diagrams docs-serve docs-build slides modules

@@ -40,6 +40,8 @@ Then open `modules/00-setup/README.md` or the docs site and go module by module.
 
 Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs), a `solution/` and an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
 
+**Prefer a notebook?** `make lab` opens JupyterLab with one notebook per module (01, 02, 03, 04, 08, 09). Each is the solution split into steps: a cell of explanation, a cell that does one thing, the output underneath. The notebooks are generated from `solution/run.py` (Jupytext percent format), so they never drift from the script `make mNN` runs.
+
 ## Two ways to work
 
 **By hand:** the Python SDK, the OpenAI-compatible gateway, the `orq` CLI, the Studio.
@@ -51,7 +53,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 ```
 app/refund_agent/   the sample app (never changes across modules)
 app/data/           orders, policy docs, dataset, agent instructions
-modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams)
+modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)
 evals/              CI regression gate (evaluatorq) and red-team gate
 .github/workflows/  evals.yml · nightly-triage.yml · pr-failure-analysis.yml · docs.yml
 docs/               MkDocs site (module pages include the module READMEs)

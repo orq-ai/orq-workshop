@@ -13,3 +13,7 @@ modules/**/reports/
 .context/
 .DS_Store
 node_modules/
+modules/**/notebook.ipynb
+.ipynb_checkpoints/
+.playwright-mcp/
+.proof-screens/
