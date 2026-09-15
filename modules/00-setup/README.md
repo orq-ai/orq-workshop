@@ -121,7 +121,7 @@ Runs `pytest -q` over `tests/test_tools.py`: five unit tests of the three tools 
 ```text
 uv run pytest -q
 .....                                                                    [100%]
-5 passed in 0.01s
+5 passed in 0.03s
 ```
 
 #### 3d · `make smoke`: one real turn through the gateway
@@ -130,18 +130,20 @@ uv run pytest -q
 $ make smoke
 ```
 
-Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq AI Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the model asks the customer to confirm (the instructions say so; `issue_refund` follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
+Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq AI Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
 
 ```text
-model      : openai/gpt-5.6-luna
-tool calls : ['lookup_order', 'get_policy']
-answer     : I found order **ord_a1** for the Nord desk lamp (€24.99), delivered 3 days ago. Please confirm that you want me to refund this order because you changed your mind.
-trace id   : 7df7d0a505dc5d15f1e924a63c432767
-open       : https://my.orq.ai/traces  (search the trace id)
-OK
+── Step 1 · One refund turn through the gateway ───────
+model    : openai/gpt-5.6-luna
+question : Hi, I want a refund for order ord_a1, I changed my mind.
+answer   : Your refund of **€24.99** for order **ord_a1** has been issued to the original payment method. It sh…
+tools    : lookup_order → get_policy → issue_refund
+trace    : 2e3d6942bbbbd4d48e95f8bcf600b4ad
+verdict  : OK, the call went through orq and the model called lookup_order
+next     : search the trace id in https://my.orq.ai/traces; expect the last model call with cost, tokens and latency
 ```
 
-If this prints `OK`, everything the workshop needs is in place: environment, credentials, app, gateway. Common failures and what they mean:
+If the verdict reads `OK`, everything the workshop needs is in place: environment, credentials, app, gateway. Common failures and what they mean:
 
 | Symptom | Cause | Fix |
 |---|---|---|

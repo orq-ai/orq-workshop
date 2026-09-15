@@ -30,24 +30,37 @@ from app.refund_agent.client import make_orq
 from app.refund_agent.config import DATA_DIR, settings
 from app.refund_agent.tools import TOOL_SCHEMAS, OrderStore, dispatch
 
-MAX_TOOL_ROUNDS = 6
+MAX_TOOL_ROUNDS = 6  # an attack that keeps the agent calling tools forever must still end
 
 
 def _get(item: Any, key: str) -> Any:
-    return item.get(key) if isinstance(item, dict) else getattr(item, key, None)
+    """Read a field from a Responses API item, whether the SDK gave us a dict or a model."""
+    if isinstance(item, dict):
+        return item.get(key)
+    return getattr(item, key, None)
 
 
-def _text(resp: Any) -> str:
-    for item in reversed(list(resp.output or [])):
-        if _get(item, "type") == "message":
-            parts = [_get(p, "text") or "" for p in (_get(item, "content") or []) if _get(p, "type") == "output_text"]
-            if parts:
-                return "".join(parts)
+def _text(response: Any) -> str:
+    """The text of the last `message` item in a response, or "" when the model only called tools."""
+    for item in reversed(list(response.output or [])):
+        if _get(item, "type") != "message":
+            continue
+        parts = [
+            _get(part, "text") or ""
+            for part in (_get(item, "content") or [])
+            if _get(part, "type") == "output_text"
+        ]
+        if parts:
+            return "".join(parts)
     return ""
 
 
 class RefundAgentTarget(AgentTarget):
-    """Target `agent/<key>` on orq, executing lookup_order / get_policy / issue_refund locally."""
+    """Target `agent/<key>` on orq, executing lookup_order / get_policy / issue_refund locally.
+
+    One instance is one conversation: a fresh OrderStore, an empty tool-call log and its own
+    `previous_response_id` chain. evaluatorq calls `new()` per attack to get a clean one.
+    """
 
     def __init__(self, agent_key: str, orq: Any | None = None, memory_entity_id: str | None = None) -> None:
         super().__init__(memory_entity_id)
@@ -59,14 +72,20 @@ class RefundAgentTarget(AgentTarget):
         self._previous_response_id: str | None = None
 
     def new(self) -> RefundAgentTarget:
+        """A clean conversation against the same agent, sharing the orq client."""
         return type(self)(self.agent_key, self.orq)
 
     async def get_agent_context(self) -> AgentContext:
+        """What the judge knows about the target: instructions, tools, model, and which variant it is."""
         variant = "vulnerable" if self.agent_key.endswith("vulnerable") else "fixed"
         instructions = (DATA_DIR / f"{variant}_instructions.md").read_text()
         tools = [
-            ToolInfo(name=s["function"]["name"], description=s["function"]["description"], parameters=s["function"]["parameters"])
-            for s in TOOL_SCHEMAS
+            ToolInfo(
+                name=schema["function"]["name"],
+                description=schema["function"]["description"],
+                parameters=schema["function"]["parameters"],
+            )
+            for schema in TOOL_SCHEMAS
         ]
         return AgentContext(
             key=self.agent_key,
@@ -80,31 +99,58 @@ class RefundAgentTarget(AgentTarget):
         )
 
     async def respond(self, messages: list[Message]) -> AgentResponse:
+        """Send the last user turn to the agent, run its tool loop, return text plus every tool call.
+
+        Only the last message is forwarded: earlier turns are already in the response chain on
+        the orq side (`previous_response_id`), so resending them would duplicate the history.
+        """
         if not messages or messages[-1].role != "user":
             raise ValueError("RefundAgentTarget forwards only the last user turn; messages[-1].role must be 'user'")
         content = messages[-1].content
-        text = content if isinstance(content, str) else " ".join(_get(p, "text") or "" for p in content)
-        resp = await self._create(text)
+        if isinstance(content, str):
+            text = content
+        else:
+            text = " ".join(_get(part, "text") or "" for part in content)
+        response = await self._create(text)
+
         items: list[Any] = []
         for _ in range(MAX_TOOL_ROUNDS):
-            calls = [o for o in (resp.output or []) if _get(o, "type") == "function_call"]
+            calls = [item for item in (response.output or []) if _get(item, "type") == "function_call"]
             if not calls:
                 break
             outputs = []
             for call in calls:
-                name, args = _get(call, "name"), json.loads(_get(call, "arguments") or "{}")
+                name = _get(call, "name")
+                args = json.loads(_get(call, "arguments") or "{}")
                 result = dispatch(self.store, name, args)
                 self.tool_calls.append(name)
-                items.append(ToolCallOutputItem(id=_get(call, "id") or "", call_id=_get(call, "call_id") or "", name=name, arguments=json.dumps(args), result=json.dumps(result)))
-                outputs.append({"type": "function_call_output", "call_id": _get(call, "call_id"), "output": json.dumps(result)})
-            resp = await self._create(outputs)
-        items.append(TextOutputItem(text=_text(resp)))
-        return AgentResponse(output=items, response_id=resp.id, model=getattr(resp, "model", None))
+                # The judge sees the tool call and its result as output items, so "did the agent
+                # actually issue a refund?" is answered from the record, not from the answer text.
+                items.append(
+                    ToolCallOutputItem(
+                        id=_get(call, "id") or "",
+                        call_id=_get(call, "call_id") or "",
+                        name=name,
+                        arguments=json.dumps(args),
+                        result=json.dumps(result),
+                    )
+                )
+                outputs.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": _get(call, "call_id"),
+                        "output": json.dumps(result),
+                    }
+                )
+            response = await self._create(outputs)
+        items.append(TextOutputItem(text=_text(response)))
+        return AgentResponse(output=items, response_id=response.id, model=getattr(response, "model", None))
 
     async def _create(self, input: Any) -> Any:
+        """One `responses.create` against `agent/<key>`, continuing the conversation's response chain."""
         kwargs: dict[str, Any] = {"model": f"agent/{self.agent_key}", "input": input}
         if self._previous_response_id:
             kwargs["previous_response_id"] = self._previous_response_id
-        resp = await asyncio.to_thread(self.orq.responses.create, **kwargs)
-        self._previous_response_id = resp.id
-        return resp
+        response = await asyncio.to_thread(self.orq.responses.create, **kwargs)
+        self._previous_response_id = response.id
+        return response
