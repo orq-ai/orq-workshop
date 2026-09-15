@@ -3,7 +3,11 @@
 !!! abstract "Factor 1: Natural language to tool calls, and Factor 8: Own your control flow"
     The model turns "refund ord_a2" into a `lookup_order` call. The gateway turns "the provider is down" into a fallback, without a line of app code. Both are structured decisions you can read in a trace.
 
-**Time:** 25 min · **Prereqs:** module 00 · **You will have:** fallbacks, retry, cache and load balancing on the refund agent, each visible as a span.
+| | |
+|---|---|
+| **Time** | 25 min |
+| **Prerequisites** | module 00 |
+| **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span. |
 
 ## Why
 
@@ -11,23 +15,23 @@ Most teams start with orq as a proxy: point the OpenAI SDK at `https://my.orq.ai
 
 ## The one concept to understand first
 
-Everything in this module is a field in `extra_body` ([retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing)). The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The native `orq_ai_sdk` exposes the same fields as arguments on `orq.router.chat.completions.create`.
+Everything in this module is a field in `extra_body` ([retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing)). The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The same fields work on `/chat/completions` and on `/responses`; the app uses the latter.
 
 ```python
-client.chat.completions.create(
-    model="openai/gpt-4.1",
-    messages=messages,
-    tools=TOOL_SCHEMAS,
+client.responses.create(
+    model="openai/gpt-5.6-sol",
+    instructions=INSTRUCTIONS, input=messages,
+    tools=RESPONSES_TOOLS, store=False,
     extra_body={
-        "timeout":   {"call_timeout": 900},
-        "fallbacks": [{"model": "openai/gpt-4.1-nano"}],
+        "timeout":   {"call_timeout": 1500},
+        "fallbacks": [{"model": "openai/gpt-5.4-nano"}],
         "retry":     {"count": 1, "on_codes": [429, 500, 502, 503, 504]},
         "cache":     {"type": "exact_match", "ttl": 600},
     },
 )
 ```
 
-![Diagram: the fallback chain as a sequence. The refund app sends chat.completions with timeout, fallbacks, retry and cache in extra_body; the gateway calls gpt-4.1, which times out after 1201 ms, records a span.fallback_selected, calls gpt-4.1-nano, which answers in 706 ms, and returns the response to the app. The same request again within the ttl is a cache hit with zero provider cost.](assets/fallback-chain.png)
+![Diagram: the fallback chain as a sequence. The refund app sends a Responses call with timeout, fallbacks, retry and cache in extra_body; the gateway calls gpt-5.6-sol, which times out after 1500 ms, retries once, records a span.fallback_selected, calls gpt-5.4-nano, which answers in about 1100 ms, and returns the response to the app. The same request again within the ttl is a cache hit with zero provider cost.](assets/fallback-chain.png)
 
 ## Steps
 
@@ -42,35 +46,52 @@ $ uv run python modules/01-gateway/run.py
 Expected output:
 
 ```text
-[1] plain          trace=4a15b55dcab1454bca91762831cf3113 tools=['lookup_order', 'get_policy', 'issue_refund']
+── Step 1 · A plain call ──────────────────────────────
+question : Refund ord_a2 please, the dock does not fit my laptop.
+answer   : Your refund of **€89** for order **ord_a2** has been issued to the original payment method. It shoul…
+tools    : lookup_order → get_policy → issue_refund
+trace    : c1ffc319ff931393bb52d3e50d24e7f6
+next     : search the trace id in https://my.orq.ai/traces; expect one model span per round of the tool loop
 ```
 
-In the Studio you find three traces, one per model call in the tool loop, each with cost and latency. Module 02 nests them under one agent span.
+`tools` is the order the model called them: it looked the order up, checked the policy, then issued the refund. In the Studio you find one span per model call in the tool loop (four here: three tool calls, then the answer), each with cost and latency. Module 02 nests them under one agent span.
 
 ### Step 2 · Force a fallback
 
 Fallbacks trigger on `429`, `500`, `502`, `503`, `504` and on a timeout. An unknown model id does not trigger them: that is a `404` returned before any provider is called. The reliable way to see a fallback in a workshop is a tight `call_timeout` on a slower primary model.
 
-Fill in `step_2_fallback`: primary `openai/gpt-4.1`, `timeout.call_timeout` of 900 ms, fallbacks `openai/gpt-4.1-nano` then your default model.
+Fill in `step_2_fallback`: primary `openai/gpt-5.6-sol`, `timeout.call_timeout` of 1500 ms, fallbacks `openai/gpt-5.4-nano` then your default model.
 
 ```text
-[2] fallback       trace=66ad033e869d1ecb681814c55e1379cd tools=['lookup_order', 'get_policy']
+── Step 2 · Force a fallback ──────────────────────────
+primary  : openai/gpt-5.6-sol, call_timeout 1500 ms, then gpt-5.4-nano, then openai/gpt-5.6-luna
+answer   : Your refund of €89 has been issued to the original payment method. It should arrive within 5–7 busin…
+tools    : lookup_order → get_policy → issue_refund
+trace    : c3340b63763b85dad14bb82b470e26b8
+next     : in the trace, expect chat gpt-5.6-sol (error, timeout) → retry → fallback gpt-5.4-nano → chat gpt-5.4-nano (ok)
 ```
 
 Open the trace. The spans read:
 
 ```text
-chat gpt-4.1          span.chat_completion   error   1201 ms
-chat gpt-4.1-nano     span.chat_completion   ok       706 ms
-fallback gpt-4.1-nano span.fallback_selected ok
+chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+retry gpt-5.6-sol          span.retry              ok
+chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+fallback gpt-5.4-nano      span.fallback_selected  ok
+chat openai/gpt-5.4-nano   span.responses          ok      1115 ms
 ```
 
-If the primary answered under 900 ms the fallback did not fire. Run it again or lower the timeout.
+Two failed attempts on the primary: the `retry` you asked for, then the fallback. If sol answered under 1500 ms the fallback did not fire; run it again or lower the timeout. Nano then finished the whole turn, refund included: it does not stop to confirm the way luna and sol do.
 
 ### Step 3 · Cache an identical request
 
 ```text
-[3] cache          first=5.02s second=1.07s trace2=25b524ffd24108a83bb835340962003c
+── Step 3 · Cache an identical request ────────────────
+question : What is your refund window?
+first    : 2.95s  trace ca1e8094619bf349048dd21fc324dfd2
+second   : 1.62s  trace a707450029628fa2abe716673a0b2fd8
+verdict  : second call served from cache
+next     : open the second trace; the cached span reports zero provider cost
 ```
 
 `exact_match` caches on the full request body, so the second run of the same question with the same tools and system prompt is served from cache. Look at the second trace: the cached span reports zero provider cost. The maximum `ttl` is 259200 seconds.
@@ -80,13 +101,17 @@ If the primary answered under 900 ms the fallback did not fire. Run it again or 
 `load_balancer` with `weight_based` sends each request to one of the listed models by weight. Four calls, four traces; each span carries the selected model.
 
 ```text
-[4] load balancer  4 traces, check orq.load_balancer.selected_model on each
+── Step 4 · Split traffic between two models ──────────
+models   : openai/gpt-5.6-luna (0.5), openai/gpt-5.6-terra (0.5)
+calls    : 4
+traces   : eb220618454f4093bbb3c6044d8a330b, 8d2bb7afd83f7009652ba27f74e5c562, 06e33d1d9e65f9727b701549165959c7, 7bd4463b4b0f897caa13ed9c4131b6a8
+next     : open each trace and read orq.load_balancer.selected_model on the model span
 ```
 
 ### Step 5 · The same thing from the CLI
 
-```bash
-$ orq chat create --model openai/gpt-4o-mini --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
+```console
+$ orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
 "Ok!"
 $ orq traces search --from 5m --to now -o json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
 ```
@@ -111,7 +136,7 @@ Paste `agent_prompt.md`:
 ## Gotchas
 
 - Every fallback attempt gets the same `call_timeout`. Total worst case is `timeout × (1 + fallbacks)`.
-- Reasoning models reject `tools` on `/chat/completions`. Keep the refund agent on a non-reasoning model or move to `/responses`.
+- GPT-5.x models reject `tools` on `/chat/completions` unless `reasoning_effort` is `"none"`. The app uses `/responses`, where tools just work; frameworks that still speak chat completions (the LangGraph stretch in module 02) set the flag.
 - `cache` keys on the exact request. A different `thread` or `metadata` value is a different cache key.
 - The load balancer picks per request. With two models and four calls you may see the same model four times.
 
@@ -124,7 +149,7 @@ Router error envelopes are consistent across providers, so the OpenAI SDK parses
 The native SDK exposes the same fields as arguments, no `extra_body`:
 
 ```python
-orq.router.chat.completions.create(model=..., messages=..., fallbacks=[{"model": "openai/gpt-4.1-nano"}])
+orq.router.chat.completions.create(model=..., messages=..., fallbacks=[{"model": "openai/gpt-5.4-nano"}])
 ```
 
 Pick one client per code base. Frameworks (LangGraph, Strands, CrewAI) already speak OpenAI, so for them the gateway URL is the integration.

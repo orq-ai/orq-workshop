@@ -51,11 +51,16 @@ $ uv run python modules/15-advisor-sidekick/run.py
 Expected output:
 
 ```text
-[1] ws-refund-agent-delegating v1.0.0 model=openai/gpt-5.6-luna   (base ws-refund-agent model=openai/gpt-5.6-luna)
-    advisor   model=openai/gpt-5.6-sol max_uses=2 max_transcript_tokens=4000
-    sidekick  model=openai/gpt-5.4-nano max_uses=2 output_format='Two sentences.'
-    instructions, last two rules: - Before refusing a post-window or above-limit request, ask the advisor whether ... / - After any refund decision, delegate writing the two-sentence customer-facing c...
+── Step 1 · Inspect the delegating agent ──────────────
+agent    : ws-refund-agent-delegating v1.0.6 model=openai/gpt-5.6-luna
+base     : ws-refund-agent model=openai/gpt-5.6-luna
+advisor  : model=openai/gpt-5.6-sol max_uses=2 max_transcript_tokens=4000
+sidekick : model=openai/gpt-5.4-nano max_uses=2 output_format='Two sentences.'
+rules    : - Before refusing a post-window or above-limit request, ask the advisor whether ... / - After any refund decision, delegate writing the two-sentence customer-facing c...
+next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools
 ```
+
+The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
 
 `make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three function tools, each with its model.
 
@@ -64,9 +69,14 @@ Expected output:
 `ord_a6` is a EUR 620 frame; the policy caps refunds at EUR 500. The instructions send the agent to the advisor before it refuses and to the sidekick for the closing note. The loop is module 08's: execute the `function_call` items that are yours, skip the ones with an `orq:*` sibling, continue with `previous_response_id`.
 
 ```text
-[2] tools=['lookup_order', 'get_policy'] delegated=['advisor', 'sidekick'] steps=3 13.0s
-    answer: Thanks for your patience—regarding order ID ord_a6, we’re not able to process an immediate refund because the order exceeds the applicable EUR 500 limit, and it
-    $ orq traces thread fe34340d30c79d47cd7b7996079c0be5
+── Step 2 · Run a refund the agent has to refuse ──────
+question : Refund ord_a6 please, the frame arrived scratched.
+tools    : lookup_order → get_policy
+delegate : advisor, sidekick
+steps    : 3 responses in 14.8s
+answer   : Hi! Thanks for sharing—because your order amount is EUR 620, which is above our EUR 500 threshold, i…
+trace    : 42c275433f70ab0f3cd46a2a6908a0a0
+next     : orq traces thread 42c275433f70ab0f3cd46a2a6908a0a0
 ```
 
 No `issue_refund` in the list: luna reads the EUR 620 off `lookup_order`, knows the limit from `get_policy`, and goes to the advisor before ever trying the tool. On gpt-4o-mini the same agent tried the refund first and let the tool's limit error send it to the advisor; a stronger base model moves the judgement earlier.
@@ -76,10 +86,14 @@ No `issue_refund` in the list: luna reads the EUR 620 off `lookup_order`, knows 
 Both tools show up twice in the output items: a `function_call` with the arguments the agent wrote, then an `orq:advisor` or `orq:sidekick` item with the result. The advisor's arguments are a question, and the platform adds the transcript; the sidekick's are the task and nothing else.
 
 ```text
-[3] orq:advisor   sent: 'Is refusing an immediate refund and routing this order to human review consistent with the fetched policy?'
-                  got:  '1. Yes. EUR 620 exceeds the EUR 500 single-refund limit, so routing the request to human review is consistent '
-[3] orq:sidekick  sent: 'Write a concise, exactly two-sentence customer-facing closing note. Mention the order ID, that immediate refun'
-                  got:  'Thanks for your patience—regarding order ID ord_a6, we’re not able to process an immediate refund because the '
+── Step 3 · Read what each tool sent and got back ─────
+tool     : orq:advisor
+sent     : 'Confirm whether refusing this refund and routing it to human review is consistent with the fetched p'
+got      : '1. Yes—routing the request to human review is consistent because EUR 620 exceeds the EUR 500 single-'
+tool     : orq:sidekick
+sent     : 'Write a concise, customer-facing closing note in exactly two sentences. Mention the order amount thr'
+got      : 'Hi! Thanks for sharing—because your order amount is EUR 620, which is above our EUR 500 threshold, i'
+next     : the advisor got the transcript too; the sidekick got only the task line above
 ```
 
 Read the advice again: the agent asked whether refusing and routing to human review is consistent with the policy, the advisor confirmed it point by point, and the sidekick wrote the closing note the agent then returned verbatim. The judgement went to the stronger model, the decision stayed with the agent.
@@ -89,17 +103,18 @@ Read the advice again: the agent asked whether refusing and routing to human rev
 Each secondary call goes through the AI Gateway on its own, so it appears as a nested span with its own cost: `advisor` (`span.tool`) > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`. Sum the agent's own `chat openai/gpt-5.6-luna` spans and compare.
 
 ```text
-[4] cost split over 3 traces, $0.00438 total
-    agent     gpt-5.6-luna   calls=5  $0.00092   21.1%
-    advisor   gpt-5.6-sol    calls=1  $0.00335   76.4%
-    sidekick  gpt-5.4-nano   calls=1  $0.00011    2.5%
-    $ orq traces get-span fe34340d30c79d47cd7b7996079c0be5 <span_id>   # any row above, or open the trace in the Studio
+── Step 4 · Read the cost split in the trace ──────────
+total    : $0.00530 over 3 traces
+    agent     gpt-5.6-luna   calls=5  $0.00092   17.3%
+    advisor   gpt-5.6-sol    calls=1  $0.00428   80.7%
+    sidekick  gpt-5.4-nano   calls=1  $0.00011    2.0%
+next     : orq traces get-span 42c275433f70ab0f3cd46a2a6908a0a0 <span_id> for any row above, or open the trace in the Studio
 ```
 
-One advisor call cost 3.6 times the agent's five calls together, three quarters of the turn. That is the number to argue about: is a correct escalation decision worth tripling the turn? Here, yes. For a question like "what is the refund window", no, and the instructions make sure the advisor is not asked.
+One advisor call cost more than four times the agent's five calls together, four fifths of the turn. That is the number to argue about: is a correct escalation decision worth quintupling the turn? Here, yes. For a question like "what is the refund window", no, and the instructions make sure the advisor is not asked.
 
 ```bash
-$ orq traces thread fe34340d30c79d47cd7b7996079c0be5
+$ orq traces thread 42c275433f70ab0f3cd46a2a6908a0a0
 ```
 
 Open the trace in the Studio: the `advisor` and `sidekick` spans sit under `agent.response`, with the `chat gpt-5.6-sol` and `chat gpt-5.4-nano` spans under them, each with its own cost.
@@ -109,9 +124,15 @@ Open the trace in the Studio: the `advisor` and `sidekick` spans sit under `agen
 A copy of the agent points its advisor at a model that does not exist. The turn does not fail: the `orq:advisor` item carries the error text, the advisor span stays `ok` with no chat span underneath, and the agent answers from its own model.
 
 ```text
-[5] ws-refund-agent-delegating-broken: tools=['lookup_order', 'get_policy'] answered=True
-    orq:advisor result: "advisor: secondary model request failed: Model 'openai/gpt-does-not-exist' not found or is not available."
-    trace 0fd5e6e06d2ceba11d2064b9601f1cf2: 1 advisor span(s), status=ok cost=$0.00000, no chat span underneath
+── Step 5 · When the secondary model fails ────────────
+created  : ws-refund-agent-delegating-broken
+agent    : ws-refund-agent-delegating-broken (advisor on openai/gpt-does-not-exist)
+tools    : lookup_order → get_policy
+answered : yes
+advisor  : "advisor: secondary model request failed: Model 'openai/gpt-does-not-exist' not found or is not avail"
+trace    : 61a6083e9f1989c97acdedccbdf52907: 1 advisor span(s), status=ok cost=$0.00000, no chat span underneath
+verdict  : the turn did not fail; the failure is in the orq:advisor item, not in the HTTP status
+next     : watch for it in the trace, not in genai.error_rate
 ```
 
 So a broken advisor degrades quality silently: the agent read "secondary model request failed" as advice and carried on. Watch for it in the trace, not in the HTTP status.

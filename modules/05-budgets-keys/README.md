@@ -61,9 +61,12 @@ $ orq api-keys create --example
 A key is either all-projects or single-project (`project_scope`), and either `PERMISSION_MODE_ALL`, `READ_ONLY` or `RESTRICTED` with a per-domain `access` map (`chat_completions`, `dataset`, `eval`, `agent`, ... at `ACCESS_LEVEL_READ` or `WRITE`). A CI runner that runs `make eval` needs to call models and read datasets and evaluators, nothing else. The solution asks for exactly that:
 
 ```text
-[1] api keys in workspace: 105 (list never returns a token)
-[1] created ws-ci-key id=01M21GBK0DT1BXZ8SHR0X8D9FY token=sk-orq-...yjB8 (kept in memory only)
-[1] stored  permission_mode=all project_scope={'mode': 'all'} family=workspace_jwt
+── Step 1 · A key for the CI runner ───────────────────
+existing : 114 api keys in the workspace (list never returns a token)
+created  : ws-ci-key id=01M2KN2VDP7M39J71WJJ0S08E3 token=sk-orq-…CHmM (kept in memory only)
+asked    : permission_mode=PERMISSION_MODE_RESTRICTED project_scope=single access=chat_completions:write, dataset:read, eval:read
+stored   : permission_mode=all project_scope={'mode': 'all'} access=None family=workspace_jwt
+next     : compare `asked` with `stored`; where the API kept `all`, the budget in step 3 is the real limit on this key
 ```
 
 The token is printed once by the API, held in memory for the run, and never logged. Read the `stored` line: on this workspace the API accepted `permission_mode`, `access` and `project_scope` but stored the key as `all`. See the gotchas. The budget in step 3 is what actually limits this key.
@@ -73,8 +76,11 @@ The token is printed once by the API, held in memory for the run, and never logg
 An identity is the customer the call is made for. Create it once, then tag every call with `X-ORQ-IDENTITY-ID` and traces group under it:
 
 ```text
-[2] identity exists 01M21F3FT4XNRRAWZGKYRV1H4K external_id=customer-user_001
-[2] tagged call 200 trace=cc1c430ed03cfba0a24d48f4b0534dc3  (orq identities list --search customer-user_001)
+── Step 2 · Identities ────────────────────────────────
+identity : customer-user_001 exists, id 01M21F3FT4XNRRAWZGKYRV1H4K
+call     : HTTP 200 through ws-ci-key with header X-ORQ-IDENTITY-ID: customer-user_001
+trace    : 4d04bf30d220aa8aa8f549d90ff3d6dc
+next     : orq identities list --search customer-user_001; in Traces, filter by identity customer-user_001
 ```
 
 ```console
@@ -89,12 +95,24 @@ Open Traces, filter by identity `customer-user_001`: the calls from this module 
 The identity budget allows 2 requests per minute and USD 5 per month. Three calls, tagged with the identity, through `ws-ci-key`:
 
 ```text
-[3a] identity budget 01M21GBP4ARB3G5VA343TEQSP9 match={'cel': 'identity == "customer-user_001"'} limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 5} rate_limit={'requestsPerMinute': 2}
-[3a] call 1: 200
-[3a] call 2: 200
-[3a] call 3: 429 {"message": "Rate limit exceeded. Maximum requests allowed per minute.", "type": "rate_limit_error", "param": null, "code": "requests_per_minute_exceeded", "scope_kind": "IDENTITY", "scope_target_id": "customer-user_001", "dimension": "requests"}
-     headers: {'x-ratelimit-limit': '2', 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '58s', 'retry-after': '58'}
-[3a] usage after: {'amount': 1.23e-05, 'tokens': 37, 'requests': 2}
+── Step 3a · Identity budget: the third call fails ────
+budget   : 01M2KN2X93C1596AZ6S0ZDRHZG (created) match={'cel': 'identity == "customer-user_001"'}
+limits   : {'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 5} rate_limit={'requestsPerMinute': 2}
+call 1   : HTTP 200
+call 2   : HTTP 200
+call 3   : HTTP 429, the budget error body:
+{
+  "message": "Rate limit exceeded. Maximum requests allowed per minute.",
+  "type": "rate_limit_error",
+  "param": null,
+  "code": "requests_per_minute_exceeded",
+  "scope_kind": "IDENTITY",
+  "scope_target_id": "customer-user_001",
+  "dimension": "requests"
+}
+headers  : {'x-ratelimit-limit': '2', 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '58s', 'retry-after': '58'}
+usage    : {'amount': 9.2e-06, 'tokens': 16, 'requests': 2}
+next     : switch on `code` (requests_per_minute_exceeded, cost_budget_exceeded, token_budget_exceeded); plain rate_limit_exceeded is the platform limit, not a budget
 ```
 
 The error body names the budget (`scope_kind`, `scope_target_id`) and the dimension. `code` is what your code should switch on: `requests_per_minute_exceeded`, `cost_budget_exceeded`, `token_budget_exceeded`. The plain `rate_limit_exceeded` is the platform limit, not a budget.
@@ -102,17 +120,23 @@ The error body names the budget (`scope_kind`, `scope_target_id`) and the dimens
 The second budget is a USD 1 monthly cost cap on the CI key. The response headers carry the key's remaining cost capacity:
 
 ```text
-[3b] api-key budget 01M21GBYEJ66T6VWZ18N2R9SMQ match={'cel': 'api_key == "01M21GBK0DT1BXZ8SHR0X8D9FY"'} limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 1}
-[3b] call with ws-ci-key: 200 cost headers={'x-ratelimit-limit-cost': '1', 'x-ratelimit-remaining-cost': '1', 'x-ratelimit-reset-cost': '1908191s'}
+── Step 3b · API key budget: a cost cap for CI ────────
+budget   : 01M2KN34G84MJ5ZN4FPX7VF2VH (created) match={'cel': 'api_key == "01M2KN2VDP7M39J71WJJ0S08E3"'}
+limits   : {'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 1}
+call     : HTTP 200 through ws-ci-key, no identity header
+headers  : {'x-ratelimit-limit-cost': '1', 'x-ratelimit-remaining-cost': '1', 'x-ratelimit-reset-cost': '1299257s'}
+next     : x-ratelimit-remaining-cost is what the key may still spend this month; on a 200 the other x-ratelimit headers show the platform limit
 ```
 
 ### Step 4 · Who may list budgets
 
 ```text
-[4] management key: 2 budgets
-     01M21GBYEJ66T6VWZ18N2R9SMQ scope=apiKey limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 1} rate_limit=None usage={'amount': 0, 'tokens': 0, 'requests': 0}
-     01M21GBP4ARB3G5VA343TEQSP9 scope=identity limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 5} rate_limit={'requestsPerMinute': 2} usage={'amount': 1.23e-05, 'tokens': 37, 'requests': 2}
-[4] normal key: APIDefaultError API error occurred: Status 403. Body: {"code":7,"message":"not authorized for this endpoint"}
+── Step 4 · Who may list budgets ──────────────────────
+mgmt key : 2 budgets
+         : 01M2KN34G84MJ5ZN4FPX7VF2VH scope=apiKey limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 1} rate_limit=None usage={'amount': 0, 'tokens': 0, 'requests': 0}
+         : 01M2KN2X93C1596AZ6S0ZDRHZG scope=identity limits={'period': 'BUDGET_PERIOD_MONTHLY', 'amount': 5} rate_limit={'requestsPerMinute': 2} usage={'amount': 1.84e-05, 'tokens': 32, 'requests': 2}
+api key  : APIDefaultError API error occurred: Status 403. Body: {"code":7,"message":"not authorized for this endpoint"}
+next     : ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list -o json works; with the .env key the same command is a 403
 ```
 
 The CLI reads `ORQ_API_KEY` from the environment when it is set, so the same contrast from the shell:
@@ -134,16 +158,16 @@ Error: error calling operation: HTTP 403:
 The run deletes what it made. The management key cannot delete itself, so the last step is one CLI command:
 
 ```text
-[5] delete budget 01M21GBP4ARB3G5VA343TEQSP9: 200
-[5] delete budget 01M21GBYEJ66T6VWZ18N2R9SMQ: 200
-[5] delete api key 01M21GBK0DT1BXZ8SHR0X8D9FY: 204
-[5] delete management key 01M21G4X19C4C5NWKGTSS7TX8D: 400 managementkeys: a management key cannot modify or delete itself
-    run: orq management-keys delete 01M21G4X19C4C5NWKGTSS7TX8D --force
-[5] then: unset ORQ_MANAGEMENT_KEY. `make reset` has nothing to do for this module.
+── Step 5 · Cleanup ───────────────────────────────────
+budget   : 01M2KN2X93C1596AZ6S0ZDRHZG deleted, HTTP 200
+budget   : 01M2KN34G84MJ5ZN4FPX7VF2VH deleted, HTTP 200
+api key  : 01M2KN2VDP7M39J71WJJ0S08E3 deleted, HTTP 204
+mgmt key : 01M2KN042GQQTW3DZJFYVGT8RT not deleted, HTTP 400 managementkeys: a management key cannot modify or delete itself
+next     : orq management-keys delete 01M2KN042GQQTW3DZJFYVGT8RT --force, then unset ORQ_MANAGEMENT_KEY. `make reset` has nothing to do for this module.
 ```
 
 ```console
-$ orq management-keys delete 01M21G4X19C4C5NWKGTSS7TX8D --force -o json
+$ orq management-keys delete 01M2KN042GQQTW3DZJFYVGT8RT --force -o json
 {}
 $ unset ORQ_MANAGEMENT_KEY
 ```

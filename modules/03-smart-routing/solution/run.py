@@ -7,10 +7,10 @@
 # |---|---|
 # | **Time** | 20 min |
 # | **Prerequisites** | module 01 |
-# | **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-4.1-nano` |
+# | **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano` |
 #
 # This file is both the solution script (`make m03`) and the notebook source (`make notebooks`).
-# Run the cells top to bottom; the last step disables and deletes what it created.
+# Run the cells top to bottom; step 3 disables and deletes what it created.
 
 # %%
 from __future__ import annotations
@@ -26,7 +26,20 @@ from app.refund_agent.entities import rules_api
 orq = make_orq()
 PROJECT_ID = "01a082d7-b8cc-7c86-bfe8-83f9cb47688b"  # orq-workshop; `orq projects list -o json` shows yours
 ROUTER_KEY = settings.key("refund-router")
-POOL = ["openai/gpt-5.6-luna", "openai/gpt-5.4-nano", "openai/gpt-5.6-terra", "openai/gpt-5.6-sol", "anthropic/claude-haiku-4-5-20251001"]
+POOL = [
+    "openai/gpt-5.6-luna",
+    "openai/gpt-5.4-nano",
+    "openai/gpt-5.6-terra",
+    "openai/gpt-5.6-sol",
+    "anthropic/claude-haiku-4-5-20251001",
+]
+COST_PROFILE = "SMART_ROUTER_PROFILE_COST"
+QUALITY_PROFILE = "SMART_ROUTER_PROFILE_QUALITY"
+RULE_TARGET = "openai/gpt-5.4-nano"
+RULE_PROPAGATION_SECONDS = 10  # a new or updated rule takes a few seconds to reach the gateway
+MODEL_SPAN_TYPES = ("span.chat_completion", "span.responses")  # chat completions vs Responses endpoint
+ROUTING_SPAN_TYPES = ("span.auto_router", "span.load_balancer")  # a smart router pick vs a rule redirect
+TRACES_URL = f"{settings.base_url}/traces"
 EASY = "What is your refund window? One sentence."
 HARD = (
     "I ordered ord_a5 70 days ago; the box arrived crushed but I only opened it now. Walk me through every "
@@ -35,29 +48,69 @@ HARD = (
 
 
 def spans(trace_id: str) -> list[dict[str, Any]]:
+    """Span summaries of one trace. Hides the wait: the gateway indexes a trace a few seconds after the call."""
     for _ in range(6):
         time.sleep(4)
-        data = orq.traces.list_spans(trace_id=trace_id).model_dump(by_alias=True)["data"]
-        if data:
-            return data
+        rows = orq.traces.list_spans(trace_id=trace_id).model_dump(by_alias=True)["data"]
+        if rows:
+            return rows
     return []
 
 
 def model_used(trace_id: str) -> tuple[str, float, bool]:
-    """(model, cost, routed) from the trace. `routed` is True when a router or rule span is present."""
+    """(model, cost, routed) read from the trace, not from the response. `routed` is True when a router or rule span is present."""
     rows = spans(trace_id)
-    llm = [s for s in rows if s["type"] in ("span.chat_completion", "span.responses")]
-    routed = any(s["type"] in ("span.auto_router", "span.load_balancer") for s in rows)
-    model = llm[-1]["model"] if llm else "?"
-    cost = sum((s.get("cost") or {}).get("total") or 0 for s in llm)
+    model_spans = [span for span in rows if span["type"] in MODEL_SPAN_TYPES]
+    routed = any(span["type"] in ROUTING_SPAN_TYPES for span in rows)
+    model = model_spans[-1]["model"] if model_spans else "?"
+    cost = sum((span.get("cost") or {}).get("total") or 0 for span in model_spans)
     return model, cost, routed
 
 
-def run_pair(label: str, model_ref: str) -> None:
-    for name, prompt in (("easy", EASY), ("hard", HARD)):
-        r = chat(prompt, model=model_ref)
-        model, cost, routed = model_used(r.trace_id)
-        print(f"    {name:4} -> {model:28} ${cost:.6f}  auto_router={routed}  trace={r.trace_id}")
+def run_pair(model_ref: str) -> None:
+    """Send the easy and the hard prompt to `model_ref` and print who answered each, read from the trace."""
+    for label, prompt in (("easy", EASY), ("hard", HARD)):
+        result = chat(prompt, model=model_ref)
+        model, cost, routed = model_used(result.trace_id)
+        print(f"{label:8} : {model:28} ${cost:.6f}  auto_router={routed}  trace={result.trace_id}")
+
+
+def ensure_router() -> dict[str, Any]:
+    """Find the router by key, or create it with the COST profile. Keys are unique per workspace, so find first."""
+    for router in orq.smart_routers.list(search=ROUTER_KEY, limit=50).model_dump(by_alias=True)["data"]:
+        if router["key"] == ROUTER_KEY:
+            return router
+    created = orq.smart_routers.create(key=ROUTER_KEY, models=POOL, profile=COST_PROFILE)
+    return created.model_dump(by_alias=True)["smart_router"]
+
+
+def normalize_rule(rule: dict[str, Any]) -> dict[str, Any]:
+    """Unwrap the create/update envelope and expose `id`: list items dump as `_id`, create and update responses as `id`."""
+    rule = rule.get("routing_rule", rule)
+    rule["id"] = rule.get("id") or rule.get("_id")
+    return rule
+
+
+def ensure_rule(display_name: str, project_id: str | None, cel: str) -> dict[str, Any]:
+    """Find the rule by name (re-enabling it with the given CEL), or create it. `project_id=None` means workspace-wide."""
+    # rules_api = the SDK call, or `orq request` when the key gets 403 (admin-only endpoint since 4.14.17)
+    scope = f"&project_id={project_id}" if project_id else ""
+    for rule in rules_api("GET", f"/v2/routing-rules?limit=50&search={display_name}{scope}").get("data") or []:
+        if rule["display_name"] == display_name:
+            rule_id = rule.get("_id") or rule["id"]
+            patch = {"enabled": True, "expression": {"cel": cel}}
+            return normalize_rule(rules_api("PATCH", f"/v2/routing-rules/{rule_id}", patch))
+    body: dict[str, Any] = {
+        "display_name": display_name,
+        "description": "workshop module 03: send cheap-tier traffic to gpt-5.4-nano",
+        "enabled": True,
+        "expression": {"cel": cel},
+        "models_config": {"mode": "weighted", "models": [{"model": RULE_TARGET, "weight": 1.0}]},
+        "priority": 50,
+    }
+    if project_id:
+        body["project_id"] = project_id
+    return normalize_rule(rules_api("POST", "/v2/routing-rules", body))
 
 # %% [markdown]
 # ## Step 1 · Create the router and watch it pick
@@ -71,18 +124,18 @@ def run_pair(label: str, model_ref: str) -> None:
 # `orq models list -o json | jq -r '.[] | select(.enabled) | .provider + "/" + .model_id'`.
 
 # %%
-def ensure_router() -> dict[str, Any]:
-    for r in orq.smart_routers.list(search=ROUTER_KEY, limit=50).model_dump(by_alias=True)["data"]:
-        if r["key"] == ROUTER_KEY:
-            return r
-    return orq.smart_routers.create(key=ROUTER_KEY, models=POOL, profile="SMART_ROUTER_PROFILE_COST").model_dump(by_alias=True)["smart_router"]
-
-
 router = ensure_router()
-if router["profile"] != "SMART_ROUTER_PROFILE_COST":
-    router = orq.smart_routers.update(smart_router_id=router["smart_router_id"], profile="SMART_ROUTER_PROFILE_COST").model_dump(by_alias=True)["smart_router"]
-print(f"[1] smart router   {router['model_ref']}  profile=COST  pool={router['models']}")
-run_pair("cost", router["model_ref"])
+if router["profile"] != COST_PROFILE:
+    # a previous run left it on QUALITY; start every run from the same profile
+    updated = orq.smart_routers.update(smart_router_id=router["smart_router_id"], profile=COST_PROFILE)
+    router = updated.model_dump(by_alias=True)["smart_router"]
+
+print("── Step 1 · Create the router and watch it pick ───────")
+print(f"router   : {router['model_ref']}")
+print(f"profile  : {router['profile']}")
+print(f"pool     : {', '.join(router['models'])}")
+run_pair(router["model_ref"])
+print("next     : open the hard trace; the span.auto_router span carries the band the request landed in")
 
 # %% [markdown]
 # Open the hard trace in the Studio: the router span carries the band the request landed in.
@@ -93,9 +146,14 @@ run_pair("cost", router["model_ref"])
 # move one band up; the hard one usually stays on the model the router already trusted.
 
 # %%
-router = orq.smart_routers.update(smart_router_id=router["smart_router_id"], profile="SMART_ROUTER_PROFILE_QUALITY").model_dump(by_alias=True)["smart_router"]
-print(f"[2] profile        {router['profile']}")
-run_pair("quality", router["model_ref"])
+updated = orq.smart_routers.update(smart_router_id=router["smart_router_id"], profile=QUALITY_PROFILE)
+router = updated.model_dump(by_alias=True)["smart_router"]
+
+print("── Step 2 · Switch the profile ────────────────────────")
+print(f"router   : {router['model_ref']} (same model_ref, the app did not change)")
+print(f"profile  : {router['profile']}")
+run_pair(router["model_ref"])
+print("next     : compare with step 1; the pick moves only when two pool models are close in band")
 
 # %% [markdown]
 # ## Step 3 · Pin traffic with a routing rule
@@ -111,56 +169,54 @@ run_pair("quality", router["model_ref"])
 # else sends, and deleted right after.
 
 # %%
-def ensure_rule(display_name: str, project_id: str | None, cel: str) -> dict[str, Any]:
-    # rules_api = the SDK call, or `orq request` when the key gets 403 (admin-only endpoint since 4.14.17)
-    scope = f"&project_id={project_id}" if project_id else ""
-    for r in rules_api("GET", f"/v2/routing-rules?limit=50&search={display_name}{scope}").get("data") or []:
-        if r["display_name"] == display_name:
-            rid = r.get("_id") or r["id"]
-            return _norm(rules_api("PATCH", f"/v2/routing-rules/{rid}", {"enabled": True, "expression": {"cel": cel}}))
-    body: dict[str, Any] = {
-        "display_name": display_name,
-        "description": "workshop module 03: send cheap-tier traffic to gpt-5.4-nano",
-        "enabled": True,
-        "expression": {"cel": cel},
-        "models_config": {"mode": "weighted", "models": [{"model": "openai/gpt-5.4-nano", "weight": 1.0}]},
-        "priority": 50,
-    }
-    if project_id:
-        body["project_id"] = project_id
-    return _norm(rules_api("POST", "/v2/routing-rules", body))
+project_cel = 'metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"'  # CEL reads metadata as a map: metadata.tier is rejected
+free_tier_body = {"metadata": {"tier": "free"}}
 
-
-def _norm(rule: dict[str, Any]) -> dict[str, Any]:
-    rule = rule.get("routing_rule", rule)
-    rule["id"] = rule.get("id") or rule.get("_id")
-    return rule
-
-
-cel = 'metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"'
-body = {"metadata": {"tier": "free"}}
-
-project_rule = ensure_rule(settings.key("route-mini-to-nano"), PROJECT_ID, cel)
-time.sleep(10)
-r = chat(EASY, extra_body=body)
-model, _, routed = model_used(r.trace_id)
-print(f"[3] project rule   {project_rule['id']} project={project_rule['project_id']} cel={cel}")
-print(f"    tier=free call -> {model:28} rule_fired={routed}  trace={r.trace_id}")
+project_rule = ensure_rule(settings.key("route-mini-to-nano"), PROJECT_ID, project_cel)
+time.sleep(RULE_PROPAGATION_SECONDS)
+result = chat(EASY, extra_body=free_tier_body)
+model, _, rule_fired = model_used(result.trace_id)
 rules_api("PATCH", f"/v2/routing-rules/{project_rule['id']}", {"enabled": False})
 
+print("── Step 3a · A project-scoped routing rule ────────────")
+print(f"rule     : {project_rule['id']} (project {project_rule['project_id']})")
+print(f"cel      : {project_cel}")
+print(f"target   : {RULE_TARGET}")
+print(f"call     : metadata tier=free, model {settings.model}")
+print(f"answered : {model}")
+print(f"trace    : {result.trace_id}")
+if rule_fired:
+    print(f"verdict  : rule fired: {model} answered a request that asked for {settings.model}")
+else:
+    print("verdict  : rule did not fire: a plain router call carries no project scope, so a project rule never sees it")
+print(f"disabled : {project_rule['id']} (kept in place for module 08)")
+
+# %% [markdown]
+# A workspace-wide rule gated on our own metadata key touches nobody else's traffic. One tagged
+# call and one untagged call show the rule matching on the tag alone; the rule is deleted right after.
+
 # %%
-# A workspace-wide rule gated on our own metadata key touches nobody else's traffic. Deleted below.
-cel_ws = 'metadata["ws_module"] == "03" && model == "openai/gpt-5.6-luna"'
-ws_rule = ensure_rule(settings.key("route-mini-to-nano-ws"), None, cel_ws)
-time.sleep(10)
-r_hit = chat(EASY, extra_body={"metadata": {"ws_module": "03"}})
-r_miss = chat(EASY, extra_body={"metadata": {"ws_module": "no"}})
-for label, rr in (("ws_module=03", r_hit), ("ws_module=no", r_miss)):
-    model, _, routed = model_used(rr.trace_id)
-    print(f"    workspace rule {ws_rule['id']} {label:13} -> {model:14} rule_fired={routed}  trace={rr.trace_id}")
-rules_api("PATCH", f"/v2/routing-rules/{ws_rule['id']}", {"enabled": False})
-rules_api("DELETE", f"/v2/routing-rules/{ws_rule['id']}")
-print(f"    disabled {project_rule['id']}, deleted {ws_rule['id']}")
+workspace_cel = 'metadata["ws_module"] == "03" && model == "openai/gpt-5.6-luna"'
+workspace_rule = ensure_rule(settings.key("route-mini-to-nano-ws"), None, workspace_cel)
+time.sleep(RULE_PROPAGATION_SECONDS)
+tagged = chat(EASY, extra_body={"metadata": {"ws_module": "03"}})
+untagged = chat(EASY, extra_body={"metadata": {"ws_module": "no"}})
+tagged_model, _, tagged_fired = model_used(tagged.trace_id)
+untagged_model, _, untagged_fired = model_used(untagged.trace_id)
+rules_api("PATCH", f"/v2/routing-rules/{workspace_rule['id']}", {"enabled": False})
+rules_api("DELETE", f"/v2/routing-rules/{workspace_rule['id']}")
+
+print("── Step 3b · A workspace-wide rule, gated on a tag ────")
+print(f"rule     : {workspace_rule['id']} (workspace-wide)")
+print(f"cel      : {workspace_cel}")
+print(f"tagged   : ws_module=03 → {tagged_model:14} rule_fired={tagged_fired}  trace={tagged.trace_id}")
+print(f"untagged : ws_module=no → {untagged_model:14} rule_fired={untagged_fired}  trace={untagged.trace_id}")
+if tagged_fired and not untagged_fired:
+    print(f"verdict  : rule fired on the tag alone: {tagged_model} answered a request that asked for {settings.model}")
+else:
+    print("verdict  : unexpected: check the rule in the Studio and rerun the cell")
+print(f"deleted  : {workspace_rule['id']}")
+print("next     : open the tagged trace; a span.load_balancer span records the rule's target")
 
 # %% [markdown]
 # The request asked for `gpt-5.6-luna`; a `span.load_balancer` span records the rule's target and
@@ -172,6 +228,7 @@ print(f"    disabled {project_rule['id']}, deleted {ws_rule['id']}")
 # bodies the SDK sends.
 
 # %%
-print("[4] CLI            orq smart-routers list -o json | jq '.data[] | {key, profile, models}'")
-print("                   orq request GET '/v2/routing-rules?project_id=" + PROJECT_ID + "' -o json | jq '.body.data[] | {_id, display_name, enabled, expression}'")
-print(f"open {settings.base_url}/traces and look for span.auto_router and span.load_balancer")
+print("── Step 4 · The same from the CLI ─────────────────────")
+print("routers  : orq smart-routers list -o json | jq '.data[] | {key, profile, models}'")
+print(f"rules    : orq request GET '/v2/routing-rules?project_id={PROJECT_ID}' -o json | jq '.body.data[] | {{_id, display_name, enabled, expression}}'")
+print(f"next     : open {TRACES_URL} and look for span.auto_router and span.load_balancer")

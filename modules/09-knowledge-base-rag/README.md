@@ -43,11 +43,15 @@ $ uv run python modules/09-knowledge-base-rag/run.py
 Expected output (solution, step 1):
 
 ```text
-[1] ws-refund-policy id=01M2K8Y4HRF33KBXZVMTQVM6KB model=openai/text-embedding-3-large retrieval={'retrieval_type': 'hybrid_search', 'top_k': 5, 'threshold': 0.0}
-    abuse_patterns.md            chunks=1 status=completed completed=1.0 failed=0.0 queued=0.0
-    post_window_exceptions.md    chunks=1 status=completed completed=1.0 failed=0.0 queued=0.0
-    refund_basics.md             chunks=1 status=completed completed=1.0 failed=0.0 queued=0.0
-    shipping_and_scope.md        chunks=1 status=completed completed=1.0 failed=0.0 queued=0.0
+── Step 1 · Inspect the seeded knowledge base ─────────
+kb       : ws-refund-policy (01M2K8Y4HRF33KBXZVMTQVM6KB)
+model    : openai/text-embedding-3-large
+settings : {'retrieval_type': 'hybrid_search', 'top_k': 5, 'threshold': 0.0}
+file     : abuse_patterns.md          chunks=1 status=completed completed=1 failed=0 queued=0
+file     : post_window_exceptions.md  chunks=1 status=completed completed=1 failed=0 queued=0
+file     : refund_basics.md           chunks=1 status=completed completed=1 failed=0 queued=0
+file     : shipping_and_scope.md      chunks=1 status=completed completed=1 failed=0 queued=0
+next     : open https://my.orq.ai > Knowledge Bases > ws-refund-policy > Retrieval playground and type the step 2 query
 ```
 
 One chunk per file: `chunk_size` 300 is in tokens, and each policy file is under 300 tokens. In the Studio open **Knowledge Bases** > `ws-refund-policy` > **Retrieval playground** and type the step 2 query; the same chunks and scores come back.
@@ -55,15 +59,17 @@ One chunk per file: `chunk_size` 300 is in tokens, and each policy file is under
 ### Step 2 · Three search modes, with and without a reranker
 
 ```text
-[2] ws-refund-policy (01M2K8Y4HRF33KBXZVMTQVM6KB):
-    hybrid_search   0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
-    vector_search   0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
-    keyword_search  1.000 # Refund basics | 0.501 # Abuse patterns
-    + rerank        {'search_score': 0.653556764125824} # Post-window except | {'search_score': 0.6187750101089478} # Shipping and scope | {'search_score': 0.6148313283920288} # Refund basics
-    (no rerank_score: no rerank model is enabled in this workspace, so the gateway skipped reranking)
+── Step 2 · Three search modes, with and without a reranker ──
+query    : opened electronics after 20 days, can I return?
+hybrid   : 0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
+vector   : 0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
+keyword  : 1.000 # Refund basics | 0.501 # Abuse patterns
+rerank   : {'search_score': 0.653556764125824} # Post-window except | {'search_score': 0.6187750101089478} # Shipping and scope | {'search_score': 0.6148313283920288} # Refund basics
+verdict  : no rerank_score: no rerank model is enabled in this workspace, so the gateway skipped reranking
+next     : the same search from the CLI: orq knowledge-bases search ws-refund-policy --query '...' --search-type keyword_search
 ```
 
-Read the first line: the seeded base is embedded with `openai/text-embedding-3-large`. That is deliberate. In September 2026 every vector or hybrid search on a base embedded with `openai/text-embedding-3-small` returned HTTP 500 in this workspace (keyword search worked), so `EMBEDDING_MODEL` defaults to the large model and the solution keeps a fallback: if the seeded base fails vector search, it re-embeds the same documents as `ws-refund-policy-large` and compares. Rerank has no score column because no rerank model is enabled here; enable one under **Models** and the `rerank_score` appears.
+Read step 1's `model` line: the seeded base is embedded with `openai/text-embedding-3-large`. That is deliberate. In September 2026 every vector or hybrid search on a base embedded with `openai/text-embedding-3-small` returned HTTP 500 in this workspace (keyword search worked), so `EMBEDDING_MODEL` defaults to the large model and the solution keeps a fallback: if the seeded base fails vector search, it re-embeds the same documents as `ws-refund-policy-large` and compares. Rerank has no score column because no rerank model is enabled here; enable one under **Models** and the `rerank_score` appears.
 
 The CLI does the same search:
 
@@ -84,10 +90,12 @@ Lumen Goods ships from a sin"}
 `orq.chunking.parse` is a pure function: text in, chunks out, nothing stored. Compare strategies before you rebuild a knowledge base.
 
 ```text
-[3] post_window_exceptions.md (1034 chars)
-    recursive  1 chunks; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
-    sentence   3 chunks; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
-    semantic   4 chunks; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
+── Step 3 · Chunking is the lever ─────────────────────
+file     : post_window_exceptions.md (1034 chars)
+chunks   : recursive 1; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
+chunks   : sentence  3; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
+chunks   : semantic  4; first='# Post-window exceptions\n\nRefunds outside the 30-day window '
+next     : nothing was stored; pick a strategy, then rebuild the datasource with it
 ```
 
 With one chunk per file, every search returns whole documents and the score is a document score. Sentence chunks (120 tokens) would let "tracking reference format" match the bullet that defines it instead of the whole exceptions page. `semantic` needs an `embedding_model` and splits on topic shifts.
@@ -97,9 +105,12 @@ With one chunk per file, every search returns whole documents and the score is a
 `chat(..., policy_fn=...)` swaps `get_policy`'s implementation without touching the tool schema. The model still calls `get_policy(topic)`; the function now searches the knowledge base for the topic and returns the chunks as `text`, `source: "kb"`.
 
 ```text
-[4] local agent, policy from KB: tools=['lookup_order', 'get_policy', 'get_policy'] trace=ac295d128969371c7159f9c9c424b670
-    answer: I’m sorry, but order ord_a3 is outside the 30-day refund window, and “changed my mind” isn’t an eligible exception. I’ve
-    the trace still shows only chat spans: knowledge.search is a separate API call, not a span in the gateway trace
+── Step 4 · The local agent reads policy from the KB ──
+question : Refund ord_a3 please, I changed my mind.
+answer   : I’m unable to refund ord_a3 because it was delivered more than 30 days ago, and “changed my mind” is…
+tools    : lookup_order → get_policy → get_policy
+trace    : 4af13fddf056e91f657f5b79f0e89e67
+next     : the trace shows only chat spans; knowledge.search is a separate API call, not a span in the gateway trace
 ```
 
 No retrieval span appears: the gateway traces the model calls it proxies, and `knowledge.search` is a separate API call. To see retrieval inside the trace, either instrument it yourself (module 02, `TRACING=otel`) or let orq run it (steps 5c and 6).
@@ -109,24 +120,40 @@ No retrieval span appears: the gateway traces the model calls it proxies, and `k
 Three ways to put policy in front of the model without a tool round-trip.
 
 ```text
-[5a] gateway orq.knowledge_bases: prompt_tokens=25 trace=fac56d241f2655441d2d7d5e69a0d0e2
-     'Which retailer’s policy should I check? Return rules vary by store, and I’ll need the retailer name '
-[5b] pre-fetched in code:          prompt_tokens=591 trace=e62b5635628a38135fb84744f414f3f1
-     'Yes, potentially. Opening the electronics does not by itself prevent a refund, but the order must meet all of these requirements:\n\n> “The customer is the regist'
-[5c] agent/ws-refund-agent: prompt_tokens=902 trace=5e10857b2d352ba8d17ef66d9acfd865
-     output items: ['reasoning', 'function_call']
-     ''
+── Step 5a · Gateway-side retrieval (orq.knowledge_bases) ──
+question : I opened my electronics 20 days ago, can I still return them? Quote the policy.
+tokens   : prompt_tokens=25
+answer   : 'Which retailer’s policy should I check? Please provide the store/website and your country or region—'
+trace    : 97d2e8fdaabb0bf095bde649c5f38406
+next     : compare prompt_tokens with 5b; a count this low means no policy text was injected
+── Step 5b · Pre-fetched in code ──────────────────────
+question : I opened my electronics 20 days ago, can I still return them? Quote the policy.
+tokens   : prompt_tokens=591
+answer   : 'Yes—if the order was delivered 20 days ago, it is within the 30-day refund window. The policy states:\n\n> “A customer is entitled to a refund on an order when al'
+trace    : 8fd6c17f2911cc896242ca8d4a880a38
+next     : the difference in prompt_tokens is the policy text; that is Factor 13 in five lines
+── Step 5c · The managed agent searches its own KB ────
+agent    : agent/ws-refund-agent
+question : Can I return an item that was damaged in transit 45 days after delivery? What evidence do you need?
+tokens   : input_tokens=902
+items    : reasoning → message
+answer   : 'Please provide your order ID so I can check it. For a damage claim 45 days after delivery, you’ll need verifiable evidence such as the tracking reference and cl'
+trace    : 43b5633b1e3c9e93c61b1570410a18f2
+next     : the orq:query_knowledge_base item is the retrieval; open the trace to see it as a span
 ```
 
-- 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 26 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
-- 5b is five lines of code and works everywhere: search, then a system message. 592 prompt tokens, an answer that quotes the policy.
+- 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 25 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
+- 5b is five lines of code and works everywhere: search, then a system message. 591 prompt tokens, an answer that quotes the policy.
 - 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `ws-refund-agent-rag` is a copy of the refund agent with those tools instead of `get_policy`; the `orq:query_knowledge_base` output item carries the query the agent wrote, the chunk, the file name and the score. The seeded `ws-refund-agent` has the knowledge base attached but not the tools, so it never searches it.
 
 ### Step 6 · Agentic RAG
 
 ```text
-[6] agentic_rag_config: 3 matches, response keys are still just 'matches' (the refined query is not exposed)
-    0.544 # Shipping and scope | 0.543 # Post-window exceptions | 0.537 # Abuse patterns
+── Step 6 · Agentic RAG ───────────────────────────────
+query    : my thing broke, what now
+matches  : 3
+ranking  : 0.544 # Shipping and scope | 0.543 # Post-window exceptions | 0.537 # Abuse patterns
+next     : the response keys are still just 'matches'; the refined query is not exposed by the API
 ```
 
 `agentic_rag_config={"model": ...}` on a search lets a model rewrite a vague query ("my thing broke, what now") before retrieval and grade the results. The response shape does not change, so the rewritten query is not visible here; the Studio knowledge base settings expose the same toggle with a grading strictness.

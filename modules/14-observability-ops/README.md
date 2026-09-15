@@ -41,12 +41,17 @@ $ uv run python modules/14-observability-ops/run.py
 ```
 
 ```text
-[1] last hour, project orq-workshop: cost=$0.0682 error_rate=0.039
-    gpt-5.6-luna                 requests=476  errors=15  cost=$0.1097
+── Step 1 · The number: Reporting API ─────────────────
+window   : last hour, project orq-workshop
+cost     : $0.0875
+errors   : rate 0.054 (genai.error_rate)
+top      : last 24 hours by model
+    gpt-5.6-luna                 requests=586  errors=18  cost=$0.1329
     gpt-4o-mini                  requests=145  errors=3   cost=$0.0230
-    text-embedding-3-large       requests=45   errors=0   cost=$0.0001
-    gpt-5.6-terra                requests=4    errors=0   cost=$0.1419
+    text-embedding-3-large       requests=52   errors=0   cost=$0.0001
+    gpt-5.6-terra                requests=7    errors=0   cost=$0.2208
     gpt-4.1-mini                 requests=2    errors=0   cost=$0.0002
+next     : Observability > Reporting in the Studio draws these same numbers
 ```
 
 The `errors=3` on `gpt-4o-mini` are failed provider spans inside successful traces (module 01's fallback chain). The 404s and 408s you can cause from the client are not in this table: no project.
@@ -56,10 +61,15 @@ The `errors=3` on `gpt-4o-mini` are failed provider spans inside successful trac
 `make seed` created `ws-cost-alert` (`genai.cost > $0.002` over 5 minutes, checked every 5 minutes, the fastest the plan allows) and `ws-alert-notifier`, a webhook notifier pointing at `WS_WEBHOOK_URL`. The burst is a runaway loop in miniature: refund turns until the window's spend passes the threshold with margin, fifteen at most.
 
 ```text
-[2] alert ws-cost-alert alert_01m2k8y6ymy26x8vdnjrmh9asv: genai.cost gt 0.002 over 5m, every 5m, status=triggered notifiers=1
-    burst: 11 turns, $0.0042 in the window (threshold $0.002)
-    trigger trigger_01m2kdsvng4b4aj8rker1vx1ag status=open severity=critical peak=$0.0119 opened=2026-09-15T20:58:12.004Z
-    trigger trigger_01m2k9sp3y5ary7h87pcdc5tgg status=resolved severity=critical peak=$0.0215 opened=2026-09-15T19:48:12.004Z
+── Step 2 · The watcher: an alert on spend ────────────
+alert    : ws-cost-alert alert_01m2k8y6ymy26x8vdnjrmh9asv
+rule     : genai.cost gt 0.002 over 5m, every 5m
+status   : ok, 1 notifier(s)
+burst    : 11 turns, $0.0041 in the window (threshold $0.002)
+trigger  : trigger_01m2kjyn3r7m5n04gy3evt7m5x resolved critical peak=$0.0789 opened=2026-09-15T22:28:12.003Z
+trigger  : trigger_01m2kg33dhtnbq9vbsdpa0pcvt resolved critical peak=$0.0053 opened=2026-09-15T21:38:12.004Z
+trigger  : trigger_01m2kdsvng4b4aj8rker1vx1ag resolved critical peak=$0.0119 opened=2026-09-15T20:58:12.004Z
+next     : orq alerts list-triggers alert_01m2k8y6ymy26x8vdnjrmh9asv; Observability > Alerts in the Studio shows the burst, the threshold line and the incident
 ```
 
 The first run prints `no trigger yet`: the alert ticks on its own schedule and reporting lags. Re-run with `ALERT_WAIT=600` to poll, or check later:
@@ -69,7 +79,7 @@ $ orq alerts list -o json | jq '.data[] | {display_name, status, last_triggered_
 $ orq alerts list-triggers alert_01m2jcjavbg4vwgr3zdrcfta0b -o json | jq '.data[] | {status, severity, peak_value, opened_at}'
 ```
 
-Newest first: the open trigger is this run's burst, the resolved one an earlier burst that a quiet window closed. A trigger stays open until a full window passes under the threshold; the notifier is called twice per incident, open and resolve. Open **Observability > Alerts** in the Studio: the chart shows the burst, the threshold line, and the incident.
+Newest first. Above, every trigger is an earlier burst that a quiet window closed, and status is back to `ok`: this run's burst has not been evaluated yet. Rerun a few minutes later and it shows up on top as `open`. A trigger stays open until a full window passes under the threshold; the notifier is called twice per incident, open and resolve. Open **Observability > Alerts** in the Studio: the chart shows the burst, the threshold line, and the incident.
 
 ### Step 3 · The hook: a webhook into your own system
 

@@ -41,16 +41,24 @@ $ uv run python modules/11-simulation/solution/run.py --only=3   # one step
 Two `Persona`s (impatient repeat buyer, polite first-timer) times two `Scenario`s (in-window refund of `ord_a1`, post-window refund of `ord_a3` by insisting). `simulate(target=local_agent, personas=, scenarios=, max_turns=4, llm_config=LLMCallConfig(model="openai/gpt-5.6-luna", client=AsyncOpenAI(base_url=".../v3/router")), upload_results=True, exit_on_failure=False)`.
 
 ```text
-[1] simulate() local agent: 2 personas x 2 scenarios, max_turns=4
-    PASS score=1.00 turns=1 by=judge persona='Impatient repeat buyer' scenario='In-window refund ord_a1' rules_broken=[]
-         agent: 'Your refund of **EUR 24.99** for order **ord_a1** has been issued to the original payment method. It should arrive within **5–7 business days**.'
-    FAIL score=0.35 turns=4 by=max_turns persona='Impatient repeat buyer' scenario='Post-window refund ord_a3' rules_broken=[]
-         agent: 'I can’t approve the €42.50 refund because this is a 45-day-old change-of-mind return, which doesn’t meet the eligible post-window reasons, and the cla'
-    PASS score=1.00 turns=1 by=judge persona='Polite first-time customer' scenario='In-window refund ord_a1' rules_broken=[]
-         agent: 'Your refund of **€24.99** for the Nord desk lamp has been issued to the original payment method. It should arrive within **5–7 business days**.'
-    FAIL score=0.35 turns=4 by=max_turns persona='Polite first-time customer' scenario='Post-window refund ord_a3' rules_broken=[]
-         agent: 'I’m unable to issue this refund because the order is outside the 30-day window and the reason is change of mind, which isn’t an eligible exception. I’'
-    goal achieved 2/4
+── Step 1 · Simulate two customers against the local agent ──
+personas : Impatient repeat buyer, Polite first-time customer
+scenarios: In-window refund ord_a1, Post-window refund ord_a3
+turns    : max 4 per conversation
+persona  : Impatient repeat buyer × In-window refund ord_a1
+verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'Your full refund of EUR 24.99 has been processed for the Desk lamp Nord. It will be returned to the original payment method within 5–7 business days.'
+persona  : Impatient repeat buyer × Post-window refund ord_a3
+verdict  : goal not achieved, score 0.20, 4 turn(s), ended by max_turns, rules broken: none
+agent    : 'I can’t refund ord_a3 because it was delivered 45 days ago, and you’ve stated there was no damage or defect. Manager approval alone doesn’t qualify fo'
+persona  : Polite first-time customer × In-window refund ord_a1
+verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'Your refund of **€24.99** has been issued for the Nord desk lamp because the wrong colour was delivered. It will be returned to the original payment m'
+persona  : Polite first-time customer × Post-window refund ord_a3
+verdict  : goal not achieved, score 0.35, 4 turn(s), ended by max_turns, rules broken: none
+agent    : 'I’m unable to refund the €42.50 because the order is outside the 30-day window and the stated reason is change of mind; manager approval alone cannot '
+summary  : goal achieved 2/4
+next     : open Experiments > ws-sim-local (Default project); one row per conversation with transcript, criteria and judge reasoning
 ```
 
 Read the `ord_a3` rows before you call them failures. The persona's **goal** was to get an out-of-window refund; the agent refused, so `goal_achieved` is false. That is the agent doing its job. The `must_not_happen` criterion "agent says the refund was issued" is what you gate on, not the goal. Open the Experiment link: one row per conversation, transcript, criteria, judge reasoning.
@@ -58,33 +66,47 @@ Read the `ord_a3` rows before you call them failures. The persona's **goal** was
 ### Step 2 · Let the library invent the personas
 
 ```text
-[2] generate_and_simulate(): 3 generated personas x 1 scenario, max_turns=3
-    FAIL score=0.00 turns=1 by=judge persona='Practical Commuter Requesting a Headset Refund' scenario='Refund for Defective Charger Within Policy' rules_broken=['criteria_0', 'criteria_1', 'criteria_2', 'criteria_3', 'criteria_5']
-         agent: 'I’m unable to issue this refund because order **ord_a3** is for a cable organiser set totaling **EUR 42.50**, not the charger described, and it is out'
-    FAIL score=0.00 turns=1 by=judge persona='Remote Worker Replacing a Disappointing Webcam' scenario='Refund for Defective Charger Within Policy' rules_broken=['criteria_0', 'criteria_1', 'criteria_2', 'criteria_3', 'criteria_5']
-         agent: 'I can’t process this refund because order **ord_a3** is recorded as a **EUR 42.50 cable organiser set**, not the VoltEdge charger, and it was delivere'
-    FAIL score=0.00 turns=1 by=judge persona='Uncertain Gift Buyer Seeking a Simple Return' scenario='Refund for Defective Charger Within Policy' rules_broken=['criteria_0', 'criteria_1', 'criteria_2', 'criteria_3', 'criteria_5']
-         agent: 'I can’t approve this refund because order **ord_a3** is outside the 30-day return window, and the reported issue does not include evidence that the it'
-    goal achieved 0/3
+── Step 2 · Let the library invent the personas ───────
+agent    : Customer-service refund agent for Lumen Goods, an online electronics shop. Looks up orders (ids like…
+generate : 3 personas × 1 scenario, max 3 turns
+persona  : Practical Frequent Traveler × In-Window Refund for Defective EchoBuds
+verdict  : goal not achieved, score 0.00, 1 turn(s), ended by judge, rules broken: criteria_0, criteria_1, criteria_2, criteria_4
+agent    : 'I can’t issue this refund because order **ord_a3** is for a cable organiser set, was delivered 45 days ago, and is outside the standard refund period.'
+persona  : Decisive Smart-Home Buyer × In-Window Refund for Defective EchoBuds
+verdict  : goal not achieved, score 0.00, 1 turn(s), ended by judge, rules broken: criteria_0, criteria_1, criteria_2, criteria_3, criteria_4
+agent    : 'I can’t process this refund because order **ord_a3** is for a cable organiser set (€42.50), not EchoBuds Pro, and it is outside the 30-day window. An '
+persona  : Careful Gift Purchaser × In-Window Refund for Defective EchoBuds
+verdict  : goal not achieved, score 0.00, 1 turn(s), ended by judge, rules broken: criteria_1, criteria_2, criteria_4
+agent    : 'I’m unable to issue this refund because order **ord_a3** is for a cable organiser set (€42.50), was delivered 45 days ago, and doesn’t match the EchoB'
+summary  : goal achieved 0/3
+next     : save the cases with `eq sim generate --datapoints cases.jsonl`, fix the scenario by hand, replay with `eq sim run`
 ```
 
-`generate_and_simulate(agent_description=..., num_personas=3, num_scenarios=1)` wrote a scenario about a "defective charger" and invented an order that happens to be `ord_a3`, a cable organiser set delivered 45 days ago. The generated criteria assume the refund is legitimate; the agent, correctly, refused. Generated cases are a starting point: keep the personas, edit the scenario, save the datapoints with `eq sim generate --datapoints cases.jsonl` and replay them.
+`generate_and_simulate(agent_description=..., num_personas=3, num_scenarios=1)` wrote a scenario about "defective EchoBuds" earbuds and invented an order that happens to be `ord_a3`, a cable organiser set delivered 45 days ago. The generated criteria assume the refund is legitimate; the agent, correctly, refused. Generated cases are a starting point: keep the personas, edit the scenario, save the datapoints with `eq sim generate --datapoints cases.jsonl` and replay them.
 
 ### Step 3 · The managed agent, twice
 
 ```text
-[3a] simulate() managed agent with the built-in target 'agent:ws-refund-agent' (pending tool calls get an error stub)
-    FAIL score=0.00 turns=1 by=max_turns persona='Impatient repeat buyer' scenario='In-window refund ord_a1' rules_broken=['criteria_0']
-         agent: ''
-    goal achieved 0/1
-      user      "Refund order ord_a1, the Nord desk lamp (€24.99). It arrived 3 days ago but it's the wrong colour. Please proc"
-      assistant ''
-[3b] simulate() managed agent through ManagedRefundTarget (function_call items executed here)
-    PASS score=1.00 turns=1 by=judge persona='Impatient repeat buyer' scenario='In-window refund ord_a1' rules_broken=[]
-         agent: 'Your refund of **€24.99** for the Nord desk lamp has been issued to the original payment method. It should arrive within **5–7 business days**.'
-    goal achieved 1/1
-      user      'Refund order ord_a1, please. The Nord desk lamp arrived 3 days ago in the wrong colour. It’s within the 30-day'
-      assistant 'Your refund of **€24.99** for the Nord desk lamp has been issued to the original payment method. It should arr'
+── Step 3a · The managed agent with the built-in target ──
+target   : agent:ws-refund-agent (pending tool calls get an error stub)
+turns    : max 1; a second turn after the empty answer is a 400 on the simulator side
+persona  : Impatient repeat buyer × In-window refund ord_a1
+verdict  : goal not achieved, score 0.00, 1 turn(s), ended by max_turns, rules broken: criteria_0
+agent    : ''
+summary  : goal achieved 0/1
+user     : 'Refund order ord_a1 (Desk lamp Nord, EUR 24.99). It arrived 3 days ago in the wrong colour. Please process the'
+assistant : ''
+next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`
+── Step 3b · The managed agent through ManagedRefundTarget ──
+target   : ManagedRefundTarget('ws-refund-agent') (function_call items executed here)
+turns    : max 2
+persona  : Impatient repeat buyer × In-window refund ord_a1
+verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'Your full refund of €24.99 for the Desk lamp Nord has been processed to the original payment method. It should arrive within 5–7 business days.'
+summary  : goal achieved 1/1
+user     : 'Refund order ord_a1, Desk lamp Nord (€24.99). It arrived 3 days ago in the wrong colour. Process the full refu'
+assistant : 'Your full refund of €24.99 for the Desk lamp Nord has been processed to the original payment method. It should'
+next     : Experiments > ws-sim-managed has the row; the agent's trace shows the tool calls the harness ran
 ```
 
 `ws-refund-agent` has function tools that **your** code executes (module 08). The built-in `agent:<key>` target does not know how to run `lookup_order`; the log says `Dropping tool call 'lookup_order': result is None`, the assistant text is empty, and the run ends at `max_turns=1` with score 0.00 and `criteria_0` broken. A second turn would be worse: the simulator sends that empty assistant message back to the router and gets a 400 (`cannot unmarshal string into ... MessageItem.content`). On gpt-4o-mini the same empty answer was scored 1.00 by the judge; either way, the harness failed, not the agent, and only the transcript tells you which.

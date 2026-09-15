@@ -45,14 +45,22 @@ $ uv run python modules/02-tracing/run.py
 Expected output (first block):
 
 ```text
-[1] zero-code      trace=6d56828205da8bb37663f82490200e33 tools=['lookup_order', 'get_policy']
-    470bbd53dd82b4c8cb5f632adb2a6d91  responses.openai ok      1623 ms  $0.000198
-    e5b46f628ee1ad93a6d01c6c90e6130d  responses.orq-research@orq ok      1517 ms  $0.000179
-    91f143a265851d2910348d3e1eeaed65  pii restore      unset       0 ms  $0.000000
-    ecdc58efac65f587d7f5287f1965f0ba  pii redact       unset      54 ms  $0.000000
+── Step 1 · The traces you already have ───────────────
+question : Refund ord_a2 please, the dock does not fit my laptop.
+answer   : Your refund of **€89.00** for order **ord_a2** has been issued to the original payment method. Pleas…
+tools    : lookup_order → get_policy → issue_refund
+trace    : 610d07561cb9a9ef8668fc0fc6805783
+recent   : the last 5 traces of the workspace, one per gateway call
+    7cd1b5c0c1566726a56e240f9aa5ab94  responses.openai ok      2134 ms  $0.000265
+    0e4651ec7e1f45fe80b7cf8b6c326b77  responses.openai ok      1379 ms  $0.000201
+    3d96282c5b60dd9ce87efcebc5473351  responses.openai ok      1767 ms  $0.000212
+    6cdc5dd1b1d4e30375cd0a4e620dd8ec  responses.openai ok      5509 ms  $0.022867
+    9f530706a4d69dd3eb187aabef9c88ed  responses.openai ok      3396 ms  $0.006166
+cli      : orq traces search --from now-10m --to now -o json | jq '.data[] | {trace_id, name}'
+next     : open https://my.orq.ai/traces; every gateway call is its own trace, named after the endpoint
 ```
 
-Every gateway call is a trace named after its endpoint, `responses.openai` here (`chat.openai` for chat completions, `responses.<workspace>@orq` for a smart router; the `pii *` rows are module 04's plugin from an earlier run). A turn with two tool calls is three traces. The same list from the CLI, and one trace rendered as a conversation:
+Every gateway call is a trace named after its endpoint, `responses.openai` here (`chat.openai` for chat completions, `responses.<workspace>@orq` for a smart router; rows from other modules, such as 04's `pii *` plugin spans, show up too if they ran recently). A turn with two tool calls is three traces. The same list from the CLI, and one trace rendered as a conversation:
 
 ```console
 $ set -a; source .env; set +a          # the CLI otherwise searches the project of your `orq` session
@@ -84,11 +92,14 @@ It was damaged in transit. Please refund it.
 Fill `step_2_thread`: put `name`, `identity`, `thread` and `metadata` in `extra_body`, call `chat()` twice with the same thread id and the first turn's `messages` as history, then search by `thread_id`.
 
 ```text
-[2] thread         id=ws-thread-9a2d79c4
-    turn 1 trace=14e3eaa42eaf74afb9501aa0817395b5 tools=['lookup_order', 'get_policy', 'get_policy']
-    turn 2 trace=6d3815f83d19c502ea7bef614d67bc8a tools=[]
-    search thread_id=ws-thread-9a2d79c4 -> 4 traces: ['6d3815f83d19c502ea7bef614d67bc8a', '14e3eaa42eaf74afb9501aa0817395b5', 'b86261f809268f38f2a40e49323e5b34', 'a6f1c0edd571fd176540dc91d7555225']
-    turn 2: name=refund-turn identity_id=customer-user_001 thread_id=ws-thread-9a2d79c4
+── Step 2 · Name, identity, thread, metadata ──────────
+thread   : ws-thread-21c5900e
+turn 1   : 5824e4d8a05994578ae60bc187cb42ac  tools lookup_order → get_policy → get_policy
+turn 2   : 8d56a5496ab66fa63a806ded661c989c  tools (none)
+search   : thread_id=ws-thread-21c5900e → 4 traces: 8d56a5496ab66fa63a806ded661c989c, 5824e4d8a05994578ae60bc187cb42ac, fa4160a67177e03c1dbe2367b5954aff, 9ff5f82d43e0d356539ef797775136d8
+fields   : name=refund-turn identity_id=customer-user_001 thread_id=ws-thread-21c5900e
+cli      : orq traces thread 8d56a5496ab66fa63a806ded661c989c
+next     : in https://my.orq.ai/traces filter on Thread ID ws-thread-21c5900e; every model call of the conversation lines up
 ```
 
 Four traces, one conversation: turn 1 made three model calls, turn 2 made one. In the Studio, open **Traces**, filter on Thread ID, and the four line up. The same filters work on `identity_id`, `metadata.tier` and `name`:
@@ -103,16 +114,25 @@ $ orq traces search --from now-15m --to now --filters '[{"field":"thread_id","op
 Set `TRACING=otel` in `.env`, or call `tracing.setup_otel(force=True)` as the solution does (a shell export loses to `.env`). Fill `step_3_otel`: decorate `refund_turn` with `@traced(type="agent", name="refund_turn")` and wrap each tool dispatch in `@traced(type="tool", name=name)`. `run_turn` already sends the `traceparent` of the active span. `app/` does not change: the solution replaces `agent.dispatch` at runtime.
 
 ```text
-[3] otel + @traced trace=4f3e9ca40c2e175bdf1be2befd29f4be tools=['lookup_order', 'get_policy']
-    root    trace                  refund_turn                  unset                        b60522d48d5e13d4
-      child trace                  responses.openai             ok    gpt-5.6-luna           fc1c5efc49a7f578
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           2ba6e64002d55cbd
-      child span.agent_tool_execution lookup_order                 ok                           2f66d5d27db75cbf
-      child trace                  responses.openai             ok    gpt-5.6-luna           022e8c794385197a
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           4a0a9a9ff08b2f51
-      child span.agent_tool_execution get_policy                   ok                           283e901bc5434e61
-      child trace                  responses.openai             ok    gpt-5.6-luna           ff4603cb59c59ff6
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           21458579ad8b5d0b
+── Step 3 · One trace per turn with @traced ───────────
+question : Refund ord_a2 please, the dock does not fit my laptop.
+answer   : Your refund of **€89** for order **ord_a2** has been issued to the original payment method. It shoul…
+tools    : lookup_order → get_policy → issue_refund
+trace    : cb2289e8eae4e587f8bba591734cc831
+spans    : oldest first
+    root    trace                  refund_turn                  unset                        d712fd0358d4ce02
+      child trace                  responses.openai             ok    gpt-5.6-luna           62e90468d43efc07
+      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           2b324819ba24c84a
+      child span.agent_tool_execution lookup_order                 ok                           fdafc7009ecb1664
+      child trace                  responses.openai             ok    gpt-5.6-luna           b9fa333d5c611a13
+      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           882e2e37d59f5692
+      child span.agent_tool_execution get_policy                   ok                           2970e7a2aecf9061
+      child trace                  responses.openai             ok    gpt-5.6-luna           3fefa9f4b3358cb6
+      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           78248a60c1d527b8
+      child span.agent_tool_execution issue_refund                 ok                           ec74c3b36a223add
+      child trace                  responses.openai             ok    gpt-5.6-luna           05f820afc5dc467f
+      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           274c568b4fffdfc5
+next     : open the trace in https://my.orq.ai/traces; one root refund_turn, tool spans between the model calls
 ```
 
 One root `refund_turn` span, four gateway calls nested under it, three tool spans between them in the order the model called them. `tracing.flush()` before exit matters: the batch exporter ships on a timer and a short script exits first.
@@ -122,7 +142,11 @@ One root `refund_turn` span, four gateway calls nested under it, three tool span
 Fill `step_4_annotation` with `annotations=[{"key": "rating", "value": "good"}]` on the last `span.responses`.
 
 ```text
-[4] annotation     rating=good on span 21458579ad8b5d0b of trace 4f3e9ca40c2e175bdf1be2befd29f4be
+── Step 4 · Annotate the answer ───────────────────────
+key      : rating=good
+span     : 274c568b4fffdfc5 of trace cb2289e8eae4e587f8bba591734cc831
+verdict  : written
+next     : open the trace in https://my.orq.ai/traces, Annotations panel; module 17 reads these back as labels
 ```
 
 A key has to exist as an annotation definition first. This workspace has `rating`; any other key returns:
@@ -140,9 +164,16 @@ $ uv run python modules/02-tracing/solution/stretch_langgraph.py
 ```
 
 ```text
-answer : I've processed your refund for order ord_a2, as the dock does not fit your laptop. You will see the amount of EUR 89.00
-steps  : ['human', 'ai', 'tool', 'ai', 'tool', 'ai', 'tool', 'ai']
-trace  : 01a082fcf4ca7cb1ba6b49f581e2d0b5  spans=31  {'trace': 1, 'span.agent': 7, 'span.chain': 16, 'span.chat_completion': 4, 'span.tool': 3}
+── Step 4 · Build the graph and run one turn ──────────
+question : Refund ord_a2 please, the dock does not fit my laptop.
+answer   : Your refund of €89.00 for order ord_a2 has been issued to the original payment method. It should arr…
+steps    : human → ai → tool → ai → tool → ai → tool → ai
+next     : the trace is named refund_langgraph; step 5 searches it by that name
+── Step 5 · Read the trace back ───────────────────────
+trace    : 01a0a736c57f7532a2fb8bc28e42652f
+spans    : 31
+kinds    : trace 1, span.agent 7, span.chain 16, span.chat_completion 4, span.tool 3
+next     : open https://my.orq.ai/traces and search the trace id; the graph panel shows agent → tools → agent
 ```
 
 One `setup()` from `orq_ai_sdk.langchain` before the graph is built, and every node, tool and model call is a span; the Studio draws the graph next to the trace. Strands agents get the same treatment through OpenTelemetry: [docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands](https://docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands).

@@ -109,8 +109,11 @@ result = graph.invoke(
 )
 
 # The message list is the transcript of the loop: human, then ai/tool pairs, then the final ai.
-print("answer :", result["messages"][-1].content[:120])
-print("steps  :", [m.type for m in result["messages"]])
+print("── Step 4 · Build the graph and run one turn ──────────")
+print(f"question : {QUESTION}")
+print(f"answer   : {result['messages'][-1].content[:100]}…")
+print(f"steps    : {' → '.join(m.type for m in result['messages'])}")
+print("next     : the trace is named refund_langgraph; step 5 searches it by that name")
 
 # %% [markdown]
 # ## 5 · Read the trace back
@@ -139,18 +142,19 @@ hits = orq.traces.search(
     limit=1,
 ).model_dump(by_alias=True)["data"]
 
+print("── Step 5 · Read the trace back ───────────────────────")
 if hits:
     trace_id = hits[0]["trace_id"]
     rows = orq.traces.list_spans(trace_id=trace_id).model_dump(by_alias=True)["data"]
     kinds: dict[str, int] = {}
     for span in rows:
         kinds[span["type"]] = kinds.get(span["type"], 0) + 1
-    print(f"trace  : {trace_id}  spans={len(rows)}  {kinds}")
-    print(
-        f"open   : {settings.base_url}/traces and search the trace id; the graph panel shows agent -> tools -> agent"
-    )
+    print(f"trace    : {trace_id}")
+    print(f"spans    : {len(rows)}")
+    print(f"kinds    : {', '.join(f'{kind} {count}' for kind, count in kinds.items())}")
+    print(f"next     : open {settings.base_url}/traces and search the trace id; the graph panel shows agent → tools → agent")
 else:
-    print("trace  : not indexed yet, rerun the search in a few seconds")
+    print("trace    : not indexed yet, rerun this cell in a few seconds")
 
 # %% [markdown]
 # ## What to take away

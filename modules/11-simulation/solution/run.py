@@ -1,12 +1,15 @@
-"""Module 11 solution: simulate customers against the refund agent.
+"""Module 11: simulate customers against the refund agent.
 
-Steps (pick with --only 1,3):
-  1. simulate() the LOCAL agent: 2 personas x 2 scenarios, 4 turns
-  2. generate_and_simulate(): 3 generated personas from a one-line description
-  3. simulate() the MANAGED agent: built-in "agent:<key>" target (tools stubbed), then the adapter
+Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent
+with three models: a user simulator playing a persona with a goal, the agent under test, and a
+judge that scores the transcript. Every simulator and judge call routes through the orq router,
+so it is traced and budgeted like any other call, and every run lands as an Experiment. Three
+steps: simulate() the local agent (2 personas x 2 scenarios, 4 turns), generate_and_simulate()
+three personas from a one-line description, and simulate() the managed agent twice, first with
+the built-in "agent:<key>" target (tools stubbed), then through the ManagedRefundTarget adapter.
 
-Every simulator and judge call routes through the orq router, so they are traced and budgeted
-like any other call. Module 16 reuses refund_target.py to red team the same agents.
+Run it with `uv run python modules/11-simulation/solution/run.py` (or `make m11`), about two
+minutes; `--only=1,3` picks steps. Module 16 reuses refund_target.py to red team the same agents.
 """
 
 # isort: skip_file
@@ -22,7 +25,7 @@ from pathlib import Path
 os.environ.setdefault("LOGURU_LEVEL", "INFO")  # evaluatorq logs every turn at DEBUG
 
 from app.refund_agent.agent import chat  # loads .env before evaluatorq reads ORQ_API_KEY
-from app.refund_agent.config import settings
+from app.refund_agent.config import DATA_DIR, settings
 from app.refund_agent.tools import OrderStore
 
 from evaluatorq.contracts import LLMCallConfig, Message
@@ -41,6 +44,7 @@ from refund_target import ManagedRefundTarget
 
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
 SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge
+MANAGED_AGENT_KEY = settings.key("refund-agent")
 AGENT_DESCRIPTION = (
     "Customer-service refund agent for Lumen Goods, an online electronics shop. "
     "Looks up orders (ids like ord_a1..ord_a6), reads the refund policy and issues refunds "
@@ -67,9 +71,9 @@ PERSONAS = [
         background="Unsure how refunds work, apologises a lot, gives details when asked",
     ),
 ]
+# The judge reads the transcript text only. Tool calls are invisible to it, so every criterion
+# must be observable in what the assistant says.
 SCENARIOS = [
-    # The judge reads the transcript text only. Tool calls are invisible to it, so every criterion must be
-    # observable in what the assistant says.
     Scenario(
         name="In-window refund ord_a1",
         goal="Get order ord_a1 refunded because it was the wrong colour",
@@ -104,13 +108,11 @@ SCENARIOS = [
 
 
 def local_agent(instructions_variant: str = "fixed"):
-    """A stateless callback: replay the transcript through run_turn each turn. Factor 12."""
-    from app.refund_agent.config import DATA_DIR
-
+    """The local agent as a stateless target callback: replay the transcript through chat() each turn (Factor 12)."""
     instructions = (DATA_DIR / f"{instructions_variant}_instructions.md").read_text()
-    stores: dict[str, OrderStore] = defaultdict(
-        OrderStore
-    )  # one store per conversation, keyed by its opening message
+    # One order store per conversation, keyed by its opening message, so a refund in one
+    # simulated conversation does not show up as "already refunded" in the next.
+    stores: dict[str, OrderStore] = defaultdict(OrderStore)
 
     async def target(messages: list[Message]) -> str:
         history = [{"role": "system", "content": instructions}] + [
@@ -118,33 +120,50 @@ def local_agent(instructions_variant: str = "fixed"):
             for m in messages[:-1]
         ]
         last = messages[-1].content
-        r = await asyncio.to_thread(
+        result = await asyncio.to_thread(
             chat,
             last if isinstance(last, str) else str(last),
             history,
             store=stores[str(messages[0].content)],
         )
-        return r.text
+        return result.text
 
     return target
 
 
 def print_results(results) -> None:
-    for r in results:
-        p, s = r.metadata.get("persona", "?"), r.metadata.get("scenario", "?")
-        print(
-            f"    {'PASS' if r.goal_achieved else 'FAIL'} score={r.goal_completion_score or 0:.2f} turns={r.turn_count} "
-            f"by={r.terminated_by} persona={p!r} scenario={s!r} rules_broken={r.rules_broken or []}"
-        )
-        last = next((m for m in reversed(r.messages) if m.role == "assistant"), None)
-        if last:
-            print(f"         agent: {str(last.content)[:150]!r}")
-    passed = sum(bool(r.goal_achieved) for r in results)
-    print(f"    goal achieved {passed}/{len(results)}")
+    """Three lines per conversation plus a tally. Hides the SimulationResult field names, which are the same for every run below."""
+    for result in results:
+        persona = result.metadata.get("persona", "?")
+        scenario = result.metadata.get("scenario", "?")
+        goal = "goal achieved" if result.goal_achieved else "goal not achieved"
+        broken = ", ".join(result.rules_broken or []) or "none"
+        last_reply = next((m for m in reversed(result.messages) if m.role == "assistant"), None)
+        print(f"persona  : {persona} × {scenario}")
+        print(f"verdict  : {goal}, score {result.goal_completion_score or 0:.2f}, {result.turn_count} turn(s), ended by {result.terminated_by}, rules broken: {broken}")
+        if last_reply:
+            print(f"agent    : {str(last_reply.content)[:150]!r}")
+    achieved = sum(bool(result.goal_achieved) for result in results)
+    print(f"summary  : goal achieved {achieved}/{len(results)}")
 
 
+def print_transcript(result, turns: int = 4) -> None:
+    """The first messages of one conversation, so the empty managed-agent answer in step 3a is visible."""
+    for message in result.messages[:turns]:
+        text = message.content if isinstance(message.content, str) else str(message.content)
+        print(f"{message.role:<8} : {text[:110]!r}")
+
+
+# ── Step 1 · Simulate two customers against the local agent ──
+# Two personas times two scenarios, four conversations, up to four turns each. Read the ord_a3
+# rows before you call them failures: the goal was an out-of-window refund and the agent refused,
+# so goal_achieved is false while the must_not_happen criterion holds. That is the agent doing
+# its job; the criterion is what you gate on, not the goal.
 async def step_1_simulate_local() -> None:
-    print("[1] simulate() local agent: 2 personas x 2 scenarios, max_turns=4")
+    print("── Step 1 · Simulate two customers against the local agent ──")
+    print(f"personas : {', '.join(p.name for p in PERSONAS)}")
+    print(f"scenarios: {', '.join(s.name for s in SCENARIOS)}")
+    print("turns    : max 4 per conversation")
     results = await simulate(
         evaluation_name=settings.key("sim-local"),
         target=local_agent("fixed"),
@@ -158,10 +177,18 @@ async def step_1_simulate_local() -> None:
         executive_summary=False,
     )
     print_results(results)
+    print(f"next     : open Experiments > {settings.key('sim-local')} (Default project); one row per conversation with transcript, criteria and judge reasoning")
 
 
+# ── Step 2 · Let the library invent the personas ──
+# generate_and_simulate() writes personas and a scenario from a one-line description of the
+# agent. Generated cases are a starting point: the scenario may assume an order that the fixture
+# does not have, and the criteria may assume the refund is legitimate. Keep the personas, edit
+# the scenario, replay it.
 async def step_2_generate() -> None:
-    print("[2] generate_and_simulate(): 3 generated personas x 1 scenario, max_turns=3")
+    print("── Step 2 · Let the library invent the personas ───────")
+    print(f"agent    : {AGENT_DESCRIPTION[:100]}…")
+    print("generate : 3 personas × 1 scenario, max 3 turns")
     results = await generate_and_simulate(
         evaluation_name=settings.key("sim-generated"),
         target=local_agent("fixed"),
@@ -176,16 +203,22 @@ async def step_2_generate() -> None:
         executive_summary=False,
     )
     print_results(results)
+    print("next     : save the cases with `eq sim generate --datapoints cases.jsonl`, fix the scenario by hand, replay with `eq sim run`")
 
 
+# ── Step 3 · The managed agent, twice ──
+# ws-refund-agent has function tools that your code executes (module 08). The built-in
+# "agent:<key>" target does not know how to run lookup_order: it stubs the pending tool call,
+# the assistant text comes back empty and the judge scores an empty transcript. That is the
+# harness failing, not the agent. ManagedRefundTarget (refund_target.py) executes the
+# function_call items itself, module 08's loop wrapped in the AgentTarget contract.
 async def step_3_managed() -> None:
-    key = settings.key("refund-agent")
-    print(
-        f"[3a] simulate() managed agent with the built-in target 'agent:{key}' (pending tool calls get an error stub)"
-    )
+    print("── Step 3a · The managed agent with the built-in target ──")
+    print(f"target   : agent:{MANAGED_AGENT_KEY} (pending tool calls get an error stub)")
+    print("turns    : max 1; a second turn after the empty answer is a 400 on the simulator side")
     results = await simulate(
         evaluation_name=settings.key("sim-managed-builtin"),
-        target=f"agent:{key}",
+        target=f"agent:{MANAGED_AGENT_KEY}",
         personas=PERSONAS[:1],
         scenarios=SCENARIOS[:1],
         max_turns=1,  # a second turn after the empty answer is a 400 on the simulator side
@@ -196,16 +229,15 @@ async def step_3_managed() -> None:
         executive_summary=False,
     )
     print_results(results)
-    for m in results[0].messages[:4]:
-        print(
-            f"      {m.role:9s} {(m.content if isinstance(m.content, str) else str(m.content))[:110]!r}"
-        )
-    print(
-        "[3b] simulate() managed agent through ManagedRefundTarget (function_call items executed here)"
-    )
+    print_transcript(results[0])
+    print("next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`")
+
+    print("── Step 3b · The managed agent through ManagedRefundTarget ──")
+    print(f"target   : ManagedRefundTarget({MANAGED_AGENT_KEY!r}) (function_call items executed here)")
+    print("turns    : max 2")
     results = await simulate(
         evaluation_name=settings.key("sim-managed"),
-        target=ManagedRefundTarget(key),
+        target=ManagedRefundTarget(MANAGED_AGENT_KEY),
         personas=PERSONAS[:1],
         scenarios=SCENARIOS[:1],
         max_turns=2,
@@ -216,20 +248,23 @@ async def step_3_managed() -> None:
         executive_summary=False,
     )
     print_results(results)
-    for m in results[0].messages[:4]:
-        print(
-            f"      {m.role:9s} {(m.content if isinstance(m.content, str) else str(m.content))[:110]!r}"
-        )
+    print_transcript(results[0])
+    print(f"next     : Experiments > {settings.key('sim-managed')} has the row; the agent's trace shows the tool calls the harness ran")
+
+
+async def main() -> None:
+    settings.require_key()
+    # --only=1,3 runs a subset of steps; default is all three.
+    only = {
+        step for arg in sys.argv[1:] if arg.startswith("--only") for step in arg.split("=")[-1].split(",")
+    } or {"1", "2", "3"}
+    if "1" in only:
+        await step_1_simulate_local()
+    if "2" in only:
+        await step_2_generate()
+    if "3" in only:
+        await step_3_managed()
 
 
 if __name__ == "__main__":
-    settings.require_key()
-    only = {
-        s for a in sys.argv[1:] if a.startswith("--only") for s in a.split("=")[-1].split(",")
-    } or {"1", "2", "3"}
-    if "1" in only:
-        asyncio.run(step_1_simulate_local())
-    if "2" in only:
-        asyncio.run(step_2_generate())
-    if "3" in only:
-        asyncio.run(step_3_managed())
+    asyncio.run(main())

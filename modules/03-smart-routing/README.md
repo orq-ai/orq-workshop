@@ -45,9 +45,13 @@ $ uv run python modules/03-smart-routing/run.py
 Expected output:
 
 ```text
-[1] smart router   orq-research@orq/ws-refund-router  profile=COST  pool=['openai/gpt-5.6-luna', 'openai/gpt-5.4-nano', 'openai/gpt-5.6-terra', 'openai/gpt-5.6-sol', 'anthropic/claude-haiku-4-5-20251001']
-    easy -> gpt-5.4-nano                 $0.000257  auto_router=True  trace=8ee67543b8a7ad27bd215aebcc77994a
-    hard -> gpt-5.6-sol                  $0.010768  auto_router=True  trace=d13287b3a79581ce14565b15216f8566
+── Step 1 · Create the router and watch it pick ───────
+router   : orq-research@orq/ws-refund-router
+profile  : SMART_ROUTER_PROFILE_COST
+pool     : openai/gpt-5.6-luna, openai/gpt-5.4-nano, openai/gpt-5.6-terra, openai/gpt-5.6-sol, anthropic/claude-haiku-4-5-20251001
+easy     : gpt-5.4-nano                 $0.000252  auto_router=True  trace=652980825beda63f63a3b75d0d070451
+hard     : gpt-5.6-sol                  $0.010120  auto_router=True  trace=1b36291f76704d1b3137a7ac4868f610
+next     : open the hard trace; the span.auto_router span carries the band the request landed in
 ```
 
 The model is read from the trace, not from the response: `orq.traces.list_spans(trace_id=...)` returns `span.auto_router` followed by `span.responses` with the chosen model. Open the hard trace in the Studio: the router span carries the band the request landed in.
@@ -57,12 +61,15 @@ The model is read from the trace, not from the response: `orq.traces.list_spans(
 `orq.smart_routers.update(smart_router_id=..., profile="SMART_ROUTER_PROFILE_QUALITY")` and repeat the two prompts. The key and `model_ref` do not change, so the app does not either.
 
 ```text
-[2] profile        SMART_ROUTER_PROFILE_QUALITY
-    easy -> gpt-5.4-nano                 $0.000254  auto_router=True  trace=3888ac4266a1e2a3b63ee9e6111ece26
-    hard -> gpt-5.6-sol                  $0.005169  auto_router=True  trace=51ba741f429d4fbc91b5bef13b7c9ab7
+── Step 2 · Switch the profile ────────────────────────
+router   : orq-research@orq/ws-refund-router (same model_ref, the app did not change)
+profile  : SMART_ROUTER_PROFILE_QUALITY
+easy     : gpt-5.4-nano                 $0.000262  auto_router=True  trace=61cc10fb68261425c601082f1c4323e6
+hard     : gpt-5.6-sol                  $0.009380  auto_router=True  trace=af4b1f3ee88d3b8462622e7d1c3bbe4d
+next     : compare with step 1; the pick moves only when two pool models are close in band
 ```
 
-Nothing moved. The bands come from an intelligence index, not from the profile: the easy question is a nano-band question under both profiles, the hard one a sol-band question under both. The profile shifts the band when candidates are close; here they are not. What did move is the hard answer's cost, $0.0108 to $0.0052 for the same question on the same model: a shorter answer, not a routing decision. Read the model, not the bill, when you judge a router.
+Nothing moved. The bands come from an intelligence index, not from the profile: the easy question is a nano-band question under both profiles, the hard one a sol-band question under both. The profile shifts the band when candidates are close; here they are not. What can move is the hard answer's cost ($0.0101 to $0.0094 in this run, $0.0108 to $0.0052 in an earlier one) for the same question on the same model: answer length, not a routing decision. Read the model, not the bill, when you judge a router.
 
 ### Step 3 · Pin traffic with a routing rule
 
@@ -77,11 +84,23 @@ Steps 1 and 2 let the platform pick the model. A routing rule is you overriding 
 Create `ws-route-mini-to-nano` scoped to your `project_id` with the CEL `metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"` and target `openai/gpt-5.4-nano`. Then call with `extra_body={"metadata": {"tier": "free"}}` and read the trace.
 
 ```text
-[3] project rule   rrl_01m2k94dh6v5317h4r7yg42s2k project=01a082d7-b8cc-7c86-bfe8-83f9cb47688b cel=metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"
-    tier=free call -> gpt-5.6-luna                 rule_fired=False  trace=8e7380da4cb80889e9157c2faeee8f5a
-    workspace rule rrl_01m2k98zff4g1zvt2pg2xpa8k2 ws_module=03  -> gpt-5.4-nano   rule_fired=True  trace=b56aa7c55447d568b8a099e81ad7b313
-    workspace rule rrl_01m2k98zff4g1zvt2pg2xpa8k2 ws_module=no  -> gpt-5.6-luna   rule_fired=False  trace=e4119747783704db32ff153043c1fa9a
-    disabled rrl_01m2k94dh6v5317h4r7yg42s2k, deleted rrl_01m2k98zff4g1zvt2pg2xpa8k2
+── Step 3a · A project-scoped routing rule ────────────
+rule     : rrl_01m2k94dh6v5317h4r7yg42s2k (project 01a082d7-b8cc-7c86-bfe8-83f9cb47688b)
+cel      : metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"
+target   : openai/gpt-5.4-nano
+call     : metadata tier=free, model openai/gpt-5.6-luna
+answered : gpt-5.6-luna
+trace    : 4e6b71be752fc5a63c266cd5e9427352
+verdict  : rule did not fire: a plain router call carries no project scope, so a project rule never sees it
+disabled : rrl_01m2k94dh6v5317h4r7yg42s2k (kept in place for module 08)
+── Step 3b · A workspace-wide rule, gated on a tag ────
+rule     : rrl_01m2kkgkxhgw2c9nn9jxbjxerj (workspace-wide)
+cel      : metadata["ws_module"] == "03" && model == "openai/gpt-5.6-luna"
+tagged   : ws_module=03 → gpt-5.4-nano   rule_fired=True  trace=82b6433c7a6f385178c05b929209d149
+untagged : ws_module=no → gpt-5.6-luna   rule_fired=False  trace=82f3d02a97cfd34d8163ede7ea4e9c7f
+verdict  : rule fired on the tag alone: gpt-5.4-nano answered a request that asked for openai/gpt-5.6-luna
+deleted  : rrl_01m2kkgkxhgw2c9nn9jxbjxerj
+next     : open the tagged trace; a span.load_balancer span records the rule's target
 ```
 
 Two things happened. The project-scoped rule was created and validated, but did not match: in this workspace a plain router call carries no project scope (`project_id` is empty on its trace, with an all-projects key and with a project-scoped key alike), and a project rule only sees requests that have one, such as the agents module 08 runs. So the solution proves the redirect with a workspace-wide rule whose CEL is gated on a metadata key nobody else sends, `metadata["ws_module"] == "03"`, and deletes it afterwards. The proof is in the spans of the matching trace:

@@ -41,13 +41,15 @@ $ uv run python modules/10-mcp-gateway/solution/run.py
 Expected output (first block):
 
 ```text
-[1] local MCP server http://127.0.0.1:8000/mcp
-    server='lumen-refunds' protocol=2025-11-25
-    tool lookup_order                     Look up an order owned by the current session user. Returns 
-    tool get_policy                       Fetch authoritative policy text. Topics: refund_basics, post
-    tool issue_refund                     Issue a refund. Enforces ownership, no double refund, the EU
-    call lookup_order({"order_id": "ord_a2"}) -> is_error=False
-    {   "ok": true,   "order": {     "id": "ord_a2",     "amount": 89.0,     "item": "Charging dock Duo",     "delivered_days_ago": 15,     "status": "delivered",     "refunded": false,     "within_standard_window": true   } }
+── Step 1 · Call the local server with an MCP client ──
+url      : http://127.0.0.1:8000/mcp
+server   : 'lumen-refunds' protocol=2025-11-25
+tool     : lookup_order                     Look up an order owned by the current session user. Returns 
+tool     : get_policy                       Fetch authoritative policy text. Topics: refund_basics, post
+tool     : issue_refund                     Issue a refund. Enforces ownership, no double refund, the EU
+call     : lookup_order({"order_id": "ord_a2"}) → is_error=False
+result   : {   "ok": true,   "order": {     "id": "ord_a2",     "amount": 89.0,     "item": "Charging dock Duo",     "delivered_days_ago": 15,     "status": "delivered",     "refunded": false,     "within_standard_window": true   } }
+next     : three tools, no allow-list; the gateway in step 3 decides who sees which
 ```
 
 The client is the `mcp` package: `streamable_http_client(url)` gives the streams, `ClientSession(read, write)` does `initialize`, `list_tools`, `call_tool`. The tool result is the dict `tools.py` returns, serialised.
@@ -55,12 +57,15 @@ The client is the `mcp` package: `streamable_http_client(url)` gives the streams
 ### Step 2 · Register the upstream server in the MCP Portal
 
 ```text
-[2] MCP Portal server ws-refund-mcp -> https://mcp.deepwiki.com/mcp
-    MCP_SERVER_URL is empty: using the public DeepWiki server as a stand-in for app/mcp_server.py
-    id=mcp_server_01M2KA1E0FEMXWTYQ3CEWQZWH0 sync=SYNC_STATUS_SYNCED tools=3 errors=[]
-    tool ask_question             id=01M2KA1F2H73KQMYRZCH7822KE annotations=None
-    tool read_wiki_contents       id=01M2KA1F2H73KQMYRZCJHFB9T7 annotations=None
-    tool read_wiki_structure      id=01M2KA1F2H73KQMYRZCP99G2RS annotations=None
+── Step 2 · Register the upstream server in the MCP Portal ──
+server   : ws-refund-mcp → https://mcp.deepwiki.com/mcp
+note     : MCP_SERVER_URL is empty: using the public DeepWiki server as a stand-in for app/mcp_server.py
+id       : mcp_server_01M2KA1E0FEMXWTYQ3CEWQZWH0
+sync     : SYNC_STATUS_SYNCED tools=3 errors=[]
+tool     : ask_question             id=01M2KA1F2H73KQMYRZCH7822KE annotations=None
+tool     : read_wiki_contents       id=01M2KA1F2H73KQMYRZCJHFB9T7 annotations=None
+tool     : read_wiki_structure      id=01M2KA1F2H73KQMYRZCP99G2RS annotations=None
+next     : try one without a gateway: orq mcp-servers test-tool mcp_server_01M2KA1E0FEMXWTYQ3CEWQZWH0 --tool-name <name> --arguments '{...}'
 ```
 
 `orq.mcp_servers.create(key=, display_name=, connection={"type": "MCP_CONNECTION_TYPE_HTTP", "url": ...}, auth={"type": "MCP_AUTH_TYPE_NONE"}, default_tool_exposure={"mode": "MCP_TOOL_EXPOSURE_MODE_ALL"})`, then `orq.mcp_servers.sync(id=)`. Sync discovers the tools and gives each one an id. With `MCP_SERVER_URL` set, the same block lists `lookup_order`, `get_policy`, `issue_refund`.
@@ -74,11 +79,15 @@ $ orq mcp-servers test-tool mcp_server_01M21EYSRF22B1TGFX8X5591K7 --tool-name re
 ### Step 3 · Create the gateway with two exposed tools
 
 ```text
-[3] MCP Gateway ws-refund-gateway
-    id=mcp_gateway_01M2KA1FED3EZRQNCNYKWKPHD9 mode=MCP_GATEWAY_MODE_DIRECT exposed=2 public_url=https://my.orq.ai/v3/mcp/ws-refund-gateway
-    exposed: ['read_wiki_structure', 'read_wiki_contents']   hidden: ['ask_question']
-    read_wiki_contents                       <- ws-refund-mcp/read_wiki_contents
-    read_wiki_structure                      <- ws-refund-mcp/read_wiki_structure
+── Step 3 · Create the gateway with two exposed tools ──
+gateway  : ws-refund-gateway (mcp_gateway_01M2KA1FED3EZRQNCNYKWKPHD9)
+mode     : MCP_GATEWAY_MODE_DIRECT exposed=2
+url      : https://my.orq.ai/v3/mcp/ws-refund-gateway
+exposed  : read_wiki_structure, read_wiki_contents
+hidden   : ask_question
+tool     : read_wiki_contents                       ← ws-refund-mcp/read_wiki_contents
+tool     : read_wiki_structure                      ← ws-refund-mcp/read_wiki_structure
+next     : the tool lines come from `orq mcp-gateways list-tools`: exposed name ← server_key/upstream name
 ```
 
 ```python
@@ -96,20 +105,17 @@ The last two lines of the block come from `orq mcp-gateways list-tools <gateway-
 ### Step 4 · Consume the gateway from Python, then from a coding agent
 
 ```text
-[4] MCP client -> https://my.orq.ai/v3/mcp/ws-refund-gateway
-    server='orq-mcp-gateway' protocol=2024-11-05
-    tool read_wiki_contents               View documentation about a GitHub repository.
-    tool read_wiki_structure              Get a list of documentation topics for a GitHub repository.
-    server='orq-mcp-gateway' protocol=2024-11-05
-    tool read_wiki_contents               View documentation about a GitHub repository.
-    tool read_wiki_structure              Get a list of documentation topics for a GitHub repository.
-    call read_wiki_structure({"repoName": "modelcontextprotocol/python-sdk"}) -> is_error=False
-    Available pages for modelcontextprotocol/python-sdk:  - 1 Overview   - 1.1 Installation & Dependencies   - 1.2 Key Concepts & Architecture - 2 FastMCP / MCPServer Framework   - 2.1 Creating a FastMCP Server   - 2.2 Tool System   - 2.3 Resources & Prompts   - 2.4 Function Metadata & Schema Generation
-    server='orq-mcp-gateway' protocol=2024-11-05
-    tool read_wiki_contents               View documentation about a GitHub repository.
-    tool read_wiki_structure              Get a list of documentation topics for a GitHub repository.
-    call ask_question -> MCPError: tool "ask_question" not found  (denied calls are logged too)
-    Studio: AI Gateway > MCP Portal > MCP Gateway > ws-refund-gateway > Overview shows the call
+── Step 4 · Consume the gateway from Python ───────────
+url      : https://my.orq.ai/v3/mcp/ws-refund-gateway
+server   : 'orq-mcp-gateway' protocol=2024-11-05
+tool     : read_wiki_contents               View documentation about a GitHub repository.
+tool     : read_wiki_structure              Get a list of documentation topics for a GitHub repository.
+server   : 'orq-mcp-gateway' protocol=2024-11-05
+call     : read_wiki_structure({"repoName": "modelcontextprotocol/python-sdk"}) → is_error=False
+result   : Available pages for modelcontextprotocol/python-sdk:  - 1 Overview   - 1.1 Installation & Dependencies   - 1.2 Key Concepts & Architecture - 2 FastMCP / MCPServer Framework   - 2.1 Creating a FastMCP Server   - 2.2 Tool System   - 2.3 Resources & Prompts   - 2.4 Function Metadata & Schema Generation
+server   : 'orq-mcp-gateway' protocol=2024-11-05
+denied   : ask_question → MCPError: tool "ask_question" not found
+next     : AI Gateway > MCP Portal > MCP Gateway > ws-refund-gateway > Overview shows both calls, the denied one included
 ```
 
 Same `mcp` client as step 1, plus a header: `create_mcp_http_client(headers={"Authorization": f"Bearer {ORQ_API_KEY}"})` passed as `http_client=`. The hidden tool is not "forbidden", it is absent: `tools/list` never returned it and `tools/call` answers `not found`.
@@ -126,15 +132,20 @@ Now open **AI Gateway > MCP Portal > MCP Gateway > ws-refund-gateway**. The **Ov
 ### Step 5 · Give the managed agent one MCP tool
 
 ```text
-[5] agent copy ws-refund-agent-mcp with an MCP tool
-    settings.tools accepted: ['function', 'function', 'function', 'retrieve_knowledge_bases', 'query_knowledge_base', 'mcp']
-    response id=resp_01M2KA1J25ANHNPG6A9QXEAG64 trace=204fe34778ff222ad157c07e58c04bbe cost=0.0006758000000000001
-    mcp_call server=ws-refund-mcp tool=read_wiki_structure status=completed args={"repoName":"modelcontextprotocol/python-sdk"}
-    answer: Documentation topics for `modelcontextprotocol/python-sdk`:  1. Overview 2. FastMCP / MCPServer Framework 3. Client Framework 4. Transport Layer 5. Protocol & T
-    span MCP Connect: ws-refund-mcp           type=span.tool status=ok 643.0ms
-    span MCP Discover Tools: ws-refund-mcp    type=span.tool status=ok 150.0ms
-    span chat openai/gpt-5.6-luna             type=span.responses status=ok 1226.0ms
-    span read_wiki_structure                  type=span.tool status=ok 247.0ms
+── Step 5 · Give the managed agent one MCP tool ───────
+agent    : ws-refund-agent-mcp (copy of ws-refund-agent)
+mcp tool : {"type": "mcp", "key": "ws-refund-mcp", "tool_id": "01M2KA1F2H73KQMYRZCP99G2RS"}
+tools    : function, function, function, retrieve_knowledge_bases, query_knowledge_base, mcp
+question : List the documentation topics for the GitHub repo modelcontextprotocol/python-sdk. Use your tools.
+response : resp_01M2KMGEDC6WD4QET8ZMS9YTYH cost=0.0008942
+mcp_call : server=ws-refund-mcp tool=read_wiki_structure status=completed args={"repoName":"modelcontextprotocol/python-sdk"}
+answer   : Available documentation topics for `modelcontextprotocol/python-sdk`:  1. **Overview**    - Installation & Dependencies    - Key Concepts & Architecture  2. **F
+trace    : 3c995148e4c0afaccde9510aa3156031
+span     : MCP Connect: ws-refund-mcp           type=span.tool status=ok 606.0ms
+span     : MCP Discover Tools: ws-refund-mcp    type=span.tool status=ok 151.0ms
+span     : chat openai/gpt-5.6-luna             type=span.responses status=ok 1193.0ms
+span     : read_wiki_structure                  type=span.tool status=ok 234.0ms
+next     : the MCP Connect and Discover Tools spans are the agent reaching the server; the span.tool is the call
 ```
 
 Agents attach to the MCP **Server**, not the gateway: `settings.tools` takes `{"type": "mcp", "key": "ws-refund-mcp", "tool_id": "<tool id from sync>"}`, one entry per tool. The agent then executes the tool server-side: the response contains an `mcp_call` output item, and the trace has an `MCP Connect` span, an `MCP Discover Tools` span and one `span.tool` per call. Nothing to run on your side. The gateway URL is for clients outside the platform.
