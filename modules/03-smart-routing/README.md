@@ -32,7 +32,7 @@ Open `modules/03-smart-routing/run.py`. Fill the `TODO`s; the solution is in `so
 
 ### Step 1 · Create the router and watch it pick
 
-Pick 3 or 4 enabled models. `orq models list --json | jq -r '.[] | select(.enabled) | .provider + "/" + .model_id'` lists what is enabled in your workspace (the ids in the pool below were). Create with profile `COST`, then send one easy and one hard prompt to the `model_ref`.
+Pick 3 or 4 enabled models. `orq models list -o json | jq -r '.[] | select(.enabled) | .provider + "/" + .model_id'` lists what is enabled in your workspace (the ids in the pool below were). Create with profile `COST`, then send one easy and one hard prompt to the `model_ref`.
 
 ```bash
 $ uv run python modules/03-smart-routing/run.py
@@ -75,7 +75,7 @@ Create `ws-route-mini-to-nano` scoped to your `project_id` with the CEL `metadat
 Two things happened. The project-scoped rule was created and validated, but did not match: in this workspace a plain router call carries no project scope (`project_id` is empty on its trace, with an all-projects key and with a project-scoped key alike), and a project rule only sees requests that have one, such as the agents module 08 runs. So the solution proves the redirect with a workspace-wide rule whose CEL is gated on a metadata key nobody else sends, `metadata["ws_module"] == "03"`, and deletes it afterwards. The proof is in the spans of the matching trace:
 
 ```bash
-$ orq request GET /v3/traces/052a64b6c580dc0e17c859d1f50db608/spans --json | jq -c '.body.data[] | {type, name, model}'
+$ orq request GET /v3/traces/052a64b6c580dc0e17c859d1f50db608/spans -o json | jq -c '.body.data[] | {type, name, model}'
 {"type":"span.load_balancer","name":"load-balancer","model":""}
 {"type":"trace","name":"chat.openai","model":"gpt-4.1-nano"}
 {"type":"span.chat_completion","name":"chat gpt-4.1-nano","model":"gpt-4.1-nano"}
@@ -86,9 +86,9 @@ The request asked for `gpt-4o-mini`; a `span.load_balancer` span records the rul
 ### Step 4 · The same from the CLI
 
 ```bash
-$ orq smart-routers list --json | jq -c '.data[] | select(.key=="ws-refund-router") | {key, model_ref, profile, models}'
+$ orq smart-routers list -o json | jq -c '.data[] | select(.key=="ws-refund-router") | {key, model_ref, profile, models}'
 {"key":"ws-refund-router","model_ref":"orq-research@orq/ws-refund-router","profile":"SMART_ROUTER_PROFILE_QUALITY","models":["openai/gpt-4o-mini","openai/gpt-4.1-mini","openai/gpt-4.1","anthropic/claude-haiku-4-5-20251001"]}
-$ orq request GET '/v2/routing-rules?project_id=01a082d7-b8cc-7c86-bfe8-83f9cb47688b' --json | jq -c '.body.data[] | {_id, display_name, enabled, cel: .expression.cel, target: .models_config.models[0].model}'
+$ orq request GET '/v2/routing-rules?project_id=01a082d7-b8cc-7c86-bfe8-83f9cb47688b' -o json | jq -c '.body.data[] | {_id, display_name, enabled, cel: .expression.cel, target: .models_config.models[0].model}'
 {"_id":"rrl_01m21eyd4z3jb2hez0ejcth1w0","display_name":"ws-route-mini-to-nano","enabled":false,"cel":"metadata[\"tier\"] == \"free\" && model == \"openai/gpt-4o-mini\"","target":"openai/gpt-4.1-nano"}
 ```
 
@@ -103,6 +103,12 @@ $ orq launch claude
 Paste `agent_prompt.md`:
 
 > Create a smart router called `ws-refund-router` with the orq MCP tools or the `orq smart-routers` CLI over `openai/gpt-4o-mini`, `openai/gpt-4.1-mini`, `openai/gpt-4.1` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-4.1`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
+
+## Proof
+
+![Studio: Smart Router list showing ws-refund-router (Quality profile) alongside the workspace's other routers.](assets/studio-smart-router.png)
+
+![Studio: Routing Rules showing ws-route-mini-to-nano, disabled, from this module's probe.](assets/studio-routing-rules.png)
 
 ## Done when
 
@@ -120,6 +126,7 @@ Paste `agent_prompt.md`:
 - A matching rule replaces `model`, `load_balancer` and `fallbacks` from the request; it does not merge with them.
 - `openai/gpt-4.1-nano` is not in `orq models list` for this workspace yet answers through the gateway; `anthropic/claude-haiku-4-5` shows `enabled: false` while the dated id `anthropic/claude-haiku-4-5-20251001` is enabled. Test a model with `orq chat create` before putting it in a pool.
 - Routing rule list items dump as `_id`; create and update responses as `id`.
+- Since orq API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
 ## New in orq 4.13
 

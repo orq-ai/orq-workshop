@@ -204,12 +204,48 @@ def project_id(orq=None) -> str | None:
     return None
 
 
+def rules_api(method: str, path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Routing rules and guardrail rules (`/v2/routing-rules`, `/v2/guardrail-rules`).
+
+    Since orq API 4.14.17 these endpoints answer 403 `not authorized for this endpoint` to the
+    repo's workspace key (a legacy `workspace_jwt` service-account token; two freshly minted keys of
+    the same kind got the same 403), while `orq request` run from the instructor's shell works. So:
+    try the key, and on 403 replay the call through the CLI with the shell's own ORQ_API_KEY, the
+    one `.env` overrode at import time.
+    """
+    import json
+    import os
+    import shutil
+    import subprocess
+
+    import httpx
+
+    r = httpx.request(method, f"{settings.base_url}{path}", json=body, headers={"Authorization": f"Bearer {settings.api_key}"}, timeout=60)
+    if r.status_code != 403:
+        if r.status_code >= 300:
+            raise RuntimeError(f"{method} {path} -> {r.status_code}: {r.text[:300]}")
+        return r.json() if r.content else {}
+    if not shutil.which("orq"):
+        raise RuntimeError(f"{method} {path} -> 403 for the API key and no `orq` CLI to fall back to; install it and `orq auth login`")
+    cmd = ["orq", "request", method, path, "--force", "--no-input", "-o", "json"] + (["--stdin"] if body is not None else [])
+    env = {k: v for k, v in os.environ.items() if k not in ("ORQ_API_KEY", "ORQ_PROJECT")}  # .env values, not for the CLI
+    if settings.shell_api_key:
+        env["ORQ_API_KEY"] = settings.shell_api_key
+    # stdin must be closed when there is no body: the CLI otherwise waits on a non-TTY stdin
+    p = subprocess.run(cmd, input=json.dumps(body) if body is not None else "", capture_output=True, text=True, check=False, env=env)
+    out = json.loads(p.stdout) if p.stdout.strip() else {}
+    if p.returncode or not (isinstance(out, dict) and out.get("ok", True)):
+        raise RuntimeError(f"{method} {path}: 403 for the API key, and `orq request` with the shell credential answered "
+                           f"{out.get('status') if isinstance(out, dict) else p.returncode}: {(json.dumps(out.get('body')) if isinstance(out, dict) else p.stderr)[:200]}")
+    return (out.get("body") if isinstance(out, dict) else None) or {}
+
+
 def _rules(path: str, orq) -> list[dict[str, Any]]:
     """Workspace-wide rules plus the ones scoped to the workshop project."""
     pid = project_id(orq)
-    out = rest_get(f"{path}?limit=100")
+    out = list(rules_api("GET", f"{path}?limit=100").get("data") or [])
     if pid:
-        out += rest_get(f"{path}?limit=100&project_id={pid}")
+        out += rules_api("GET", f"{path}?limit=100&project_id={pid}").get("data") or []
     return out
 
 
@@ -226,8 +262,8 @@ def reset(orq=None) -> None:
     prefix_us = settings.prefix + "_"  # memory store keys reject hyphens
     n = 0
     for name, lister, deleter, keyf, idf in [
-        ("guardrail rule", lambda: _rules("/v2/guardrail-rules", orq), lambda i: orq.guardrail_rules.delete(guardrail_rule_id=i), _dict_key, _dict_id),
-        ("routing rule", lambda: _rules("/v2/routing-rules", orq), lambda i: orq.routing_rules.delete(routing_rule_id=i), _dict_key, _dict_id),
+        ("guardrail rule", lambda: _rules("/v2/guardrail-rules", orq), lambda i: rules_api("DELETE", f"/v2/guardrail-rules/{i}"), _dict_key, _dict_id),
+        ("routing rule", lambda: _rules("/v2/routing-rules", orq), lambda i: rules_api("DELETE", f"/v2/routing-rules/{i}"), _dict_key, _dict_id),
         ("agent", lambda: orq.agents.list(limit=100).data, lambda i: orq.agents.delete(agent_key=i), lambda x: x.key, lambda x: x.key),
         ("mcp gateway", lambda: rest_get("/v2/mcp-gateways?limit=100"), lambda i: orq.mcp_gateways.delete(id=i), _dict_key, _dict_id),
         ("mcp server", lambda: rest_get("/v2/mcp-servers?limit=100"), lambda i: orq.mcp_servers.delete(id=i), _dict_key, _dict_id),

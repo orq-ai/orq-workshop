@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "app" / "data"
+SHELL_API_KEY = os.environ.get("ORQ_API_KEY", "").strip()  # what the shell exported, before .env overrides it (the orq CLI login uses this one)
 load_dotenv(os.environ.get("ORQ_ENV_FILE", ROOT / ".env"), override=True)  # repo .env wins over a stale shell export; ORQ_ENV_FILE swaps it for a seeded-failure run
 
 
@@ -29,6 +30,7 @@ class Settings:
     identity_id: str = field(default_factory=lambda: _env("IDENTITY_ID", "customer-user_001"))
     tracing: str = field(default_factory=lambda: _env("TRACING", "gateway"))
     mcp_server_url: str = field(default_factory=lambda: _env("MCP_SERVER_URL"))
+    shell_api_key: str = SHELL_API_KEY
 
     @property
     def router_url(self) -> str:

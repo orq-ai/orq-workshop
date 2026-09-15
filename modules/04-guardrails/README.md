@@ -58,7 +58,7 @@ Expected output:
 Same thing from the CLI:
 
 ```bash
-$ orq pii redact --text "contact me at jane.doe@example.com or +31 6 1234 5678" --json
+$ orq pii redact --text "contact me at jane.doe@example.com or +31 6 1234 5678" -o json
 {
   "mappings": {
     "<EMAIL_ADDRESS_1>": "jane.doe@example.com",
@@ -164,12 +164,16 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 
 > Using the orq MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
 
+## Proof
+
+![Studio: Evaluators list showing ws-refund-limit-guard, the evaluator the output guardrail invokes on every refund answer.](assets/studio-evaluators.png)
+
 ## Done when
 
 - [ ] A trace in your workspace has `pii.redact` and `pii.restore` spans, and the answer contains the real email
 - [ ] A trace has a `span.evaluator` span named `ws-refund-limit-guard` with `action=block`, and your terminal shows the `guardrail_error` body
 - [ ] `orq_secret_detection` blocked a GitHub token on input
-- [ ] `orq request GET /v2/guardrail-rules --json` shows no `ws-` rule left (the run deletes them)
+- [ ] `orq request GET /v2/guardrail-rules -o json` shows no `ws-` rule left (the run deletes them)
 - [ ] You can say in one sentence what the app does when the guardrail blocks
 
 ## Gotchas
@@ -181,6 +185,7 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 - The seeded regex guard blocks any sentence with "refund" and an amount above 500, including a refusal that names the amount. Wording decides. A judge with the policy text, or a check on the `issue_refund` tool result, is the better guard.
 - `orq.guardrail_rules.list()` in SDK 4.14 fails on the `_id` field the API returns. The solution uses `GET /v2/guardrail-rules`. Project rules only appear when you pass `project_id`.
 - Output guardrails do not run on streaming responses. Keep the refund agent non-streaming where enforcement matters.
+- Since orq API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
 ## New in orq 4.14
 

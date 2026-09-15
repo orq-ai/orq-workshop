@@ -9,6 +9,7 @@
 | every gateway call blocked with 422 | a workspace-wide PII guardrail rule with the detection service down (fail-closed) | scope rules to a project; `make reset` deletes workshop rules |
 | `lookup_order` returns not_found after enabling PII redaction | order ids look like identifiers and get redacted | expected, see module 04; use `entities` to exclude, or redact only output |
 | `orq budgets list` returns 403 | project-scoped key | budgets need a Management Key |
+| `/v2/routing-rules` or `/v2/guardrail-rules` returns `403 not authorized for this endpoint` | the repo's legacy workspace key cannot reach those endpoints since API 4.14.17 | `orq auth login`; `entities.rules_api` then replays the call through `orq request` with the shell's `ORQ_API_KEY` |
 | annotation returns 404 | annotation key does not exist in the workspace | create `rating` and `defects` annotations in the Studio first |
 | `analyze-trace-failures` finds too few traces | fewer than ~10 traces | `make traffic` |
 | MCP server create rejects the URL | loopback or private host | deploy `app/mcp_server.py` publicly or use a tunnel |
