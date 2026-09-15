@@ -171,15 +171,24 @@ print("    " + " | ".join(f"{m['scores']['search_score']:.3f} {m['text'].splitli
 # ## Step 7 · An external knowledge base
 #
 # orq can front a retrieval API you already run. The contract is one endpoint:
-# `POST <api_url>/search` with `{query, top_k, threshold, filter_by, search_options, rerank_config}`,
-# answering `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}`.
-# `solution/external_kb_server.py` serves the four policy files with keyword scoring. Registering it
-# is an instructor demo: orq's servers call `api_url`, so it must be public.
+# orq POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to `api_url`,
+# answering `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}`, Bearer `api_key`.
+# `app/edge.py` implements it over the four policy files with keyword scoring (the same process
+# receives module 14's webhooks). orq's servers call `api_url`, so it must be public: `make edge`
+# behind `npx localtunnel --port 8001`, or the instance the room shares, as `WS_EDGE_URL`.
 
 # %%
-print("[7] external KB: POST <api_url>/search {query, top_k, threshold, filter_by, search_options, rerank_config}")
-print("    -> {matches: [{id, text, metadata, scores: {search_score, rerank_score}}]}  see solution/external_kb_server.py")
-print("    register: orq knowledge-bases create --key ws-refund-policy-ext --type external --path orq-workshop/workshop \\")
-print("        --external-config '{\"name\": \"lumen-policy\", \"api_url\": \"https://<public-host>\", \"api_key\": \"<token>\"}'")
-print("    instructor demo only: orq's servers must reach api_url, so a loopback or LAN URL cannot work")
+from app.refund_agent.entities import ensure_external_knowledge_base
+
+if settings.edge_url:
+    ext = ensure_external_knowledge_base(orq, api_url=settings.edge_url, api_key=settings.webhook_secret)
+    ms = search(ext, query="damaged in transit after 45 days")
+    print(f"[7] external KB {settings.key('refund-policy-ext')} {ext} -> {settings.edge_url}/search: {len(ms)} matches")
+    for m in ms:
+        print(f"    {m['scores']['search_score']:.3f} {m['id']:28} {m['text'].splitlines()[0][:50]}")
+    print(f"    the same search from the CLI: orq knowledge-bases search {ext} --query 'damaged in transit after 45 days' --top-k 2")
+else:
+    print("[7] external KB: orq POSTs {query, top_k, threshold, filter_by, search_options, rerank_config} to api_url")
+    print("    -> {matches: [{id, text, metadata, scores: {search_score, rerank_score}}]}  see app/edge.py")
+    print("    set WS_EDGE_URL to a public URL of `make edge` (npx localtunnel --port 8001) and run this step again")
 print(f"open {settings.base_url} > Knowledge Bases > {KB} > Retrieval playground, and re-run the query there")

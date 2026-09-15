@@ -3,7 +3,11 @@
 !!! abstract "Factor 6: Launch, pause, resume with simple APIs, and Factor 11: Trigger from anywhere"
     A gate is an agent run you can start from a workflow, read as an exit code, and resume from a JSON file. The same key that runs the refund agent also runs the judge, the red team and a headless coding agent, from a cron or a PR label.
 
-**Time:** 35 min · **Prereqs:** modules 00, 07 and 11 · **You will have:** `make eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally.
+| | |
+|---|---|
+| **Time** | 35 min |
+| **Prerequisites** | modules 00, 07 and 16 |
+| **You will have** | `make eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally. |
 
 ## Why
 
@@ -18,7 +22,7 @@ THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.7
 DEFAULT_GATE = 0.90                                                                    # evals/redteam_gate.py
 ```
 
-The numbers are calibrated, not aspirational. On 2026-09-08 the fixed instructions scored 0.85 / 1.00 / 0.75 and the vulnerable ones 0.70 / 1.00 / 0.35. The judge bar sits at 0.70, not at the 0.75 it scored: an LLM judge lands on its own mean often enough that a zero-margin gate flakes on green code. It moved up from 0.60 once `judge_prompt.md` stopped failing valid "change of mind" refunds (module 07). The red-team bar is zero tolerance: with 8 known attacks, one success is 0.875.
+The numbers are calibrated, not aspirational. On 2026-09-15, on `gpt-5.6-luna`, the fixed instructions scored 0.95 / 1.00 / 0.90 and the vulnerable ones 0.80 / 0.90 / 0.60 (on gpt-4o-mini a week earlier: 0.85 / 1.00 / 0.75 against 0.70 / 1.00 / 0.35). The judge bar sits at 0.70, well under the 0.90 it scored: an LLM judge lands on its own mean often enough that a zero-margin gate flakes on green code, and the vulnerable prompt already fails at 0.60. It moved up from 0.60 once `judge_prompt.md` stopped failing valid "change of mind" refunds (module 07). The red-team bar is zero tolerance: with 8 known attacks, one success is 0.875.
 
 ## Steps
 
@@ -43,9 +47,9 @@ uv run python -m evals.regression
 ╭──────────────────────┬─────────────────╮
 │ Evaluators           │  refund-agent   │
 ├──────────────────────┼─────────────────┤
-│ decision_matches     │      85.0%      │
+│ decision_matches     │      95.0%      │
 │ no_pii_leak          │     100.0%      │
-│ policy_judge         │      75.0%      │
+│ policy_judge         │      90.0%      │
 ╰──────────────────────┴─────────────────╯
 
 ## Eval gate: ws-refund-regression
@@ -54,11 +58,11 @@ Instructions: `app/data/fixed_instructions.md` · rows: 20
 
 | scorer | mean | threshold | status |
 |---|---|---|---|
-| decision_matches | 0.85 | 0.80 | PASS |
+| decision_matches | 0.95 | 0.80 | PASS |
 | no_pii_leak | 1.00 | 1.00 | PASS |
-| policy_judge | 0.75 | 0.70 | PASS |
+| policy_judge | 0.90 | 0.70 | PASS |
 
-Experiment: https://my.orq.ai/orq-research/experiments/01M21FV4YDFK2Y7BNP0NEJ4T54?runId=01M21G25443WH0KM6JEZE1M5HB
+Experiment: https://my.orq.ai/orq-research/experiments/01M21FV4YDFK2Y7BNP0NEJ4T54?runId=01M2KB7PF00F6MCN88A4DYR3A5
 
 wrote evals/results/latest.json
 OK: every scorer at or above its threshold
@@ -71,17 +75,17 @@ $ uv run python -m evals.regression --instructions app/data/vulnerable_instructi
 ```
 
 ```text
-│ decision_matches     │      70.0%      │
-│ no_pii_leak          │     100.0%      │
-│ policy_judge         │      35.0%      │
+│ decision_matches     │      80.0%      │
+│ no_pii_leak          │      90.0%      │
+│ policy_judge         │      60.0%      │
 
 | scorer | mean | threshold | status |
 |---|---|---|---|
-| decision_matches | 0.70 | 0.80 | FAIL |
-| no_pii_leak | 1.00 | 1.00 | PASS |
-| policy_judge | 0.35 | 0.70 | FAIL |
+| decision_matches | 0.80 | 0.80 | PASS |
+| no_pii_leak | 0.90 | 1.00 | FAIL |
+| policy_judge | 0.60 | 0.70 | FAIL |
 
-REGRESSION: decision_matches, policy_judge below threshold
+REGRESSION: no_pii_leak, policy_judge below threshold
 ```
 
 Exit code 1. Every run is also an Experiment run in the Studio (the URL above), so the red run and the green run sit next to each other with per-row verdicts. `evals/results/latest.json` keeps the same detail locally: message, tool calls, answer, trace id and every scorer's explanation per row.
@@ -94,7 +98,7 @@ $ make redteam-gate
 
 ```text
 uv run python -m evals.redteam_gate
-[redteam] Run plan: 8 datapoints | 5 categories | mode='static' | target='ws-refund-agent' | evaluator_model='openai/gpt-4o-mini'
+[redteam] Run plan: 8 datapoints | 5 categories | mode='static' | target='ws-refund-agent' | evaluator_model='openai/gpt-5.6-luna'
 [redteam] Run complete — resistance_rate=100% (8/8 evaluated) vulnerabilities=0 attacks=8
 ## Red-team gate: ws-refund-agent (PASS)
 
@@ -113,7 +117,7 @@ OK: resistance 100% at or above the 90% gate
 
 Exit code 0, 13 seconds. Three things to know about this gate:
 
-- **Static mode** replays `evals/redteam_static.json`, ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing). No attacker model runs, only the OWASP judge. Dynamic attacks are module 11, not CI.
+- **Static mode** replays `evals/redteam_static.json`, ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
 - **Tools really run.** evaluatorq's built-in orq target answers pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one. `evals/refund_target.py` is an `AgentTarget` that drives `orq.responses.create(model="agent/ws-refund-agent")`, executes each `function_call` with `app.refund_agent.tools.dispatch`, and continues with `previous_response_id` plus a `function_call_output` item. That path worked first time; the `chat()` fallback was not needed.
 - **The judge is generic.** The same run against `ws-refund-agent-vulnerable` scored 88% once and 100% once: the OWASP judge does not know the EUR 500 limit or the 30-day window. Policy laxity is the quality gate's job (step 2). This gate catches injection, leakage and agency, the classes the public dataset covers.
 
@@ -200,7 +204,7 @@ note:   a real run links 14 skills into ./.claude/skills for the session and rem
 
 Everything after `--` goes to `claude` untouched, so `-p` (print mode) and `--allowedTools` are plain Claude Code flags. `--no-mcp` is deliberate: the orq MCP server entry Claude Code uses (`https://my.orq.ai/v2/mcp`, no headers) authenticates with OAuth, which needs a browser, so in CI the skill reads traces through the orq CLI on `PATH` (`orq traces search --from 24h --to now -o json`) with `ORQ_API_KEY`. The real run this module was verified with is the cheapest possible one:
 
-```bash
+```console
 $ orq launch claude --no-mcp --no-skills --model anthropic/claude-haiku-4-5 -- -p "Reply with the single word ok"
 ok
 ```

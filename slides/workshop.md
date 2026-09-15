@@ -65,7 +65,7 @@ Pre-filled from your survey. Correct it, add to it.
 
 ## orq in one picture
 
-```
+```text
  your app / framework / coding agent
             │  OpenAI-compatible request (+ extra_body)
             ▼
@@ -94,35 +94,17 @@ Three tools. One loop. Ninety lines.
 ```python
 def run_turn(messages, *, extra_body=None, ...) -> TurnResult:   # stateless reducer
     for _ in range(max_tool_rounds + 1):                          # our control flow
-        completion = client.chat.completions.create(
-            model=model, messages=messages, tools=TOOL_SCHEMAS,   # NL -> tool calls
-            extra_body=extra_body or {})                          # gateway features ride here
-        for call in choice.tool_calls:
-            result = dispatch(store, call.function.name, args)    # tools are structured outputs
-            messages.append({"role": "tool", "content": json.dumps(result)})
+        response = client.responses.create(
+            model=model, input=messages, tools=RESPONSES_TOOLS,   # NL -> tool calls
+            store=False, extra_body=extra_body or {})             # no server state; gateway features ride here
+        for call in (o for o in response.output if o.type == "function_call"):
+            result = dispatch(store, call.name, args)             # tools are structured outputs
+            messages.append({"type": "function_call_output", "call_id": call.call_id, "output": json.dumps(result)})
 ```
 
 `lookup_order` · `issue_refund` · `get_policy` — with traps: post-window orders, an already refunded one, a EUR 620 one, PII in a customer note.
 
 <!-- The app never changes across blocks. The request, the workspace and the harness around it do. -->
-
----
-
-## The spine: 12-Factor Agents
-
-| Factor | Where you will see it today |
-|---|---|
-| 1 NL to tool calls · 4 tools are structured outputs | gateway call, managed agent `function_call` items, MCP Gateway exposure |
-| 2 own your prompts · 3 own your context window | instructions as files, experiments, KB `top_k` and rerank, traces show the context |
-| 5 unify execution and business state | identity + thread on every call, memory `entity_id` |
-| 6 launch/pause/resume · 11 trigger from anywhere | `previous_response_id`, headless `orq launch -p`, CI cron, coding agents |
-| 7 contact humans with tool calls | guardrail 422 as escalation, `tool_approval_required`, annotation queues |
-| 8 own your control flow · 9 compact errors | the loop, routing and guardrail rules, short tool errors, fallbacks |
-| 10 small focused agents · 12 stateless reducer | advisor/sidekick, gateway subsets, `run_turn`, evaluatorq jobs, replay |
-
-<span class="small">humanlayer/12-factor-agents · full map in the docs</span>
-
-<!-- Do not read the table. Say: every block names its factor. That is how the workshop transfers to your own code. -->
 
 ---
 
@@ -157,7 +139,7 @@ Three dots each. Put them on the wall or say them out loud.
 | E | Managed agents | 30 | 08 |
 | F | Knowledge base and RAG | 25 | 09 |
 | G | MCP servers and the MCP Gateway | 25 | 10 |
-| H | Simulation and red teaming | 30 | 11 |
+| H | Simulation and red teaming | 30 | 11, 16 |
 | I | Evals and headless agents in CI | 25 | 12 |
 | J | Coding agents wired to orq | 20 | 13 |
 
@@ -169,7 +151,7 @@ Three dots each. Put them on the wall or say them out loud.
 
 # Block A · Gateway, smart routing, budgets
 
-<span class="tag orange">modules 01 · 03 · 05</span> Factor 1, 8, 5
+<span class="tag orange">modules 01 · 03 · 05</span>
 
 ---
 
@@ -181,8 +163,8 @@ Three dots each. Put them on the wall or say them out loud.
 
 ```python
 extra_body={
-  "timeout":   {"call_timeout": 900},
-  "fallbacks": [{"model": "openai/gpt-4.1-nano"}],
+  "timeout":   {"call_timeout": 1500},
+  "fallbacks": [{"model": "openai/gpt-5.4-nano"}],
   "retry":     {"count": 1, "on_codes": [429, 500, 502, 503, 504]},
   "cache":     {"type": "exact_match", "ttl": 600},
   "load_balancer": {"type": "weight_based", "models": [...]},
@@ -206,7 +188,7 @@ $ orq budgets list --profile management   # third call in a minute rejected
 
 Watch for: `span.fallback_selected` · cached span with zero cost · `orq.auto_router.selected_model` · the budget error text.
 
-<!-- Have the trace list open before you start. Fallback shows only if gpt-4.1 exceeds 900 ms; rerun if it did not. -->
+<!-- Have the trace list open before you start. Fallback shows only if gpt-5.6-sol exceeds 1500 ms; rerun if it did not. -->
 
 ---
 
@@ -221,7 +203,7 @@ Open `modules/01-gateway/run.py`, fill the three `TODO`s, run it.
 - [ ] Smart router traces show two different selected models across profiles
 - [ ] You can say why an unknown model id does not fall back
 
-**Gotchas:** every fallback gets the same timeout · reasoning models reject `tools` on chat completions · budgets need a Management Key.
+**Gotchas:** every fallback gets the same timeout · GPT-5.x rejects `tools` on chat completions unless `reasoning_effort` is `none` (the app uses Responses) · budgets need a Management Key.
 
 **Ask your agent:** "Add a fallback chain and a cache to module 01 without touching app/, then fetch the fallback trace's spans over MCP and tell me which model answered."
 
@@ -231,7 +213,7 @@ Open `modules/01-gateway/run.py`, fill the three `TODO`s, run it.
 
 # Block B · Guardrails and PII
 
-<span class="tag orange">module 04</span> Factor 7
+<span class="tag orange">module 04</span>
 
 ---
 
@@ -282,9 +264,9 @@ Watch for: placeholders in the span input, originals in the answer · what happe
 
 <!-- _class: lead -->
 
-# Block C · Tracing and troubleshooting with orqi
+# Block C · Tracing, troubleshooting with orqi, alerts
 
-<span class="tag orange">modules 02 · 06</span> Factor 3, 5, 11
+<span class="tag orange">modules 02 · 06 · 14 · 17</span>
 
 ---
 
@@ -298,8 +280,11 @@ Watch for: placeholders in the span input, originals in the answer · what happe
 
 Then: **orqi**, the terminal helper. It reads your traces with the orq MCP tools and its own skills: `investigate-root-cause`, `debug-conversation`, `workspace-health-check`, `optimize-cost`.
 
+Then the platform pushes to you: an **alert** on a Reporting API metric opens a trigger and notifies; a **webhook** delivers `llm.response` events, signed, to a receiver you run; a **trace automation** routes matching traces into an annotation queue a human reviews.
+
 ```bash
 $ orqi "list the traces with errors from the last 2 hours and group them by root cause"
+$ orq alerts list-triggers <alert_id>
 ```
 
 ---
@@ -313,9 +298,11 @@ $ make m02                          # identity + thread, otel spans, one annotat
 $ orq traces thread <trace_id>      # readable transcript
 $ orqi /doctor
 $ orqi "why did trace <id> fail?"
+$ make m14                          # cost alert + burst, a signed webhook at your receiver
+$ make m17                          # fill the review queue, annotate by API, promote to a dataset
 ```
 
-Watch for: the thread view grouping two turns · agent → tool → llm nesting · orqi naming the root cause you already know.
+Watch for: the thread view grouping two turns · agent → tool → llm nesting · orqi naming the root cause you already know · the trigger that opened on the burst (run m14 before the session, the alert ticks every 5 minutes).
 
 <!-- Seeded failure: a broken ORQ_BASE_URL in a temp .env. orqi has to find a client-side cause, not only a trace. -->
 
@@ -329,6 +316,7 @@ Watch for: the thread view grouping two turns · agent → tool → llm nesting 
 - [ ] Two turns grouped under one thread with an identity
 - [ ] One annotation on a span
 - [ ] orqi found the broken base URL from the error text
+- [ ] `orq alerts list-triggers` shows the trigger your burst opened
 
 **Gotchas:** short scripts must flush the exporter · annotation keys must exist in the workspace · orqi is alpha, pin `ORQI_VERSION`.
 
@@ -340,7 +328,7 @@ Watch for: the thread view grouping two turns · agent → tool → llm nesting 
 
 # Block D · Failure analysis to evaluators to experiments
 
-<span class="tag orange">module 07</span> Factor 2, 9
+<span class="tag orange">module 07</span>
 
 ---
 
@@ -392,7 +380,7 @@ Watch for: which failure modes the vulnerable variant produces · the judge's tr
 
 # Block E · Managed agents
 
-<span class="tag orange">module 08</span> Factor 4, 6, 10
+<span class="tag orange">modules 08 · 15</span>
 
 ---
 
@@ -409,7 +397,7 @@ orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please"
 
 Function tools come back as `function_call` items. **Your code executes them** and continues with `previous_response_id`. Tools stay structured outputs; state stays yours.
 
-**Advisor** asks a second model for guidance mid-turn. **Sidekick** delegates a discrete task. Small agents, composed.
+**Advisor** asks a second model for guidance mid-turn (it gets the transcript). **Sidekick** delegates a discrete task (it gets only the task). Each is its own span with its own cost: module 15 reads the split, one advisor call versus five agent calls.
 
 ---
 
@@ -420,10 +408,11 @@ Function tools come back as `function_call` items. **Your code executes them** a
 ```bash
 $ orq agents get ws-refund-agent
 $ make m08        # invoke with tool dispatch, stream, memory recall, a version bump
+$ make m15        # advisor before a refusal, sidekick for the closing note, the cost split
 $ orq traces thread <trace_id>
 ```
 
-Watch for: the `function_call` item and the continuation · memory recalling the customer's name on the second call · `@production` in the model reference.
+Watch for: the `function_call` item and the continuation · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
 
 <!-- GET returns tools as action_type with ids. Never PATCH a GET body back. Say it out loud, it saves an hour. -->
 
@@ -447,7 +436,7 @@ Watch for: the `function_call` item and the continuation · memory recalling the
 
 # Block F · Knowledge base and RAG
 
-<span class="tag orange">module 09</span> Factor 3, 13
+<span class="tag orange">module 09</span>
 
 ---
 
@@ -501,7 +490,7 @@ Watch for: scores side by side · the retrieval span in the trace · the grounde
 
 # Block G · MCP servers and the MCP Gateway
 
-<span class="tag orange">module 10</span> Factor 4, 10
+<span class="tag orange">module 10</span>
 
 ---
 
@@ -555,7 +544,7 @@ Watch for: the discovered tool list after sync · only two tools on the gateway 
 
 # Block H · Simulation and red teaming
 
-<span class="tag orange">module 11</span> Factor 12, 10
+<span class="tag orange">modules 11 · 16</span>
 
 ---
 
@@ -576,7 +565,8 @@ Both push results to the Studio as **Experiment runs**. Both route their attacke
 ## H · Live demo
 
 ```bash
-$ make m11        # 2 personas x 2 scenarios, generated personas, red team vulnerable vs fixed (static)
+$ make m11        # 2 personas x 2 scenarios, generated personas, the managed agent twice
+$ make m16        # red team vulnerable vs fixed (static), the CLI gate
 $ uv run eq redteam run -t "agent:ws-refund-agent-vulnerable" --mode static --max-static-datapoints 4 -y
 ```
 
@@ -604,7 +594,7 @@ Watch for: the resistance rate per target · which attack got a refund on the vu
 
 # Block I · Evals and headless agents in CI
 
-<span class="tag orange">module 12</span> Factor 6, 11
+<span class="tag orange">module 12</span>
 
 ---
 
@@ -660,7 +650,7 @@ Watch for: exit codes · the step-summary markdown · the triage report and its 
 
 # Block J · Coding agents wired to orq
 
-<span class="tag orange">module 13</span> Factor 11
+<span class="tag orange">module 13</span>
 
 ---
 

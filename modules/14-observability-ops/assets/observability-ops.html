@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Observability ops · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 14</p>
+    <h1>The platform pushes to you</h1>
+
+    <svg viewBox="0 0 960 576" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="observability-ops-title observability-ops-desc">
+      <title id="observability-ops-title">Alerts, automations and webhooks around the trace store</title>
+      <desc id="observability-ops-desc">Architecture diagram: your app sends traces into orq; the Reporting API aggregates them, an alert watches one metric on a timer and opens a trigger that notifies a webhook notifier; a trace automation routes matching traces into an annotation queue; a workspace webhook delivers llm.response and agent.updated events, signed, to a receiver you run.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Zone: orq platform -->
+      <rect x="296" y="40" width="440" height="312" rx="8" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <rect x="308" y="44" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="344" y="53" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">ORQ PLATFORM</text>
+
+      <!-- Layout (x,y,w,h):
+           Your app      48,176,160,56
+           Traces        344,176,160,56    Webhook       344,264,160,56
+           Reporting API 560,96,160,56     Alert (focal) 560,176,160,56    Automation 560,264,160,56
+           Notifier      784,176,144,56    Queue         784,264,144,56    Receiver   784,352,144,56 -->
+
+      <!-- Arrows first -->
+      <!-- A1 Your app → Traces (same y) -->
+      <line x1="208" y1="204" x2="344" y2="204" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- A3 Traces → Reporting API (right + up) -->
+      <path d="M 504,192 H 524 Q 532,192 532,184 V 132 Q 532,124 540,124 H 560" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A4 Reporting API → Alert (down, same x) -->
+      <line x1="640" y1="152" x2="640" y2="176" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A5 Alert → Notifier (same y) -->
+      <line x1="720" y1="204" x2="784" y2="204" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- A6 Traces → Automation (right + down) -->
+      <path d="M 504,216 H 524 Q 532,216 532,224 V 284 Q 532,292 540,292 H 560" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A7 Automation → Queue (same y) -->
+      <line x1="720" y1="292" x2="784" y2="292" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A8 Traces → Webhook (down, same x) -->
+      <line x1="424" y1="232" x2="424" y2="264" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A9 Webhook → Receiver (down, then right below the zone) -->
+      <path d="M 424,320 V 372 Q 424,380 432,380 H 784" fill="none" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+
+      <!-- Arrow labels (mask + 6–8px gap) -->
+      <rect x="248" y="184" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="276" y="193" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">GATEWAY</text>
+      <rect x="444" y="148" width="80" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="484" y="157" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">AGGREGATE</text>
+      <rect x="652" y="156" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="656" y="165" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">EVERY 5 MIN</text>
+      <rect x="720" y="184" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="752" y="193" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TRIGGER</text>
+      <rect x="468" y="252" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="496" y="261" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">MATCH</text>
+      <rect x="724" y="272" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="752" y="281" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ADD ITEM</text>
+      <rect x="436" y="240" width="48" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="440" y="249" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">EVENT</text>
+      <rect x="548" y="360" width="120" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="608" y="369" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">POST + X-ORQ-SIGNATURE</text>
+
+      <!-- Node: Your app -->
+      <rect x="48" y="176" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="48" y="176" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="56" y="184" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="70" y="193" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="128" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Your app</text>
+      <text x="128" y="223" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">agent/ws-refund-agent</text>
+
+      <!-- Node: Traces (store) -->
+      <rect x="344" y="176" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="344" y="176" width="160" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="352" y="184" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="370" y="193" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STORE</text>
+      <text x="424" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Traces</text>
+      <text x="424" y="223" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">spans · cost · status</text>
+
+      <!-- Node: Webhook -->
+      <rect x="344" y="264" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="344" y="264" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="352" y="272" width="44" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="374" y="281" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EVENTS</text>
+      <text x="424" y="296" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-events-webhook</text>
+      <text x="424" y="311" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">llm.* · agent.updated</text>
+
+      <!-- Node: Reporting API -->
+      <rect x="560" y="96" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="96" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="568" y="104" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="582" y="113" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+      <text x="640" y="128" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Reporting API</text>
+      <text x="640" y="143" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">POST /v2/reporting</text>
+
+      <!-- Node: Alert (focal) -->
+      <rect x="560" y="176" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="176" width="160" height="56" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="568" y="184" width="36" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="586" y="193" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ALERT</text>
+      <text x="640" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-cost-alert</text>
+      <text x="640" y="223" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">genai.cost &gt; 0.002 / 5m</text>
+
+      <!-- Node: Automation (Studio-only) -->
+      <rect x="560" y="264" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="264" width="160" height="56" rx="6" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <rect x="568" y="272" width="44" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="590" y="281" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STUDIO</text>
+      <text x="640" y="296" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Trace automation</text>
+      <text x="640" y="311" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">filter · sample · action</text>
+
+      <!-- Node: Notifier (external) -->
+      <rect x="784" y="176" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="784" y="176" width="144" height="56" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="792" y="184" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="806" y="193" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+      <text x="856" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Notifier</text>
+      <text x="856" y="223" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">webhook · Slack · email</text>
+
+      <!-- Node: Annotation queue (store) -->
+      <rect x="784" y="264" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="784" y="264" width="144" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="792" y="272" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="810" y="281" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">QUEUE</text>
+      <text x="856" y="296" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-review-queue</text>
+      <text x="856" y="311" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">a human reads these</text>
+
+      <!-- Node: Your receiver -->
+      <rect x="784" y="352" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="784" y="352" width="144" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="792" y="360" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="806" y="369" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="856" y="384" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Your receiver</text>
+      <text x="856" y="399" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">app.webhook_receiver</text>
+
+      <!-- Callout -->
+      <path d="M 232,468 Q 284,460 296,352" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="296" cy="352" r="2" fill="#25232e"/>
+      <text x="40" y="484" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">Alerts are project-scoped, and only successful traces carry a project:</text>
+      <text x="40" y="502" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">an error-rate alert cannot see errors the gateway rejected. Watch cost, latency or guardrails.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="532" x2="920" y2="532" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="548" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="560" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="568" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">The one thing that acts on a timer</text>
+
+      <rect x="264" y="560" width="14" height="10" rx="2" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="284" y="568" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Studio-only, no API</text>
+
+      <line x1="432" y1="566" x2="460" y2="566" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="468" y="568" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Traces in</text>
+
+      <line x1="580" y1="566" x2="608" y2="566" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <text x="616" y="568" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Pushed to you: trigger open / resolve, signed events</text>
+    </svg>
+  </div>
+</body>
+</html>

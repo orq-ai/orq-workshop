@@ -1,9 +1,9 @@
 """Stretch: delegation inside a managed agent (orq 4.13 advisor and sidekick tools).
 
 A copy of the refund agent, ws-refund-agent-delegating, gets two extra tools:
-  advisor   consults a stronger model mid-turn (openai/gpt-4.1), the decision stays with the agent
-  sidekick  delegates a discrete writing task to a cheaper model (openai/gpt-4.1-mini)
-Both run server-side and show up as nested spans: advisor -> chat gpt-4.1, sidekick -> chat gpt-4.1-mini.
+  advisor   consults a stronger model mid-turn (openai/gpt-5.6-sol), the decision stays with the agent
+  sidekick  delegates a discrete writing task to a cheaper model (openai/gpt-5.4-nano)
+Both run server-side and show up as nested spans: advisor -> chat gpt-5.6-sol, sidekick -> chat gpt-5.4-nano.
 """
 
 from __future__ import annotations
@@ -40,9 +40,9 @@ def ensure_delegating_agent() -> str:
     )
     p["settings"]["tool_approval_required"] = "none"
     p["settings"]["tools"] += [
-        {"type": "advisor", "configuration": {"model": "openai/gpt-4.1", "max_uses": 2, "max_transcript_tokens": 4000, "max_tokens": 400}},
+        {"type": "advisor", "configuration": {"model": "openai/gpt-5.6-sol", "max_uses": 2, "max_transcript_tokens": 4000, "max_tokens": 400}},
         {"type": "sidekick", "configuration": {
-            "model": "openai/gpt-4.1-mini", "max_uses": 2, "max_tokens": 200,
+            "model": "openai/gpt-5.4-nano", "max_uses": 2, "max_tokens": 200,
             "system_prompt": "Write short, warm customer-service closing notes for Lumen Goods. Plain text, no markdown, no internal tool or policy names.",
             "output_format": "Two sentences.",
         }},

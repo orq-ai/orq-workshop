@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from pathlib import Path
 
 from evaluatorq.contracts import AgentTarget, Message
 from evaluatorq.redteam.contracts import AgentContext, AgentResponse, TextOutputItem, ToolInfo
@@ -27,13 +26,24 @@ from app.refund_agent.tools import TOOL_SCHEMAS, OrderStore, dispatch
 
 # Ground truth the judge cannot see: refunds that really went through, per instruction variant.
 REFUNDS_ISSUED: dict[str, list[str]] = {"vulnerable": [], "fixed": []}
-_PRE_REFUNDED = {o["id"] for o in OrderStore().orders.values() if o["refunded"]}  # ord_a4 in the fixture
+_PRE_REFUNDED = {
+    o["id"] for o in OrderStore().orders.values() if o["refunded"]
+}  # ord_a4 in the fixture
 
-TOOLS = [ToolInfo(name=t["function"]["name"], description=t["function"]["description"], parameters=t["function"]["parameters"]) for t in TOOL_SCHEMAS]
+TOOLS = [
+    ToolInfo(
+        name=t["function"]["name"],
+        description=t["function"]["description"],
+        parameters=t["function"]["parameters"],
+    )
+    for t in TOOL_SCHEMAS
+]
 
 
 def _text(messages: list[Message]) -> str:
-    return messages[-1].content if isinstance(messages[-1].content, str) else str(messages[-1].content)
+    return (
+        messages[-1].content if isinstance(messages[-1].content, str) else str(messages[-1].content)
+    )
 
 
 class LocalRefundTarget(AgentTarget):
@@ -48,12 +58,20 @@ class LocalRefundTarget(AgentTarget):
         return type(self)(self.variant)
 
     async def get_agent_context(self) -> AgentContext:
-        return AgentContext(key=self.agent_key, instructions=self.instructions, tools=TOOLS, model=settings.model)
+        return AgentContext(
+            key=self.agent_key, instructions=self.instructions, tools=TOOLS, model=settings.model
+        )
 
     async def respond(self, messages: list[Message]) -> AgentResponse:
-        r = await asyncio.to_thread(chat, _text(messages), self.history, instructions=self.instructions, store=self.store)
+        r = await asyncio.to_thread(
+            chat, _text(messages), self.history, instructions=self.instructions, store=self.store
+        )
         self.history = r.messages
-        REFUNDS_ISSUED[self.variant] += [o["id"] for o in self.store.orders.values() if o["refunded"] and o["id"] not in _PRE_REFUNDED | set(REFUNDS_ISSUED[self.variant])]
+        REFUNDS_ISSUED[self.variant] += [
+            o["id"]
+            for o in self.store.orders.values()
+            if o["refunded"] and o["id"] not in _PRE_REFUNDED | set(REFUNDS_ISSUED[self.variant])
+        ]
         return AgentResponse(output=[TextOutputItem(text=r.text)], trace_id=r.trace_id)
 
 
@@ -67,14 +85,44 @@ class ManagedRefundTarget(AgentTarget):
         return type(self)(self.agent_key)
 
     async def respond(self, messages: list[Message]) -> AgentResponse:
-        resp = await asyncio.to_thread(self.orq.responses.create, model=f"agent/{self.agent_key}", input=_text(messages), previous_response_id=self.prev)
+        resp = await asyncio.to_thread(
+            self.orq.responses.create,
+            model=f"agent/{self.agent_key}",
+            input=_text(messages),
+            previous_response_id=self.prev,
+        )
         for _ in range(6):
             d = resp.model_dump(exclude_none=True)
             self.prev = d["id"]
             calls = [o for o in d.get("output", []) if o.get("type") == "function_call"]
             if not calls:
-                text = next((o["content"][0].get("text", "") for o in d.get("output", []) if o.get("content")), "")
-                return AgentResponse(output=[TextOutputItem(text=text)], response_id=d["id"], trace_id=(d.get("telemetry") or {}).get("trace_id"))
-            items = [{"type": "function_call_output", "call_id": c["call_id"], "output": json.dumps(dispatch(self.store, c["name"], json.loads(c["arguments"] or "{}")))} for c in calls]
-            resp = await asyncio.to_thread(self.orq.responses.create, model=f"agent/{self.agent_key}", input=items, previous_response_id=self.prev)
+                text = next(
+                    (
+                        o["content"][0].get("text", "")
+                        for o in d.get("output", [])
+                        if o.get("content")
+                    ),
+                    "",
+                )
+                return AgentResponse(
+                    output=[TextOutputItem(text=text)],
+                    response_id=d["id"],
+                    trace_id=(d.get("telemetry") or {}).get("trace_id"),
+                )
+            items = [
+                {
+                    "type": "function_call_output",
+                    "call_id": c["call_id"],
+                    "output": json.dumps(
+                        dispatch(self.store, c["name"], json.loads(c["arguments"] or "{}"))
+                    ),
+                }
+                for c in calls
+            ]
+            resp = await asyncio.to_thread(
+                self.orq.responses.create,
+                model=f"agent/{self.agent_key}",
+                input=items,
+                previous_response_id=self.prev,
+            )
         raise RuntimeError("tool loop did not converge")

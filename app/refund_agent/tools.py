@@ -127,3 +127,10 @@ def dispatch(store: OrderStore, name: str, arguments: dict[str, Any], policy_fn=
         return {"ok": False, "error": f"unknown_tool:{name}"}
     except TypeError as exc:
         return {"ok": False, "error": f"bad_arguments: {exc}"}
+
+
+# The same three tools in the Responses API shape (flat: name/description/parameters at the top level).
+# TOOL_SCHEMAS stays chat-shaped: module 08 registers tools from schema["function"].
+RESPONSES_TOOLS: list[dict[str, Any]] = [
+    {"type": "function", **t["function"]} for t in TOOL_SCHEMAS
+]

@@ -134,7 +134,7 @@ r = refund_turn(QUESTION)
 tracing.flush()
 print(f"[3] otel + @traced trace={r.trace_id} tools={r.tool_calls}")
 rows = show(r.trace_id)
-llm = [s for s in rows if s["type"] == "span.chat_completion"]
+llm = [s for s in rows if s["type"] in ("span.chat_completion", "span.responses")]
 trace_id, span_id = r.trace_id, (llm[-1]["span_id"] if llm else rows[0]["span_id"])
 
 # %% [markdown]

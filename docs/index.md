@@ -6,26 +6,34 @@ hide: [navigation]
 
 Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app, a customer-support refund agent, grows module by module: through the AI Gateway, behind guardrails, into traces, under evaluation, as a managed agent with a knowledge base and MCP tools, attacked by simulated users and red teams, gated in CI, and driven by coding agents.
 
-[Start with module 00](modules/00.md){ .md-button .md-button--primary }
+[Start with Setup](modules/00.md){ .md-button .md-button--primary }
 [See the agenda](agenda.md){ .md-button }
 
 <div class="grid cards" markdown>
 
--   :material-router:{ .lg .middle } **AI Gateway track**
+-   :material-router:{ .lg .middle } **AI Gateway**
 
     ---
 
-    Gateway, tracing, smart routing, guardrails and PII, budgets, troubleshooting with orqi, failure analysis to evaluators to experiments.
+    Fallbacks and cache, smart routing and routing rules, guardrails and PII, budgets, keys and identities.
 
-    [:octicons-arrow-right-24: Modules 00 to 07](modules/00.md)
+    [:octicons-arrow-right-24: Modules 01, 03, 04, 05](modules/01.md)
 
--   :material-robot:{ .lg .middle } **Managed Agents track**
+-   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
 
     ---
 
-    Managed agents, knowledge base and RAG, MCP servers and the MCP Gateway, simulation and red teaming, evals and headless agents in CI, coding agents.
+    Tracing, troubleshooting with orqi, failure analysis to evaluators to experiments, alerts and webhooks, annotation queues and automations.
 
-    [:octicons-arrow-right-24: Modules 08 to 13](modules/08.md)
+    [:octicons-arrow-right-24: Modules 02, 07, 14, 17](modules/02.md)
+
+-   :material-robot:{ .lg .middle } **Managed Agents**
+
+    ---
+
+    Managed agents, knowledge base and RAG, MCP servers and the MCP Gateway, agent simulation, evals and headless agents in CI, coding agents, advisor and sidekick, red teaming.
+
+    [:octicons-arrow-right-24: Modules 08 to 12, 15, 16](modules/08.md)
 
 -   :material-new-box:{ .lg .middle } **What's new**
 
@@ -34,14 +42,6 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
     Features from orq 4.10 to 4.14 and orq-cli 8.x, and the module where each one shows up.
 
     [:octicons-arrow-right-24: What's new](whats-new.md)
-
--   :material-format-list-numbered:{ .lg .middle } **12-Factor Agents**
-
-    ---
-
-    The design spine. Every module names the factor it exercises and the orq surface that embodies it.
-
-    [:octicons-arrow-right-24: The map](twelve-factor.md)
 
 -   :material-human-male-board:{ .lg .middle } **Instructor**
 

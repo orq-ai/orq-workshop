@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review loop · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 17</p>
+    <h1>From a trace to a dataset row, with a human in between</h1>
+
+    <svg viewBox="0 0 960 496" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="review-loop-title review-loop-desc">
+      <title id="review-loop-title">The annotation queue review loop</title>
+      <desc id="review-loop-desc">Architecture diagram: refund-agent traces reach the annotation queue ws-review-queue either through a Studio trace automation or through the add_items API; a reviewer, in the Studio or through the Annotations API, applies a rating and a defect to each queued span, which marks it reviewed; the bad ones are promoted as rows into the dataset ws-review-dataset, which module 07's experiments run on.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Layout (x,y,w,h):
+           Traces        48,152,160,56
+           Automation    288,80,160,56 (Studio-only)     add_items 288,224,160,56
+           Queue (focal) 528,152,160,56
+           Reviewer      528,288,160,56
+           Dataset       768,152,144,56                  Experiment 768,288,144,56 -->
+
+      <!-- Arrows first -->
+      <!-- A1 Traces → Automation (right + up) -->
+      <path d="M 208,168 H 240 Q 248,168 248,160 V 116 Q 248,108 256,108 H 288" fill="none" stroke="#025558" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <!-- A2 Traces → add_items (right + down) -->
+      <path d="M 208,192 H 240 Q 248,192 248,200 V 244 Q 248,252 256,252 H 288" fill="none" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- A3 Automation → Queue (right + down) -->
+      <path d="M 448,108 H 480 Q 488,108 488,116 V 160 Q 488,168 496,168 H 528" fill="none" stroke="#025558" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <!-- A4 add_items → Queue (right + up) -->
+      <path d="M 448,252 H 480 Q 488,252 488,244 V 200 Q 488,192 496,192 H 528" fill="none" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <!-- A5 Queue ↔ Reviewer: queue → reviewer (down, x=592), reviewer → queue (up, x=624) -->
+      <line x1="592" y1="208" x2="592" y2="288" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="624" y1="288" x2="624" y2="208" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- A6 Queue → Dataset (same y) -->
+      <line x1="688" y1="180" x2="768" y2="180" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- A7 Dataset → Experiment (down, same x) -->
+      <line x1="840" y1="208" x2="840" y2="288" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow labels -->
+      <rect x="212" y="120" width="32" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="216" y="129" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">ALL</text>
+      <rect x="212" y="256" width="36" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="216" y="265" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">PICK</text>
+      <rect x="448" y="88" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="452" y="97" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">FILTER MATCH</text>
+      <rect x="448" y="260" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="452" y="269" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">ROOT SPAN</text>
+      <rect x="512" y="240" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="580" y="249" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="end" letter-spacing="0.06em">NEXT ITEM</text>
+      <rect x="632" y="240" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="636" y="249" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">RATING, DEFECT</text>
+      <rect x="696" y="160" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="728" y="169" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">BAD ONES</text>
+      <rect x="852" y="240" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="856" y="249" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">MODULE 07</text>
+
+      <!-- Node: Traces (store) -->
+      <rect x="48" y="152" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="48" y="152" width="160" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="56" y="160" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="74" y="169" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STORE</text>
+      <text x="128" y="184" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Traces</text>
+      <text x="128" y="199" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">agent = ws-refund-agent</text>
+
+      <!-- Node: Automation (Studio-only) -->
+      <rect x="288" y="80" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="288" y="80" width="160" height="56" rx="6" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <rect x="296" y="88" width="44" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="318" y="97" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STUDIO</text>
+      <text x="368" y="112" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Trace automation</text>
+      <text x="368" y="127" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">filter · sample · action</text>
+
+      <!-- Node: add_items (API) -->
+      <rect x="288" y="224" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="288" y="224" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="296" y="232" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="310" y="241" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+      <text x="368" y="256" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Your code</text>
+      <text x="368" y="271" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">add_items(root span)</text>
+
+      <!-- Node: Queue (focal) -->
+      <rect x="528" y="152" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="152" width="160" height="56" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="536" y="160" width="36" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="554" y="169" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">QUEUE</text>
+      <text x="608" y="184" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-review-queue</text>
+      <text x="608" y="199" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">items = spans</text>
+
+      <!-- Node: Reviewer (human or API) -->
+      <rect x="528" y="288" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="288" width="160" height="56" rx="6" fill="rgba(2,85,88,0.10)" stroke="#025558" stroke-width="1"/>
+      <rect x="536" y="296" width="44" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="558" y="305" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HUMAN</text>
+      <text x="608" y="320" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Reviewer</text>
+      <text x="608" y="335" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">Studio, or Annotations API</text>
+
+      <!-- Node: Dataset (store) -->
+      <rect x="768" y="152" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="768" y="152" width="144" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="776" y="160" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="794" y="169" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STORE</text>
+      <text x="840" y="184" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-review-dataset</text>
+      <text x="840" y="199" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">message · expected_output</text>
+
+      <!-- Node: Experiment -->
+      <rect x="768" y="288" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="768" y="288" width="144" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="776" y="296" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="790" y="305" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RUN</text>
+      <text x="840" y="320" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Experiment</text>
+      <text x="840" y="335" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">module 07 evaluators</text>
+
+      <!-- Callout -->
+      <path d="M 232,392 Q 300,388 528,344" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="528" cy="344" r="2" fill="#25232e"/>
+      <text x="40" y="412" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">A review is one annotation on the queued span. The dataset row keeps the correction,</text>
+      <text x="40" y="430" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">not the verdict: annotations stay on the trace.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="452" x2="920" y2="452" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="468" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="480" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="488" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Where the human loop lives</text>
+
+      <rect x="248" y="480" width="14" height="10" rx="2" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="268" y="488" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Studio-only, no API</text>
+
+      <line x1="432" y1="486" x2="460" y2="486" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="468" y="488" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">API call from your code</text>
+
+      <line x1="636" y1="486" x2="664" y2="486" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <text x="672" y="488" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">A verdict, then a promotion</text>
+    </svg>
+  </div>
+</body>
+</html>

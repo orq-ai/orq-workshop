@@ -3,7 +3,11 @@
 !!! abstract "Factor 5: Unify execution state and business state"
     Who is calling, on whose behalf, and how much they may spend are attributes of the request, enforced by the gateway. Not a spreadsheet you reconcile after the invoice.
 
-**Time:** 15 min, instructor demo · **Prereqs:** module 00, workspace admin · **You will have:** a purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end.
+| | |
+|---|---|
+| **Time** | 15 min, instructor demo |
+| **Prerequisites** | module 00, workspace admin |
+| **You will have** | a purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end. |
 
 ## Why
 
@@ -26,7 +30,7 @@ mgmt.budgets.create(
 
 The run needs a Management Key in the shell. Create it, export it, run, delete it. It never goes into `.env`.
 
-```bash
+```console
 $ orq management-keys create --help | head -3
 Mints a new opaque management key (`sk-orq-<key_id>-<secret>`) in the workspace. The raw secret is returned ONCE in the response and is never retrievable afterwards. ...
 $ orq management-keys create --name ws-mgmt-key \
@@ -38,7 +42,7 @@ $ make m05
 
 ### Step 1 · API keys, and a key for the CI runner
 
-```bash
+```console
 $ orq api-keys list -o json | jq '.[0] | {id, name, permission_mode, project_scope, token}'
 {
   "id": "01KTBMFJ2JV9WZN1FSBH60SH8M",
@@ -73,7 +77,7 @@ An identity is the customer the call is made for. Create it once, then tag every
 [2] tagged call 200 trace=cc1c430ed03cfba0a24d48f4b0534dc3  (orq identities list --search customer-user_001)
 ```
 
-```bash
+```console
 $ orq identities list --search customer-user_001 -o json | jq '.data[] | {_id, external_id}'
 { "_id": "01M21F3FT4XNRRAWZGKYRV1H4K", "external_id": "customer-user_001" }
 ```
@@ -113,7 +117,7 @@ The second budget is a USD 1 monthly cost cap on the CI key. The response header
 
 The CLI reads `ORQ_API_KEY` from the environment when it is set, so the same contrast from the shell:
 
-```bash
+```console
 $ ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list -o json
 {
   "object": "list"
@@ -138,7 +142,7 @@ The run deletes what it made. The management key cannot delete itself, so the la
 [5] then: unset ORQ_MANAGEMENT_KEY. `make reset` has nothing to do for this module.
 ```
 
-```bash
+```console
 $ orq management-keys delete 01M21G4X19C4C5NWKGTSS7TX8D --force -o json
 {}
 $ unset ORQ_MANAGEMENT_KEY

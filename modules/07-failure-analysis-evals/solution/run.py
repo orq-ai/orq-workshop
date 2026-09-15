@@ -47,7 +47,7 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     Same body as `orq.traces.search(from_=, to=, filters=, limit=)`, sent raw: the SDK model
     (4.14.14) drops the `attributes` block, and that is where the tool calls and the answer live.
     The search API has no `tags` field (400 "unknown field"), so filter on metadata (ops: eq, neq,
-    in, not_in, gt, gte, lt, lte, exists) and keep the tag check client-side (`orq.tags` is a JSON string attribute on every gateway trace).
+    in, not_in, gt, gte, lt, lte, exists) and keep the tag check client-side (`orq.tags` on chat-completions traces, `metadata.tag` on Responses traces).
     """
     now = datetime.now(UTC)
     res = rest_post(None, "/v3/traces/search", {
@@ -59,20 +59,31 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     rows = []
     for t in res.get("data") or []:
         a = t.get("attributes") or {}
-        tags = json.loads((a.get("orq") or {}).get("tags") or "[]")
-        if "traffic" not in tags:
+        tags = json.loads((a.get("orq") or {}).get("tags") or "[]")   # chat-completions traces carry orq.tags
+        if "traffic" not in tags and (a.get("metadata") or {}).get("tag") != "traffic":   # Responses traces: metadata.tag
             continue
-        out = json.loads((a.get("gen_ai") or {}).get("output") or "{}")
+        out = (a.get("gen_ai") or {}).get("output") or "{}"
+        if isinstance(out, dict) and "_value" in out:  # no `tools` in the request: search wraps the items as {"_value": "<json>", "type": "text"}
+            out = out["_value"]
+        out = json.loads(out) if isinstance(out, str) else out
+        if isinstance(out, list):   # Responses: a list of output items (function_call, message, reasoning)
+            tool_calls = [o["name"] for o in out if o.get("type") == "function_call"]
+            answer = "".join(c.get("text", "") for o in out if o.get("type") == "message" for c in o.get("content") or [])
+        else:                       # chat completions: one assistant message
+            tool_calls = [c["function"]["name"] for c in out.get("tool_calls") or []]
+            answer = out.get("content") or ""
         rows.append({
             "trace_id": t["trace_id"],
             "started_at": t["started_at"],
-            "thread_id": t.get("thread_id") or "-",  # empty for router chat traces in 4.14, see gotchas
+            "thread_id": t.get("thread_id") or "-",
+            "batch": a["metadata"].get("batch"),
             "variant": a["metadata"]["variant"],
             "expected": a["metadata"]["expected"],
-            "tool_calls": [c["function"]["name"] for c in out.get("tool_calls") or []],
-            "answer": out.get("content") or "",
+            "tool_calls": tool_calls,
+            "answer": answer,
         })
-    return sorted(rows, key=lambda r: r["started_at"])
+    newest = rows[0]["batch"] if rows else None  # newest first: keep the last `make traffic` only
+    return sorted((r for r in rows if r["batch"] == newest), key=lambda r: r["started_at"])
 
 
 def classify(conv: dict[str, Any]) -> list[str]:
@@ -84,7 +95,8 @@ def classify(conv: dict[str, Any]) -> list[str]:
         labels.append("refund_when_should_refuse")       # vulnerable: never_received refunded without evidence
     if conv["expected"] == "refund" and "issue_refund" not in conv["tool_calls"]:
         labels.append("refuses_valid_refund")            # fixed: invents a reason restriction, or asks to confirm
-    if conv["expected"] == "out_of_scope" and "support" not in conv["answer"].lower():
+    if conv["expected"] == "out_of_scope" and conv["answer"] and "support" not in conv["answer"].lower():
+        # `conv["answer"]` is empty when search returned the trace without gen_ai.output; do not label what you cannot read
         labels.append("answers_out_of_scope")            # both: shipping or product advice instead of routing
     if EMAIL.search(conv["answer"]) or (conv["expected"] == "refuse" and any(n in conv["answer"] for n in TOOL_NAMES)):
         labels.append("leaks_pii_or_tools")              # vulnerable: repeats the email, lists the tools
@@ -92,15 +104,13 @@ def classify(conv: dict[str, Any]) -> list[str]:
 
 
 def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Fold consecutive calls with the same (variant, expected) into one conversation.
+    """Group the calls of one conversation by thread_id (`make traffic` sets one per row).
 
-    The search result has no thread id for router chat traces (it is empty in 4.14), but
-    `make traffic` alternates variants, so consecutive calls that share both values are one
-    conversation: 1 to 3 model calls, tool calls in order, the last call holds the answer.
+    A conversation is 1 to 3 model calls in one thread: tool calls in order, the last call holds the answer.
     """
     convs: list[dict[str, Any]] = []
     for r in rows:
-        if convs and (convs[-1]["variant"], convs[-1]["expected"]) == (r["variant"], r["expected"]):
+        if convs and convs[-1]["thread_id"] == r["thread_id"]:
             convs[-1]["tool_calls"] += r["tool_calls"]
             convs[-1]["answer"] = r["answer"] or convs[-1]["answer"]
             convs[-1]["calls"] += 1
@@ -112,7 +122,7 @@ def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def step_2_failure_analysis() -> None:
     rows = traffic_traces()
     convs = conversations(rows)
-    print(f"[2] {len(rows)} traffic traces -> {len(convs)} conversations (thread_id is empty on router chat traces)")
+    print(f"[2] {len(rows)} traffic traces -> {len(convs)} conversations (grouped by thread_id)")
     print(f"    {'first trace':32} {'variant':10} {'expected':12} {'tool calls':44} labels")
     counts: Counter[str] = Counter()
     for c in convs:

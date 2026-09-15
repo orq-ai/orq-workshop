@@ -100,12 +100,13 @@ print(f"    $ orq traces thread {out['traces'][-1]}")
 # ## Step 3 · Stream
 #
 # `stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a
-# `function_call` arrives as `response.function_call_arguments.delta` and `.done`.
+# `function_call` arrives as `response.function_call_arguments.delta` and `.done`. A prompt the agent
+# answers with a tool call streams no text at all, so the example asks something it can answer alone.
 
 # %%
 t0 = time.time()
 first, tokens, n = None, [], 0
-with orq.responses.create(model=f"agent/{AGENT}", input="In one sentence, what is the refund window?", stream=True) as events:
+with orq.responses.create(model=f"agent/{AGENT}", input="Say hello in one sentence and ask how you can help.", stream=True) as events:   # no tool needed: a question the agent answers with get_policy streams only function_call_arguments.delta events
     for ev in events:
         n += 1
         d = ev.model_dump(by_alias=True).get("data", {})

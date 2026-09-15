@@ -12,7 +12,7 @@ This is a training repo for orq.ai. Participants run it with Claude Code, OpenCo
 ## Conventions
 
 - Every entity this repo creates in orq carries the `WS_PREFIX` key prefix (default `ws-`). `make reset` deletes them by prefix. Keep it that way.
-- Model ids are always `provider/model`. The default chat model is a non-reasoning model because reasoning models reject `tools` on `/chat/completions`.
+- Model ids are always `provider/model`. The sample app talks to the gateway through the **Responses API** (`/v3/router/responses`), stateless: the full item list every round, `store: false`. GPT-5.x models reject `tools` on `/chat/completions` unless `reasoning_effort` is `"none"`; the LangGraph stretch (chat completions via `ChatOpenAI`) sets it. Tiers: `gpt-5.6-luna` default and judge, `gpt-5.6-terra` mid, `gpt-5.6-sol` strong, `gpt-5.4-nano` cheap.
 - Credentials live in `.env` only. Never print `ORQ_API_KEY`.
 - `make smoke` is the fastest health check. `orq doctor` is the second.
 - Use `uv run` for every Python invocation.

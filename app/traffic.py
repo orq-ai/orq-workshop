@@ -23,12 +23,16 @@ def main(limit: int = 20) -> None:
     for i, row in enumerate(rows):
         variant = "fixed" if i % 2 == 0 else "vulnerable"
         kw = {} if variant == "fixed" else {"instructions": vulnerable}
-        # identity, thread, metadata and name are top-level fields on /chat/completions (not nested under "orq")
+        # identity, thread, metadata and name are top-level body fields (not nested under "orq")
         extra_body = {
             "name": "refund-traffic",
             "identity": {"id": f"customer-user_00{1 + i % 3}"},
             "thread": {"id": f"traffic-{batch}-{i:02d}"},
             "metadata": {"variant": variant, "expected": row["inputs"]["expected_decision"], "batch": batch, "tag": "traffic", "index": f"{i:02d}"},
+            # A `reasoning` output item (any effort above none, when the model actually reasons) makes the
+            # trace store drop the whole output: search has no gen_ai.output, the thread view prints
+            # "[content unavailable]". The traffic runs without reasoning so module 07 can read the answers.
+            "reasoning": {"effort": "none"},
         }
         try:
             r = chat(row["inputs"]["message"], extra_body=extra_body, **kw)

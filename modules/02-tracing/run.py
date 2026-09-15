@@ -7,7 +7,7 @@ Factor 5: unify execution and business state. Identity, thread and metadata trav
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from app.refund_agent import agent as agent_mod
@@ -37,7 +37,9 @@ def show(trace_id: str) -> list[dict[str, Any]]:
     rows = spans(trace_id)
     for s in rows:
         parent = "root" if not s["parent_span_id"] else "  child"
-        print(f"    {parent:7} {s['type']:22} {s['name']:28} {s['status']:5} {s.get('model') or '':22} {s['span_id']}")
+        print(
+            f"    {parent:7} {s['type']:22} {s['name']:28} {s['status']:5} {s.get('model') or '':22} {s['span_id']}"
+        )
     return rows
 
 
@@ -45,10 +47,14 @@ def step_1_zero_code() -> None:
     """Every gateway call is already a trace. Nothing in app/ knows about tracing."""
     r = chat(QUESTION)
     print(f"[1] zero-code      trace={r.trace_id} tools={r.tool_calls}")
-    now = datetime.now(timezone.utc)
-    res = orq.traces.search(from_=now - timedelta(minutes=10), to=now, limit=5).model_dump(by_alias=True)
+    now = datetime.now(UTC)
+    res = orq.traces.search(from_=now - timedelta(minutes=10), to=now, limit=5).model_dump(
+        by_alias=True
+    )
     for t in res["data"]:
-        print(f"    {t['trace_id']}  {t['name']:16} {t['status']:4} {t['duration_ms']:>7.0f} ms  ${t['cost']['total']:.6f}")
+        print(
+            f"    {t['trace_id']}  {t['name']:16} {t['status']:4} {t['duration_ms']:>7.0f} ms  ${t['cost']['total']:.6f}"
+        )
 
 
 def step_2_thread() -> str:
@@ -62,10 +68,14 @@ def step_2_thread() -> str:
     print(f"    turn 1 trace={r1.trace_id} tools={r1.tool_calls}")
     print(f"    turn 2 trace={r2.trace_id} tools={r2.tool_calls}")
     spans(r2.trace_id)  # wait for indexing
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     # TODO: filter by thread_id (also try identity_id, metadata.tier, name)
-    hits = orq.traces.search(from_=now - timedelta(minutes=10), to=now, limit=10, filters=[]).model_dump(by_alias=True)["data"]
-    print(f"    search thread_id={thread_id} -> {len(hits)} traces: {[t['trace_id'] for t in hits]}")
+    hits = orq.traces.search(
+        from_=now - timedelta(minutes=10), to=now, limit=10, filters=[]
+    ).model_dump(by_alias=True)["data"]
+    print(
+        f"    search thread_id={thread_id} -> {len(hits)} traces: {[t['trace_id'] for t in hits]}"
+    )
     print(f"    render it:  orq traces thread {r2.trace_id}")
     return thread_id
 
@@ -91,7 +101,7 @@ def step_3_otel() -> tuple[str, str]:
     tracing.flush()
     print(f"[3] otel + @traced trace={r.trace_id} tools={r.tool_calls}")
     rows = show(r.trace_id)
-    llm = [s for s in rows if s["type"] == "span.chat_completion"]
+    llm = [s for s in rows if s["type"] in ("span.chat_completion", "span.responses")]
     return r.trace_id, (llm[-1]["span_id"] if llm else rows[0]["span_id"])
 
 
@@ -103,7 +113,9 @@ def step_4_annotation(trace_id: str, span_id: str) -> None:
         print(f"[4] annotation     written on span {span_id} of trace {trace_id}")
     except Exception as exc:  # noqa: BLE001
         print(f"[4] annotation     FAILED: {str(exc)[:220]}")
-        print("    Studio: Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad. Then rerun.")
+        print(
+            "    Studio: Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad. Then rerun."
+        )
 
 
 if __name__ == "__main__":

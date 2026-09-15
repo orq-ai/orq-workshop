@@ -16,7 +16,7 @@ from app.refund_agent.config import settings
 orq = make_orq()
 PROJECT_ID = "01a082d7-b8cc-7c86-bfe8-83f9cb47688b"  # orq-workshop; `orq projects list -o json` shows yours
 ROUTER_KEY = settings.key("refund-router")
-POOL: list[str] = []  # TODO: 3 to 4 enabled models, e.g. openai/gpt-4o-mini, openai/gpt-4.1-mini, openai/gpt-4.1, anthropic/claude-haiku-4-5-20251001
+POOL: list[str] = []  # TODO: 3 to 4 enabled models, e.g. openai/gpt-5.6-luna, openai/gpt-5.4-nano, openai/gpt-5.6-terra, openai/gpt-5.6-sol, anthropic/claude-haiku-4-5-20251001
 EASY = "What is your refund window? One sentence."
 HARD = (
     "I ordered ord_a5 70 days ago; the box arrived crushed but I only opened it now. Walk me through every "
@@ -36,7 +36,7 @@ def spans(trace_id: str) -> list[dict[str, Any]]:
 def model_used(trace_id: str) -> tuple[str, float, bool]:
     """(model, cost, routed) from the trace. `routed` is True when a router or rule span is present."""
     rows = spans(trace_id)
-    llm = [s for s in rows if s["type"] == "span.chat_completion"]
+    llm = [s for s in rows if s["type"] in ("span.chat_completion", "span.responses")]
     routed = any(s["type"] in ("span.auto_router", "span.load_balancer") for s in rows)
     model = llm[-1]["model"] if llm else "?"
     cost = sum((s.get("cost") or {}).get("total") or 0 for s in llm)
@@ -76,9 +76,9 @@ def step_2_quality_profile(router: dict[str, Any]) -> None:
 
 def step_3_routing_rule() -> None:
     """A rule is a CEL match plus a target. Fields: model, metadata["k"], identity, headers["h"], project."""
-    cel = ""  # TODO: 'metadata["tier"] == "free" && model == "openai/gpt-4o-mini"'
+    cel = ""  # TODO: 'metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"'
     # TODO: orq.routing_rules.create(display_name=settings.key("route-mini-to-nano"), project_id=PROJECT_ID, enabled=True,
-    #       expression={"cel": cel}, models_config={"mode": "weighted", "models": [{"model": "openai/gpt-4.1-nano", "weight": 1.0}]}, priority=50)
+    #       expression={"cel": cel}, models_config={"mode": "weighted", "models": [{"model": "openai/gpt-5.4-nano", "weight": 1.0}]}, priority=50)
     # Then call chat(EASY, extra_body={"metadata": {"tier": "free"}}) and read model_used(); disable the rule at the end.
     print(f"[3] routing rule   TODO cel={cel!r}")
 

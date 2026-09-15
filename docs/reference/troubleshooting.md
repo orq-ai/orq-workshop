@@ -2,9 +2,9 @@
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `400 invalid model format` | model id without provider | use `provider/model`, e.g. `openai/gpt-4o-mini` |
+| `400 invalid model format` | model id without provider | use `provider/model`, e.g. `openai/gpt-5.6-luna` |
 | `401 API key is not valid for this workspace` | key from another workspace, often a stale `ORQ_API_KEY` in the shell | the repo `.env` wins; check `orq status` for the active workspace |
-| `400` when passing `tools` | reasoning model on `/chat/completions` | use a non-reasoning model or `/responses` |
+| `400` when passing `tools` | GPT-5.x on `/chat/completions` | `/responses` (what the app uses), or `reasoning_effort: "none"` on chat completions |
 | `orq launch` sessions fail after an hour | no `ORQ_API_KEY`, one-hour minted token | `source .env` before launching |
 | every gateway call blocked with 422 | a workspace-wide PII guardrail rule with the detection service down (fail-closed) | scope rules to a project; `make reset` deletes workshop rules |
 | `lookup_order` returns not_found after enabling PII redaction | order ids look like identifiers and get redacted | expected, see module 04; use `entities` to exclude, or redact only output |

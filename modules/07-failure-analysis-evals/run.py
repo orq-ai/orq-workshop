@@ -51,19 +51,25 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     for t in res.get("data") or []:
         a = t.get("attributes") or {}
         tags = json.loads((a.get("orq") or {}).get("tags") or "[]")
-        if "traffic" not in tags:
+        if "traffic" not in tags and (a.get("metadata") or {}).get("tag") != "traffic":
             continue
-        out = json.loads((a.get("gen_ai") or {}).get("output") or "{}")
+        out = (a.get("gen_ai") or {}).get("output") or "{}"
+        if isinstance(out, dict) and "_value" in out:  # no `tools` in the request: search wraps the items as {"_value": "<json>", "type": "text"}
+            out = out["_value"]
+        out = json.loads(out) if isinstance(out, str) else out
         rows.append({
             "trace_id": t["trace_id"],
             "started_at": t["started_at"],
             "thread_id": t.get("thread_id") or "-",
+            "batch": (a.get("metadata") or {}).get("batch"),
             "variant": (a.get("metadata") or {}).get("variant", "?"),
             "expected": (a.get("metadata") or {}).get("expected", "?"),
-            "tool_calls": [c["function"]["name"] for c in out.get("tool_calls") or []],
-            "answer": out.get("content") or "",
+            # Responses traces: `out` is a list of output items; chat completions: one assistant message
+            "tool_calls": [o["name"] for o in out if o.get("type") == "function_call"] if isinstance(out, list) else [c["function"]["name"] for c in out.get("tool_calls") or []],
+            "answer": "".join(c.get("text", "") for o in out if o.get("type") == "message" for c in o.get("content") or []) if isinstance(out, list) else out.get("content") or "",
         })
-    return sorted(rows, key=lambda r: r["started_at"])
+    newest = rows[0]["batch"] if rows else None  # newest first: keep the last `make traffic` only
+    return sorted((r for r in rows if r["batch"] == newest), key=lambda r: r["started_at"])
 
 
 def classify(conv: dict[str, Any]) -> list[str]:
@@ -72,21 +78,19 @@ def classify(conv: dict[str, Any]) -> list[str]:
     if "issue_refund" in conv["tool_calls"] and conv["expected"] in NO_REFUND:
         labels.append("refund_when_should_refuse")
     # TODO: refuses_valid_refund (expected refund, issue_refund never called)
-    # TODO: answers_out_of_scope (expected out_of_scope, answer does not route to support)
+    # TODO: answers_out_of_scope (expected out_of_scope, answer does not route to support) and is not empty
     # TODO: leaks_pii_or_tools (EMAIL.search on the answer, or tool names in a refusal)
     return labels
 
 
 def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Fold consecutive calls with the same (variant, expected) into one conversation.
+    """Group the calls of one conversation by thread_id (`make traffic` sets one per row).
 
-    The search result has no thread id for router chat traces (it is empty in 4.14), but
-    `make traffic` alternates variants, so consecutive calls that share both values are one
-    conversation: 1 to 3 model calls, tool calls in order, the last call holds the answer.
+    A conversation is 1 to 3 model calls in one thread: tool calls in order, the last call holds the answer.
     """
     convs: list[dict[str, Any]] = []
     for r in rows:
-        if convs and (convs[-1]["variant"], convs[-1]["expected"]) == (r["variant"], r["expected"]):
+        if convs and convs[-1]["thread_id"] == r["thread_id"]:
             convs[-1]["tool_calls"] += r["tool_calls"]
             convs[-1]["answer"] = r["answer"] or convs[-1]["answer"]
             convs[-1]["calls"] += 1
@@ -98,7 +102,7 @@ def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def step_2_failure_analysis() -> None:
     rows = traffic_traces()
     convs = conversations(rows)
-    print(f"[2] {len(rows)} traffic traces -> {len(convs)} conversations (thread_id is empty on router chat traces)")
+    print(f"[2] {len(rows)} traffic traces -> {len(convs)} conversations (grouped by thread_id)")
     print(f"    {'first trace':32} {'variant':10} {'expected':12} {'tool calls':44} labels")
     counts: Counter[str] = Counter()
     for c in convs:
