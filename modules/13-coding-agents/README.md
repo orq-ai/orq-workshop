@@ -40,19 +40,21 @@ $ orq connect --status
 Expected output (this machine):
 
 ```text
-     AGENT     CAPABILITY  SCOPE   WORKSPACE     LOCATION
-  ✓  claude    mcp         global                ~/.claude.json
-  ✓            skills      global                ~/.claude/skills
-  ✓  codex     gateway             orq-research  ~/.codex/orq.config.toml
-  ✓            mcp         global                ~/.codex/config.toml
-  ✓  opencode  gateway             orq-research  ~/.config/opencode/opencode.json
-  ✓            mcp         global                ~/.config/opencode/opencode.json
-  ✓  pi        gateway             orq-research  ~/.pi/agent/models.json
-  ✓  shared    skills      global                ~/.agents/skills
+     AGENT   CAPABILITY  SCOPE   WORKSPACE     LOCATION
+  ✓  claude  mcp         global                ~/.claude.json
+  ✓          skills      global                ~/.claude/skills
+  ✓  codex   gateway             orq-research  ~/.codex/orq.config.toml
+  ✓          mcp         global                ~/.codex/config.toml
+  ✓  kimi    gateway             orq-research  ~/.kimi-code/config.toml
+  ✓          mcp         global                ~/.kimi-code/mcp.json
+  ✓  kilo    gateway             orq-research  ~/.config/kilo/kilo.json
+  ✓          mcp         global                ~/.config/kilo/kilo.json
+  ✓  pi      gateway             orq-research  ~/.pi/agent/models.json
 - skills version 415edd5
+- detected but not wired: opencode
 ```
 
-Claude Code has no `gateway` row: it is configured through environment variables, not a config file, so only `launch` can route it. Now ask what a project-local wiring would touch, one agent at a time:
+Claude Code has no `gateway` row: it is configured through environment variables, not a config file, so only `launch` can route it. This machine also has `kimi` and `kilo` wired and `opencode` detected but not wired; your list will differ. Now ask what a project-local wiring would touch, one agent at a time:
 
 ```bash
 $ orq connect claude --local --dry-run
@@ -70,14 +72,20 @@ Expected output:
 - claude   mcp       ~/conductor/workspaces/orq-workshop/djibouti/.mcp.json
 - claude   skills    ~/conductor/workspaces/orq-workshop/djibouti/.claude/skills
 
+! --local scopes mcp and skills only: gateway is machine-wide either way
+- dry run — files that would change, nothing written
 - opencode gateway   ~/.config/opencode/opencode.json
 - opencode mcp       ~/conductor/workspaces/orq-workshop/djibouti/opencode.json
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
 
+! --local scopes mcp and skills only: gateway is machine-wide either way
+- dry run — files that would change, nothing written
 - pi       gateway   ~/.pi/agent/models.json
 - pi       mcp       no MCP support in this agent
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
 
+! --local scopes mcp and skills only: gateway is machine-wide either way
+- dry run — files that would change, nothing written
 - codex    gateway   ~/.codex/orq.config.toml
 - codex    mcp       ~/conductor/workspaces/orq-workshop/djibouti/.codex/config.toml
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
@@ -95,7 +103,7 @@ Expected output:
 
 ```text
 binary: claude
-args:
+args:   
 env:
   ANTHROPIC_API_KEY=
   ANTHROPIC_AUTH_TOKEN=<redacted>
@@ -108,6 +116,7 @@ env:
   ORQ_API_KEY=<redacted>
   ORQ_SERVER=https://my.orq.ai
 note:   a real run links 14 skills into /Users/arian/conductor/workspaces/orq-workshop/djibouti/.claude/skills for the session and removes them on exit
+Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins. Pass --model against that workspace's catalogue, or re-run 'orq setup' to mint a key for the one you logged into.
 ```
 
 Four things to notice. `ANTHROPIC_BASE_URL` points at the gateway's Anthropic Messages endpoint, `ANTHROPIC_AUTH_TOKEN` is your orq key, `ANTHROPIC_API_KEY` is set to empty on purpose (a value there makes Claude Code bypass the gateway), and every model id carries the `anthropic/` prefix. MCP is not in the env because Claude Code already has the `orq-workspace` entry from Step 1; for a clean machine `launch` adds it for the session.
@@ -118,11 +127,13 @@ $ orq launch opencode --dry-run
 
 ```text
 binary: opencode
+args:   
 env:
-  OPENCODE_CONFIG_CONTENT={"$schema":"https://opencode.ai/config.json","provider":{"orq":{"npm":"@ai-sdk/openai-compatible","name":"Orq AI Gateway","options":{"apiKey":"<redacted>","baseURL":"https://my.orq.ai/v3/router"},"models":{"alibaba/qwen3.5-27b": ... (9206 more chars)
+  OPENCODE_CONFIG_CONTENT={"$schema":"https://opencode.ai/config.json","provider":{"orq":{"npm":"@ai-sdk/openai-compatible","name":"Orq AI Gateway","options":{"apiKey":"<redacted>","baseURL":"https://my.orq.ai/v3/router"},"models":{"alibaba/qwen3.5-27b":{"name":"alibaba/qwen3.5-27b"},"alibaba/qwen3. ... (9409 more chars)
   ORQ_API_KEY=<redacted>
   ORQ_SERVER=https://my.orq.ai
 note:   a real run links 14 skills into /Users/arian/conductor/workspaces/orq-workshop/djibouti/.agents/skills for the session and removes them on exit
+Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins. Pass --model against that workspace's catalogue, or re-run 'orq setup' to mint a key for the one you logged into.
 ```
 
 OpenCode gets its whole provider config through one env var, with the model list pulled from your workspace's enabled catalogue, so its model picker shows exactly what the gateway allows. Codex gets `-c model_provider=orq -c model_providers.orq.base_url=https://my.orq.ai/v3/router -c model_providers.orq.wire_api=responses` on the command line instead.
@@ -134,11 +145,12 @@ Either way, every model call the agent makes is a trace with tokens, latency and
 `orq doctor -o json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`) and `orq connect --status` prints the short form `skills version 415edd5`. The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
 
 ```bash
-$ make m13     # step [3] lists them from the snapshot
+$ make m13     # step 3 lists them from the snapshot
 ```
 
 ```text
-[3] skills bundled in the CLI, materialized under /Users/arian/.orq/snapshot/gen-2a16641ad77bdb01
+── Step 3 · The skills that ship in the CLI ───────────
+snapshot : /Users/arian/.orq/snapshot/gen-2a16641ad77bdb01
     evaluatorq                       Write and run evaluatorq evaluation scripts (Python or TypeScript) for a single agent or d
     orq-analyze-trace-failures       Read production traces, identify what's failing, and build failure taxonomies using open c
     orq-build-agent                  Design, create, and configure orq.ai Agents with tools, instructions, knowledge bases, and
@@ -153,6 +165,7 @@ $ make m13     # step [3] lists them from the snapshot
     orq-run-experiment               Create and run orq.ai experiments — compare configurations against datasets using evaluato
     orq-setup-observability          Set up orq.ai observability for LLM applications. Use when setting up tracing, adding the 
     orq-simulate-agent               Run multi-turn agent simulations using evaluatorq's first-class simulation primitives (`si
+next     : paste a skill name into your coding agent's prompt, e.g. 'use the orq-setup-observability skill'
 ```
 
 Fourteen skills, one workflow each. The name links to the `SKILL.md` that the agent reads; the docs catalogue at [Orq Skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills#skills) has the same list with longer descriptions.
@@ -213,11 +226,13 @@ This is Orq's own MCP server, the one coding assistants talk to. It is not the M
 This workspace already has one: a headless run from module 06, `orq launch claude -- -p "run orq doctor and summarise in three lines"`. Find it by session id:
 
 ```bash
-$ make m13     # step [4]
+$ make m13     # step 4
 ```
 
 ```text
-[4] coding-agent sessions in the last 24h: 0
+── Step 4 · Coding-agent sessions as traces ───────────
+sessions : 0 in the last 24h
+next     : open https://my.orq.ai/traces and filter by model anthropic/claude-sonnet-5
 ```
 
 ```bash
@@ -253,14 +268,14 @@ Paste `agent_prompt.md`:
 
 > Read AGENTS.md. Run `orq connect --status`. Then use the setup-observability skill on this repo and tell me the three changes you would make, without applying them.
 
-While it thinks, run `make m13` in another terminal: the session you are in should appear as a new session id in step [4].
+While it thinks, run `make m13` in another terminal: the session you are in should appear as a new session id in step 4.
 
 ## Done when
 
 - [ ] `orq connect --status` lists at least one agent, and you can say which file `--local` would write for it
 - [ ] `orq launch claude --dry-run` shows `ANTHROPIC_BASE_URL=https://my.orq.ai/v3/anthropic` and an empty `ANTHROPIC_API_KEY`
 - [ ] You can name the fourteen bundled skills and the skill you would paste first in a new repo
-- [ ] `make m13` step [4] shows one session id with more than one call and a cost
+- [ ] `make m13` step 4 shows one session id with more than one call and a cost
 - [ ] You can explain the difference between the orq MCP server and the MCP Gateway of module 10
 
 ## Gotchas

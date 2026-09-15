@@ -40,18 +40,23 @@ Open `modules/08-managed-agents/run.py`. The loop in `run_agent` has two `TODO`s
 
 ```bash
 $ orq agents retrieve ws-refund-agent -o json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
-$ uv run python modules/08-managed-agents/run.py
+$ make m08      # the solution; the starter prints the same block once its TODOs are filled in
 ```
 
 Expected output:
 
 ```text
-[1] ws-refund-agent v1.0.0 model=openai/gpt-5.6-luna status=live
-    max_iterations=8 max_execution_time=120s tool_approval_required=respect_tool
-    tools (as READ): [('function', 'ws-lookup-order', 'S4GC7Z'), ('function', 'ws-issue-refund', '7NXF3X'), ('function', 'ws-get-policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]
-    knowledge_bases=[{'knowledge_id': '01M2K8Y4HRF33KBXZVMTQVM6KB'}] memory_stores=[]
-    PATCH of the GET body -> ValueError: Could not find discriminator field type in {'id': '01M2K8Y61FFSQ5BE3BV...
-    write shape: settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]
+── Step 1 · Inspect the agent ─────────────────────────
+agent    : ws-refund-agent v1.1.0 (live)
+model    : openai/gpt-5.6-luna
+limits   : max_iterations 8, max_execution_time 120s
+approval : tool_approval_required=respect_tool
+tools    : [('function', 'ws-lookup-order', 'S4GC7Z'), ('function', 'ws-issue-refund', '7NXF3X'), ('function', 'ws-get-policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
+kb       : [{'knowledge_id': '01M2K8Y4HRF33KBXZVMTQVM6KB'}]
+memory   : []
+patch    : rejected, ValueError: Could not find discriminator field type in {'id': '01M2K8Y61FFSQ5BE3BV…
+write    : settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]
+next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 5
 ```
 
 Reads and writes have different shapes. A GET returns tools as `{action_type, id, key, requires_approval}`; a create or update wants `{"type": "function", "key": "ws-lookup-order"}`. Inline function schemas are rejected: register the tool once (`orq tools create`), then reference it by key. Open the agent in the Studio (**Agents** > `ws-refund-agent`): the same instructions, the tool list, the limits, and a **Versions** tab.
@@ -59,10 +64,14 @@ Reads and writes have different shapes. A GET returns tools as `{action_type, id
 ### Step 2 · Invoke it and execute the tool calls
 
 ```text
-[2] tools=['lookup_order', 'get_policy', 'issue_refund'] steps=4 6.5s cost=$0.00008
-    answer: Your refund of **€89** for the charging dock has been issued to the original payment method. It should arrive 
-    first trace: 2e56946ad03cc973321a74a5192ed34c   last trace: c4e68bf2a8a0e9814b9e08eb9dabb93c
-    $ orq traces thread c4e68bf2a8a0e9814b9e08eb9dabb93c
+── Step 2 · Invoke it and execute the tool calls ──────
+question : Refund ord_a2 please, the dock does not fit.
+tools    : lookup_order → get_policy → issue_refund
+requests : 4 in 5.2s, cost $0.00008
+answer   : Your refund of **€89** for the charging dock has been issued to the original payment method. It shou…
+first    : 0a272823e64d604a68fd1f559e1a6ab1
+last     : a82c9697d1495f27efaa20c265480682
+next     : run `orq traces thread a82c9697d1495f27efaa20c265480682`; the last trace renders the whole conversation
 ```
 
 Four requests, four traces: each Responses call is its own trace with an `agent.response` span and a `chat openai/gpt-5.6-luna` span. State is server-side, so the last trace's thread view is the conversation as the customer saw it; the tool calls and their results sit in the three traces before it:
@@ -89,9 +98,12 @@ If a model confirms the order first and waits ("Would you like to proceed?"), th
 `stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches `get_policy` for "what is the refund window?"), so the step asks something the agent answers by itself.
 
 ```text
-[3] stream: 17 events, first token at 1.08s, first tokens=['Hello', '!', ' How', ' can', ' I', ' help']
-    text: Hello! How can I help you today?
-    created agent ws-refund-agent-memory
+── Step 3 · Stream ────────────────────────────────────
+events   : 17
+first    : token at 0.82s
+tokens   : ['Hello', '!', ' How', ' can', ' I', ' help']
+text     : Hello! How can I help you today?
+next     : the first token arrived well before the full text; that is what a chat UI renders
 ```
 
 The CLI does the same: `orq agents stream ws-refund-agent --message '{"role":"user","parts":[{"kind":"text","text":"..."}]}'` (that endpoint is the older A2A shape and prints a deprecation warning from the SDK; prefer `orq responses create --model agent/ws-refund-agent --input '"..."'`).
@@ -101,10 +113,13 @@ The CLI does the same: `orq agents stream ws-refund-agent --message '{"role":"us
 A memory store is an embedding-backed store of documents per `entity_id`. The agent reads and writes it through server-side tools, so it needs three things: the store attached (`memory_stores=["ws_refund_memory"]`), the tools in `settings.tools` (`retrieve_memory_stores`, `query_memory_store`, `write_memory_store`), and instructions that say when to save and when to query. The call then carries `memory={"entity_id": ...}`.
 
 ```text
-[4] memory entity=customer-user_001-1789503397
-    turn 1: Nice to meet you, Jane! I’ll remember that you prefer store credit over card refunds.
-    turn 2: Yes, Jane—I remember that you prefer store credit over card refunds.
-    trace 2: 4fa5281e964bb437a470598081a81964  (spans: retrieve_memory_stores, query_memory_store)
+── Step 4 · Memory ────────────────────────────────────
+agent    : ws-refund-agent-memory
+entity   : customer-user_001-1789512500
+turn 1   : Nice to meet you, Jane Okafor—I’ll remember that you prefer store credit over card refunds.
+turn 2   : Yes, Jane—I remember that you prefer store credit over card refunds.
+trace 2  : 9b16877b2c0de9424a4ed024cf44f584
+next     : open trace 2; expect retrieve_memory_stores and query_memory_store spans, then `orq memory-stores list-memories ws_refund_memory`
 ```
 
 Two things the solution does deliberately. The store key is `ws_refund_memory`: memory store keys must match `^[A-Za-z]([A-Za-z0-9]*([._][A-Za-z0-9]+)*)?$`, so the `ws-` prefix is not allowed. And the memory goes on a copy, `ws-refund-agent-memory`, not on `ws-refund-agent`: once an agent has memory tools, every call without `memory.entity_id` is a `400 Memory entity ID is required`, which would break every other module that invokes `agent/ws-refund-agent`. Check the store: `orq memory-stores list-memories ws_refund_memory`.
@@ -114,11 +129,13 @@ Two things the solution does deliberately. The store key is `ws_refund_memory`: 
 `orq.agents.update(agent_key=, ..., version_increment="minor", version_description="...")` publishes a version. Invoke a pinned version with `agent/<key>@<version>`, an environment with `agent/<key>@<environment>`; no suffix means `latest`.
 
 ```text
-[5] bumped ws-refund-agent -> v1.1.0
-    agent/ws-refund-agent@1.0.0       ok   trace=fad5f6fdd34b421dd1e4f863537a39c6
-    agent/ws-refund-agent@1.1.0       ok   trace=311163c0af09386cf851046f6298a9f5
-    agent/ws-refund-agent@latest      ok   trace=d2c95def556cf2d194c35003b2312553
-    agent/ws-refund-agent@production  version @production not found for agent ws-refund-agent
+── Step 5 · Versions and @version routing ─────────────
+version  : ws-refund-agent already at v1.1.0 (bump skipped, idempotent)
+call     : agent/ws-refund-agent@1.0.0        ok, trace 7a78a06c0065a70736d88491695a8904
+call     : agent/ws-refund-agent@1.1.0        ok, trace 4ad271bc8ac4a57675fe2ae3d606d04c
+call     : agent/ws-refund-agent@latest       ok, trace 72c0cca86acfce6b3ff22f09ee2281c9
+call     : agent/ws-refund-agent@production   version @production not found for agent ws-refund-agent
+next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves
 ```
 
 Environments are assigned in the Studio: **Agents** > `ws-refund-agent` > **Versions** > the version's environment menu > `production`. Do it now and re-run: `@production` resolves. The bump changes only the description, so the agent behaves the same; the solution skips it on re-runs.

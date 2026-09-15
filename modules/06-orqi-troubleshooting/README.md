@@ -110,18 +110,26 @@ That is the `investigate-root-cause` skill: it walked the span tree with `list_s
 A wrong `ORQ_BASE_URL` never reaches the gateway, so there is no trace to read. The solution reproduces it without touching `.env`: the repo `.env` overrides the shell on purpose (`load_dotenv(override=True)`), so a broken copy exported in the shell would be ignored. Instead `solution/run.py` builds the same OpenAI client the app uses, with `base_url=f"{settings.base_url}/broken"` and `max_retries=0`, and passes it to `chat(..., client=broken)`:
 
 ```bash
-$ make m06      # steps [1] and [2] print before the orqi calls start
+$ make m06      # steps 1 and 2 print before the orqi calls start
 ```
 
 ```text
-[1] traces 3h      total=200 errors=11 by http status={'400': 7, '408': 4}
-    6621875b27315a3019c9ec5bd3d745e2  responses.openai -
-    ae08d86a197fdb7f7a8e206acf126e80  chat.openai    -
-    84657873788f4db614fe0fe700a08af5  chat.openai    -
-[2] broken client  openai.NotFoundError: Error code: 404 on POST https://my.orq.ai/broken/responses, x-orq-trace-id=None
+── Step 1 · Find a failed trace with the CLI ──────────
+window   : last 3h, 200 traces
+errors   : 8
+statuses : HTTP 400 × 8
+failed   : 3e0d33ff9d0cfbfd7f49476e1d93f757  responses.openai -
+failed   : 96547741de3a644e734971f26278e15d  chat.openai      -
+failed   : ac6635e5ff2c58e6b772bf94f547600f  chat.openai      -
+next     : step 3 asks orqi why the first of these failed
+── Step 2 · Break the client, not the gateway ─────────
+error    : openai.NotFoundError: Error code: 404
+request  : POST https://my.orq.ai/broken/responses
+trace    : None (no trace id: the request never reached the gateway)
+next     : step 3 pastes this error into orqi
 ```
 
-Step [1] counts by HTTP status. By the time `make m06` ran, other modules had added 502s (a guardrail evaluator returning the wrong type) and 400s (guardrail blocks) to the 408s and the 404, and orqi's grouping in step [3.2] listed all seven causes. Your numbers will differ; the shape will not.
+Step 1 counts by HTTP status. In this run every failure in the window was a 400 (the guardrail blocks of module 04); earlier runs also showed the 408 timeouts and the 404 from module 01, and 502s from a guardrail evaluator returning the wrong type, and orqi's grouping in step 3b listed each cause. Your numbers will differ; the shape will not.
 
 Paste that text into the prompt:
 
