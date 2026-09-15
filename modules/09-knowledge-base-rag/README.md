@@ -29,10 +29,10 @@ Open `modules/09-knowledge-base-rag/run.py`. The solution is in `solution/run.py
 ### Step 1 · Inspect the seeded knowledge base
 
 ```bash
-$ orq knowledge-bases list --json | jq -c '.data[] | select(.key | startswith("ws-")) | {key, id: ._id, model}'
+$ orq knowledge-bases list -o json | jq -c '.data[] | select(.key | startswith("ws-")) | {key, id: ._id, model}'
 {"key":"ws-refund-policy-large","id":"01M21F3KFRP3NDH9JT87J2QXTV","model":"openai/text-embedding-3-large"}
 {"key":"ws-refund-policy","id":"01M21E5BPY4XF0RRC7NS0RQ63D","model":"openai/text-embedding-3-small"}
-$ orq knowledge-bases retrieve ws-refund-policy --json | jq -c '{key, id: ._id, model, retrieval_settings}'
+$ orq knowledge-bases retrieve ws-refund-policy -o json | jq -c '{key, id: ._id, model, retrieval_settings}'
 {"key":"ws-refund-policy","id":"01M21E5BPY4XF0RRC7NS0RQ63D","model":"openai/text-embedding-3-small","retrieval_settings":{"retrieval_type":"hybrid_search","threshold":0,"top_k":5}}
 $ uv run python modules/09-knowledge-base-rag/run.py
 ```
@@ -66,7 +66,7 @@ Read the first line. The outputs above were captured while `EMBEDDING_MODEL` sti
 The CLI does the same search:
 
 ```bash
-$ orq knowledge-bases search ws-refund-policy-large --query "opened electronics after 20 days, can I return?" --search-type hybrid_search --top-k 2 --search-options '{"include_scores": true, "include_metadata": true}' --json | jq -c '.matches[] | {id, scores, metadata, text: .text[:50]}'
+$ orq knowledge-bases search ws-refund-policy-large --query "opened electronics after 20 days, can I return?" --search-type hybrid_search --top-k 2 --search-options '{"include_scores": true, "include_metadata": true}' -o json | jq -c '.matches[] | {id, scores, metadata, text: .text[:50]}'
 {"id":"chunk_01M21F3NBTCN7P36YKJDKS703T","scores":{"search_score":0.653556764125824},"metadata":{"datasource_id":"01M21F3MWW7V7H92CWMRWCE4G4","topic":"post_window_exceptions"},"text":"# Post-window exceptions\n\nRefunds outside the 30-d"}
 {"id":"chunk_01M21F3PXMVHR2T5BJQA75C3S9","scores":{"search_score":0.6187750101089478},"metadata":{"datasource_id":"01M21F3PBDHBHD45KYB7QFNQGG","topic":"shipping_and_scope"},"text":"# Shipping and scope\n\nLumen Goods ships from a sin"}
 ```
@@ -149,6 +149,10 @@ Paste `agent_prompt.md`:
 
 > Use the manage-knowledge-base idea with the orq Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy-large` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
 
+## Proof
+
+![Studio: Knowledge list showing ws-refund-policy and ws-refund-policy-large, the two knowledge bases this module compares.](assets/studio-knowledge.png)
+
 ## Done when
 
 - [ ] `orq knowledge-bases search ws-refund-policy-large --query "..." --search-type keyword_search` and `vector_search` return different top chunks for the step 2 query
@@ -162,7 +166,7 @@ Paste `agent_prompt.md`:
 - Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model and why this module keeps a second knowledge base. If you inherit a workspace seeded before that change, re-embed: `make reset && make seed`, or keep working against `ws-refund-policy-large`.
 - `orq_ai_sdk 4.14.14`: `orq.knowledge.list_datasources` sends `limit=50.0` and the API rejects the float. The solution uses the REST endpoint for that one call. `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it.
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
-- `orq knowledge-bases list --json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`. `ws-refund-policy-large` only appears after the first solution run.
+- `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`. `ws-refund-policy-large` only appears after the first solution run.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
 
 ## New in orq 4.14

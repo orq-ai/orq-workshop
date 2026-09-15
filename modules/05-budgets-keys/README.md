@@ -31,7 +31,7 @@ $ orq management-keys create --help | head -3
 Mints a new opaque management key (`sk-orq-<key_id>-<secret>`) in the workspace. The raw secret is returned ONCE in the response and is never retrievable afterwards. ...
 $ orq management-keys create --name ws-mgmt-key \
     --permission-mode MANAGEMENT_PERMISSION_MODE_RESTRICTED \
-    --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE --json
+    --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE -o json
 $ export ORQ_MANAGEMENT_KEY=<the "token" from that response>
 $ make m05
 ```
@@ -39,7 +39,7 @@ $ make m05
 ### Step 1 · API keys, and a key for the CI runner
 
 ```bash
-$ orq api-keys list --json | jq '.[0] | {id, name, permission_mode, project_scope, token}'
+$ orq api-keys list -o json | jq '.[0] | {id, name, permission_mode, project_scope, token}'
 {
   "id": "01KTBMFJ2JV9WZN1FSBH60SH8M",
   "name": "API-K",
@@ -74,7 +74,7 @@ An identity is the customer the call is made for. Create it once, then tag every
 ```
 
 ```bash
-$ orq identities list --search customer-user_001 --json | jq '.data[] | {_id, external_id}'
+$ orq identities list --search customer-user_001 -o json | jq '.data[] | {_id, external_id}'
 { "_id": "01M21F3FT4XNRRAWZGKYRV1H4K", "external_id": "customer-user_001" }
 ```
 
@@ -114,11 +114,11 @@ The second budget is a USD 1 monthly cost cap on the CI key. The response header
 The CLI reads `ORQ_API_KEY` from the environment when it is set, so the same contrast from the shell:
 
 ```bash
-$ ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list --json
+$ ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list -o json
 {
   "object": "list"
 }
-$ ORQ_API_KEY=<the key from .env> orq budgets list --json
+$ ORQ_API_KEY=<the key from .env> orq budgets list -o json
 Error: error calling operation: HTTP 403:
 {"code":7,"message":"not authorized for this endpoint"}
 ```
@@ -139,7 +139,7 @@ The run deletes what it made. The management key cannot delete itself, so the la
 ```
 
 ```bash
-$ orq management-keys delete 01M21G4X19C4C5NWKGTSS7TX8D --force --json
+$ orq management-keys delete 01M21G4X19C4C5NWKGTSS7TX8D --force -o json
 {}
 $ unset ORQ_MANAGEMENT_KEY
 ```
@@ -160,8 +160,8 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 
 - [ ] `orq identities list --search customer-user_001` shows the identity, and Traces filtered by it show the tagged calls
 - [ ] Your terminal shows a `429` with `code: requests_per_minute_exceeded` and `scope_kind: IDENTITY`
-- [ ] `ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list --json` works and the `.env` key gets `403`
-- [ ] `orq budgets list --json` shows no budget from this run, `orq api-keys list --json | jq '.[] | select(.name=="ws-ci-key")'` is empty, `orq management-keys list` has no `ws-mgmt-key`
+- [ ] `ORQ_API_KEY=$ORQ_MANAGEMENT_KEY orq budgets list -o json` works and the `.env` key gets `403`
+- [ ] `orq budgets list -o json` shows no budget from this run, `orq api-keys list -o json | jq '.[] | select(.name=="ws-ci-key")'` is empty, `orq management-keys list` has no `ws-mgmt-key`
 - [ ] `ORQ_MANAGEMENT_KEY` is not in `.env` and not in your shell any more
 
 ## Gotchas

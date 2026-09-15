@@ -22,7 +22,7 @@ def step_1_inspect() -> None:
     a = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
     s = a["settings"]
     print(f"[1] {a['key']} v{a['version']} model={a['model']['id']} max_iterations={s['max_iterations']}")
-    print(f"    tools (as READ): {[(t['action_type'], t['key']) for t in s['tools']]}")
+    print(f"    tools (as READ): {[(t['action_type'], t.get('key', t['display_name'])) for t in s['tools']]}")
     # Writes use a different shape: [{"type": "function", "key": "ws-lookup-order"}, ...]. Never PATCH the GET body back.
 
 

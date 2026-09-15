@@ -51,7 +51,7 @@ Every gateway call is a trace named `chat.openai`. A turn with two tool calls is
 
 ```bash
 $ set -a; source .env; set +a          # the CLI otherwise searches the project of your `orq` session
-$ orq traces search --from now-10m --to now --limit 3 --json | jq -c '.data[] | {trace_id, name, status, cost: .cost.total}'
+$ orq traces search --from now-10m --to now --limit 3 -o json | jq -c '.data[] | {trace_id, name, status, cost: .cost.total}'
 {"trace_id":"61f18a57a68b183f02c0a629de4198ac","name":"chat.openai","status":"ok","cost":0.0001464}
 {"trace_id":"cdff0cc2dd384ee7cc1a40204e556bb1","name":"chat.openai","status":"ok","cost":0.00010785}
 {"trace_id":"ce398938d1e040e0b31459424df6c996","name":"chat.openai","status":"ok","cost":0.00008835}
@@ -83,7 +83,7 @@ Fill `step_2_thread`: put `name`, `identity`, `thread` and `metadata` in `extra_
 Four traces, one conversation: turn 1 made three model calls, turn 2 made one. In the Studio, open **Traces**, filter on Thread ID, and the four line up. The same filters work on `identity_id`, `metadata.tier` and `name`:
 
 ```bash
-$ orq traces search --from now-15m --to now --filters '[{"field":"thread_id","op":"eq","values":["ws-thread-1a46c21f"]}]' --json | jq -c '{rows: .meta.row_count, traces: [.data[].trace_id]}'
+$ orq traces search --from now-15m --to now --filters '[{"field":"thread_id","op":"eq","values":["ws-thread-1a46c21f"]}]' -o json | jq -c '{rows: .meta.row_count, traces: [.data[].trace_id]}'
 {"rows":4,"traces":["1535afaef44e7ecd26efa9fce587c434","0684d0ddc0ac3c84831e9aedd9b58733","5f373aab0c4575c348bd90567f61a57b","bacac7c2558bfdf35ee53d0c574e44cf"]}
 ```
 
@@ -149,6 +149,10 @@ Paste `agent_prompt.md`:
 
 > Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
 
+## Proof
+
+![Studio: Traces list for the orq-workshop project, showing ws-refund-agent runs with duration, tokens and cost per request.](assets/studio-traces.png)
+
 ## Done when
 
 - [ ] `orq traces search` filtered on your thread id returns every model call of the conversation
@@ -162,7 +166,7 @@ Paste `agent_prompt.md`:
 - On chat completions, `identity`, `thread` and `metadata` worked as top-level body fields here. Nested under `orq` (the shape the request-metadata docs describe for this endpoint) they were silently ignored: `identity_id` and `thread_id` stayed empty.
 - The SDK's automatic `traceparent` injection (a patch on `httpx.Client.send`) did not reach the OpenAI client (openai 3.9, httpx 0.28), so `run_turn` merges `propagation_headers()` into the request headers itself. If you call the gateway from your own code inside a `@traced` function, pass `extra_headers=propagation_headers()`.
 - `orq traces search` needs `--from` and `--to`; relative values are `now-10m` and `now`. Without `ORQ_API_KEY` in the shell the CLI searches the project of your `orq` session, which is not necessarily this one.
-- `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.14.14. `orq request GET /v3/traces/<id> --json | jq .body.trace.attributes.metadata` shows it.
+- `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.14.14. `orq request GET /v3/traces/<id> -o json | jq .body.trace.attributes.metadata` shows it.
 - `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes.
 
 ## New in orq 4.14

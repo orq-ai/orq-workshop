@@ -102,7 +102,7 @@ Expected output (trimmed, 1 min 50 s):
 If your workspace has too few errors, run `uv run python -m app.traffic 6` first. To pick a trace id yourself, the CLI does the same search (both bounds are required):
 
 ```bash
-$ orq traces search --from 3h --to now --limit 200 --json \
+$ orq traces search --from 3h --to now --limit 200 -o json \
     | jq -r '.data[] | select(.status=="error") | [.trace_id, .attributes.http.response.status_code, .attributes.error.type] | @tsv'
 ```
 
@@ -240,7 +240,7 @@ Paste `agent_prompt.md`:
 ## Done when
 
 - [ ] The orqi header line shows `43 tools` and `ORQ_API_KEY`
-- [ ] You have a root-cause report for a real trace id from your workspace (`orq traces search --from 3h --to now --json` finds it)
+- [ ] You have a root-cause report for a real trace id from your workspace (`orq traces search --from 3h --to now -o json` finds it)
 - [ ] The 404 diagnosis names `ORQ_BASE_URL` and explains the missing `x-orq-trace-id`
 - [ ] `.env` is unchanged (`git diff --stat` is empty for it)
 - [ ] You can state in one sentence when to use orqi and when to use `orq launch`

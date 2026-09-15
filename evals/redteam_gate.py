@@ -24,6 +24,7 @@ import os
 import sys
 from pathlib import Path
 
+import evaluatorq.redteam.runner as _redteam_runner
 from evaluatorq.contracts import LLMCallConfig
 from evaluatorq.redteam import red_team
 from evaluatorq.redteam.contracts import EvaluatorConfig, LLMConfig
@@ -31,6 +32,19 @@ from openai import AsyncOpenAI
 
 from app.refund_agent.config import ROOT, settings  # loads .env; evaluatorq reads ORQ_API_KEY at call time
 from evals.refund_target import RefundAgentTarget
+
+# evaluatorq's red_team() has no public path/project param (unlike evaluatorq() itself): its
+# internal upload always calls send_results_to_orq without `path`, which drops the Experiment
+# in the workspace's Default project instead of <project>/workshop. Patch the one call site.
+_orig_send_results_to_orq = _redteam_runner.send_results_to_orq
+
+
+async def _send_results_to_orq_scoped(*args: object, **kwargs: object):
+    kwargs.setdefault("path", settings.path)
+    return await _orig_send_results_to_orq(*args, **kwargs)
+
+
+_redteam_runner.send_results_to_orq = _send_results_to_orq_scoped
 
 DATASET = ROOT / "evals" / "redteam_static.json"
 RESULTS = ROOT / "evals" / "results" / "redteam.json"

@@ -6,7 +6,7 @@ cost are request attributes the gateway enforces, not bookkeeping the app does a
 Needs a Management Key in the shell (never in .env):
 
     orq management-keys create --name ws-mgmt-key --permission-mode MANAGEMENT_PERMISSION_MODE_RESTRICTED \
-        --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE --json
+        --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE -o json
     export ORQ_MANAGEMENT_KEY=<token from the response>
     uv run python modules/05-budgets-keys/solution/run.py
 

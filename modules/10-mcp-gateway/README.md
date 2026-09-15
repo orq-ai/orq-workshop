@@ -87,7 +87,7 @@ orq.mcp_gateways.create(
 )
 ```
 
-The last two lines of the block come from `orq mcp-gateways list-tools <gateway-id> --json`: the exposed name on the left, `server_key/upstream_tool_name` on the right. With the refund server the exposed pair is `lookup_order` and `get_policy`; `issue_refund` is not in `tool_ids`, so it does not exist for gateway clients.
+The last two lines of the block come from `orq mcp-gateways list-tools <gateway-id> -o json`: the exposed name on the left, `server_key/upstream_tool_name` on the right. With the refund server the exposed pair is `lookup_order` and `get_policy`; `issue_refund` is not in `tool_ids`, so it does not exist for gateway clients.
 
 ### Step 4 · Consume the gateway from Python, then from a coding agent
 
@@ -156,6 +156,12 @@ Paste `agent_prompt.md`:
 > Connect the `ws-refund-gateway` MCP gateway to this coding-agent session and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
 
 With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_contents` instead; ask it about `ask_question`. Either way the answer to "why" is the same: the client only gets the allow-list.
+
+## Proof
+
+![Studio: MCP Portal Gateways, filtered to `ws-`, showing ws-refund-gateway with 2 exposed tools and its public URL.](assets/studio-mcp-gateways.png)
+
+![Studio: MCP Portal Servers tab, filtered to `ws-`, showing the upstream server backing the gateway.](assets/studio-mcp-servers.png)
 
 ## Done when
 

@@ -26,6 +26,7 @@ from app.refund_agent.agent import chat  # noqa: E402  (loads .env before evalua
 from app.refund_agent.config import settings
 from app.refund_agent.tools import OrderStore
 
+import evaluatorq.redteam.runner as _redteam_runner
 from evaluatorq.contracts import LLMCallConfig, Message
 from evaluatorq.redteam import red_team
 from evaluatorq.redteam.contracts import LLMConfig
@@ -35,6 +36,19 @@ from openai import AsyncOpenAI
 
 sys.path.insert(0, str(Path(__file__).parent))
 from refund_target import REFUNDS_ISSUED, LocalRefundTarget, ManagedRefundTarget  # noqa: E402
+
+# red_team() has no public path/project param: its internal upload always calls
+# send_results_to_orq without `path`, which drops the Experiment in the workspace's
+# Default project instead of <project>/workshop. Patch the one call site.
+_orig_send_results_to_orq = _redteam_runner.send_results_to_orq
+
+
+async def _send_results_to_orq_scoped(*args: object, **kwargs: object):
+    kwargs.setdefault("path", settings.path)
+    return await _orig_send_results_to_orq(*args, **kwargs)
+
+
+_redteam_runner.send_results_to_orq = _send_results_to_orq_scoped
 
 # Static mode replays a fixed attack file. evaluatorq's default file lives on HuggingFace and needs
 # huggingface-hub; this local one has 2 attacks per category, all aimed at the refund agent.

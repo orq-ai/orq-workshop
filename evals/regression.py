@@ -25,7 +25,7 @@ from pathlib import Path
 from evaluatorq import DataPoint, evaluatorq, job
 
 from app.refund_agent.agent import chat
-from app.refund_agent.config import DATA_DIR, ROOT  # loads .env; evaluatorq reads ORQ_API_KEY at call time
+from app.refund_agent.config import DATA_DIR, ROOT, settings  # loads .env; evaluatorq reads ORQ_API_KEY at call time
 from app.refund_agent.tools import OrderStore
 from evals.scorers import EVALUATORS
 
@@ -113,6 +113,7 @@ def main(argv: list[str] | None = None) -> int:
         parallelism=args.parallelism,
         print_results=True,
         description=f"instructions={Path(args.instructions).name}",
+        path=settings.path,  # pin the Experiment to <project>/workshop; omitting this drops it in the workspace's Default project
         _experiment_url_out=url_out,
     ))
     rows = rows_detail(results)

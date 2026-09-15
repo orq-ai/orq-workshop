@@ -198,7 +198,7 @@ env:
 note:   a real run links 14 skills into ./.claude/skills for the session and removes them on exit
 ```
 
-Everything after `--` goes to `claude` untouched, so `-p` (print mode) and `--allowedTools` are plain Claude Code flags. `--no-mcp` is deliberate: the orq MCP server entry Claude Code uses (`https://my.orq.ai/v2/mcp`, no headers) authenticates with OAuth, which needs a browser, so in CI the skill reads traces through the orq CLI on `PATH` (`orq traces search --from 24h --to now --json`) with `ORQ_API_KEY`. The real run this module was verified with is the cheapest possible one:
+Everything after `--` goes to `claude` untouched, so `-p` (print mode) and `--allowedTools` are plain Claude Code flags. `--no-mcp` is deliberate: the orq MCP server entry Claude Code uses (`https://my.orq.ai/v2/mcp`, no headers) authenticates with OAuth, which needs a browser, so in CI the skill reads traces through the orq CLI on `PATH` (`orq traces search --from 24h --to now -o json`) with `ORQ_API_KEY`. The real run this module was verified with is the cheapest possible one:
 
 ```bash
 $ orq launch claude --no-mcp --no-skills --model anthropic/claude-haiku-4-5 -- -p "Reply with the single word ok"
@@ -227,11 +227,15 @@ Paste `agent_prompt.md`:
 
 > Open a pull request from a new branch that swaps the contents of `app/data/fixed_instructions.md` for the contents of `app/data/vulnerable_instructions.md` (keep the file name, the CI gate reads that path). Watch `.github/workflows/evals.yml` run with `gh run watch` and wait for the `quality` job to fail. Then read the job summary, quote the scorer table, and explain in five lines which scorer means dropped, why the vulnerable instructions cause exactly those drops, and why the `security` job may still pass. Do not merge the PR; close it when done.
 
+## Proof
+
+![Studio: an Experiment run for ws-refund-regression, the CI gate's own uploaded results. Lives in the workspace's Default project, see Gotchas.](assets/studio-experiment.png)
+
 ## Done when
 
 - [ ] `make eval` exits 0 and `uv run python -m evals.regression --instructions app/data/vulnerable_instructions.md` exits 1
 - [ ] `make redteam-gate` exits 0 and prints a resistance rate at or above 90 percent
-- [ ] Two Experiment runs named `ws-refund-regression` and one named `ws-refund-agent-redteam-gate` exist in the Studio
+- [ ] Two Experiment runs named `ws-refund-regression` and one named `ws-refund-agent-redteam-gate` exist in the Studio (**Default** project, not `orq-workshop`, see Gotchas)
 - [ ] `evals/results/latest.json` lists 20 rows with a `scores` block each
 - [ ] You ran the orqi triage prompt locally and got a report with at least one root-cause section
 - [ ] `orq launch claude --no-mcp --dry-run -- -p "..."` prints the gateway env with the key redacted
@@ -245,6 +249,7 @@ Paste `agent_prompt.md`:
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
 - orqi writes reports to a file in the working directory unless the prompt says "print the report as your final answer, do not create any files".
 - `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behaviour in CI.
+- The Experiment uploads land in the workspace's **Default** project, not `orq-workshop`; they will not show under Studio > Experiments while `orq-workshop` is the active project. Use the printed URL, or switch the project picker to Default.
 
 ## New in orq 4.6
 

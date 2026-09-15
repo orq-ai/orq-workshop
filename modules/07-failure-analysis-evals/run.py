@@ -186,6 +186,7 @@ def step_6_experiment(dataset_id: str) -> None:
                     {"name": "policy_judge", "scorer": make_judge_scorer(ensure_llm_judge())}],
         parallelism=4,
         print_results=True,
+        path=settings.path,  # pin the Experiment to <project>/workshop, not the workspace's Default project
         _experiment_url_out=url,
     ))
     print(f"[6] experiment: {url[0] if url else 'set ORQ_API_KEY to sync results to the Studio'}")

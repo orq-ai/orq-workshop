@@ -3,7 +3,7 @@
 Factor 5: who calls, for whom, and at what cost are request attributes the gateway enforces.
 
     orq management-keys create --name ws-mgmt-key --permission-mode MANAGEMENT_PERMISSION_MODE_RESTRICTED \
-        --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE --json
+        --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE -o json
     export ORQ_MANAGEMENT_KEY=<token>
     uv run python modules/05-budgets-keys/run.py
 

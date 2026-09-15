@@ -14,7 +14,7 @@ from app.refund_agent.client import make_orq
 from app.refund_agent.config import settings
 
 orq = make_orq()
-PROJECT_ID = "01a082d7-b8cc-7c86-bfe8-83f9cb47688b"  # orq-workshop; `orq projects list --json` shows yours
+PROJECT_ID = "01a082d7-b8cc-7c86-bfe8-83f9cb47688b"  # orq-workshop; `orq projects list -o json` shows yours
 ROUTER_KEY = settings.key("refund-router")
 POOL: list[str] = []  # TODO: 3 to 4 enabled models, e.g. openai/gpt-4o-mini, openai/gpt-4.1-mini, openai/gpt-4.1, anthropic/claude-haiku-4-5-20251001
 EASY = "What is your refund window? One sentence."
@@ -84,8 +84,8 @@ def step_3_routing_rule() -> None:
 
 
 def step_4_cli() -> None:
-    print("[4] CLI            orq smart-routers list --json | jq '.data[] | {key, profile, models}'")
-    print("                   orq request GET '/v2/routing-rules?project_id=" + PROJECT_ID + "' --json | jq '.body.data[] | {_id, display_name, enabled, expression}'")
+    print("[4] CLI            orq smart-routers list -o json | jq '.data[] | {key, profile, models}'")
+    print("                   orq request GET '/v2/routing-rules?project_id=" + PROJECT_ID + "' -o json | jq '.body.data[] | {_id, display_name, enabled, expression}'")
 
 
 if __name__ == "__main__":

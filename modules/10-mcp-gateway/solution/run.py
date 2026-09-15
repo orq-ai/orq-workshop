@@ -147,7 +147,7 @@ def step_3_gateway(server: Any) -> Any:
     gateway.id = gateway_id
     print(f"    id={gateway_id} mode={gateway.mode} exposed={gateway.exposed_tools_count} public_url={gateway.public_url}")
     print(f"    exposed: {wanted}   hidden: {hidden}")
-    out = subprocess.run(["orq", "mcp-gateways", "list-tools", gateway.id, "--json"], capture_output=True, text=True)
+    out = subprocess.run(["orq", "mcp-gateways", "list-tools", gateway.id, "-o", "json"], capture_output=True, text=True)
     for t in json.loads(out.stdout or "{}").get("data", []):
         print(f"    {t['exposed_name']:40s} <- {t['server_key']}/{t['upstream_tool_name']}")
     return gateway

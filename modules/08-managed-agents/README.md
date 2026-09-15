@@ -35,7 +35,7 @@ Open `modules/08-managed-agents/run.py`. The loop in `run_agent` has two `TODO`s
 ### Step 1 · Inspect the agent
 
 ```bash
-$ orq agents retrieve ws-refund-agent --json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
+$ orq agents retrieve ws-refund-agent -o json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
 $ uv run python modules/08-managed-agents/run.py
 ```
 
@@ -118,8 +118,8 @@ Environments are assigned in the Studio: **Agents** > `ws-refund-agent` > **Vers
 ### Step 6 · The same from the CLI
 
 ```bash
-$ orq responses create --model agent/ws-refund-agent --input '"One sentence: what is the refund window?"' --json | jq '{trace: .telemetry.trace_id, text: .output[0].content[0].text}'
-$ orq traces search --from 5m --to now --json | jq '.data[] | select(.name == "ws-refund-agent") | .trace_id' | head -3
+$ orq responses create --model agent/ws-refund-agent --input '"One sentence: what is the refund window?"' -o json | jq '{trace: .telemetry.trace_id, text: .output[0].content[0].text}'
+$ orq traces search --from 5m --to now -o json | jq '.data[] | select(.name == "ws-refund-agent") | .trace_id' | head -3
 ```
 
 ## With your coding agent
@@ -132,12 +132,16 @@ Paste `agent_prompt.md`:
 
 > Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces thread <trace_id>`.
 
+## Proof
+
+![Studio: Agents list showing ws-refund-agent and the variants each module step in this repo creates (approval, delegating, mcp, memory, rag, vulnerable).](assets/studio-agents.png)
+
 ## Done when
 
 - [ ] `run.py` completes a refund with `tools=['lookup_order', 'get_policy', 'issue_refund']` and `orq traces thread <last trace>` shows the answer
 - [ ] A stream printed its first token before the full answer
 - [ ] `orq memory-stores list-memories ws_refund_memory` lists an entity with one document, and turn 2 recalled the name
-- [ ] `orq agents retrieve ws-refund-agent --json | jq .version` is `1.1.0` and `@1.0.0` still answers
+- [ ] `orq agents retrieve ws-refund-agent -o json | jq .version` is `1.1.0` and `@1.0.0` still answers
 - [ ] You can say which output item types your loop must answer and which it must not
 
 ## Gotchas

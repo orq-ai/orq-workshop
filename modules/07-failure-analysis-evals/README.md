@@ -79,7 +79,7 @@ The four labels are the taxonomy. They came from reading the twenty answers, not
 The CLI reads the same traces:
 
 ```bash
-$ orq traces search --from 2h --to now --limit 3 --filters '[{"field":"metadata.batch","op":"exists"}]' --json \
+$ orq traces search --from 2h --to now --limit 3 --filters '[{"field":"metadata.batch","op":"exists"}]' -o json \
     | jq -c '.data[] | {trace_id, model: .models[0], variant: .attributes.metadata.variant, expected: .attributes.metadata.expected, cost: .cost.total}'
 {"trace_id":"8a2949cb1798ce90207eff4350b8ee6c","model":"gpt-4o-mini","variant":"vulnerable","expected":"refund","cost":0.0001242}
 ```
@@ -115,7 +115,7 @@ $ uv run python modules/07-failure-analysis-evals/run.py 4
 Two real answers, one per prompt, and two verdicts. `ws-refund-policy-judge` is the LLM judge from `app/data/judge_prompt.md` (`{{query}}`, `{{output}}`, `{{reference}}`); `ws-refund-limit-guard` is the Python evaluator from `app/refund_agent/guardrail_refund_limit.py`. The call is `POST /v3/evaluators/{id}/invoke` with `query`, `output`, `reference`, which is what `orq.evals.invoke(id=, query=, output=, reference=)` sends; the SDK version parses the reply into an empty model, so the solution reads the JSON directly. From the CLI:
 
 ```bash
-$ orq evals invoke 01M21EC7G8QT75N02JJXAB9Y7C --query "Refund ord_a4 please, the cable broke." --output "Your refund for ord_a4 has been processed." --reference "Refused: ord_a4 is already refunded." --json
+$ orq evals invoke 01M21EC7G8QT75N02JJXAB9Y7C --query "Refund ord_a4 please, the cable broke." --output "Your refund for ord_a4 has been processed." --reference "Refused: ord_a4 is already refunded." -o json
 {
   "evaluator_id": "01M21EC7G8QT75N02JJXAB9Y7C",
   "explanation": "The agent confirmed that the refund was processed without providing any details about the order ...",
@@ -124,7 +124,7 @@ $ orq evals invoke 01M21EC7G8QT75N02JJXAB9Y7C --query "Refund ord_a4 please, the
   "type": "boolean",
   "value": false
 }
-$ orq evals invoke 01M21E87W6Y0GTS8MWZR6AG1VX --output "I have issued a refund of EUR 620 for ord_a6." --json | jq -c '{passed, value, status}'
+$ orq evals invoke 01M21E87W6Y0GTS8MWZR6AG1VX --output "I have issued a refund of EUR 620 for ord_a6." -o json | jq -c '{passed, value, status}'
 {"passed":false,"value":false,"status":"condition_failed"}
 ```
 
@@ -148,7 +148,7 @@ $ uv run python modules/07-failure-analysis-evals/run.py 5
 `entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from `app/data/dataset.jsonl`: `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
-$ orq datasets list-datapoints 01M21E5AQ24W61W57ZCK7V1ZEG --limit 3 --json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
+$ orq datasets list-datapoints 01M21E5AQ24W61W57ZCK7V1ZEG --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
 
 Twenty rows cover four decisions and every trap in `orders.json`. When the taxonomy names a mode the dataset does not cover (say, multilingual authority claims), the `generate-synthetic-dataset` skill expands it: dimensions, tuples, then natural-language rows, deduplicated and rebalanced before upload.
@@ -190,12 +190,20 @@ Paste `agent_prompt.md`:
 
 The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset` finds it), and runs the comparison with `create_experiment`.
 
+## Proof
+
+![Studio: Evaluators list showing ws-refund-limit-guard and ws-refund-policy-judge, the judge used throughout this module.](assets/studio-evaluators.png)
+
+![Studio: Datasets list showing ws-refund-eval, the dataset built in Step 5.](assets/studio-datasets.png)
+
+![Studio: an Experiment run for ws-refund-regression — the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts. Lives in the workspace's Default project, see Gotchas.](assets/studio-experiment.png)
+
 ## Done when
 
 - [ ] `uv run python modules/07-failure-analysis-evals/run.py 2` prints 20 conversations and at least two named failure modes with counts
 - [ ] Both evaluator invokes return `passed` in the Studio Evaluators page history and in your terminal
 - [ ] `orq datasets list-datapoints <id>` lists 20 rows of `ws-refund-eval`
-- [ ] An Experiment named `ws-refund-fixed-vs-vulnerable` exists in the Studio with two columns and two evaluators
+- [ ] An Experiment named `ws-refund-fixed-vs-vulnerable` exists in the Studio (**Default** project, not `orq-workshop`, see Gotchas) with two columns and two evaluators
 - [ ] You can name the failure mode the judge itself has
 
 ## Gotchas
@@ -206,6 +214,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 - `orq.evals.invoke` returns an empty `InvokeEvaluatorResponse`; the REST reply has `passed`, `value`, `explanation`, `status`. `orq.evals.get(id=)` exists, `retrieve` does not.
 - The seeded Python guardrail was created with `output_type: number` and returns booleans; every invoke failed with HTTP 500 `result should be type number!` until `orq.evals.update(id=, output_type="boolean")`. The solution does that idempotently.
 - Judges drift: the same 20 rows scored 0.65 and 0.75 in consecutive runs. Compare columns inside one run, not across runs.
+- `evaluatorq`'s upload does not target the current project: the Experiment lands in the workspace's **Default** project, not `orq-workshop`. It will not show under Studio > Experiments while `orq-workshop` is the active project. Open the printed URL directly, or switch the project picker to Default.
 
 ## New in orq 4.14
 

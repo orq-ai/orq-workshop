@@ -125,7 +125,7 @@ Either way, every model call the agent makes is a trace with tokens, latency and
 
 ### Step 3 · The skills that ship in the CLI
 
-`orq doctor --json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`) and `orq connect --status` prints the short form `skills version 415edd5`. The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
+`orq doctor -o json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`) and `orq connect --status` prints the short form `skills version 415edd5`. The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
 
 ```bash
 $ make m13     # step [3] lists them from the snapshot
@@ -182,7 +182,7 @@ $ make m13     # step [4]
 ```
 
 ```bash
-$ orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "45561444-0188-4a37-b50c-483de2e28e6c"' --json \
+$ orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "45561444-0188-4a37-b50c-483de2e28e6c"' -o json \
     | jq -r '.search.data[] | [.trace_id, .name, .cost.total, .usage.prompt_tokens, .usage.completion_tokens] | @tsv'
 ```
 

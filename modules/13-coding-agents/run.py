@@ -58,7 +58,7 @@ def step_3_bundled_skills() -> None:
 
 def step_4_sessions_as_traces() -> None:
     # A coding-agent session is one session_id shared by every model call it made.
-    raw = cli("traces", "search", "--from", "24h", "--to", "now", "--limit", "200", "--json", trim=False)
+    raw = cli("traces", "search", "--from", "24h", "--to", "now", "--limit", "200", "-o", "json", trim=False)
     data = json.loads(raw)["data"]
     sessions: dict[str, list[dict]] = defaultdict(list)
     for t in data:

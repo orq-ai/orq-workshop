@@ -41,7 +41,7 @@ def orqi(prompt: str) -> str:
 
 def step_1_find_failed_trace() -> str | None:
     # `orq traces search` needs both bounds; relative values like 3h / now are fine.
-    data = json.loads(cli("traces", "search", "--from", "3h", "--to", "now", "--limit", "200", "--json"))["data"]
+    data = json.loads(cli("traces", "search", "--from", "3h", "--to", "now", "--limit", "200", "-o", "json"))["data"]
     errors = [t for t in data if t["status"] == "error"]
     by_code = Counter(str(t["attributes"].get("http", {}).get("response", {}).get("status_code")) for t in errors)
     print(f"[1] traces 3h      total={len(data)} errors={len(errors)} by http status={dict(by_code)}")

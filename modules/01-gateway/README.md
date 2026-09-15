@@ -86,9 +86,9 @@ If the primary answered under 900 ms the fallback did not fire. Run it again or 
 ### Step 5 · The same thing from the CLI
 
 ```bash
-$ orq chat create --model openai/gpt-4o-mini --messages '[{"role":"user","content":"say ok"}]' --json | jq .choices[0].message.content
+$ orq chat create --model openai/gpt-4o-mini --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
 "Ok!"
-$ orq traces search --from 5m --to now --json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
+$ orq traces search --from 5m --to now -o json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
 ```
 
 ## With your coding agent
