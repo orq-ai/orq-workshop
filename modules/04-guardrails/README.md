@@ -30,10 +30,12 @@ client.responses.create(
     model=settings.model, instructions=INSTRUCTIONS, input=messages, tools=RESPONSES_TOOLS, store=False,
     extra_body={
         "plugins":    [{"id": "pii_redaction", "language": "en", "on_failure": "passthrough"}],
-        "guardrails": [{"id": "01M21E87W6Y0GTS8MWZR6AG1VX", "execute_on": "output"}],
+        "guardrails": [{"id": GUARD_ID, "execute_on": "output"}],
     },
 )
 ```
+
+`GUARD_ID` is the id of the evaluator `ws-refund-limit-guard`, resolved by key with `ensure_python_guardrail(orq)` from `app/refund_agent/entities.py`. Ids change on every reseed; never paste one into code.
 
 `app/` does not change in this module. `run_turn` already forwards `extra_body` and `extra_headers`.
 
@@ -128,7 +130,7 @@ next     : nothing in this question is on the allowlist, so the model reads the 
 
 ### Step 3 · A Python guardrail on the output
 
-`make seed` created the evaluator `ws-refund-limit-guard` (id `01M21E87W6Y0GTS8MWZR6AG1VX`, code in `app/refund_agent/guardrail_refund_limit.py`). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
+`make seed` created the evaluator `ws-refund-limit-guard` (code in `app/refund_agent/guardrail_refund_limit.py`; the run looks its id up by key, `orq evals all --search ws-` shows it). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
 
 ```text
 ── Step 3a · Vulnerable instructions, output guardrail ───
@@ -204,7 +206,7 @@ deleted  : grl_01m2kkx6a6k99t2yss15fq4wyk
 next     : `orq request GET /v2/guardrail-rules -o json` should list no ws- rule
 ```
 
-Read the two `tagged` lines. A project rule matches requests that belong to the project. A key minted with `orq setup --local` (module 00) is project-scoped, and with it the first rule blocks the tagged call (verified with the CLI's project credential: `orq request POST /v3/router/chat/completions --project orq-workshop` returned `400 guardrail_error`). The repo's demo key is workspace-wide, its requests carry no project, so the solution falls back to a workspace rule with the same metadata gate. The gate is the blast radius: only calls tagged `channel=ws-guardrails` are checked, everyone else's traffic is untouched. The run disables the rule, proves the tagged call passes again, then deletes both rules.
+Read the two `tagged` lines. A project rule matches requests that belong to the project. A key minted with `orq setup --local` (module 00) is project-scoped, and with it the first rule blocks the tagged call (verified with the CLI's project credential: `orq request POST /v3/router/chat/completions --project orq-workshop` returned `400 guardrail_error`). The repo's demo key is workspace-wide, its requests carry no project, so the solution falls back to a workspace rule with the same metadata gate. The gate is the blast radius: only calls tagged `channel=ws-guardrails` are checked, everyone else's traffic is untouched. The run disables the rule, proves the tagged call passes again, then deletes both rules. Steps 4c to 4g run under one `try/finally`: a gateway error halfway through still ends with the deletes, so no rule keeps guarding traffic after a failed run.
 
 ### Step 5 · Read the indicators on the span
 

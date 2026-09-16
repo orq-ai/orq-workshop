@@ -335,76 +335,79 @@ print(f"reason   : {(block or {}).get('failures', [{}])[0].get('reason')}")
 # matches requests that belong to the project. A key from `orq setup --local` is project-scoped and
 # this call is blocked; the repo's demo key is workspace-wide, its requests carry no project, and
 # the call passes.
+#
+# (d) Only when the project rule did not match: fall back to a workspace-wide rule with the same
+# metadata gate. The gate is the blast radius: only calls tagged `channel=ws-guardrails` are checked.
+#
+# (e) The same question without the tag: the CEL does not match, so no guardrail runs.
+#
+# (f) Disable the active rule, wait for the change to propagate, and prove the tagged call passes
+# again. Disabling is how you switch a rule off in an incident without losing its CEL.
+#
+# (g) Delete every rule this step created, so nothing keeps guarding traffic after the workshop.
+# (c) to (g) sit in one cell under one `try/finally`: a gateway error halfway through must not
+# leave a rule guarding everyone's traffic.
 
 # %%
 pid = project_id()
 tag = {"metadata": {"channel": CHANNEL}}  # top-level body metadata is what rule matching reads (4.14)
 PII_QUESTION = "My email is jane.doe@example.com, refund ord_a1."
-rules: list[str] = []  # every rule created here, deleted in step 4g
+rules: list[str] = []  # every rule created here, deleted in the `finally` below, whatever happens in between
 
-project_rule_id = ensure_rule(pid)
-rules.append(project_rule_id)
-time.sleep(RULE_PROPAGATION_SECONDS)
-result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client, extra_body=tag))
-
-print("── Step 4c · A project-scoped guardrail rule ──────────")
-print(f"rule     : {RULE_NAME} ({project_rule_id})")
-print(f"project  : {pid}")
-print(f"cel      : {CEL}")
-if block:
-    print(f"tagged   : HTTP {block['_status']} {block.get('code')} (project rule matched: this key is project-scoped)")
-    active_rule_id = project_rule_id
-else:
-    print("tagged   : HTTP 200 (project rule did not match: an all-projects key carries no project)")
-
-# %% [markdown]
-# (d) Only when the project rule did not match: fall back to a workspace-wide rule with the same
-# metadata gate. The gate is the blast radius: only calls tagged `channel=ws-guardrails` are checked.
-
-# %%
-print("── Step 4d · Workspace fallback rule ──────────────────")
-if block:
-    print("skipped  : the project rule already matched")
-else:
-    active_rule_id = ensure_rule(None)  # workspace-wide, still gated on the metadata tag
-    rules.append(active_rule_id)
+try:
+    # (c) project rule
+    project_rule_id = ensure_rule(pid)
+    rules.append(project_rule_id)
     time.sleep(RULE_PROPAGATION_SECONDS)
     result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client, extra_body=tag))
-    print(f"rule     : {RULE_NAME}-ws ({active_rule_id})")
-    print("project  : <workspace>, same cel")
-    print(f"tagged   : HTTP {block['_status'] if block else 200} {(block or {}).get('code')} (workspace rule matched)")
 
-# %% [markdown]
-# (e) The same question without the tag: the CEL does not match, so no guardrail runs.
+    print("── Step 4c · A project-scoped guardrail rule ──────────")
+    print(f"rule     : {RULE_NAME} ({project_rule_id})")
+    print(f"project  : {pid}")
+    print(f"cel      : {CEL}")
+    if block:
+        print(f"tagged   : HTTP {block['_status']} {block.get('code')} (project rule matched: this key is project-scoped)")
+        active_rule_id = project_rule_id
+    else:
+        print("tagged   : HTTP 200 (project rule did not match: an all-projects key carries no project)")
 
-# %%
-result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client))
+    # (d) workspace fallback rule
+    print("── Step 4d · Workspace fallback rule ──────────────────")
+    if block:
+        print("skipped  : the project rule already matched")
+    else:
+        active_rule_id = ensure_rule(None)  # workspace-wide, still gated on the metadata tag
+        rules.append(active_rule_id)
+        time.sleep(RULE_PROPAGATION_SECONDS)
+        result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client, extra_body=tag))
+        print(f"rule     : {RULE_NAME}-ws ({active_rule_id})")
+        print("project  : <workspace>, same cel")
+        print(f"tagged   : HTTP {block['_status'] if block else 200} {(block or {}).get('code')} (workspace rule matched)")
 
-print("── Step 4e · An untagged call ─────────────────────────")
-print(f"untagged : HTTP {block['_status'] if block else 200} (rule does not match)")
+    # (e) untagged call
+    result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client))
 
-# %% [markdown]
-# (f) Disable the active rule, wait for the change to propagate, and prove the tagged call passes
-# again. Disabling is how you switch a rule off in an incident without losing its CEL.
+    print("── Step 4e · An untagged call ─────────────────────────")
+    print(f"untagged : HTTP {block['_status'] if block else 200} (rule does not match)")
 
-# %%
-rules_api("PATCH", f"/v2/guardrail-rules/{active_rule_id}", {"enabled": False})
-time.sleep(RULE_PROPAGATION_SECONDS)
-result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client, extra_body=tag))
+    # (f) disable
+    rules_api("PATCH", f"/v2/guardrail-rules/{active_rule_id}", {"enabled": False})
+    time.sleep(RULE_PROPAGATION_SECONDS)
+    result, block = blocked_by_guardrail(lambda: chat(PII_QUESTION, client=client, extra_body=tag))
 
-print("── Step 4f · Disable the rule ─────────────────────────")
-print(f"disabled : {active_rule_id}")
-print(f"tagged   : HTTP {block['_status'] if block else 200} (rule off)")
-
-# %% [markdown]
-# (g) Delete every rule this step created, so nothing keeps guarding traffic after the workshop.
-
-# %%
-print("── Step 4g · Delete the rules ─────────────────────────")
-for rule_id in rules:
-    rules_api("DELETE", f"/v2/guardrail-rules/{rule_id}")
-    print(f"deleted  : {rule_id}")
-print("next     : `orq request GET /v2/guardrail-rules -o json` should list no ws- rule")
+    print("── Step 4f · Disable the rule ─────────────────────────")
+    print(f"disabled : {active_rule_id}")
+    print(f"tagged   : HTTP {block['_status'] if block else 200} (rule off)")
+finally:
+    # (g) delete, best effort: one failed delete must not skip the rest
+    print("── Step 4g · Delete the rules ─────────────────────────")
+    for rule_id in rules:
+        try:
+            rules_api("DELETE", f"/v2/guardrail-rules/{rule_id}")
+            print(f"deleted  : {rule_id}")
+        except Exception as exc:
+            print(f"failed   : {rule_id} not deleted ({exc}); delete it by hand")
+    print("next     : `orq request GET /v2/guardrail-rules -o json` should list no ws- rule")
 
 # %% [markdown]
 # ## Step 5 · Read the indicators on the span

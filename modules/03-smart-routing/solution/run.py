@@ -173,10 +173,13 @@ project_cel = 'metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"'  # 
 free_tier_body = {"metadata": {"tier": "free"}}
 
 project_rule = ensure_rule(settings.key("route-mini-to-nano"), PROJECT_ID, project_cel)
-time.sleep(RULE_PROPAGATION_SECONDS)
-result = chat(EASY, extra_body=free_tier_body)
-model, _, rule_fired = model_used(result.trace_id)
-rules_api("PATCH", f"/v2/routing-rules/{project_rule['id']}", {"enabled": False})
+try:
+    time.sleep(RULE_PROPAGATION_SECONDS)
+    result = chat(EASY, extra_body=free_tier_body)
+    model, _, rule_fired = model_used(result.trace_id)
+finally:
+    # Disable even when the call or the trace lookup raised: a live rule must not outlive the script.
+    rules_api("PATCH", f"/v2/routing-rules/{project_rule['id']}", {"enabled": False})
 
 print("── Step 3a · A project-scoped routing rule ────────────")
 print(f"rule     : {project_rule['id']} (project {project_rule['project_id']})")
@@ -198,13 +201,16 @@ print(f"disabled : {project_rule['id']} (kept in place for module 08)")
 # %%
 workspace_cel = 'metadata["ws_module"] == "03" && model == "openai/gpt-5.6-luna"'
 workspace_rule = ensure_rule(settings.key("route-mini-to-nano-ws"), None, workspace_cel)
-time.sleep(RULE_PROPAGATION_SECONDS)
-tagged = chat(EASY, extra_body={"metadata": {"ws_module": "03"}})
-untagged = chat(EASY, extra_body={"metadata": {"ws_module": "no"}})
-tagged_model, _, tagged_fired = model_used(tagged.trace_id)
-untagged_model, _, untagged_fired = model_used(untagged.trace_id)
-rules_api("PATCH", f"/v2/routing-rules/{workspace_rule['id']}", {"enabled": False})
-rules_api("DELETE", f"/v2/routing-rules/{workspace_rule['id']}")
+try:
+    time.sleep(RULE_PROPAGATION_SECONDS)
+    tagged = chat(EASY, extra_body={"metadata": {"ws_module": "03"}})
+    untagged = chat(EASY, extra_body={"metadata": {"ws_module": "no"}})
+    tagged_model, _, tagged_fired = model_used(tagged.trace_id)
+    untagged_model, _, untagged_fired = model_used(untagged.trace_id)
+finally:
+    # A workspace-wide rule touches everyone's traffic: disable and delete it whatever happened above.
+    rules_api("PATCH", f"/v2/routing-rules/{workspace_rule['id']}", {"enabled": False})
+    rules_api("DELETE", f"/v2/routing-rules/{workspace_rule['id']}")
 
 print("── Step 3b · A workspace-wide rule, gated on a tag ────")
 print(f"rule     : {workspace_rule['id']} (workspace-wide)")
