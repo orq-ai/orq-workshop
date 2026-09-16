@@ -17,4 +17,5 @@
 | spans missing from short scripts | batch exporter did not flush | call `tracing.flush()` before exit |
 | red team says `NO VERDICT`, every attack 401 | stale `ORQ_API_KEY` exported in the shell; `uv run --env-file` does not override it | `unset ORQ_API_KEY` or `set -a; source .env; set +a` |
 | MCP server or gateway ids come back `None` from the SDK | SDK 4.14 models read `id`, the API returns `_id` | use `model_dump(by_alias=True)["_id"]` or `orq request GET /v2/mcp-servers` |
+| `400 No tool output found for function call` continuing an agent turn | a pending `call_id` got no `function_call_output`: a server-side tool's `function_call` was answered locally, or a target stubbed it away | answer every pending call and skip only those whose `call_id` has an `orq:*` sibling (module 08's loop); one failed trace among healthy ones is a platform hiccup, not your loop |
 | `mkdocs build --strict` fails | broken link or missing snippet | links inside module READMEs must be plain text, not relative paths |

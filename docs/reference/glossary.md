@@ -28,7 +28,7 @@
 
 **Advisor / Sidekick.** Built-in agent tools. Advisor: ask a second model for guidance on the conversation so far. Sidekick: delegate a discrete task with its own instructions and get only the result. On the gateway's server tools these are `orq:advisor` and `orq:subagent`. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
 
-**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
+**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [How retrieval works](rag.md) · [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
 
 **Orq MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp)
 

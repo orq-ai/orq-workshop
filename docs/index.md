@@ -11,6 +11,14 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 <div class="grid cards" markdown>
 
+-   :material-tools:{ .lg .middle } **Setup**
+
+    ---
+
+    Keys and environment, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
+
+    [:octicons-arrow-right-24: Modules 00, 06, 13](modules/00.md)
+
 -   :material-router:{ .lg .middle } **AI Gateway**
 
     ---
@@ -23,7 +31,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Tracing, troubleshooting with orqi, failure analysis to evaluators to experiments, alerts and webhooks, annotation queues and automations.
+    Tracing, failure analysis to evaluators to experiments, alerts and webhooks, annotation queues and automations.
 
     [:octicons-arrow-right-24: Modules 02, 07, 14, 17](modules/02.md)
 
@@ -31,7 +39,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Managed agents, knowledge base and RAG, MCP servers and the MCP Gateway, agent simulation, evals and headless agents in CI, coding agents, advisor and sidekick, red teaming.
+    Managed agents, MCP servers and the MCP Gateway, agent simulation, evals and headless agents in CI, advisor and sidekick, red teaming.
 
     [:octicons-arrow-right-24: Modules 08 to 12, 15, 16](modules/08.md)
 
@@ -42,14 +50,6 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
     Features from orq 4.10 to 4.14 and orq-cli 8.x, and the module where each one shows up.
 
     [:octicons-arrow-right-24: What's new](whats-new.md)
-
--   :material-human-male-board:{ .lg .middle } **Instructor**
-
-    ---
-
-    Facilitator notes, seeded failures, reset commands, and the live-session deck.
-
-    [:octicons-arrow-right-24: Facilitator notes](instructor/index.md)
 
 -   :material-book-open-variant:{ .lg .middle } **Reference**
 
