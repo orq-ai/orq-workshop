@@ -1058,13 +1058,13 @@ Watch for: the resistance rate per target · which attack got a refund on the vu
 
 ## I · The concept
 
-**Evals as regression, not benchmark.** evaluatorq scorers return `pass_`; any failure exits 1; thresholds are means over the dataset. The red-team static gate is the same idea for security.
+**Evals as a gate, not a benchmark.** evaluatorq scorers return `pass_`; thresholds are absolute means over the dataset; below the bar exits 1. The red-team static gate is the same idea for security, and fails closed on errors.
 
 ```yaml
 # .github/workflows/evals.yml
 jobs:
-  quality:  run: uv run python -m evals.regression      # exit 1 on regression
-  security: run: uv run python -m evals.redteam_gate     # exit 1 on a successful attack
+  quality:  run: uv run python -m evals.regression      # exit 1 below a threshold
+  security: run: uv run python -m evals.redteam_gate     # exit 1 on an attack, an error or a missing verdict
 ```
 
 **Headless agents as routine tasks.** `orqi "<prompt>"` and `orq launch claude -p "<prompt>"` run once and exit. Put them on a cron: nightly trace triage, weekly cost report, PR-time failure analysis. One `ORQ_API_KEY`, no vendor keys, a budget on that key.
