@@ -179,7 +179,10 @@ try:
     model, _, rule_fired = model_used(result.trace_id)
 finally:
     # Disable even when the call or the trace lookup raised: a live rule must not outlive the script.
-    rules_api("PATCH", f"/v2/routing-rules/{project_rule['id']}", {"enabled": False})
+    try:
+        rules_api("PATCH", f"/v2/routing-rules/{project_rule['id']}", {"enabled": False})
+    except Exception as exc:  # noqa: BLE001
+        print(f"failed   : rule {project_rule['id']} not disabled ({exc}); disable it by hand")
 
 print("── Step 3a · A project-scoped routing rule ────────────")
 print(f"rule     : {project_rule['id']} (project {project_rule['project_id']})")
@@ -208,9 +211,13 @@ try:
     tagged_model, _, tagged_fired = model_used(tagged.trace_id)
     untagged_model, _, untagged_fired = model_used(untagged.trace_id)
 finally:
-    # A workspace-wide rule touches everyone's traffic: disable and delete it whatever happened above.
-    rules_api("PATCH", f"/v2/routing-rules/{workspace_rule['id']}", {"enabled": False})
-    rules_api("DELETE", f"/v2/routing-rules/{workspace_rule['id']}")
+    # A workspace-wide rule touches everyone's traffic: disable and delete it whatever happened above,
+    # best effort per call, so a failed PATCH still lets the DELETE run.
+    for method, body in (("PATCH", {"enabled": False}), ("DELETE", None)):
+        try:
+            rules_api(method, f"/v2/routing-rules/{workspace_rule['id']}", body)
+        except Exception as exc:  # noqa: BLE001
+            print(f"failed   : {method} on rule {workspace_rule['id']} ({exc}); clean it up by hand")
 
 print("── Step 3b · A workspace-wide rule, gated on a tag ────")
 print(f"rule     : {workspace_rule['id']} (workspace-wide)")

@@ -19,8 +19,9 @@ concurrency:
   group: nightly-triage
   cancel-in-progress: false
 
+# ORQ_API_KEY is injected per step below: only the steps that talk to orq receive it, never the
+# two `curl | sh` installers.
 env:
-  ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
   ORQ_PROJECT: orq-workshop
   # orqi is alpha: pin the release tag so a nightly job does not break on a new build.
   ORQI_VERSION: "0.1.0"
@@ -50,6 +51,8 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Sanity
+        env:
+          ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
         run: |
           orq --version
           orqi --version
@@ -58,6 +61,8 @@ jobs:
       - name: Triage yesterday's errors
         # One-shot mode: orqi prints and exits. The prompt asks for stdout only because orqi
         # otherwise writes the report to a file in the working directory.
+        env:
+          ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
         run: |
           orqi "List the traces with errors from the last 24 hours, group them by root cause, and write a markdown report with one section per root cause and a suggested fix each. Print the report as your final answer. Do not create any files." > triage.md
           test -s triage.md
