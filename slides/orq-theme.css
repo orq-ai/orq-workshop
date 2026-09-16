@@ -33,6 +33,15 @@ h3 { font-size: 1.05em; color: var(--orq-teal-light); }
 a { color: var(--orq-teal-light); }
 strong { color: var(--orq-teal-dark); }
 code, pre { font-family: "Kurrent Mono", ui-monospace, Menlo, monospace; }
+
+/* Diagrams: centred, and never taller than the slide they sit on. The exported PNGs are
+   2x and transparent, so they take the slide background and stay crisp on a projector. */
+section img { display: block; margin: 0.4rem auto; max-height: 64%; }
+section.block img { max-height: 62%; }
+
+/* A slide whose body is one diagram: let it use the room. */
+section.figure img { max-height: 76%; }
+section.figure h2 { margin-bottom: 0.2rem; }
 pre { background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 0.72em; padding: 0.6em 0.9em; }
 code { background: #fff; padding: 0.05em 0.3em; border-radius: 4px; font-size: 0.85em; }
 table { font-size: 0.8em; }

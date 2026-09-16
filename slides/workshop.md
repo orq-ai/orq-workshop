@@ -2,6 +2,7 @@
 marp: true
 theme: orq
 paginate: true
+transition: fade
 footer: "orq.ai workshop · github.com/orq-ai/orq-workshop"
 ---
 
@@ -12,9 +13,9 @@ footer: "orq.ai workshop · github.com/orq-ai/orq-workshop"
 
 ## A hands-on workshop
 
-**Gateway · Guardrails · Tracing · Evals · Agents · RAG · MCP · Simulation · Red teaming · Coding agents**
+**Own your agent · Managed agents · Knowledge base and RAG · MCP servers and the MCP Gateway**
 
-one refund agent · your priorities decide the order
+one refund agent · four blocks · the rest is in the appendix
 
 <!--
 Timing: 0:00. Welcome, names, one line each on what they build. This deck is a spine, not a script.
@@ -27,7 +28,7 @@ Everything shown lives in the repo. Every block ends with "you try" and a "Done 
 
 - **One sample app**, a customer-support refund agent. It grows block by block.
 - **Two tracks**, always: by hand (SDK, CLI, Studio) and with your coding agent (`orq launch claude`).
-- **You choose the order.** In ten minutes we vote on the blocks. We do four or five of ten.
+- **You already chose.** Four blocks, from what you wrote to us. Six more sit in the appendix.
 - **Every block ends with "Done when."** Verify it in the Studio before we move on.
 - **Parking lot** on the wall. Anything we skip becomes a follow-up.
 
@@ -49,7 +50,7 @@ Pre-filled from your survey. Correct it, add to it.
 | Which coding agents? | OpenCode · Claude Code · Pi | |
 | Frameworks on top? | LangGraph · orq SDK · Strands | |
 | Most used areas | routing · budgets & keys · deployments & agents · tracing · experiments | |
-| What you want from today | guardrails & PII · tracing & failure analysis · simulation & red teaming | |
+| What you want from today | managed agents · KB and RAG, internal **and** external search · MCP servers and gateway · your own framework with orq around it | |
 
 <!-- 0:05. Five minutes. Write their additions on the slide (or the whiteboard). These feed the vote. -->
 
@@ -126,24 +127,355 @@ def run_turn(messages, *, extra_body=None, ...) -> TurnResult:   # stateless red
 
 <!-- _class: vote -->
 
-## Vote: pick four or five blocks
+## What you asked for
 
-Three dots each. Put them on the wall or say them out loud.
+Two mails, four asks. Today is those four in depth, not ten in passing.
 
-| | Block | Minutes | Repo modules |
+| | Block | Minutes | Repo |
 |---|---|---|---|
-| A | Gateway, smart routing, budgets | 25 | 01, 03, 05 |
-| B | Guardrails and PII | 25 | 04 |
-| C | Tracing and troubleshooting with orqi | 25 | 02, 06 |
-| D | Failure analysis to evaluators to experiments | 30 | 07 |
-| E | Managed agents | 30 | 08 |
-| F | Knowledge base and RAG | 25 | 09 |
-| G | MCP servers and the MCP Gateway | 25 | 10 |
-| H | Simulation and red teaming | 30 | 11, 16 |
-| I | Evals and headless agents in CI | 25 | 12 |
-| J | Coding agents wired to orq | 20 | 13 |
+| 1 | **Own your agent** — LangGraph or raw SDK, orq as the layer around it | 30 | `examples/`, 02, 08 |
+| 2 | **Managed agents** — the loop runs in orq | 30 | 08, 15 |
+| 3 | **Knowledge base and RAG** — internal *and* external search engines | 35 | 09 |
+| 4 | **MCP servers and the MCP Gateway** — one governed endpoint | 25 | 10 |
 
-<!-- 0:27. Five minutes. Then reorder the rest of the deck on the fly: jump to the block sections by page. Facilitator notes have the vote-to-order table. Suggested default if the vote ties: C, B, D, H, J. -->
+Routing, model selection and monitoring: you said the docs cover those. They are in the appendix if you want them.
+
+<!-- 0:27. Two minutes, not five. They answered this in writing already: confirm, then start. Swaps come out of the appendix. -->
+
+---
+
+<!-- _class: lead -->
+
+# 1 · Own your agent
+
+<span class="tag orange">examples/own-your-agent.py</span> <span class="tag">module 02</span> <span class="tag">module 08</span>
+
+<!-- 0:32. The block Vansh asked for: keep the agent architecture framework-agnostic, use orq as the infrastructure layer. -->
+
+---
+
+<!-- _class: block -->
+
+## 1 · The concept
+
+**Keep your architecture. Rent the infrastructure.** The loop is yours, a framework's, or orq's. The gateway, the traces and the budgets are the same either way.
+
+![w:850](../docs/assets/diagrams/own-your-agent-loops.png)
+
+<!-- One question, three shapes. The only difference is who runs the loop; routing and tracing do not care. -->
+
+---
+
+<!-- _class: block -->
+
+## 1 · Live demo
+
+```bash
+$ uv run python examples/own-your-agent.py     # one question, three legs, three trace ids
+```
+
+| | Who owns the loop | Protocol | Tracing setup |
+|---|---|---|---|
+| Raw orq SDK | you | Responses API | none, the gateway traces it |
+| LangGraph | the framework | chat-completions | `orq_ai_sdk.langchain.setup()`, one line |
+| Managed agent | orq | `model="agent/<key>"` | none |
+
+Watch for: the same three tools in the same order, the same refund, three shapes of trace.
+
+<!-- Open the three trace ids side by side in the Studio. That comparison is the whole argument. -->
+
+---
+
+<!-- _class: block -->
+
+## 1 · You try · Done when
+
+- [ ] `examples/own-your-agent.py` prints three trace ids
+- [ ] All three found in the Studio, same tools in the same order
+- [ ] One thing changed without touching the agent: a fallback, a budget, or a routing rule
+
+**Gotchas:** LangGraph speaks chat-completions, so GPT-5.x wants `reasoning_effort="none"` before it accepts tool definitions · the framework leg names its run to find its own trace · the prompt is still a repo file in all three legs, a Deployment is what moves it into orq.
+
+**Ask your agent:** "Add a fourth leg to examples/own-your-agent.py using a different framework through the orq gateway, and print its trace id too."
+
+---
+
+<!-- _class: lead -->
+
+# 2 · Managed agents
+
+<span class="tag orange">modules 08 · 15</span>
+
+---
+
+<!-- _class: block -->
+
+## 2 · The concept
+
+Same refund agent, hosted by orq: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions, environments.
+
+```python
+orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please",
+                     memory={"entity_id": "customer-user_001"}, thread={"id": "conv-7"})
+```
+
+Function tools come back as `function_call` items. **Your code executes them** and continues with `previous_response_id`. Tools stay structured outputs; state stays yours.
+
+**Advisor** asks a second model for guidance mid-turn (it gets the transcript). **Sidekick** delegates a discrete task (it gets only the task). Each is its own span with its own cost: module 15 reads the split, one advisor call versus five agent calls.
+
+---
+
+<!-- _class: figure -->
+
+## 2 · One turn, in one picture
+
+![w:1000](../modules/08-managed-agents/assets/responses-tool-loop.png)
+
+<!-- Match on call_id, not id. A server tool (memory, advisor) also emits a function_call, then an orq:<tool> item with the result — that one is not yours to answer. -->
+
+---
+
+<!-- _class: block -->
+
+## 2 · Live demo
+
+```bash
+$ orq agents get ws-refund-agent
+$ make m08        # invoke with tool dispatch, stream, memory recall, a version bump
+$ make m15        # advisor before a refusal, sidekick for the closing note, the cost split
+$ orq traces thread <trace_id>
+```
+
+Watch for: the `function_call` item and the continuation · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
+
+<!-- GET returns tools as action_type with ids. Never PATCH a GET body back. Say it out loud, it saves an hour. -->
+
+---
+
+<!-- _class: block -->
+
+## 2 · You try · Done when
+
+- [ ] `orq responses create --model agent/ws-refund-agent --input "refund ord_a1"` produces a trace with a tool call and a final message
+- [ ] A second call with the same `memory.entity_id` recalls the name
+- [ ] A new version exists and can be invoked by reference
+
+**Gotchas:** memory is not automatic, instructions must say what to write · `max_execution_time` counts model time only · legacy `/v2/agents/run` is deprecated.
+
+**Ask your agent:** "Use build-agent to create ws-refund-agent-v2 with the same tools plus an escalate_to_human tool, then invoke it with 'refund ord_a6' and show me the trace."
+
+---
+
+<!-- _class: lead -->
+
+# 3 · Knowledge base and RAG
+
+<span class="tag orange">module 09</span>
+
+---
+
+<!-- _class: block -->
+
+## 3 · The concept
+
+**Chunking is the biggest lever.** `POST /v2/chunking` with `token`, `sentence`, `recursive`, `semantic`, `agentic` strategies, then push the chunks with metadata.
+
+**Search is a request**: `hybrid_search` (vector + keyword), a threshold, `top_k`, a rerank model, optional agentic RAG (query rewrite + document grading).
+
+Three places retrieval can happen:
+- your tool (`get_policy` calls `knowledge.search`)
+- the gateway, on a plain chat call (`orq.knowledge_bases` in the request): pre-fetched context, no tool call
+- the managed agent (`query_knowledge_base` built-in)
+
+**External knowledge base**: your own `/search` endpoint behind the same contract.
+
+---
+
+<!-- _class: figure -->
+
+## 3 · Three ways to match the same question
+
+![w:1060](../docs/assets/diagrams/rag-search-modes.png)
+
+<!-- The scores are not comparable across modes: keyword comes from a text match, vector from embedding distance. A keyword 1.000 next to a hybrid 0.654 says nothing. -->
+
+---
+
+<!-- _class: figure -->
+
+## 3 · Internal and external: who does what
+
+![w:1060](../docs/assets/diagrams/rag-internal-external.png)
+
+<!-- The row that surprises people: go external and orq still cuts to top_k, applies the threshold and reranks what you return. You own retrieval; the platform still owns ranking. -->
+
+---
+
+<!-- _class: block -->
+
+## 3 · Live demo
+
+```bash
+$ orq knowledge-bases search <id> --query "opened electronics after 20 days"
+$ make m09        # vector vs keyword vs hybrid vs rerank, chunking strategies, KB as get_policy, gateway-side retrieval
+```
+
+Watch for: scores side by side · the retrieval span in the trace · the grounded answer with no tool call.
+
+<!-- Processing is async. `retrieve_processing_status` before searching a fresh datasource. -->
+
+---
+
+<!-- _class: block -->
+
+## 3 · You try · Done when
+
+- [ ] A policy edge case answered with a retrieved chunk visible as a span
+- [ ] `knowledge-bases search` returns that chunk with a rerank score
+- [ ] One chunking strategy compared against another on the same document
+
+**Gotchas:** external KB URLs must be public · `top_k` and threshold are the context window, own them · metadata filters need metadata at ingest.
+
+**Ask your agent:** "Add app/data/kb/warranty.md as a new datasource to ws-refund-policy, wait for processing, then search for 'warranty length'."
+
+---
+
+<!-- _class: lead -->
+
+# 4 · MCP servers and the MCP Gateway
+
+<span class="tag orange">module 10</span>
+
+---
+
+<!-- _class: block -->
+
+## 4 · The concept
+
+Three things named MCP:
+
+| | Who connects | What for |
+|---|---|---|
+| **Orq MCP server** `/v2/mcp` | your coding agent | administer the workspace: agents, datasets, evals, traces, docs |
+| **MCP Servers** (MCP Portal) | orq | upstream tool servers you register: URL, auth, discovered tools |
+| **MCP Gateway** `/v3/mcp/<key>` | any client, any agent | one endpoint over many servers, expose all/selected/none per server, read-only filters, every call logged, denied calls too |
+
+The gateway is where "small, focused agents" becomes a setting: the refund agent sees `lookup_order` and `get_policy`, never `issue_refund`.
+
+---
+
+<!-- _class: figure -->
+
+## 4 · The trust chain
+
+![w:1000](../modules/10-mcp-gateway/assets/mcp-trust-chain.png)
+
+<!-- The upstream URL must be reachable from orq: loopback and private addresses are rejected. The hidden tool is not forbidden, it is absent — tools/list never returns it. -->
+
+---
+
+<!-- _class: block -->
+
+## 4 · Live demo
+
+```bash
+$ make mcp-server                    # app/mcp_server.py on :8000 (deployed publicly for the portal)
+$ make m10                           # register server, sync, gateway with two exposed tools, call through it
+$ orq mcp-gateways list-tools ws-refund-gateway
+```
+
+Watch for: the discovered tool list after sync · only two tools on the gateway · the call log with exposed vs upstream names.
+
+<!-- Upstream URLs must be public. The instructor deploys app/mcp_server.py before the session; MCP_SERVER_URL in .env. -->
+
+---
+
+<!-- _class: block -->
+
+## 4 · You try · Done when
+
+- [ ] `list-tools` on the gateway shows exactly the two exposed tools
+- [ ] A tool call through `/v3/mcp/<key>` appears in the gateway log
+- [ ] You can explain Code Mode vs Direct Mode in one sentence each
+
+**Gotchas:** loopback and private hosts are rejected · tool ids change on upstream rename after re-sync · the MCP Tool type on agents is retired, use the portal.
+
+**Ask your agent:** "Connect ws-refund-gateway to this session, use lookup_order on ord_a2, then tell me which tools the gateway hides from you and why that is the point."
+
+---
+
+## Checkpoint: what would you apply to your own app?
+
+| Block we just did | One thing to try at work | Blocker or question |
+|---|---|---|
+| | | |
+| | | |
+| | | |
+
+<!-- Use this slide after every two blocks. Two minutes. Write on the slide. Move blockers to the parking lot. -->
+
+---
+
+<!-- _class: input -->
+
+## Parking lot
+
+Things we skipped, questions we could not answer, requests for a follow-up.
+
+-
+-
+-
+-
+
+---
+
+<!-- _class: lead -->
+
+# Wrap-up
+
+<!-- 2:45. Fifteen minutes. -->
+
+---
+
+## What we saw against what you asked for
+
+| You asked for | Where it lived today |
+|---|---|
+| Building agents with our own frameworks, orq as the layer around it | Block 1, and `examples/own-your-agent.py` |
+| Managed agents | Block 2, plus advisor and sidekick |
+| Knowledge Base API and RAG, internal **and** external search engines | Block 3, and the *How retrieval works* page |
+| MCP servers and the MCP gateway | Block 4 |
+| Routing, model testing and selection, monitoring | Appendix A, C, D — you said the docs cover these |
+
+<!-- Fill from the checkpoint slides. Be honest about what was skipped. -->
+
+---
+
+## Next steps
+
+1. **Today**: `make setup && make smoke` in this repo. Every block you missed is a module with a solution.
+2. **This week**: `orq connect --local` in your own repo. Paste the `setup-observability` prompt. Get one real trace.
+3. **Next week**: `make traffic`-style volume on your own app, then `analyze-trace-failures`. One evaluator per failure mode.
+4. **Before the next release**: `evals.yml` in your CI. Static red team on the agents that hold tools.
+5. **Follow-up session**: the parking lot decides.
+
+**Docs** orq-ai.github.io/orq-workshop · **Repo** github.com/orq-ai/orq-workshop · **Platform docs** docs.orq.ai
+
+---
+
+<!-- _class: lead -->
+<!-- _paginate: false -->
+
+# Thank you
+
+Questions, and the parking lot.
+<!-- _class: lead -->
+
+# Appendix
+
+The blocks we did not run today. Each one is complete: concept, live demo, you-try, gotchas.
+
+<!-- Routing, guardrails, tracing, evals, simulation, CI and coding agents. Use them if the room asks, or hand the deck over afterwards. -->
 
 ---
 
@@ -378,170 +710,6 @@ Watch for: which failure modes the vulnerable variant produces · the judge's tr
 
 <!-- _class: lead -->
 
-# Block E · Managed agents
-
-<span class="tag orange">modules 08 · 15</span>
-
----
-
-<!-- _class: block -->
-
-## E · The concept
-
-Same refund agent, hosted by orq: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions, environments.
-
-```python
-orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please",
-                     memory={"entity_id": "customer-user_001"}, thread={"id": "conv-7"})
-```
-
-Function tools come back as `function_call` items. **Your code executes them** and continues with `previous_response_id`. Tools stay structured outputs; state stays yours.
-
-**Advisor** asks a second model for guidance mid-turn (it gets the transcript). **Sidekick** delegates a discrete task (it gets only the task). Each is its own span with its own cost: module 15 reads the split, one advisor call versus five agent calls.
-
----
-
-<!-- _class: block -->
-
-## E · Live demo
-
-```bash
-$ orq agents get ws-refund-agent
-$ make m08        # invoke with tool dispatch, stream, memory recall, a version bump
-$ make m15        # advisor before a refusal, sidekick for the closing note, the cost split
-$ orq traces thread <trace_id>
-```
-
-Watch for: the `function_call` item and the continuation · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
-
-<!-- GET returns tools as action_type with ids. Never PATCH a GET body back. Say it out loud, it saves an hour. -->
-
----
-
-<!-- _class: block -->
-
-## E · You try · Done when
-
-- [ ] `orq responses create --model agent/ws-refund-agent --input "refund ord_a1"` produces a trace with a tool call and a final message
-- [ ] A second call with the same `memory.entity_id` recalls the name
-- [ ] A new version exists and can be invoked by reference
-
-**Gotchas:** memory is not automatic, instructions must say what to write · `max_execution_time` counts model time only · legacy `/v2/agents/run` is deprecated.
-
-**Ask your agent:** "Use build-agent to create ws-refund-agent-v2 with the same tools plus an escalate_to_human tool, then invoke it with 'refund ord_a6' and show me the trace."
-
----
-
-<!-- _class: lead -->
-
-# Block F · Knowledge base and RAG
-
-<span class="tag orange">module 09</span>
-
----
-
-<!-- _class: block -->
-
-## F · The concept
-
-**Chunking is the biggest lever.** `POST /v2/chunking` with `token`, `sentence`, `recursive`, `semantic`, `agentic` strategies, then push the chunks with metadata.
-
-**Search is a request**: `hybrid_search` (vector + keyword), a threshold, `top_k`, a rerank model, optional agentic RAG (query rewrite + document grading).
-
-Three places retrieval can happen:
-- your tool (`get_policy` calls `knowledge.search`)
-- the gateway, on a plain chat call (`orq.knowledge_bases` in the request): pre-fetched context, no tool call
-- the managed agent (`query_knowledge_base` built-in)
-
-**External knowledge base**: your own `/search` endpoint behind the same contract.
-
----
-
-<!-- _class: block -->
-
-## F · Live demo
-
-```bash
-$ orq knowledge-bases search <id> --query "opened electronics after 20 days"
-$ make m09        # vector vs keyword vs hybrid vs rerank, chunking strategies, KB as get_policy, gateway-side retrieval
-```
-
-Watch for: scores side by side · the retrieval span in the trace · the grounded answer with no tool call.
-
-<!-- Processing is async. `retrieve_processing_status` before searching a fresh datasource. -->
-
----
-
-<!-- _class: block -->
-
-## F · You try · Done when
-
-- [ ] A policy edge case answered with a retrieved chunk visible as a span
-- [ ] `knowledge-bases search` returns that chunk with a rerank score
-- [ ] One chunking strategy compared against another on the same document
-
-**Gotchas:** external KB URLs must be public · `top_k` and threshold are the context window, own them · metadata filters need metadata at ingest.
-
-**Ask your agent:** "Add app/data/kb/warranty.md as a new datasource to ws-refund-policy, wait for processing, then search for 'warranty length'."
-
----
-
-<!-- _class: lead -->
-
-# Block G · MCP servers and the MCP Gateway
-
-<span class="tag orange">module 10</span>
-
----
-
-<!-- _class: block -->
-
-## G · The concept
-
-Three things named MCP:
-
-| | Who connects | What for |
-|---|---|---|
-| **Orq MCP server** `/v2/mcp` | your coding agent | administer the workspace: agents, datasets, evals, traces, docs |
-| **MCP Servers** (MCP Portal) | orq | upstream tool servers you register: URL, auth, discovered tools |
-| **MCP Gateway** `/v3/mcp/<key>` | any client, any agent | one endpoint over many servers, expose all/selected/none per server, read-only filters, every call logged, denied calls too |
-
-The gateway is where "small, focused agents" becomes a setting: the refund agent sees `lookup_order` and `get_policy`, never `issue_refund`.
-
----
-
-<!-- _class: block -->
-
-## G · Live demo
-
-```bash
-$ make mcp-server                    # app/mcp_server.py on :8000 (deployed publicly for the portal)
-$ make m10                           # register server, sync, gateway with two exposed tools, call through it
-$ orq mcp-gateways list-tools ws-refund-gateway
-```
-
-Watch for: the discovered tool list after sync · only two tools on the gateway · the call log with exposed vs upstream names.
-
-<!-- Upstream URLs must be public. The instructor deploys app/mcp_server.py before the session; MCP_SERVER_URL in .env. -->
-
----
-
-<!-- _class: block -->
-
-## G · You try · Done when
-
-- [ ] `list-tools` on the gateway shows exactly the two exposed tools
-- [ ] A tool call through `/v3/mcp/<key>` appears in the gateway log
-- [ ] You can explain Code Mode vs Direct Mode in one sentence each
-
-**Gotchas:** loopback and private hosts are rejected · tool ids change on upstream rename after re-sync · the MCP Tool type on agents is retired, use the portal.
-
-**Ask your agent:** "Connect ws-refund-gateway to this session, use lookup_order on ord_a2, then tell me which tools the gateway hides from you and why that is the point."
-
----
-
-<!-- _class: lead -->
-
 # Block H · Simulation and red teaming
 
 <span class="tag orange">modules 11 · 16</span>
@@ -690,70 +858,3 @@ $ orq launch claude -p "run orq doctor and summarise in three lines"
 
 <!-- _class: input -->
 
-## Checkpoint: what would you apply to your own app?
-
-| Block we just did | One thing to try at work | Blocker or question |
-|---|---|---|
-| | | |
-| | | |
-| | | |
-
-<!-- Use this slide after every two blocks. Two minutes. Write on the slide. Move blockers to the parking lot. -->
-
----
-
-<!-- _class: input -->
-
-## Parking lot
-
-Things we skipped, questions we could not answer, requests for a follow-up.
-
--
--
--
--
-
----
-
-<!-- _class: lead -->
-
-# Wrap-up
-
-<!-- 2:45. Fifteen minutes. -->
-
----
-
-## What we saw against what you asked for
-
-| You asked for | Where it lived today |
-|---|---|
-| Guardrails: PII detection and redaction, custom checks | Block B |
-| Tracing and failure analysis | Blocks C and D |
-| Agent simulation and red teaming | Block H |
-| Routing, budgets, keys | Block A |
-| Deployments and managed agents | Block E |
-| Experiments | Block D, Block I |
-| Coding agents (OpenCode, Claude Code, Pi) | Blocks C, I, J |
-
-<!-- Fill from the checkpoint slides. Be honest about what was skipped. -->
-
----
-
-## Next steps
-
-1. **Today**: `make setup && make smoke` in this repo. Every block you missed is a module with a solution.
-2. **This week**: `orq connect --local` in your own repo. Paste the `setup-observability` prompt. Get one real trace.
-3. **Next week**: `make traffic`-style volume on your own app, then `analyze-trace-failures`. One evaluator per failure mode.
-4. **Before the next release**: `evals.yml` in your CI. Static red team on the agents that hold tools.
-5. **Follow-up session**: the parking lot decides.
-
-**Docs** orq-ai.github.io/orq-workshop · **Repo** github.com/orq-ai/orq-workshop · **Platform docs** docs.orq.ai
-
----
-
-<!-- _class: lead -->
-<!-- _paginate: false -->
-
-# Thank you
-
-Questions, and the parking lot.

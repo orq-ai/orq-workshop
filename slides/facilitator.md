@@ -6,39 +6,36 @@
 |---|---|---|
 | 0:00 | Opening, how today works, "how do you use orq today" | 1 to 3 |
 | 0:12 | The map: picture, refund agent, what's new | 4 to 8 |
-| 0:27 | Vote | 9 |
-| 0:32 | Block 1 (25 to 30 min) | block section |
-| 1:00 | Block 2 | |
-| 1:25 | Checkpoint (2 min), break (10 min) | checkpoint slide |
-| 1:37 | Block 3 | |
-| 2:05 | Block 4 | |
-| 2:30 | Checkpoint, short break | |
-| 2:40 | Block 5 if time, else start wrap-up | |
-| 2:45 | Wrap-up: what we saw vs asked, next steps, parking lot | last 4 slides |
+| 0:27 | What you asked for: confirm, do not re-open | 9 |
+| 0:30 | Block 1 · Own your agent | block section |
+| 1:00 | Block 2 · Managed agents | |
+| 1:30 | Checkpoint (2 min), break (10 min) | checkpoint slide |
+| 1:42 | Block 3 · Knowledge base and RAG | |
+| 2:17 | Block 4 · MCP servers and the MCP Gateway | |
+| 2:42 | Wrap-up: what we saw vs asked, next steps, parking lot | last 4 slides |
 | 3:00 | Close | |
 
-Four blocks fit comfortably. Five fit if the room is fast and setup was done before the session.
+Four blocks, fixed, no vote. They fit with ten minutes of slack; the slack goes to whichever block the room leans into.
 
-## Vote to order
+## Why these four, and not a vote
 
-Take the top four or five. Then order them so prerequisites come first:
+Pierre-Louis and Vansh both named the same three gaps in writing: managed agents, the Knowledge Base API and RAG with internal **and** external search engines, and MCP servers with the MCP gateway. Vansh added a fourth, and was most emphatic about it: building agents in their own framework (LangGraph, raw Python SDK) with orq as the infrastructure layer around it — prompts, tracing, tool tracing, routing.
 
-| If the room picked | Run in this order |
-|---|---|
-| anything with D, H or I | C first (traces are the evidence everywhere) |
-| E, F or G | E before F and G (both attach to the managed agent) |
-| I | D or H before I (the gate reuses the evaluators or the red team) |
-| J | last, it doubles as wrap-up |
-| a tie | default: C, B, D, H, J |
+Both also said what they do **not** need: *"Everything linked to routing, model testing / selection, monitoring … is easier to grasp with documentation and almost everyone in the team already played with it."*
 
-For this client's survey (guardrails, tracing and failure analysis, simulation and red teaming, coding agents), the expected result is B, C, D, H, J.
+So the deck runs those four in depth. Voting would re-open a question they already answered, and the old survey answer (guardrails, tracing, simulation and red teaming) is superseded — do not fall back to it.
+
+## If the room wants something else
+
+The appendix holds the other six blocks complete: A gateway and routing, B guardrails and PII, C tracing and orqi, D failure analysis to experiments, H simulation and red teaming, I evals in CI, J coding agents. Jump to one by page. If you swap, drop Block 4 first — it is the shortest and the most self-contained.
 
 ## Before the session
 
 - `make reset && make seed && make traffic` from a clean clone in the demo workspace.
 - Annotations `rating` and `defects` created in the Studio.
-- A Management Key for block A, exported in the demo shell only.
-- `app/mcp_server.py` deployed to a public URL, `MCP_SERVER_URL` set, for block G.
+- `uv sync --extra langgraph`, then `uv run python examples/own-your-agent.py` once: block 1 needs all three legs green, and the LangGraph leg waits ~10s for its trace to index.
+- A Management Key only if you plan to fall back to appendix block A, exported in the demo shell.
+- `app/mcp_server.py` deployed to a public URL, `MCP_SERVER_URL` set, for block 4.
 - `orqi` installed and pinned; `orq` 8.x; `claude` or `opencode` on the demo machine.
 - Every `make mNN` run once today; keep the terminal output in a scratch file as fallback.
 - `docs/whats-new.md` refreshed.
