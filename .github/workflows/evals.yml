@@ -29,7 +29,9 @@ env:
   WS_PREFIX: ws
   MODEL: openai/gpt-5.6-luna
   JUDGE_MODEL: openai/gpt-5.6-luna
-  EMBEDDING_MODEL: openai/text-embedding-3-small
+  # -large, matching .env.example and config.py: module 09 documents every vector or hybrid
+  # search against a -small-embedded base returning HTTP 500 in this workspace.
+  EMBEDDING_MODEL: openai/text-embedding-3-large
 
 jobs:
   quality:
