@@ -19,15 +19,15 @@ Four blocks, fixed, no vote. They fit with ten minutes of slack; the slack goes 
 
 ## Why these four, and not a vote
 
-Pierre-Louis and Vansh both named the same three gaps in writing: managed agents, the Knowledge Base API and RAG with internal **and** external search engines, and MCP servers with the MCP gateway. Vansh added a fourth, and was most emphatic about it: building agents in their own framework (LangGraph, raw Python SDK) with orq as the infrastructure layer around it — prompts, tracing, tool tracing, routing.
+Pierre-Louis and Vansh both named the same three gaps in writing: managed agents, the Knowledge Base API and RAG with internal **and** external search engines, and MCP servers with the MCP gateway. Vansh added a fourth, and was most emphatic about it: building agents in their own framework (LangGraph, raw Python SDK) with orq as the infrastructure layer around it: prompts, tracing, tool tracing, routing.
 
 Both also said what they do **not** need: *"Everything linked to routing, model testing / selection, monitoring … is easier to grasp with documentation and almost everyone in the team already played with it."*
 
-So the deck runs those four in depth. Voting would re-open a question they already answered, and the old survey answer (guardrails, tracing, simulation and red teaming) is superseded — do not fall back to it.
+So the deck runs those four in depth. Voting would re-open a question they already answered, and the old survey answer (guardrails, tracing, simulation and red teaming) is superseded; do not fall back to it.
 
 ## If the room wants something else
 
-The appendix holds the other six blocks complete: A gateway and routing, B guardrails and PII, C tracing and orqi, D failure analysis to experiments, H simulation and red teaming, I evals in CI, J coding agents. Jump to one by page. If you swap, drop Block 4 first — it is the shortest and the most self-contained.
+The appendix opens with one slide per module (00 to 17): abstract, time, prerequisites, outcome, `make mNN`, and which block covers it. Use it as the index when someone asks "where is X". After it come the other blocks, complete: A gateway and routing, B guardrails and PII, C tracing and orqi, D failure analysis to experiments, H simulation and red teaming, I evals in CI, J coding agents. Jump to one by page. If you swap, drop Block 4 first: it is the shortest and the most self-contained.
 
 ## Before the session
 

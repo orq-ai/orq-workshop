@@ -103,7 +103,7 @@ def run_turn(messages, *, extra_body=None, ...) -> TurnResult:   # stateless red
             messages.append({"type": "function_call_output", "call_id": call.call_id, "output": json.dumps(result)})
 ```
 
-`lookup_order` · `issue_refund` · `get_policy` — with traps: post-window orders, an already refunded one, a EUR 620 one, PII in a customer note.
+`lookup_order` · `issue_refund` · `get_policy`, with traps: post-window orders, an already refunded one, a EUR 620 one, PII in a customer note.
 
 <!-- The app never changes across blocks. The request, the workspace and the harness around it do. -->
 
@@ -133,10 +133,10 @@ Two mails, four asks. Today is those four in depth, not ten in passing.
 
 | | Block | Minutes | Repo |
 |---|---|---|---|
-| 1 | **Own your agent** — LangGraph or raw SDK, orq as the layer around it | 30 | `examples/`, 02, 08 |
-| 2 | **Managed agents** — the loop runs in orq | 30 | 08, 15 |
-| 3 | **Knowledge base and RAG** — internal *and* external search engines | 35 | 09 |
-| 4 | **MCP servers and the MCP Gateway** — one governed endpoint | 25 | 10 |
+| 1 | **Own your agent**: LangGraph or raw SDK, orq as the layer around it | 30 | `examples/`, 02, 08 |
+| 2 | **Managed agents**: the loop runs in orq | 30 | 08, 15 |
+| 3 | **Knowledge base and RAG**: internal *and* external search engines | 35 | 09 |
+| 4 | **MCP servers and the MCP Gateway**: one governed endpoint | 25 | 10 |
 
 Routing, model selection and monitoring: you said the docs cover those. They are in the appendix if you want them.
 
@@ -215,7 +215,8 @@ Watch for: the same three tools in the same order, the same refund, three shapes
 Same refund agent, hosted by orq: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions, environments.
 
 ```python
-orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please",
+orq.responses.create(model="agent/ws-refund-agent", input="Refund {{order}} please",
+                     variables={"order": "ord_a2"}, metadata={"channel": "chat"},
                      memory={"entity_id": "customer-user_001"}, thread={"id": "conv-7"})
 ```
 
@@ -231,7 +232,7 @@ Function tools come back as `function_call` items. **Your code executes them** a
 
 ![w:1000](../modules/08-managed-agents/assets/responses-tool-loop.png)
 
-<!-- Match on call_id, not id. A server tool (memory, advisor) also emits a function_call, then an orq:<tool> item with the result — that one is not yours to answer. -->
+<!-- Match on call_id, not id. A server tool (memory, advisor) also emits a function_call, then an orq:<tool> item with the result; that one is not yours to answer. -->
 
 ---
 
@@ -246,7 +247,7 @@ $ make m15        # advisor before a refusal, sidekick for the closing note, the
 $ orq traces thread <trace_id>
 ```
 
-Watch for: the `function_call` item and the continuation · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
+Watch for: the `function_call` item and the continuation · a second turn answering from `previous_response_id` alone · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
 
 <!-- GET returns tools as action_type with ids. Never PATCH a GET body back. Say it out loud, it saves an hour. -->
 
@@ -370,7 +371,7 @@ The gateway is where "small, focused agents" becomes a setting: the refund agent
 
 ![w:1000](../modules/10-mcp-gateway/assets/mcp-trust-chain.png)
 
-<!-- The upstream URL must be reachable from orq: loopback and private addresses are rejected. The hidden tool is not forbidden, it is absent — tools/list never returns it. -->
+<!-- The upstream URL must be reachable from orq: loopback and private addresses are rejected. The hidden tool is not forbidden, it is absent; tools/list never returns it. -->
 
 ---
 
@@ -465,6 +466,304 @@ Questions, and the parking lot.
 The blocks we did not run today. Each one is complete: concept, live demo, you-try, gotchas.
 
 <!-- Routing, guardrails, tracing, evals, simulation, CI and coding agents. Use them if the room asks, or hand the deck over afterwards. -->
+
+---
+
+<!-- _class: lead -->
+
+# Modules, one slide each
+
+All 18 modules in the repo, in order. Each one runs on its own with **make mNN**.
+
+<!-- Use this as the index when someone asks "where is X". The blocks after it group these modules for a live session. -->
+
+---
+
+<!-- _class: block -->
+
+## 00 · Setup
+
+**One key, three doors:** the OpenAI-compatible gateway, the native SDK, and the `orq` CLI that also wires your coding agent.
+
+| | |
+|---|---|
+| **Time** | 20 min |
+| **Needs** | an orq.ai account, Python 3.11+, uv |
+| **You will have** | a working `.env`, a green `orq doctor`, one traced call |
+
+`make m00` · <span class="tag">docs</span> `modules/00` · <span class="tag orange">before block 1</span>
+
+---
+
+<!-- _class: block -->
+
+## 01 · Gateway
+
+**Two decisions you can read in a trace:** the model turns "refund ord_a2" into a tool call; the gateway turns "the provider is down" into a fallback.
+
+| | |
+|---|---|
+| **Time** | 25 min |
+| **Needs** | module 00 |
+| **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span |
+
+`make m01` · <span class="tag">docs</span> `modules/01` · <span class="tag orange">block A</span>
+
+---
+
+<!-- _class: block -->
+
+## 02 · Tracing
+
+**The context window, readable after the fact.** Identity, thread and metadata ride on the same request.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | module 01 |
+| **You will have** | traces searchable by thread and customer, one `refund_turn -> tool -> llm` trace, one human annotation |
+
+`make m02` · <span class="tag">docs</span> `modules/02` · <span class="tag orange">block C</span>
+
+---
+
+<!-- _class: block -->
+
+## 03 · Smart routing
+
+**Which model answers is a decision**, moved out of the code: a Smart Router that picks per request, and a routing rule that overrides it.
+
+| | |
+|---|---|
+| **Time** | 20 min |
+| **Needs** | module 01 |
+| **You will have** | `ws-refund-router` called by reference, traces showing which model it picked, a rule sending cheap-tier traffic to `gpt-5.4-nano` |
+
+`make m03` · <span class="tag">docs</span> `modules/03` · <span class="tag orange">block A</span>
+
+---
+
+<!-- _class: block -->
+
+## 04 · Guardrails
+
+**A block is the hand-off to a human.** The gateway returns an error the app can catch; the model never has to be prompted into asking for help.
+
+| | |
+|---|---|
+| **Time** | 25 min |
+| **Needs** | module 00, `make seed` |
+| **You will have** | PII placeholders before the provider, an over-limit refund turned into a hand-off, a gateway rule for unguarded calls |
+
+`make m04` · <span class="tag">docs</span> `modules/04` · <span class="tag orange">block B</span>
+
+---
+
+<!-- _class: block -->
+
+## 05 · Budgets and keys
+
+**Spend is a request attribute, not a spreadsheet.** Who calls, for whom, and how much they may spend, enforced by the gateway.
+
+| | |
+|---|---|
+| **Time** | 15 min, instructor demo |
+| **Needs** | module 00, workspace admin |
+| **You will have** | a purpose-built API key, an identity, two budgets that block the third call in a minute |
+
+`make m05` · <span class="tag">docs</span> `modules/05` · <span class="tag orange">block A</span>
+
+---
+
+<!-- _class: block -->
+
+## 06 · Troubleshooting with orqi
+
+**Ask your workspace questions in plain language.** orqi operates the platform; it does not build your app.
+
+| | |
+|---|---|
+| **Time** | 15 min |
+| **Needs** | module 00, orqi installed, traffic from modules 01 to 04 (or `make traffic`) |
+| **You will have** | four real answers about your workspace, a seeded client-side failure diagnosed, when to use orqi vs `orq launch` |
+
+`make m06` · <span class="tag">docs</span> `modules/06` · <span class="tag orange">block C</span>
+
+---
+
+<!-- _class: block -->
+
+## 07 · Failure analysis and evals
+
+**A prompt you own is a prompt you can measure.** Traces say what it does, a taxonomy says what to fix, an evaluator says whether the fix held.
+
+| | |
+|---|---|
+| **Time** | 40 min |
+| **Needs** | modules 00 and 02 |
+| **You will have** | a taxonomy from 20 conversations, two evaluators, `ws-refund-eval`, an Experiment comparing fixed vs vulnerable |
+
+`make m07` · <span class="tag">docs</span> `modules/07` · <span class="tag orange">block D</span>
+
+---
+
+<!-- _class: block -->
+
+## 08 · Managed agents
+
+**The agent lives in orq, your code executes the tools.** Every `function_call` comes back to you; the conversation resumes server-side.
+
+| | |
+|---|---|
+| **Time** | 40 min |
+| **Needs** | modules 00 to 02, `make seed` |
+| **You will have** | the refund agent over the Responses API with a local tool loop, streamed, with memory, pinned by `@version` |
+
+`make m08` · <span class="tag">docs</span> `modules/08` · <span class="tag orange">blocks 1 and 2</span>
+
+---
+
+<!-- _class: block -->
+
+## 09 · Knowledge base and RAG
+
+**Retrieval decides what the model sees.** Chunking decides what retrieval can find. Both are settings you own.
+
+| | |
+|---|---|
+| **Time** | 35 min |
+| **Needs** | modules 00 to 02, `make seed` |
+| **You will have** | the policy searched three ways, re-chunked two ways, wired in place of `get_policy`, pre-fetched, and searched by a managed agent |
+
+`make m09` · <span class="tag">docs</span> `modules/09` · <span class="tag orange">block 3</span>
+
+---
+
+<!-- _class: block -->
+
+## 10 · MCP Gateway
+
+**One set of tools, three callers, one allow-list.** A small agent gets `lookup_order` and `get_policy`; nobody outside gets `issue_refund`.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | module 00, `make seed` |
+| **You will have** | the tools as an MCP server, `ws-refund-gateway` exposing two of three, an MCP client and a coding agent on it, a managed-agent MCP span |
+
+`make m10` · <span class="tag">docs</span> `modules/10` · <span class="tag orange">block 4</span>
+
+---
+
+<!-- _class: block -->
+
+## 11 · Agent simulation
+
+**Testing an agent is cheap when the agent is a function.** `run_turn(messages) -> messages` has no hidden state, so a simulated customer can replay it at will.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | modules 00 and 07, `make seed` |
+| **You will have** | four simulation runs as Experiments and in the local dashboard, a managed-agent adapter, one surprise about judges |
+
+`make m11` · <span class="tag">docs</span> `modules/11` · <span class="tag orange">block H</span>
+
+---
+
+<!-- _class: block -->
+
+## 12 · Evals in CI
+
+**A gate is an agent run with an exit code.** The same key runs the agent, the judge, the red team and a headless coding agent.
+
+| | |
+|---|---|
+| **Time** | 35 min |
+| **Needs** | modules 00, 07 and 16 |
+| **You will have** | `make eval` green then red, a static red-team gate, three GitHub workflows, two headless agent runs |
+
+`make m12` · <span class="tag">docs</span> `modules/12` · <span class="tag orange">block I</span>
+
+---
+
+<!-- _class: block -->
+
+## 13 · Coding agents
+
+**Your workspace from a coding agent.** A Claude Code, OpenCode, Pi or Codex session is just another traced, budgeted client.
+
+| | |
+|---|---|
+| **Time** | 25 min |
+| **Needs** | module 00, one coding agent installed |
+| **You will have** | a dry-run of `orq connect`, the env `orq launch` injects, the CLI skills, a session visible as traces with cost |
+
+`make m13` · <span class="tag">docs</span> `modules/13` · <span class="tag orange">block J</span>
+
+---
+
+<!-- _class: block -->
+
+## 14 · Alerts and webhooks
+
+**The platform pushes to you.** A Reporting API query gives the number, an alert watches it, a webhook delivers every call, signed.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | module 02, `make seed`, a public URL for the receiver |
+| **You will have** | a cost alert that opened a trigger on your burst, signed events at a receiver you run |
+
+`make m14` · <span class="tag">docs</span> `modules/14` · <span class="tag orange">block C</span>
+
+---
+
+<!-- _class: block -->
+
+## 15 · Advisor and sidekick
+
+**Hand one step to a second model.** Each call is metered on its own span. Neither is a sub-agent: one call, no tools, no memory.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | module 08, `make seed` |
+| **You will have** | an agent that consults `gpt-5.6-sol` before a refusal and delegates the closing note to `gpt-5.4-nano`, cost read off one trace |
+
+`make m15` · <span class="tag">docs</span> `modules/15` · <span class="tag orange">block 2</span>
+
+---
+
+<!-- _class: block -->
+
+## 16 · Red teaming
+
+**An attacker is a simulated user with a worse goal.** The module 11 loop now tries to break the agent, and the tool results say what really happened.
+
+| | |
+|---|---|
+| **Time** | 30 min |
+| **Needs** | modules 07 and 11, `make seed` |
+| **You will have** | two red-team runs as Experiments, a per-target resistance rate, a CLI gate that exits 0 or 1 |
+
+`make m16` · <span class="tag">docs</span> `modules/16` · <span class="tag orange">block H</span>
+
+---
+
+<!-- _class: block -->
+
+## 17 · Annotation queues and automations
+
+**The human loop.** A queue collects traces worth a look, an automation fills it, a reviewer scores, the reviewed traces become a dataset.
+
+| | |
+|---|---|
+| **Time** | 25 min |
+| **Needs** | modules 02 and 07, `make seed` |
+| **You will have** | `ws-review-queue` filled by hand and by automation, items annotated by API, bad ones promoted to `ws-review-dataset` |
+
+`make m17` · <span class="tag">docs</span> `modules/17` · <span class="tag orange">block C</span>
 
 ---
 
