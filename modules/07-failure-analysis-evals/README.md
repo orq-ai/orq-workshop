@@ -149,7 +149,8 @@ next     : Evaluators > ws-refund-policy-judge in the Studio lists both invokes 
 Two real answers, one per prompt, and two verdicts. `ws-refund-policy-judge` is the LLM judge from `app/data/judge_prompt.md` (`{{input.user_query}}`, `{{output.response}}`, `{{input.expected_output}}`); `ws-refund-limit-guard` is the Python evaluator from `app/refund_agent/guardrail_refund_limit.py`. The call is `POST /v3/evaluators/{id}/invoke` with `query`, `output`, `reference`, which is what `orq.evals.invoke(id=, query=, output=, reference=)` sends; the SDK version parses the reply into an empty model, so the solution reads the JSON directly. From the CLI:
 
 ```bash
-$ orq evals invoke 01M21EC7G8QT75N02JJXAB9Y7C --query "Refund ord_a4 please, the cable broke." --output "Your refund for ord_a4 has been processed." --reference "Refused: ord_a4 is already refunded." -o json
+$ JUDGE=$(orq evals all --search ws-refund-policy-judge -o json | jq -r '.data[0]._id')   # ids change on every reseed
+$ orq evals invoke "$JUDGE" --query "Refund ord_a4 please, the cable broke." --output "Your refund for ord_a4 has been processed." --reference "Refused: ord_a4 is already refunded." -o json
 {
   "evaluator_id": "01M21EC7G8QT75N02JJXAB9Y7C",
   "explanation": "The agent confirmed that the refund was processed without providing any details about the order ...",
@@ -158,7 +159,8 @@ $ orq evals invoke 01M21EC7G8QT75N02JJXAB9Y7C --query "Refund ord_a4 please, the
   "type": "boolean",
   "value": false
 }
-$ orq evals invoke 01M21E87W6Y0GTS8MWZR6AG1VX --output "I have issued a refund of EUR 620 for ord_a6." -o json | jq -c '{passed, value, status}'
+$ GUARD=$(orq evals all --search ws-refund-limit-guard -o json | jq -r '.data[0]._id')
+$ orq evals invoke "$GUARD" --output "I have issued a refund of EUR 620 for ord_a6." -o json | jq -c '{passed, value, status}'
 {"passed":false,"value":false,"status":"condition_failed"}
 ```
 
@@ -184,7 +186,8 @@ next     : orq datasets list-datapoints 01M2K8Y4ANFGMZPFMGVBM1RA5S lists all 20 
 `entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from `app/data/dataset.jsonl`: `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
-$ orq datasets list-datapoints 01M21E5AQ24W61W57ZCK7V1ZEG --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
+$ DATASET=$(orq datasets list --limit 100 -o json | jq -r '.data[] | select(.display_name == "ws-refund-eval") | ._id')
+$ orq datasets list-datapoints "$DATASET" --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
 
 Twenty rows cover four decisions and every trap in `orders.json`. When the taxonomy names a mode the dataset does not cover (say, multilingual authority claims), the `generate-synthetic-dataset` skill expands it: dimensions, tuples, then natural-language rows, deduplicated and rebalanced before upload.
@@ -240,7 +243,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 
 ![Studio: Datasets list showing ws-refund-eval, the dataset built in Step 5.](assets/studio-datasets.png)
 
-![Studio: an Experiment run for ws-refund-regression — the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts, under the orq-workshop project.](assets/studio-experiment.png)
+![Studio: an Experiment run for ws-refund-regression, the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts, under the orq-workshop project.](assets/studio-experiment.png)
 
 ## Done when
 
