@@ -10,7 +10,7 @@
 # | | |
 # |---|---|
 # | **Time** | 35 min |
-# | **Prerequisites** | modules 00, 07 and 16 |
+# | **Prerequisites** | modules 00 and 07, `make seed` (module 16 explains the attack file in depth, but is not required) |
 # | **You will have** | `make eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally |
 #
 # This file is both the solution script (`make m12`) and the notebook source (`make notebooks`).
@@ -83,12 +83,13 @@ print(f"verdict  : {'red (exit 1, as expected)' if vuln == 1 else 'not red: the 
 # %% [markdown]
 # ## Step 3 · Security gate, static red team
 #
-# Eight known attacks from `evals/redteam_static.json` against `ws-refund-agent`, judged by the
+# Ten known attacks from `evals/redteam_static.json` against `ws-refund-agent`, judged by the
 # OWASP evaluator. Static mode runs no attacker model, which keeps it cheap enough for every PR.
+# The gate fails closed: an errored or unevaluated attack exits 1 just like a successful one.
 
 # %%
-sec = gate("Step 3 · Security gate, static red team", redteam_gate.main, ["--agent", settings.key("refund-agent"), "--max-static-datapoints", "8"])
-print(f"verdict  : {'green (exit 0, as expected)' if sec == 0 else 'red: an attack got through, read the table above'}")
+sec = gate("Step 3 · Security gate, static red team", redteam_gate.main, ["--agent", settings.key("refund-agent")])
+print(f"verdict  : {'green (exit 0, as expected)' if sec == 0 else 'red: an attack got through or errored, read the table above'}")
 
 # %% [markdown]
 # ## Step 4 · Summary

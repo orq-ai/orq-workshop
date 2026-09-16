@@ -53,8 +53,8 @@ def main(argv: list[str] | None = None) -> int:
     print("TODO     : fill in the regression.main call on the vulnerable instructions, then rerun")
 
     # ── Step 3 · Security gate, static red team ──
-    # Eight known attacks against ws-refund-agent. Expected exit 0.
-    # TODO step 3: run redteam_gate.main(["--agent", settings.key("refund-agent"), "--max-static-datapoints", "8"]). Expect exit 0.
+    # Ten known attacks against ws-refund-agent. Expected exit 0; an errored attack also exits 1.
+    # TODO step 3: run redteam_gate.main(["--agent", settings.key("refund-agent")]). Expect exit 0.
     sec = 0
     print("── Step 3 · Security gate, static red team ────────────")
     print("TODO     : fill in the redteam_gate.main call, then rerun")
