@@ -110,11 +110,6 @@ nav:
       - 02 Tracing: modules/02.md
       - 14 Alerts and webhooks: modules/14.md
       - 17 Annotation queues and automations: modules/17.md
-  - Evaluation:
-      - 07 Failure analysis to experiments: modules/07.md
-      - 11 Agent simulation: modules/11.md
-      - 12 Evals and agents in CI: modules/12.md
-      - 16 Red teaming: modules/16.md
   - Agents:
       - own-your-agent.md
       - 08 Managed agents: modules/08.md
@@ -122,6 +117,11 @@ nav:
   - RAG and Retrieval:
       - reference/rag.md
       - 09 Knowledge base and RAG: modules/09.md
+  - Evaluation:
+      - 07 Failure analysis to experiments: modules/07.md
+      - 11 Agent simulation: modules/11.md
+      - 12 Evals and agents in CI: modules/12.md
+      - 16 Red teaming: modules/16.md
   - Reference:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md
