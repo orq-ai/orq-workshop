@@ -1,0 +1,1 @@
+Use the simulate-agent skill to run 3 personas against the managed agent `ws-refund-agent` (max 3 turns each) and summarise the failures: which criteria broke, in which turn, and whether the failure is the agent's or the harness's (empty replies, stubbed tool calls). Then propose one persona the run did not cover and run it.

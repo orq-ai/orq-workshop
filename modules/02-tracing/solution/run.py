@@ -29,40 +29,53 @@ from app.refund_agent.config import settings
 
 orq = make_orq()
 QUESTION = "Refund ord_a2 please, the dock does not fit my laptop."
+TRACES_URL = f"{settings.base_url}/traces"
+SEARCH_WINDOW = timedelta(minutes=10)  # wide enough to catch every call of this run
+MODEL_SPAN_TYPES = ("span.chat_completion", "span.responses")  # chat completions vs Responses endpoint
 
 
 def spans(trace_id: str) -> list[dict[str, Any]]:
-    """Span summaries of one trace, oldest first. The gateway indexes a trace a few seconds after the call."""
+    """Span summaries of one trace, oldest first. Hides the wait: the gateway indexes a trace a few seconds after the call."""
     for _ in range(6):
         time.sleep(4)
-        data = orq.traces.list_spans(trace_id=trace_id).model_dump(by_alias=True)["data"]
-        if data:
-            return sorted(data, key=lambda s: s.get("started_at") or "")
+        rows = orq.traces.list_spans(trace_id=trace_id).model_dump(by_alias=True)["data"]
+        if rows:
+            return sorted(rows, key=lambda span: span.get("started_at") or "")
     return []
 
 
-def show(trace_id: str) -> list[dict[str, Any]]:
+def print_span_table(trace_id: str) -> list[dict[str, Any]]:
+    """Print one row per span (root/child, type, name, status, model, id) and return the rows for later use."""
     rows = spans(trace_id)
-    for s in rows:
-        parent = "root" if not s["parent_span_id"] else "  child"
-        print(f"    {parent:7} {s['type']:22} {s['name']:28} {s['status']:5} {s.get('model') or '':22} {s['span_id']}")
+    for span in rows:
+        nesting = "root" if not span["parent_span_id"] else "  child"
+        model = span.get("model") or ""
+        print(f"    {nesting:7} {span['type']:22} {span['name']:28} {span['status']:5} {model:22} {span['span_id']}")
     return rows
 
 # %% [markdown]
 # ## Step 1 · The traces you already have
 #
 # Every gateway call is already a trace. Nothing in `app/` knows about tracing. A turn with two
-# tool calls is three traces named `chat.openai`, each with cost and latency. `orq.traces.search`
+# tool calls is three traces named `responses.openai`, each with cost and latency. `orq.traces.search`
 # lists them; the CLI does the same with `orq traces search --from now-10m --to now -o json`.
 
 # %%
-r = chat(QUESTION)
-print(f"[1] zero-code      trace={r.trace_id} tools={r.tool_calls}")
+result = chat(QUESTION)
+
 now = datetime.now(UTC)
-res = orq.traces.search(from_=now - timedelta(minutes=10), to=now, limit=5).model_dump(by_alias=True)
-for t in res["data"]:
-    print(f"    {t['trace_id']}  {t['name']:16} {t['status']:4} {t['duration_ms']:>7.0f} ms  ${t['cost']['total']:.6f}")
-print("    same thing from the CLI: orq traces search --from now-10m --to now -o json | jq '.data[] | {trace_id, name}'")
+recent = orq.traces.search(from_=now - SEARCH_WINDOW, to=now, limit=5).model_dump(by_alias=True)
+
+print("── Step 1 · The traces you already have ───────────────")
+print(f"question : {QUESTION}")
+print(f"answer   : {result.text[:100]}…")
+print(f"tools    : {' → '.join(result.tool_calls)}")
+print(f"trace    : {result.trace_id}")
+print("recent   : the last 5 traces of the workspace, one per gateway call")
+for trace in recent["data"]:
+    print(f"    {trace['trace_id']}  {trace['name']:16} {trace['status']:4} {trace['duration_ms']:>7.0f} ms  ${trace['cost']['total']:.6f}")
+print("cli      : orq traces search --from now-10m --to now -o json | jq '.data[] | {trace_id, name}'")
+print(f"next     : open {TRACES_URL}; every gateway call is its own trace, named after the endpoint")
 
 # %% [markdown]
 # ## Step 2 · Name, identity, thread, metadata
@@ -75,31 +88,38 @@ print("    same thing from the CLI: orq traces search --from now-10m --to now -o
 
 # %%
 thread_id = f"ws-thread-{uuid.uuid4().hex[:8]}"
-body = {
+conversation_body = {
     "name": "refund-turn",
     "identity": {"id": settings.identity_id},
     "thread": {"id": thread_id},
     "metadata": {"module": "02", "tier": "free"},
 }
-r1 = chat("Can I still return ord_a3? It arrived 45 days ago.", extra_body=body)
-r2 = chat("It was damaged in transit. Please refund it.", history=r1.messages, extra_body=body)
-print(f"[2] thread         id={thread_id}")
-print(f"    turn 1 trace={r1.trace_id} tools={r1.tool_calls}")
-print(f"    turn 2 trace={r2.trace_id} tools={r2.tool_calls}")
-spans(r2.trace_id)  # wait for indexing
+
+turn_1 = chat("Can I still return ord_a3? It arrived 45 days ago.", extra_body=conversation_body)
+turn_2 = chat("It was damaged in transit. Please refund it.", history=turn_1.messages, extra_body=conversation_body)
+
+spans(turn_2.trace_id)  # only for the wait: the search below needs the last trace indexed
 now = datetime.now(UTC)
-hits = orq.traces.search(
-    from_=now - timedelta(minutes=10), to=now, limit=10,
+thread_hits = orq.traces.search(
+    from_=now - SEARCH_WINDOW,
+    to=now,
+    limit=10,
     filters=[{"field": "thread_id", "op": "eq", "values": [thread_id]}],  # also: identity_id, metadata.tier, name
 ).model_dump(by_alias=True)["data"]
-print(f"    search thread_id={thread_id} -> {len(hits)} traces: {[t['trace_id'] for t in hits]}")
-t = orq.traces.get(trace_id=r2.trace_id).model_dump(by_alias=True)["trace"]
-print(f"    turn 2: name={t['name']} identity_id={t['identity_id']} thread_id={t['thread_id']}")
-print(f"    render it:  orq traces thread {r2.trace_id}")
+turn_2_trace = orq.traces.get(trace_id=turn_2.trace_id).model_dump(by_alias=True)["trace"]
+
+print("── Step 2 · Name, identity, thread, metadata ──────────")
+print(f"thread   : {thread_id}")
+print(f"turn 1   : {turn_1.trace_id}  tools {' → '.join(turn_1.tool_calls) or '(none)'}")
+print(f"turn 2   : {turn_2.trace_id}  tools {' → '.join(turn_2.tool_calls) or '(none)'}")
+print(f"search   : thread_id={thread_id} → {len(thread_hits)} traces: {', '.join(hit['trace_id'] for hit in thread_hits)}")
+print(f"fields   : name={turn_2_trace['name']} identity_id={turn_2_trace['identity_id']} thread_id={turn_2_trace['thread_id']}")
+print(f"cli      : orq traces thread {turn_2.trace_id}")
+print(f"next     : in {TRACES_URL} filter on Thread ID {thread_id}; every model call of the conversation lines up")
 
 # %% [markdown]
-# Four traces, one conversation: turn 1 made three model calls, turn 2 made one. In the Studio,
-# open **Traces**, filter on Thread ID, and the four line up.
+# One conversation, several traces: turn 1 makes one model call per tool round plus the answer,
+# turn 2 usually one. In the Studio, open **Traces**, filter on Thread ID, and they line up.
 #
 # ## Step 3 · One trace per turn with `@traced`
 #
@@ -115,6 +135,8 @@ from orq_ai_sdk.traced import traced
 
 
 def traced_dispatch(store, name, arguments, policy_fn=tools_mod.get_policy):
+    """The app's tool dispatch, wrapped in a tool span named after the tool."""
+
     @traced(type="tool", name=name)
     def call(arguments):
         return tools_mod.dispatch(store, name, arguments, policy_fn=policy_fn)
@@ -122,7 +144,7 @@ def traced_dispatch(store, name, arguments, policy_fn=tools_mod.get_policy):
     return call(arguments)
 
 
-agent_mod.dispatch = traced_dispatch  # wrap, do not edit app/
+agent_mod.dispatch = traced_dispatch  # wrap at runtime, do not edit app/
 
 
 @traced(type="agent", name="refund_turn")
@@ -130,17 +152,27 @@ def refund_turn(user_text: str):
     return chat(user_text)  # run_turn adds the W3C traceparent of the active @traced span
 
 
-r = refund_turn(QUESTION)
-tracing.flush()
-print(f"[3] otel + @traced trace={r.trace_id} tools={r.tool_calls}")
-rows = show(r.trace_id)
-llm = [s for s in rows if s["type"] == "span.chat_completion"]
-trace_id, span_id = r.trace_id, (llm[-1]["span_id"] if llm else rows[0]["span_id"])
+result = refund_turn(QUESTION)
+tracing.flush()  # the batch exporter ships on a timer; a short script would exit first
+
+print("── Step 3 · One trace per turn with @traced ───────────")
+print(f"question : {QUESTION}")
+print(f"answer   : {result.text[:100]}…")
+print(f"tools    : {' → '.join(result.tool_calls)}")
+print(f"trace    : {result.trace_id}")
+print("spans    : oldest first")
+rows = print_span_table(result.trace_id)
+print(f"next     : open the trace in {TRACES_URL}; one root refund_turn, tool spans between the model calls")
+
+# The last model span of this trace is where the annotation of step 4 goes.
+model_spans = [span for span in rows if span["type"] in MODEL_SPAN_TYPES]
+annotated_trace_id = result.trace_id
+annotated_span_id = model_spans[-1]["span_id"] if model_spans else rows[0]["span_id"]
 
 # %% [markdown]
-# One root `refund_turn` span, four gateway calls nested under it, three tool spans between them
-# in the order the model called them. `tracing.flush()` matters: the batch exporter ships on a
-# timer and a short script exits first.
+# One root `refund_turn` span, one gateway call per round of the tool loop nested under it, and
+# the tool spans between them in the order the model called them. `tracing.flush()` matters: the
+# batch exporter ships on a timer and a short script exits first.
 #
 # ## Step 4 · Annotate the answer
 #
@@ -149,12 +181,20 @@ trace_id, span_id = r.trace_id, (llm[-1]["span_id"] if llm else rows[0]["span_id
 # values `good` and `bad`, then rerun this cell.
 
 # %%
+print("── Step 4 · Annotate the answer ───────────────────────")
+print("key      : rating=good")
+print(f"span     : {annotated_span_id} of trace {annotated_trace_id}")
 try:
-    orq.annotations.create(trace_id=trace_id, span_id=span_id, annotations=[{"key": "rating", "value": "good"}])
-    print(f"[4] annotation     rating=good on span {span_id} of trace {trace_id}")
+    orq.annotations.create(
+        trace_id=annotated_trace_id,
+        span_id=annotated_span_id,
+        annotations=[{"key": "rating", "value": "good"}],
+    )
+    print("verdict  : written")
+    print(f"next     : open the trace in {TRACES_URL}, Annotations panel; module 17 reads these back as labels")
 except Exception as exc:  # noqa: BLE001
-    print(f"[4] annotation     FAILED: {str(exc)[:220]}")
-    print("    Studio: Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad. Then rerun.")
+    print(f"verdict  : failed: {str(exc)[:220]}")
+    print("fix      : Studio > Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad, then rerun")
 
 # %% [markdown]
 # ## Done when
@@ -167,4 +207,4 @@ except Exception as exc:  # noqa: BLE001
 # agent getting the same spans from one `setup()` call.
 
 # %%
-print(f"open {settings.base_url}/traces and search the trace ids above")
+print(f"open {TRACES_URL} and search the trace ids above")

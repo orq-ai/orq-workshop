@@ -17,6 +17,12 @@ from mcp.server.mcpserver import MCPServer
 from app.refund_agent import tools as refund_tools
 from app.refund_agent.tools import OrderStore
 
+# The descriptions the local agent's model sees, by tool name, so MCP clients read the same contract.
+DESCRIPTIONS = {
+    schema["function"]["name"]: schema["function"]["description"]
+    for schema in refund_tools.TOOL_SCHEMAS
+}
+
 server = MCPServer(
     name="lumen-refunds",
     instructions="Refund tools for Lumen Goods. Look up an order, read the policy, issue a refund.",
@@ -26,18 +32,21 @@ server = MCPServer(
 STORE = OrderStore()
 
 
-@server.tool(name="lookup_order", description=refund_tools.TOOL_SCHEMAS[0]["function"]["description"])
+@server.tool(name="lookup_order", description=DESCRIPTIONS["lookup_order"])
 def lookup_order(order_id: str) -> dict:
+    """Thin wrapper: the session user comes from STORE, never from the MCP client."""
     return refund_tools.lookup_order(STORE, order_id)
 
 
-@server.tool(name="get_policy", description=refund_tools.TOOL_SCHEMAS[2]["function"]["description"])
+@server.tool(name="get_policy", description=DESCRIPTIONS["get_policy"])
 def get_policy(topic: str) -> dict:
+    """Thin wrapper: policy text from the local markdown files."""
     return refund_tools.get_policy(topic)
 
 
-@server.tool(name="issue_refund", description=refund_tools.TOOL_SCHEMAS[1]["function"]["description"])
+@server.tool(name="issue_refund", description=DESCRIPTIONS["issue_refund"])
 def issue_refund(order_id: str, reason: str, post_window_exception: bool = False) -> dict:
+    """Thin wrapper: refunds mutate STORE, so they persist until the process restarts."""
     return refund_tools.issue_refund(STORE, order_id, reason, post_window_exception)
 
 

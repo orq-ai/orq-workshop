@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retrieval as a tool · Module 09 Step 4</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 09 · Step 4</p>
+    <h1>Retrieval as a tool, inside your loop</h1>
+
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="step4-retrieval-as-tool-title step4-retrieval-as-tool-desc">
+      <title id="step4-retrieval-as-tool-title">Retrieval as a tool: the search runs in your process</title>
+      <desc id="step4-retrieval-as-tool-desc">Architecture diagram for module 09 step 4. The model asks for the get_policy tool, and your own loop executes it: your code searches the knowledge base directly and sends the chunks back as a tool result on the next round. The gateway proxies only the model calls, so the knowledge base search never appears as a span in the trace.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first: z-order puts them behind the nodes. -->
+      <!-- The focal path: your process searches the knowledge base and gets chunks back. -->
+      <line x1="408" y1="136" x2="408" y2="88" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <line x1="552" y1="88" x2="552" y2="136" stroke="#df5325" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-accent)"/>
+      <!-- The model rounds, through the gateway. -->
+      <line x1="408" y1="200" x2="408" y2="248" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <line x1="552" y1="248" x2="552" y2="200" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <line x1="408" y1="312" x2="408" y2="376" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow labels: beside the vertical segments, 8px gap, on open canvas. -->
+      <rect x="416" y="98" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="420" y="107" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">KB.SEARCH</text>
+      <rect x="560" y="98" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="564" y="107" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">CHUNKS AS TEXT</text>
+
+      <rect x="416" y="212" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="420" y="221" fill="#299d8f" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">ROUND 1..N</text>
+      <rect x="560" y="212" width="92" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="564" y="221" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">FUNCTION_CALL</text>
+
+      <rect x="416" y="336" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="420" y="345" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">MODEL CALL</text>
+
+      <!-- Node: Knowledge base (focal, top bar) -->
+      <rect x="72" y="40" width="816" height="48" rx="6" fill="#f9f8f6"/>
+      <rect x="72" y="40" width="816" height="48" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="80" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="94" y="57" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">KB</text>
+      <text x="480" y="60" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Knowledge base</text>
+      <text x="480" y="76" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">ws-refund-policy · orq.knowledge.search · a separate API call, not a gateway call</text>
+
+      <!-- Node: your tool loop (where the retrieval decision lands) -->
+      <rect x="336" y="136" width="288" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="336" y="136" width="288" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="344" y="144" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="358" y="153" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">APP</text>
+      <text x="480" y="172" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Your tool loop</text>
+      <text x="480" y="188" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">dispatch → policy_fn=kb_policy</text>
+
+      <!-- Node: AI Gateway -->
+      <rect x="336" y="248" width="288" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="336" y="248" width="288" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="344" y="256" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="358" y="265" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GW</text>
+      <text x="480" y="284" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">AI Gateway</text>
+      <text x="480" y="300" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">traces the model calls only · no retrieval span</text>
+
+      <!-- Node: Model (external, bottom bar) -->
+      <rect x="72" y="376" width="816" height="48" rx="6" fill="#f9f8f6"/>
+      <rect x="72" y="376" width="816" height="48" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="80" y="384" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="94" y="393" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+      <text x="480" y="396" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Model</text>
+      <text x="480" y="412" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">openai/gpt-5.6-luna · asks for get_policy, never sees the knowledge base</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="460" x2="920" y2="460" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="476" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="492" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Knowledge base</text>
+
+      <rect x="176" y="492" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="196" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Your code</text>
+
+      <rect x="284" y="492" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="304" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">orq entity</text>
+
+      <rect x="392" y="492" width="14" height="10" rx="2" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <text x="412" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Provider model</text>
+
+      <line x1="520" y1="498" x2="548" y2="498" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <text x="556" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Retrieval, in your process</text>
+
+      <line x1="716" y1="498" x2="744" y2="498" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <text x="752" y="500" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">API call from your code</text>
+    </svg>
+  </div>
+</body>
+</html>

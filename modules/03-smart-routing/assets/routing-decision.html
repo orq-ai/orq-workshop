@@ -36,7 +36,7 @@
 
     <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="routing-decision-title routing-decision-desc">
       <title id="routing-decision-title">Routing decision: rule, Smart Router, or the requested model</title>
-      <desc id="routing-decision-desc">Flowchart showing how the gateway picks the model for a request: a matching routing rule replaces the request entirely, otherwise a Smart Router reference lets the router pick a band, otherwise the requested model is used, and in every case span.chat_completion names the winner.</desc>
+      <desc id="routing-decision-desc">Flowchart showing how the gateway picks the model for a request: a matching routing rule replaces the request entirely, otherwise a Smart Router reference lets the router pick a band, otherwise the requested model is used, and in every case span.responses names the winner.</desc>
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
         <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
@@ -114,7 +114,7 @@
       <rect x="368" y="368" width="224" height="48" rx="6" fill="#f9f8f6"/>
       <rect x="368" y="368" width="224" height="48" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
       <text x="480" y="388" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Requested model, as-is</text>
-      <text x="480" y="404" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">e.g. openai/gpt-4o-mini</text>
+      <text x="480" y="404" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">e.g. openai/gpt-5.6-luna</text>
 
       <!-- Merge dot -->
       <circle cx="480" cy="448" r="4" fill="#25232e"/>
@@ -122,7 +122,7 @@
       <!-- End oval -->
       <rect x="336" y="480" width="288" height="40" rx="20" fill="#f9f8f6"/>
       <rect x="336" y="480" width="288" height="40" rx="20" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
-      <text x="480" y="496" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">span.chat_completion names the winner</text>
+      <text x="480" y="496" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">span.responses names the winner</text>
       <text x="480" y="510" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">every path leaves its decision in the trace</text>
 
       <!-- Editorial callout (left margin) -->

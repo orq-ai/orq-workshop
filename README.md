@@ -25,22 +25,23 @@ make doctor && make smoke                         # green checks + your first tr
 
 Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed` creates every entity a module expects, so you can start anywhere. `make reset` deletes them all.
 
-## The two tracks
+## The sections
 
-| AI Gateway track | Managed Agents track |
-|---|---|
-| 00 Setup | 08 Managed agents |
-| 01 Gateway: fallbacks, retry, cache, load balancing | 09 Knowledge base and RAG |
-| 02 Tracing: identity, thread, spans, annotations | 10 MCP servers and the MCP Gateway |
-| 03 Smart routing and routing rules | 11 Simulation and red teaming |
-| 04 Guardrails and PII | 12 Evals and headless agents in CI |
-| 05 Budgets, keys, identities | 13 Coding agents and wrap-up |
-| 06 Troubleshooting with orqi | |
-| 07 Failure analysis to evaluators to experiments | |
+Setup first, then the same three sections as docs.orq.ai. Module numbers are the build order (`make m01` … `make m17`); sections are the topic.
+
+| Setup | AI Gateway | AI Observability | Managed Agents |
+|---|---|---|---|
+| 00 Setup: the orq CLI | 01 Gateway: fallbacks, retry, cache, load balancing | 02 Tracing: identity, thread, spans, annotations | 08 Managed agents |
+| 13 Coding agents and wrap-up | 03 Smart routing and routing rules | 07 Failure analysis to evaluators to experiments | 09 Knowledge base and RAG |
+| orqi harness | 04 Guardrails and PII | 14 Alerts and webhooks | 10 MCP servers and the MCP Gateway |
+| 06 Troubleshooting with orqi | 05 Budgets, keys, identities, Terraform | 17 Annotation queues and automations | 11 Agent simulation |
+| | | | 12 Evals and headless agents in CI |
+| | | | 15 Advisor and sidekick |
+| | | | 16 Red teaming |
 
 Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs), a `solution/` and an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
 
-**Prefer a notebook?** `make lab` opens JupyterLab with one notebook per module (01, 02, 03, 04, 08, 09). Each is the solution split into steps: a cell of explanation, a cell that does one thing, the output underneath. The notebooks are generated from `solution/run.py` (Jupytext percent format), so they never drift from the script `make mNN` runs.
+**Prefer a notebook?** `make lab` opens JupyterLab with one notebook per module (01, 02, 03, 04, 08, 09, 14, 15, 17). Each is the solution split into steps: a cell of explanation, a cell that does one thing, the output underneath. The notebooks are generated from `solution/run.py` (Jupytext percent format), so they never drift from the script `make mNN` runs.
 
 ## Two ways to work
 
@@ -50,7 +51,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 
 ## Layout
 
-```
+```text
 app/refund_agent/   the sample app (never changes across modules)
 app/data/           orders, policy docs, dataset, agent instructions
 modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)

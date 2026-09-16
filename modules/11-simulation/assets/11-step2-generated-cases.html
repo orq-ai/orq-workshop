@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 2 · Generated personas</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;
+      --color-ink:    #25232e;
+      --color-muted:  #025558;
+      --color-accent: #df5325;
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Step 2 · Module 11</p>
+    <h1>One line in, three personas out, and a scenario that invented its order</h1>
+
+    <svg viewBox="0 0 960 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="s11-step2-title s11-step2-desc">
+      <title id="s11-step2-title">Generating personas and scenarios from a one-line agent description</title>
+      <desc id="s11-step2-desc">Flow showing a one-line description of the refund agent passed to generate_and_simulate, which writes three personas and one scenario. The generated scenario asks for an in-window refund of defective EchoBuds earbuds but binds to fixture order ord_a3, which is really a cable organiser set delivered 45 days ago, so the agent correctly refuses and all three conversations score zero. The personas are reusable; the scenario has to be fixed by hand and replayed.</desc>
+
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first -->
+      <line x1="248" y1="140" x2="288" y2="140" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="488" y1="140" x2="528" y2="140" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="736" y1="140" x2="776" y2="140" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- generated scenario down to the fixture it collided with -->
+      <line x1="632" y1="188" x2="632" y2="248" stroke="#df5325" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-accent)"/>
+      <!-- simulate down to the verdict -->
+      <line x1="848" y1="188" x2="848" y2="248" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Arrow labels -->
+      <rect x="244" y="112" width="48" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="268" y="121" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">1 LINE</text>
+
+      <rect x="480" y="112" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="508" y="121" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">3 × 1</text>
+
+      <rect x="728" y="112" width="56" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="756" y="121" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REPLAY</text>
+
+      <rect x="644" y="206" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="648" y="215" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">MISMATCH</text>
+
+      <!-- Node: agent description (input) -->
+      <rect x="40" y="96" width="208" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="96" width="208" height="88" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="104" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="113" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TXT</text>
+      <text x="144" y="136" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Agent description</text>
+      <text x="144" y="152" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">one sentence, hand written</text>
+      <text x="144" y="168" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">&quot;refunds within 30 days&quot;</text>
+
+      <!-- Node: generator -->
+      <rect x="288" y="96" width="200" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="288" y="96" width="200" height="88" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="296" y="104" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="310" y="113" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+      <text x="388" y="136" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">generate_and_simulate</text>
+      <text x="388" y="152" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">num_personas=3</text>
+      <text x="388" y="168" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">num_scenarios=1</text>
+
+      <!-- Node: generated cases (focal) -->
+      <rect x="528" y="96" width="208" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="96" width="208" height="88" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="536" y="104" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="550" y="113" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GEN</text>
+      <text x="632" y="136" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Generated cases</text>
+      <text x="632" y="152" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">3 personas · reusable</text>
+      <text x="632" y="168" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">1 scenario · &quot;defective EchoBuds&quot;</text>
+
+      <!-- Node: simulate -->
+      <rect x="776" y="96" width="144" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="776" y="96" width="144" height="88" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="784" y="104" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="798" y="113" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TGT</text>
+      <text x="848" y="140" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Local agent</text>
+      <text x="848" y="160" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">max_turns=3</text>
+
+      <!-- Node: the fixture the scenario collided with -->
+      <rect x="528" y="248" width="208" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="248" width="208" height="88" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="536" y="256" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="550" y="265" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DB</text>
+      <text x="632" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">What ord_a3 really is</text>
+      <text x="632" y="304" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">cable organiser set, EUR 42.50</text>
+      <text x="632" y="320" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">delivered 45 days ago, undamaged</text>
+
+      <!-- Node: verdict -->
+      <rect x="776" y="248" width="144" height="88" rx="6" fill="#f9f8f6"/>
+      <rect x="776" y="248" width="144" height="88" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="784" y="256" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="798" y="265" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXP</text>
+      <text x="848" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">0/3 achieved</text>
+      <text x="848" y="304" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">every score 0.00</text>
+      <text x="848" y="320" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">ws-sim-generated</text>
+
+      <!-- Callout -->
+      <path d="M 144,184 V 232" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="144" cy="184" r="2" fill="#25232e"/>
+      <text x="40" y="256" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">The agent was right to refuse.</text>
+      <text x="40" y="274" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">The case was wrong, not the answer.</text>
+      <text x="40" y="300" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">Keep the personas.</text>
+      <text x="40" y="314" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">Fix the scenario by hand.</text>
+      <text x="40" y="328" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">eq sim generate --datapoints cases.jsonl</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="380" x2="920" y2="380" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="396" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="412" width="14" height="10" rx="2" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="60" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Your input</text>
+
+      <rect x="160" y="412" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="180" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Model</text>
+
+      <rect x="260" y="412" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="280" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Invented by the library</text>
+
+      <rect x="440" y="412" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="460" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Fixture / orq entity</text>
+
+      <line x1="620" y1="418" x2="648" y2="418" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="656" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Flow</text>
+
+      <line x1="720" y1="418" x2="748" y2="418" stroke="#df5325" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-accent)"/>
+      <text x="756" y="420" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Collides with the fixture</text>
+    </svg>
+  </div>
+</body>
+</html>

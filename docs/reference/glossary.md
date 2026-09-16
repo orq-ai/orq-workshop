@@ -16,11 +16,19 @@
 
 **Thread.** A conversation id. Attach `orq.thread.id` so multi-turn traces group into one thread view. [Docs](https://docs.orq.ai/docs/ai-gateway/thread-management)
 
+**Reporting API.** `POST /v2/reporting`. Usage, cost, latency, error, evaluator and guardrail metrics from the trace data, sliced by model, provider, project, identity or entity. What the Studio charts and what alerts evaluate. [Docs](https://docs.orq.ai/docs/ai-studio/observability/reporting-api)
+
+**Alert.** A Reporting API metric with a threshold, a window and a check frequency, scoped to one project. A breach opens a **trigger** that stays open until the value recovers; each open and resolve notifies the alert's **notifiers** (email, Slack, generic webhook). [Docs](https://docs.orq.ai/docs/ai-studio/observability/alerts)
+
+**Webhook.** A workspace subscription that POSTs chosen events (`llm.response`, `llm.chat_completion`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, signed with `X-Orq-Signature` (HMAC-SHA256 of the body). Different from a **notifier**, which is where alerts and budgets send their notifications. [Docs](https://docs.orq.ai/docs/ai-studio/organization/webhooks)
+
+**Trace automation.** A Studio rule over future traces: a filter, a sampling rate, and an action, add to a dataset or to an **annotation queue**. Studio-only; the queue itself has an API. [Docs](https://docs.orq.ai/docs/ai-studio/observability/automations)
+
 **Managed agent.** An agent hosted by orq: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions and environments. Invoked through the Responses API as `model="agent/<key>"`. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents)
 
 **Advisor / Sidekick.** Built-in agent tools. Advisor: ask a second model for guidance on the conversation so far. Sidekick: delegate a discrete task with its own instructions and get only the result. On the gateway's server tools these are `orq:advisor` and `orq:subagent`. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
 
-**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
+**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [How retrieval works](rag.md) · [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
 
 **Orq MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp)
 

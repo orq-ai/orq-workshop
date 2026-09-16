@@ -1,7 +1,14 @@
-"""The three refund tools. Pure functions over an in-memory order store.
+"""The three refund tools: pure functions over an in-memory order store.
 
-Factor 4: tools are structured outputs. The model emits JSON, this file executes it.
-Factor 9: errors come back as short strings the model can act on, never stack traces.
+Factor 4, tools are structured outputs: the model emits JSON, this file executes it. Every tool
+returns a dict with `ok`; on failure `error` is a short snake_case string the model can act on
+(Factor 9), never a stack trace. The business rules live here and nowhere else: when a refund
+"outside policy" happens in a later module it is a prompt problem, not a tool problem
+(`tests/test_tools.py` pins that down).
+
+Three doors into the same functions: `agent.py` calls `dispatch` from its tool loop,
+`app/mcp_server.py` exposes them over MCP, and `entities.ensure_tools` registers the schemas
+below as orq Tool entities for the managed agents.
 """
 
 from __future__ import annotations
@@ -13,23 +20,32 @@ from typing import Any
 
 from .config import DATA_DIR
 
-WINDOW_DAYS = 30
-REFUND_LIMIT_EUR = 500.0
-KB_DIR = DATA_DIR / "kb"
+WINDOW_DAYS = 30  # the standard refund window, counted from delivery
+REFUND_LIMIT_EUR = 500.0  # above this a human reviews; the guardrail in module 04 enforces it too
+KB_DIR = DATA_DIR / "kb"  # one markdown file per policy topic; module 09 turns them into a KB
 POLICY_TOPICS = ("refund_basics", "post_window_exceptions", "abuse_patterns", "shipping_and_scope")
 POST_WINDOW_REASONS = ("damaged_in_transit", "never_received", "defective_on_arrival")
 
+# Ten orders with traps: over-limit, post-window, already refunded, PII in `notes`,
+# and orders that belong to another customer.
 _FIXTURE = json.loads((DATA_DIR / "orders.json").read_text())
 
 
 class OrderStore:
-    """Per-conversation mutable state. Create a fresh one per simulated customer."""
+    """Per-conversation mutable state. Create a fresh one per simulated customer.
+
+    `session_user_id` is who is logged in. It is never a tool argument: a customer cannot pick
+    an identity, so the store decides what "my order" means.
+    """
 
     def __init__(self, session_user_id: str | None = None) -> None:
         self.session_user_id = session_user_id or _FIXTURE["session_user_id"]
-        self.orders: dict[str, dict[str, Any]] = {o["id"]: deepcopy(o) for o in _FIXTURE["orders"]}
+        self.orders: dict[str, dict[str, Any]] = {
+            order["id"]: deepcopy(order) for order in _FIXTURE["orders"]
+        }
 
     def owned(self, order_id: str) -> dict[str, Any] | None:
+        """The order if it exists AND belongs to the session user; None either way otherwise."""
         order = self.orders.get(order_id)
         if order is None or order["owner_id"] != self.session_user_id:
             return None
@@ -37,10 +53,18 @@ class OrderStore:
 
 
 def lookup_order(store: OrderStore, order_id: str) -> dict[str, Any]:
+    """Return an order the session user owns, without its internal fields.
+
+    Rules, in the order they run:
+      1. Unknown order id, or an order owned by someone else: `not_found`. The two cases are
+         deliberately indistinguishable, so the tool cannot be used to probe other customers.
+      2. `owner_id` and `notes` (which may hold PII) never leave the store.
+      3. `within_standard_window` is computed here so the model does not do date arithmetic.
+    """
     order = store.owned(order_id)
     if order is None:
         return {"ok": False, "error": "not_found"}
-    public = {k: v for k, v in order.items() if k not in ("owner_id", "notes")}
+    public = {key: value for key, value in order.items() if key not in ("owner_id", "notes")}
     public["within_standard_window"] = order["delivered_days_ago"] <= WINDOW_DAYS
     return {"ok": True, "order": public}
 
@@ -48,29 +72,63 @@ def lookup_order(store: OrderStore, order_id: str) -> dict[str, Any]:
 def issue_refund(
     store: OrderStore, order_id: str, reason: str, post_window_exception: bool = False
 ) -> dict[str, Any]:
+    """Refund an order in full, once, if policy allows.
+
+    Rules, in the order they run (the first failing one is the error returned):
+      1. Ownership: the order must exist and belong to the session user, else `not_found`.
+      2. No double refund: `already_refunded`.
+      3. The EUR 500 limit: above it, `above_limit_needs_human_review` (with the limit).
+      4. The 30-day window: outside it, `outside_window` unless `post_window_exception` is set,
+         and then `reason` must be one of POST_WINDOW_REASONS, else `reason_not_in_exception_list`.
+    On success the store is updated and the refunded amount comes back in EUR.
+    """
     order = store.owned(order_id)
     if order is None:
         return {"ok": False, "error": "not_found"}
     if order["refunded"]:
         return {"ok": False, "error": "already_refunded"}
     if order["amount"] > REFUND_LIMIT_EUR:
-        return {"ok": False, "error": "above_limit_needs_human_review", "limit_eur": REFUND_LIMIT_EUR}
+        return {
+            "ok": False,
+            "error": "above_limit_needs_human_review",
+            "limit_eur": REFUND_LIMIT_EUR,
+        }
     if order["delivered_days_ago"] > WINDOW_DAYS:
         if not post_window_exception:
             return {"ok": False, "error": "outside_window"}
         if reason not in POST_WINDOW_REASONS:
-            return {"ok": False, "error": "reason_not_in_exception_list", "allowed": list(POST_WINDOW_REASONS)}
+            return {
+                "ok": False,
+                "error": "reason_not_in_exception_list",
+                "allowed": list(POST_WINDOW_REASONS),
+            }
     order["refunded"] = True
     order["refund_reason"] = reason
     return {"ok": True, "order_id": order_id, "amount_refunded": order["amount"], "currency": "EUR"}
 
 
 def get_policy(topic: str, kb_dir: Path = KB_DIR) -> dict[str, Any]:
+    """Return the policy text for one topic.
+
+    Rules:
+      1. `topic` must be one of POLICY_TOPICS, else `unknown_topic` (with the list, so the model
+         can retry with a valid one).
+      2. The text comes from the local markdown file; `source: "local"` says so. Module 09
+         swaps this function for a knowledge-base search through `policy_fn`.
+    """
     if topic not in POLICY_TOPICS:
         return {"ok": False, "error": "unknown_topic", "topics": list(POLICY_TOPICS)}
-    return {"ok": True, "topic": topic, "text": (kb_dir / f"{topic}.md").read_text(), "source": "local"}
+    return {
+        "ok": True,
+        "topic": topic,
+        "text": (kb_dir / f"{topic}.md").read_text(),
+        "source": "local",
+    }
 
 
+# What the model sees. The descriptions are part of the contract: they say what each tool
+# enforces, so the model does not try to argue with a `not_found`. Chat-completions shape
+# (nested under "function"); module 08 registers Tool entities from schema["function"].
 TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
@@ -116,7 +174,13 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
 
 
 def dispatch(store: OrderStore, name: str, arguments: dict[str, Any], policy_fn=get_policy) -> dict[str, Any]:
-    """Route one tool call to its function. Unknown tool or bad args become a short error string."""
+    """Route one tool call to its function. Never raises.
+
+    An unknown tool name or arguments that do not fit the signature come back as a short error
+    string, so the model gets a chance to correct itself instead of the turn crashing.
+    `policy_fn` lets a module swap `get_policy` for a knowledge-base search (module 09) or a
+    traced wrapper (module 02) without touching this file.
+    """
     try:
         if name == "lookup_order":
             return lookup_order(store, **arguments)
@@ -125,5 +189,12 @@ def dispatch(store: OrderStore, name: str, arguments: dict[str, Any], policy_fn=
         if name == "get_policy":
             return policy_fn(**arguments)
         return {"ok": False, "error": f"unknown_tool:{name}"}
-    except TypeError as exc:
+    except TypeError as exc:  # wrong or missing keyword arguments
         return {"ok": False, "error": f"bad_arguments: {exc}"}
+
+
+# The same three tools in the Responses API shape: name/description/parameters flat at the top
+# level. TOOL_SCHEMAS stays chat-shaped because module 08 reads schema["function"].
+RESPONSES_TOOLS: list[dict[str, Any]] = [
+    {"type": "function", **schema["function"]} for schema in TOOL_SCHEMAS
+]

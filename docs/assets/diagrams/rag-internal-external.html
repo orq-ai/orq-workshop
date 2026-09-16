@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internal and external knowledge bases · Reference</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Reference · How retrieval works</p>
+    <h1>Two ways to own the search, one shared tail</h1>
+
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rag-internal-external-title rag-internal-external-desc">
+      <title id="rag-internal-external-title">Internal and external knowledge bases compared</title>
+      <desc id="rag-internal-external-desc">Reference diagram. With an internal knowledge base orq chunks, embeds and searches your documents. With an external one you do all three behind your own endpoint and orq stores nothing. Either way orq applies the same tail to the results, cutting to top_k, filtering by threshold and reranking, so both return matches in the same shape.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <text x="268" y="72" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">INTERNAL — ORQ HOLDS THE DOCUMENTS</text>
+      <text x="692" y="72" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.14em">EXTERNAL — YOU DO</text>
+
+      <!-- Arrows first -->
+      <line x1="268" y1="232" x2="268" y2="256" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="692" y1="232" x2="692" y2="256" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="480" y1="320" x2="480" y2="344" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+
+      <!-- Row 1: chunk and embed -->
+      <rect x="72" y="88" width="392" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="268" y="120" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Chunk and embed</text>
+      <text x="268" y="138" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">orq, using the embedding_model you picked</text>
+
+      <rect x="496" y="88" width="392" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="692" y="120" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Chunk and embed</text>
+      <text x="692" y="138" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">you — orq stores no chunks and no vectors</text>
+
+      <!-- Row 2: the search itself -->
+      <rect x="72" y="168" width="392" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="268" y="200" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">The search</text>
+      <text x="268" y="218" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">vector | keyword | hybrid, via retrieval_type</text>
+
+      <rect x="496" y="168" width="392" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="692" y="200" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">The search</text>
+      <text x="692" y="218" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">your endpoint — there is no retrieval_type</text>
+
+      <!-- The shared tail: the fact that surprises people -->
+      <rect x="72" y="256" width="816" height="64" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="80" y="264" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="94" y="273" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ORQ</text>
+      <text x="480" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">The same tail runs either way</text>
+      <text x="480" y="306" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">top_k → threshold → rerank → rerank threshold</text>
+
+      <!-- Output -->
+      <rect x="72" y="344" width="816" height="48" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="80" y="352" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="94" y="361" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+      <text x="480" y="364" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">matches</text>
+      <text x="480" y="380" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">the same shape from both: text · id · metadata · scores</text>
+
+      <text x="72" y="416" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace">you own retrieval, the platform still owns ranking — so the choice is not all or nothing</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="440" x2="920" y2="440" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="456" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="472" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="60" y="480" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">orq does it</text>
+
+      <rect x="168" y="472" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="188" y="480" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">You do it</text>
+
+      <rect x="272" y="472" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="292" y="480" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Applies to both</text>
+    </svg>
+  </div>
+</body>
+</html>

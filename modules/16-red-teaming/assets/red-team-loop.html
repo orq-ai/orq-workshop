@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red-team loop · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 16</p>
+    <h1>Two prompts, one attack file, two verdicts</h1>
+
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="red-team-loop-title red-team-loop-desc">
+      <title id="red-team-loop-title">The red-team loop against the vulnerable and the fixed refund prompt</title>
+      <desc id="red-team-loop-desc">Architecture diagram: a static attack file feeds an attacker model that replays one attack per OWASP category against two targets, the vulnerable and the fixed refund prompt; each transcript goes to a judge that marks it vulnerable or not; the targets' tool calls hit the order store, which records which refunds really went through; judge verdicts and real refunds both land in one Experiment run with a resistance rate per target.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Layout (x,y,w,h):
+           Attack file  48,144,160,56      Attacker 288,144,160,56
+           Vulnerable   528,80,160,56      Fixed    528,208,160,56   (targets)
+           Judge        768,144,144,56
+           Order store  528,320,160,56     Experiment 768,320,144,56 (focal) -->
+
+      <!-- Arrows first -->
+      <!-- A1 file → attacker -->
+      <line x1="208" y1="172" x2="288" y2="172" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A2 attacker → vulnerable (right + up) -->
+      <path d="M 448,164 H 480 Q 488,164 488,156 V 116 Q 488,108 496,108 H 528" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A3 attacker → fixed (right + down) -->
+      <path d="M 448,180 H 480 Q 488,180 488,188 V 228 Q 488,236 496,236 H 528" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A4 vulnerable → judge (right + down) -->
+      <path d="M 688,108 H 720 Q 728,108 728,116 V 156 Q 728,164 736,164 H 768" fill="none" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <!-- A5 fixed → judge (right + up) -->
+      <path d="M 688,236 H 720 Q 728,236 728,228 V 188 Q 728,180 736,180 H 768" fill="none" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <!-- A6 targets → order store (down from fixed, same x) -->
+      <line x1="608" y1="264" x2="608" y2="320" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- A7 judge → experiment (down, same x) -->
+      <line x1="840" y1="200" x2="840" y2="320" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <!-- A8 order store → experiment (right, same y) -->
+      <line x1="688" y1="348" x2="768" y2="348" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+
+      <!-- Arrow labels -->
+      <rect x="216" y="152" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="248" y="161" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">8 ATTACKS</text>
+      <rect x="448" y="128" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="452" y="137" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">MAX 2 TURNS</text>
+      <rect x="692" y="128" width="72" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="696" y="137" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">TRANSCRIPT</text>
+      <rect x="620" y="284" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="624" y="293" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">ISSUE_REFUND</text>
+      <rect x="852" y="252" width="80" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="856" y="261" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">VULNERABLE?</text>
+      <rect x="696" y="328" width="64" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="728" y="337" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REFUNDED</text>
+
+      <!-- Node: Attack file (store) -->
+      <rect x="48" y="144" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="48" y="144" width="160" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="56" y="152" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="74" y="161" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FILE</text>
+      <text x="128" y="176" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">static_attacks.json</text>
+      <text x="128" y="191" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">LLM01 LLM07 ASI01 ASI02</text>
+
+      <!-- Node: Attacker (external model) -->
+      <rect x="288" y="144" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="288" y="144" width="160" height="56" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="296" y="152" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="310" y="161" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+      <text x="368" y="176" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Attacker</text>
+      <text x="368" y="191" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">gpt-5.6-luna via router</text>
+
+      <!-- Node: Vulnerable target -->
+      <rect x="528" y="80" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="80" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="536" y="88" width="44" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="558" y="97" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TARGET</text>
+      <text x="608" y="112" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Vulnerable prompt</text>
+      <text x="608" y="127" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">LocalRefundTarget("vulnerable")</text>
+
+      <!-- Node: Fixed target -->
+      <rect x="528" y="208" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="208" width="160" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="536" y="216" width="44" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="558" y="225" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TARGET</text>
+      <text x="608" y="240" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Fixed prompt</text>
+      <text x="608" y="255" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">LocalRefundTarget("fixed")</text>
+
+      <!-- Node: Judge (external model) -->
+      <rect x="768" y="144" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="768" y="144" width="144" height="56" rx="6" fill="rgba(37,35,46,0.03)" stroke="rgba(37,35,46,0.30)" stroke-width="1"/>
+      <rect x="776" y="152" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.22)" stroke-width="0.8"/>
+      <text x="790" y="161" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LLM</text>
+      <text x="840" y="176" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">OWASP judge</text>
+      <text x="840" y="191" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">reads text only</text>
+
+      <!-- Node: Order store -->
+      <rect x="528" y="320" width="160" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="528" y="320" width="160" height="56" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="536" y="328" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="554" y="337" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STORE</text>
+      <text x="608" y="352" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Order store</text>
+      <text x="608" y="367" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">REFUNDS_ISSUED, the truth</text>
+
+      <!-- Node: Experiment (focal) -->
+      <rect x="768" y="320" width="144" height="56" rx="6" fill="#f9f8f6"/>
+      <rect x="768" y="320" width="144" height="56" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="776" y="328" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="790" y="337" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RUN</text>
+      <text x="840" y="352" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">ws-redteam-local</text>
+      <text x="840" y="367" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">resistance per target</text>
+
+      <!-- Callout -->
+      <path d="M 232,420 Q 300,416 528,376" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="528" cy="376" r="2" fill="#25232e"/>
+      <text x="40" y="436" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">The judge flagged one attack. The order store says two refunds went through.</text>
+      <text x="40" y="454" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">Structured tool results are the ground truth; the judge is the second opinion.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="476" x2="920" y2="476" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="492" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="504" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="60" y="512" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Where both verdicts land</text>
+
+      <line x1="264" y1="510" x2="292" y2="510" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="300" y="512" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Attack turn</text>
+
+      <line x1="416" y1="510" x2="444" y2="510" stroke="#025558" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <text x="452" y="512" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Transcript to the judge</text>
+
+      <line x1="620" y1="510" x2="648" y2="510" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <text x="656" y="512" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Verdict (judge) and truth (store) into one run</text>
+    </svg>
+  </div>
+</body>
+</html>

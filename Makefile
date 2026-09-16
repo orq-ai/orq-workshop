@@ -43,6 +43,12 @@ redteam-gate: ## Security regression gate with evaluatorq static red team. Used 
 mcp-server: ## Run the refund MCP server locally on :8000 (module 10)
 	$(RUN) python app/mcp_server.py
 
+edge: ## Run app/edge.py on :8001 (module 09 external KB + module 14 webhook receiver); expose it, put the public URL in WS_EDGE_URL
+	$(RUN) python -m app.edge
+
+edge-docker: ## The same as a container (what the instructor hosts for the room)
+	docker build -t orq-edge . && docker run --rm -p 8001:8001 -e WS_WEBHOOK_SECRET=$$WS_WEBHOOK_SECRET orq-edge
+
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
@@ -71,7 +77,7 @@ slides: ## Render slides/workshop.md to HTML and PDF with Marp
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
 
-# m00 .. m13: run a module's solution, e.g. `make m01`
+# m00 .. m17: run a module's solution, e.g. `make m01`
 m%: ## Run the solution of module NN (e.g. make m03)
 	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; \
 	echo "Module dir:  $$dir"; \
@@ -80,4 +86,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server og-card diagrams docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker og-card diagrams docs-serve docs-build slides modules

@@ -1,9 +1,13 @@
 # 08 · Managed agents
 
-!!! abstract "Factor 4: Tools are structured outputs, Factor 6: Launch, pause, resume, Factor 10: Small, focused agents"
+!!! abstract "The agent lives in orq, your code executes the tools"
     The agent lives in orq. Your code is the tool executor: every `function_call` item comes back to you, you answer it, the conversation resumes server-side. One agent, three tools, eight iterations max.
 
-**Time:** 40 min · **Prereqs:** modules 00 to 02, `make seed` · **You will have:** the refund agent invoked through the Responses API with a local tool loop, streamed, given memory, versioned and pinned by `@version`.
+| | |
+|---|---|
+| **Time** | 40 min |
+| **Prerequisites** | modules 00 to 02, `make seed` |
+| **You will have** | the refund agent invoked through the Responses API with a local tool loop, streamed, given memory, versioned and pinned by `@version`. |
 
 ## Why
 
@@ -36,18 +40,23 @@ Open `modules/08-managed-agents/run.py`. The loop in `run_agent` has two `TODO`s
 
 ```bash
 $ orq agents retrieve ws-refund-agent -o json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
-$ uv run python modules/08-managed-agents/run.py
+$ make m08      # the solution; the starter prints the same block once its TODOs are filled in
 ```
 
 Expected output:
 
 ```text
-[1] ws-refund-agent v1.0.0 model=openai/gpt-4o-mini status=live
-    max_iterations=8 max_execution_time=120s tool_approval_required=respect_tool
-    tools (as READ): [('function', 'ws-lookup-order', '9MDTGY'), ('function', 'ws-issue-refund', 'K3W9Y6'), ('function', 'ws-get-policy', 'BQHTKW')]
-    knowledge_bases=[{'knowledge_id': '01M21E5BPY4XF0RRC7NS0RQ63D'}] memory_stores=[]
-    PATCH of the GET body -> ValueError: Could not find discriminator field type in {'id': '01M21ED10ADZ3Z9MEQP...
-    write shape: settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]
+── Step 1 · Inspect the agent ─────────────────────────
+agent    : ws-refund-agent v1.1.0 (live)
+model    : openai/gpt-5.6-luna
+limits   : max_iterations 8, max_execution_time 120s
+approval : tool_approval_required=respect_tool
+tools    : [('function', 'ws-lookup-order', 'S4GC7Z'), ('function', 'ws-issue-refund', '7NXF3X'), ('function', 'ws-get-policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
+kb       : [{'knowledge_id': '01M2K8Y4HRF33KBXZVMTQVM6KB'}]
+memory   : []
+patch    : rejected, ValueError: Could not find discriminator field type in {'id': '01M2K8Y61FFSQ5BE3BV…
+write    : settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]
+next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 5
 ```
 
 Reads and writes have different shapes. A GET returns tools as `{action_type, id, key, requires_approval}`; a create or update wants `{"type": "function", "key": "ws-lookup-order"}`. Inline function schemas are rejected: register the tool once (`orq tools create`), then reference it by key. Open the agent in the Studio (**Agents** > `ws-refund-agent`): the same instructions, the tool list, the limits, and a **Versions** tab.
@@ -55,35 +64,46 @@ Reads and writes have different shapes. A GET returns tools as `{action_type, id
 ### Step 2 · Invoke it and execute the tool calls
 
 ```text
-[2] tools=['lookup_order', 'get_policy', 'issue_refund'] steps=4 4.6s cost=$0.00021
-    answer: Your refund for order **ord_a2** for the charging dock has been processed successfully. You will see the amoun
-    first trace: 0584a8e4784fadf15530853a4a1be96a   last trace: 34c8d8a2e3182ec593db48a708d95bca
-    $ orq traces thread 34c8d8a2e3182ec593db48a708d95bca
+── Step 2 · Invoke it and execute the tool calls ──────
+question : Refund ord_a2 please, the dock does not fit.
+tools    : lookup_order → get_policy → issue_refund
+requests : 4 in 5.2s, cost $0.00008
+answer   : Your refund of **€89** for the charging dock has been issued to the original payment method. It shou…
+first    : 0a272823e64d604a68fd1f559e1a6ab1
+last     : a82c9697d1495f27efaa20c265480682
+next     : run `orq traces thread a82c9697d1495f27efaa20c265480682`; the last trace renders the whole conversation
 ```
 
-Four requests, four traces: each Responses call is its own trace with an `agent.response` span and a `chat openai/gpt-4o-mini` span. The last one renders the whole conversation because state is server-side:
+Four requests, four traces: each Responses call is its own trace with an `agent.response` span and a `chat openai/gpt-5.6-luna` span. State is server-side, so the last trace's thread view is the conversation as the customer saw it; the tool calls and their results sit in the three traces before it:
 
-```bash
-$ orq traces thread 9a4a7e1734b3315950990034ce08ca86
-<thread trace="9a4a7e1734b3315950990034ce08ca86" span="07dd005bf712bc75" format="responses" model="gpt-4o-mini" duration_ms="1014" tokens="1199">
+```console
+$ orq traces thread c4e68bf2a8a0e9814b9e08eb9dabb93c --slice -2:
+<thread trace="c4e68bf2a8a0e9814b9e08eb9dabb93c" span="26b1f583bbd66a49" format="responses" model="gpt-5.6-luna" duration_ms="1398" tokens="1343">
+
 <message index="0" role="user">
 Refund ord_a2 please, the dock does not fit.
 </message>
+
 <message index="1" role="assistant">
-I've successfully processed your refund for the charging dock that doesn't fit. You should see the amount of EUR 89.00 returned ...
+Your refund of **€89** for the charging dock has been issued to the original payment method. It should arrive within **5–7 business days**.
 </message>
+
 </thread>
 ```
 
-The model sometimes confirms the order first and waits ("Would you like to proceed?"), as the instructions ask. Then the turn ends with two tool calls and no refund. That is correct behaviour, not a bug.
+If a model confirms the order first and waits ("Would you like to proceed?"), the turn ends with two tool calls and no refund. The fixed instructions say the request is the confirmation; a prompt that asks for one needs a second turn before `issue_refund` shows up.
 
 ### Step 3 · Stream
 
-`stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`.
+`stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches `get_policy` for "what is the refund window?"), so the step asks something the agent answers by itself.
 
 ```text
-[3] stream: 21 events, first token at 0.79s, first tokens=['The', ' refund', ' window', ' is', ' ', '30']
-    text: The refund window is 30 days from the date of purchase.
+── Step 3 · Stream ────────────────────────────────────
+events   : 17
+first    : token at 0.82s
+tokens   : ['Hello', '!', ' How', ' can', ' I', ' help']
+text     : Hello! How can I help you today?
+next     : the first token arrived well before the full text; that is what a chat UI renders
 ```
 
 The CLI does the same: `orq agents stream ws-refund-agent --message '{"role":"user","parts":[{"kind":"text","text":"..."}]}'` (that endpoint is the older A2A shape and prints a deprecation warning from the SDK; prefer `orq responses create --model agent/ws-refund-agent --input '"..."'`).
@@ -93,10 +113,13 @@ The CLI does the same: `orq agents stream ws-refund-agent --message '{"role":"us
 A memory store is an embedding-backed store of documents per `entity_id`. The agent reads and writes it through server-side tools, so it needs three things: the store attached (`memory_stores=["ws_refund_memory"]`), the tools in `settings.tools` (`retrieve_memory_stores`, `query_memory_store`, `write_memory_store`), and instructions that say when to save and when to query. The call then carries `memory={"entity_id": ...}`.
 
 ```text
-[4] memory entity=customer-user_001-1788903612
-    turn 1: Hi Jane Okafor! I've noted your preference for store credit over card refunds. How can I assist you
-    turn 2: I remember your name is Jane Okafor, and you prefer store credit over card refunds. How can I assist
-    trace 2: 9a58ff54e620c43ded4f8c69007841ae  (spans: retrieve_memory_stores, query_memory_store)
+── Step 4 · Memory ────────────────────────────────────
+agent    : ws-refund-agent-memory
+entity   : customer-user_001-1789512500
+turn 1   : Nice to meet you, Jane Okafor—I’ll remember that you prefer store credit over card refunds.
+turn 2   : Yes, Jane—I remember that you prefer store credit over card refunds.
+trace 2  : 9b16877b2c0de9424a4ed024cf44f584
+next     : open trace 2; expect retrieve_memory_stores and query_memory_store spans, then `orq memory-stores list-memories ws_refund_memory`
 ```
 
 Two things the solution does deliberately. The store key is `ws_refund_memory`: memory store keys must match `^[A-Za-z]([A-Za-z0-9]*([._][A-Za-z0-9]+)*)?$`, so the `ws-` prefix is not allowed. And the memory goes on a copy, `ws-refund-agent-memory`, not on `ws-refund-agent`: once an agent has memory tools, every call without `memory.entity_id` is a `400 Memory entity ID is required`, which would break every other module that invokes `agent/ws-refund-agent`. Check the store: `orq memory-stores list-memories ws_refund_memory`.
@@ -106,11 +129,13 @@ Two things the solution does deliberately. The store key is `ws_refund_memory`: 
 `orq.agents.update(agent_key=, ..., version_increment="minor", version_description="...")` publishes a version. Invoke a pinned version with `agent/<key>@<version>`, an environment with `agent/<key>@<environment>`; no suffix means `latest`.
 
 ```text
-[5] bumped ws-refund-agent -> v1.1.0
-    agent/ws-refund-agent@1.0.0       ok   trace=a234959c67741a037a37895a3a3bea5e
-    agent/ws-refund-agent@1.1.0       ok   trace=320e74c72b3533fcbdfc00c07432f31b
-    agent/ws-refund-agent@latest      ok   trace=b13420530ecc6fd573c4f2b4bfb6626c
-    agent/ws-refund-agent@production  version @production not found for agent ws-refund-agent
+── Step 5 · Versions and @version routing ─────────────
+version  : ws-refund-agent already at v1.1.0 (bump skipped, idempotent)
+call     : agent/ws-refund-agent@1.0.0        ok, trace 7a78a06c0065a70736d88491695a8904
+call     : agent/ws-refund-agent@1.1.0        ok, trace 4ad271bc8ac4a57675fe2ae3d606d04c
+call     : agent/ws-refund-agent@latest       ok, trace 72c0cca86acfce6b3ff22f09ee2281c9
+call     : agent/ws-refund-agent@production   version @production not found for agent ws-refund-agent
+next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves
 ```
 
 Environments are assigned in the Studio: **Agents** > `ws-refund-agent` > **Versions** > the version's environment menu > `production`. Do it now and re-run: `@production` resolves. The bump changes only the description, so the agent behaves the same; the solution skips it on re-runs.
@@ -154,10 +179,10 @@ Paste `agent_prompt.md`:
 
 ## New in orq 4.13
 
-Agents can delegate: an `advisor` tool consults a second model mid-turn and a `sidekick` tool hands off a discrete task, each metered on its own span. `solution/stretch_advisor_sidekick.py` adds both to a copy of the refund agent and prints the nested spans (`advisor` > `chat gpt-4.1`, `sidekick` > `chat gpt-4.1-mini`). 4.12 added a configurable timeout per agent tool.
+Agents can delegate: an `advisor` tool consults a second model mid-turn and a `sidekick` tool hands off a discrete task, each metered on its own span. Module 15 is that pattern on `ws-refund-agent-delegating`, down to the cost split in the trace. 4.12 added a configurable timeout per agent tool.
 
 ## Go further
 
-- `solution/stretch_advisor_sidekick.py`: delegation with nested spans on `ws-refund-agent-delegating`.
+- Module 15: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
 - `solution/stretch_factor7.py`: a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
 - Docs: [Run agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents), [Responses API](https://docs.orq.ai/docs/ai-gateway/features/responses-api), [Memory stores](https://docs.orq.ai/docs/ai-studio/ai-engineering/memory-stores), [Advisor and Sidekick](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick), [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents), [Create tools](https://docs.orq.ai/docs/ai-studio/ai-engineering/create-tools), [Create response API](https://docs.orq.ai/reference/responses/create-response).

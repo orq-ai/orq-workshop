@@ -36,7 +36,7 @@
 
     <svg viewBox="0 0 960 424" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="span-ownership-title span-ownership-desc">
       <title id="span-ownership-title">Span ownership: your app versus the AI Gateway</title>
-      <desc id="span-ownership-desc">Swimlane diagram showing the app's @traced root span refund_turn and its tool spans in one lane, the gateway's chat.openai trace and span.chat_completion in the other, joined by the traceparent header, with request body fields becoming filters in the Traces view.</desc>
+      <desc id="span-ownership-desc">Swimlane diagram showing the app's @traced root span refund_turn and its tool spans in one lane, the gateway's responses.openai trace and span.responses in the other, joined by the traceparent header, with request body fields becoming filters in the Traces view.</desc>
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
         <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
@@ -62,7 +62,7 @@
       <line x1="376" y1="160" x2="376" y2="248" stroke="#df5325" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
       <!-- root -> tool spans -->
       <line x1="464" y1="120" x2="528" y2="120" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
-      <!-- chat.openai -> span.chat_completion -->
+      <!-- responses.openai -> span.responses -->
       <line x1="448" y1="288" x2="496" y2="288" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
       <!-- fields become filters (passive) -->
       <line x1="664" y1="288" x2="712" y2="288" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
@@ -110,21 +110,21 @@
       <text x="660" y="136" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">@traced(type="tool")</text>
       <text x="660" y="150" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">lookup_order · get_policy · issue_refund</text>
 
-      <!-- N4: chat.openai trace (gateway) -->
+      <!-- N4: responses.openai trace (gateway) -->
       <rect x="304" y="248" width="144" height="80" rx="6" fill="#f9f8f6"/>
       <rect x="304" y="248" width="144" height="80" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
       <rect x="312" y="256" width="36" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
       <text x="330" y="265" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TRACE</text>
-      <text x="376" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">chat.openai ×4</text>
+      <text x="376" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">responses.openai ×4</text>
       <text x="376" y="304" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">one per model call</text>
       <text x="376" y="318" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">nested under root</text>
 
-      <!-- N5: span.chat_completion (gateway) -->
+      <!-- N5: span.responses (gateway) -->
       <rect x="496" y="248" width="168" height="80" rx="6" fill="#f9f8f6"/>
       <rect x="496" y="248" width="168" height="80" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
       <rect x="504" y="256" width="32" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
       <text x="520" y="265" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SPAN</text>
-      <text x="580" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">span.chat_completion</text>
+      <text x="580" y="288" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">span.responses</text>
       <text x="580" y="304" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">model · cost · tokens</text>
       <text x="580" y="318" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">latency · status</text>
 

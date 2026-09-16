@@ -63,7 +63,7 @@ def load_font(woff2: str, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(buf, size)
 
 
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"  # macOS fallback rasterizer
 
 
 def rasterize_svg(path: Path, width: int) -> bytes:
@@ -133,6 +133,7 @@ def feature_icon(draw: ImageDraw.ImageDraw, x: int, y: int, kind: str, tile: tup
 
 
 def wrap(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_w: int) -> list[str]:
+    """Greedy word wrap measured with the real font, since Pillow has no text wrapping of its own."""
     lines: list[str] = []
     line = ""
     for word in text.split():
@@ -148,6 +149,7 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max
 
 
 def main() -> None:
+    """Compose the card top to bottom: lockup, title, tagline, feature row, command line."""
     card = aurora()
     draw = ImageDraw.Draw(card)
 
@@ -156,9 +158,9 @@ def main() -> None:
     card.alpha_composite(mark, (LEFT, 66))
     draw.text((LEFT + 56, 86), "orq.ai", font=load_font("ESKlarheitKurrent-Smbd.woff2", 30), fill=INK, anchor="lm")
 
-    # Title in Kurrent SemiBold.
+    # Title in Kurrent SemiBold, drawn part by part so the "q" can take the accent colour.
     title_font = load_font("ESKlarheitKurrent-Smbd.woff2", 108)
-    x = LEFT - 6
+    x = LEFT - 6  # optical alignment: the "o" has side bearing, the mark above does not
     for part, colour in TITLE_PARTS:
         draw.text((x, 186), part, font=title_font, fill=colour)
         x += draw.textlength(part, font=title_font)
