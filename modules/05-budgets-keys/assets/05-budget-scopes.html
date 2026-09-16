@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Which budget stops the call · Module 05</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 05 · Step 3</p>
+    <h1>Which budget stops the call</h1>
+
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="budget-scopes-title budget-scopes-desc">
+      <title id="budget-scopes-title">Budget scopes, and the one that fires</title>
+      <desc id="budget-scopes-desc">Diagram for module 05 step 3. A budget is attached to one of six targets: workspace, project, identity, API key, provider or model. Every matching budget is evaluated and the most restrictive one wins. The panel shows the real 429 from the workshop run, whose body names the scope kind and target that rejected the third call.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <text x="72" y="56" fill="rgba(37,35,46,0.40)" font-size="7" font-family="'Kurrent Mono', monospace" letter-spacing="0.14em">SIX THINGS A BUDGET CAN BE ATTACHED TO</text>
+
+      <!-- workspace -->
+      <rect x="72" y="72" width="496" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="88" y="97" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">workspace</text>
+      <text x="232" y="97" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">everything in the workspace</text>
+
+      <!-- project -->
+      <rect x="72" y="120" width="496" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="88" y="145" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">project</text>
+      <text x="232" y="145" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">one project</text>
+
+      <!-- identity: the one the module fires -->
+      <rect x="72" y="168" width="496" height="40" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="88" y="193" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">identity</text>
+      <text x="232" y="193" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace">one customer · X-ORQ-IDENTITY-ID</text>
+
+      <!-- api key -->
+      <rect x="72" y="216" width="496" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="88" y="241" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">api key</text>
+      <text x="232" y="241" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">one key, e.g. the CI runner</text>
+
+      <!-- provider -->
+      <rect x="72" y="264" width="496" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="88" y="289" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">provider</text>
+      <text x="232" y="289" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">one provider, e.g. openai</text>
+
+      <!-- model -->
+      <rect x="72" y="312" width="496" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="88" y="337" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">model</text>
+      <text x="232" y="337" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">one model, e.g. openai/gpt-5.6-luna</text>
+
+      <!-- The rule, and the two dials every budget carries -->
+      <text x="72" y="380" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">Every matching budget is checked; the most restrictive one wins.</text>
+      <text x="72" y="400" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace">each one carries a period limit in USD or tokens, plus an optional requests-per-minute cap</text>
+
+      <!-- Panel: the real rejection from the workshop run -->
+      <rect x="616" y="72" width="272" height="280" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="632" y="88" width="104" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="684" y="97" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">THE THIRD CALL</text>
+
+      <text x="632" y="126" fill="#df5325" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">HTTP 429</text>
+
+      <text x="632" y="154" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">code</text>
+      <text x="632" y="170" fill="#25232e" font-size="9" font-family="'Kurrent Mono', monospace">requests_per_minute_exceeded</text>
+      <text x="632" y="194" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">scope_kind</text>
+      <text x="632" y="210" fill="#25232e" font-size="9" font-family="'Kurrent Mono', monospace">IDENTITY</text>
+      <text x="632" y="234" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">scope_target_id</text>
+      <text x="632" y="250" fill="#25232e" font-size="9" font-family="'Kurrent Mono', monospace">customer-user_001</text>
+
+      <line x1="632" y1="266" x2="872" y2="266" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+
+      <text x="632" y="286" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">x-ratelimit-limit: 2</text>
+      <text x="632" y="302" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">x-ratelimit-remaining: 0</text>
+      <text x="632" y="318" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace">x-ratelimit-reset: 58s</text>
+      <text x="632" y="334" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace">the body names what stopped you</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="440" x2="920" y2="440" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="456" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="472" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="60" y="480" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">A scope you can attach a budget to</text>
+
+      <rect x="304" y="472" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="324" y="480" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">The scope this module trips — an identity budget of 2 requests per minute</text>
+    </svg>
+  </div>
+</body>
+</html>
