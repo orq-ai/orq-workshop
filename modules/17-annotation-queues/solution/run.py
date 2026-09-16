@@ -158,7 +158,7 @@ for item in queue_items():
     user = (span.get("input") or {}).get("messages", [{}])[0].get("content", "") or ""
     answer = ((span.get("output") or {}).get("messages") or [{}])[-1].get("content", "") or ""
     if not answer.strip():
-        # The agent stopped at a function_call nobody executed: nothing to review, leave it queued
+        # The agent stopped at a function_call nobody executed: nothing to rate; step 4 removes it from the queue with the reviewed ones
         print(f"skipped  : {item['trace_id'][-8:]} empty answer (a function_call the caller never answered), user {user[:52]!r}")
         unreviewable.append(item["span_id"])
         continue

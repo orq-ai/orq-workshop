@@ -41,7 +41,7 @@ Setup first, then the same three sections as docs.orq.ai. Module numbers are the
 
 Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs), a `solution/` and an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
 
-**Prefer a notebook?** `make lab` opens JupyterLab with one notebook per module (01, 02, 03, 04, 08, 09, 14, 15, 17). Each is the solution split into steps: a cell of explanation, a cell that does one thing, the output underneath. The notebooks are generated from `solution/run.py` (Jupytext percent format), so they never drift from the script `make mNN` runs.
+**Prefer a notebook?** `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list, 12 modules today). Each is the solution split into steps: a cell of explanation, then a cell that does one thing. The generated files carry no saved output; run a cell to see its result. The notebooks are generated from `solution/run.py`, so they never drift from the script `make mNN` runs.
 
 ## Two ways to work
 

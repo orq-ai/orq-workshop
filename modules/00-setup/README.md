@@ -92,7 +92,7 @@ The first run downloads packages and takes a minute; every later run is the two 
 $ make doctor
 ```
 
-Runs `orq doctor`, the CLI's self-check. It does not touch this repo: it reads your `orq` session, calls the orq API and inspects the coding agents installed on the machine. The output is YAML in four blocks: `auth` (who you are, which workspace), `binary` (CLI and API versions), `checks[16]` (one entry per check, each `status: pass` or `fail` with a message), and `endpoints` / `runtime`.
+Runs `orq doctor`, the CLI's self-check. It does not touch this repo: it reads your `orq` session, calls the orq API and inspects the coding agents installed on the machine. The output is YAML: `auth` (who you are, which workspace), `binary` (CLI and API versions), `checks[N]` (one entry per check, each with a `status` of `pass`, `warn`, `info` or `fail` and a message), then `config`, `output` and `runtime`.
 
 ```text
 orq doctor
@@ -102,9 +102,9 @@ auth:
   status: authenticated
   user_email: you@example.com
 binary:
-  api_version: 4.14.17
+  api_version: 4.14.19
   name: orq
-  version: 8.6.2
+  version: 8.6.7
 checks[16]:
   -
     id: session_file
@@ -113,14 +113,14 @@ checks[16]:
   ...
 ```
 
-The sixteen checks, in order: `session_file`, `bootstrap_token`, one `coding_agent_*` per installed agent (Claude Code, Codex, OpenCode, Pi, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Count them:
+The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 8.6.7` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
 
 ```bash
-$ orq doctor | grep -c "status: pass"     # 16 on a healthy machine
+$ orq doctor | grep -c "status: fail"     # 0 on a healthy machine
 $ orq doctor | grep -B3 "status: fail"    # the message of every failing check
 ```
 
-`auth.status: authenticated` and `gateway_key_exported: pass` are the two that matter today; a `coding_agent_*` failure only matters for the modules that use that agent (06, 13).
+`warn` and `info` are about agents you have detected but not wired (`orq connect <agent>` fixes them) and do not block the workshop. `auth.status: authenticated` and `gateway_key_exported: pass` are the two that matter today; a `coding_agent_*` failure only matters for the modules that use that agent (06, 13).
 
 #### 3c · `make test`: the sample app, with no network
 
@@ -164,6 +164,26 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 | `404 Model ... not found` | `MODEL` in `.env` is not enabled in the workspace | enable it under **Models**, or set `MODEL=openai/gpt-5.6-luna` |
 | `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
 | `400 ... reasoning_effort` on a tools call | a GPT-5.x model on `/chat/completions` | the app uses `/responses`; on chat completions set `reasoning_effort: "none"` |
+
+#### 3e · `make seed`: every entity the modules expect
+
+```bash
+$ make seed
+```
+
+Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with the `ws-` prefix (`WS_PREFIX`). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix.
+
+```text
+uv run python -m app.refund_agent.entities seed
+── Seed · create every workshop entity ────────────────
+dataset  : 01M2... (ws-refund-eval)
+kb       : 01M2... (ws-refund-policy)
+guard    : 01M2... (ws-refund-limit-guard)
+judge    : 01M2... (ws-refund-policy-judge)
+tools    : ws-lookup-order, ws-get-policy, ws-issue-refund
+agent    : ws-refund-agent
+...
+```
 
 ### Step 4 · Look at the trace
 

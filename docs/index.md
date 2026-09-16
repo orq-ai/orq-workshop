@@ -87,6 +87,6 @@ One credential opens every door: your code and your coding agent both go through
 
 Each module has a `README.md` (the lesson), a `run.py` (the starter), a `solution/` (the finished exercise) and an `agent_prompt.md` (the same exercise handed to a coding agent). Every module ends with a **Done when** checklist that you can verify in the Studio. Each module closes with links to the matching pages on [docs.orq.ai](https://docs.orq.ai); the [cheat sheet](reference/cheat-sheet.md) collects them. Modules build on each other, but `make seed` creates every prerequisite entity so you can jump in anywhere.
 
-Prefer a notebook? `make lab` opens JupyterLab with one notebook per module where it fits (01, 02, 03, 04, 08, 09): the solution split into steps, explanation above each cell, output below. They are generated from `solution/run.py`, so they never drift from the script.
+Prefer a notebook? `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list, 12 modules today): the solution split into steps, explanation above each cell. The generated files carry no saved output; run a cell to see its result. They are generated from `solution/run.py`, so they never drift from the script.
 
 Two ways to work, side by side. **By hand**: the SDK, the CLI, the Studio. **With your coding agent**: `orq launch claude` (or `opencode`, `pi`, `codex`) and paste the prompt. Both leave the same traces.

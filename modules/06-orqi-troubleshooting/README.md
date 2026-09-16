@@ -11,7 +11,7 @@
 
 ## Why
 
-Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 422 guardrail blocks (`make traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
+Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 400 guardrail blocks (`make traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
 
 ## The one concept to understand first
 
@@ -21,7 +21,7 @@ orqi has the same 43 `orq_` tools and the same skills your coding agent gets in 
 
 `modules/06-orqi-troubleshooting/run.py` scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
 
-### Step 1 · Three troubleshooting prompts
+### Step 1 · Four troubleshooting prompts
 
 ```bash
 $ orqi "check workspace health"
@@ -129,7 +129,7 @@ trace    : None (no trace id: the request never reached the gateway)
 next     : step 3 pastes this error into orqi
 ```
 
-Step 1 counts by HTTP status. In this run every failure in the window was a 400 (the guardrail blocks of module 04); earlier runs also showed the 408 timeouts and the 404 from module 01, and 502s from a guardrail evaluator returning the wrong type, and orqi's grouping in step 3b listed each cause. Your numbers will differ; the shape will not.
+Step 1 counts by HTTP status. In this run every failure in the window was a 400 (the guardrail blocks of module 04); earlier runs also showed the 408 timeouts and the 404 from module 01, and 502s from a guardrail evaluator returning the wrong type, and orqi's grouping in the second prompt of step 1 listed each cause. Your numbers will differ; the shape will not.
 
 Paste that text into the prompt:
 

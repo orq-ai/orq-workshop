@@ -45,4 +45,4 @@ Module numbers are the build order (`make m01` … `make m17`), sections are the
 
 ## Live session
 
-The [slide deck](https://github.com/orq-ai/orq-workshop/tree/main/slides) is the spine for a single session. It opens with a priority vote and picks four or five blocks from the modules above, so the room decides the order.
+The [slide deck](https://github.com/orq-ai/orq-workshop/tree/main/slides) is the spine for a single session. It runs four fixed blocks chosen from what the client asked for in writing: own your agent, managed agents, knowledge base and RAG, and MCP servers with the MCP Gateway. The other modules sit in the appendix, one slide each, and can be swapped in on request; `slides/facilitator.md` has the timing.
