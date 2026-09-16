@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three search modes · Reference</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Reference · How retrieval works</p>
+    <h1>Three ways to match the same question</h1>
+
+    <svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rag-search-modes-title rag-search-modes-desc">
+      <title id="rag-search-modes-title">Vector, keyword and hybrid search over one index</title>
+      <desc id="rag-search-modes-desc">Reference diagram. One query is answered three ways against the same index: keyword search matches the words themselves, vector search matches meaning through embedding distance, and hybrid search runs both and lets the engine fuse the two rankings. Because keyword and vector scores come from different calculations, their scores are on different scales and must not be compared across modes.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first -->
+      <path d="M 408,112 V 144 Q 408,152 400,152 H 204 Q 196,152 196,160 V 176" fill="none" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <line x1="468" y1="112" x2="468" y2="176" stroke="#299d8f" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+      <path d="M 552,112 V 144 Q 552,152 560,152 H 732 Q 740,152 740,160 V 176" fill="none" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+
+      <line x1="196" y1="264" x2="196" y2="328" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="468" y1="264" x2="468" y2="328" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="740" y1="264" x2="740" y2="328" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+
+      <!-- Node: the query -->
+      <rect x="336" y="56" width="288" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="344" y="64" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="358" y="73" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ASK</text>
+      <text x="480" y="92" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">One query</text>
+
+      <!-- Mode: keyword -->
+      <rect x="72" y="176" width="248" height="88" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="196" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">keyword_search</text>
+      <text x="196" y="228" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">matches the words themselves</text>
+      <text x="196" y="246" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">codes, names, exact strings</text>
+
+      <!-- Mode: vector -->
+      <rect x="344" y="176" width="248" height="88" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="468" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">vector_search</text>
+      <text x="468" y="228" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">matches meaning</text>
+      <text x="468" y="246" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">nearest embeddings</text>
+
+      <!-- Mode: hybrid (the default) -->
+      <rect x="616" y="176" width="248" height="88" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="740" y="208" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">hybrid_search</text>
+      <text x="740" y="228" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">runs both, the engine fuses</text>
+      <text x="740" y="246" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">the default, and the right one</text>
+
+      <!-- The shared index -->
+      <rect x="72" y="328" width="792" height="56" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="80" y="336" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="94" y="345" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">IDX</text>
+      <text x="468" y="356" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">One index</text>
+      <text x="468" y="372" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">the chunk text and its vector, side by side — which is why one query can go either way</text>
+
+      <!-- The warning that costs people an afternoon -->
+      <text x="72" y="408" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace">keyword 1.000 and hybrid 0.654 on the same question are not a relevance gap — they are different scales</text>
+      <text x="72" y="424" fill="#6b6975" font-size="9" font-family="'Kurrent Mono', monospace">compare scores within one mode, and check what a mode scores before you set a threshold against it</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="452" x2="920" y2="452" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="468" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="484" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="60" y="492" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">A search mode you can ask for</text>
+
+      <rect x="280" y="484" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="300" y="492" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">The default</text>
+    </svg>
+  </div>
+</body>
+</html>
