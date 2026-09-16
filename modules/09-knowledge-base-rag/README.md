@@ -73,7 +73,7 @@ Read the three rankings against each other. Keyword search puts `refund_basics` 
 
 The scores are not comparable across modes. Keyword scores come from a text-match calculation, vector and hybrid scores from embedding distance, so a keyword `1.000` and a hybrid `0.654` say nothing about each other. Compare within a mode, and check what a mode actually scores before setting a threshold against it. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) has the full pipeline, the `top_k` versus rerank `top_k` split, and the internal-versus-external division of labour.
 
-Read step 1's `model` line: the seeded base is embedded with `openai/text-embedding-3-large`. That is deliberate. In September 2026 every vector or hybrid search on a base embedded with `openai/text-embedding-3-small` returned HTTP 500 in this workspace (keyword search worked), so `EMBEDDING_MODEL` defaults to the large model and the solution keeps a fallback: if the seeded base fails vector search, it re-embeds the same documents as `ws-refund-policy-large` and compares. Rerank has no score column because no rerank model is enabled here; enable one under **Models** and the `rerank_score` appears.
+Read step 1's `model` line: the seeded base is embedded with `openai/text-embedding-3-large`. That is deliberate. In September 2026 every vector or hybrid search on a base embedded with `openai/text-embedding-3-small` returned HTTP 500 in this workspace (keyword search worked), so `EMBEDDING_MODEL` defaults to the large model. Rerank has no score column because no rerank model is enabled here; enable one under **Models** and the `rerank_score` appears.
 
 The CLI does the same search:
 
@@ -156,7 +156,7 @@ next     : the orq:query_knowledge_base item is the retrieval; open the trace to
 
 - 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 25 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
 - 5b is five lines of code and works everywhere: search, then a system message. 591 prompt tokens, an answer that quotes the policy.
-- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `ws-refund-agent-rag` is a copy of the refund agent with those tools instead of `get_policy`; the `orq:query_knowledge_base` output item carries the query the agent wrote, the chunk, the file name and the score. The seeded `ws-refund-agent` has the knowledge base attached but not the tools, so it never searches it.
+- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in `app/refund_agent/entities.py`), which is why the step calls `agent/ws-refund-agent` and the `orq:query_knowledge_base` output item appears, carrying the query the agent wrote, the chunk, the file name and the score. An agent with the knowledge base attached but without those two tools never searches it.
 
 ### Step 6 · Agentic RAG
 
@@ -207,11 +207,11 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the manage-knowledge-base idea with the orq Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy-large` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
+> Use the manage-knowledge-base idea with the orq Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
 
 ## Proof
 
-![Studio: Knowledge list showing ws-refund-policy, the seeded knowledge base, next to an earlier ws-refund-policy-large copy from the days when the small embedding model was the default.](assets/studio-knowledge.png)
+![Studio: Knowledge list showing ws-refund-policy, the seeded knowledge base, next to an older copy left over from the days when the small embedding model was the default.](assets/studio-knowledge.png)
 
 ## Done when
 
@@ -223,10 +223,10 @@ Paste `agent_prompt.md`:
 
 ## Gotchas
 
-- Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model and why this module keeps a second knowledge base. If you inherit a workspace seeded before that change, re-embed: `make reset && make seed`, or keep working against `ws-refund-policy-large`.
+- Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset && make seed`.
 - `orq_ai_sdk 4.14.14`: `orq.knowledge.list_datasources` sends `limit=50.0` and the API rejects the float. The solution uses the REST endpoint for that one call. `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it.
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
-- `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`. the solution only creates a `ws-refund-policy-large` copy when the seeded base fails vector search.
+- `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
 
 ## New in orq 4.14

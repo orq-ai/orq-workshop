@@ -21,16 +21,18 @@ from openai import OpenAI
 from app.refund_agent.agent import chat
 from app.refund_agent.client import make_orq
 from app.refund_agent.config import DATA_DIR, settings
+from app.refund_agent.entities import ensure_python_guardrail
 from app.refund_agent.tools import OrderStore
 
 VULNERABLE = (DATA_DIR / "vulnerable_instructions.md").read_text()
 PLUGIN: dict[str, Any] = {}          # TODO: {"id": "pii_redaction", "language": "en", "on_failure": "passthrough"}
 STRICT_ENTITIES: list[str] = []      # TODO: ["EMAIL_ADDRESS", "PHONE_NUMBER", "PERSON"]
-GUARD_ID = "01M21E87W6Y0GTS8MWZR6AG1VX"  # ws-refund-limit-guard from `make seed`; check with `orq evals all --search ws-`
 GUARDRAILS: list[dict[str, Any]] = []   # TODO: [{"id": GUARD_ID, "execute_on": "output"}]
 CEL = ""                             # TODO: 'metadata["channel"] == "ws-guardrails"'  (metadata is a map in rule CEL)
 
 orq = make_orq()
+# ws-refund-limit-guard, looked up (or created) by key: evaluator ids change on every reseed, so never paste one.
+GUARD_ID = ensure_python_guardrail(orq)
 HEADERS = {"Authorization": f"Bearer {settings.api_key}"}
 # No client retries: a blocked guardrail must surface at once, not after backoff.
 client = OpenAI(api_key=settings.api_key, base_url=settings.router_url, timeout=90, max_retries=0)
@@ -162,8 +164,9 @@ def step_4_system_guardrails_and_rule() -> None:
         print("TODO     : fill in CEL, create the rule with POST /v2/guardrail-rules (see solution/run.py), then rerun")
         return
     # TODO: create the rule (project_id from orq.projects.list, guardrails=[{"id": "orq_pii_detection", "execute_on": "input"}]),
-    #       call chat(..., extra_body={"metadata": {"channel": "ws-guardrails"}}) with an email in the text, then disable and delete the rule.
-    print("TODO     : create the rule, send a tagged call, disable and delete the rule, then rerun")
+    #       call chat(..., extra_body={"metadata": {"channel": "ws-guardrails"}}) with an email in the text, then disable and
+    #       delete the rule in a `finally`: a failed gateway call must not leave a rule guarding traffic.
+    print("TODO     : create the rule, send a tagged call, disable and delete the rule in a finally, then rerun")
 
 
 # ── Step 5 · Read the indicators on the span ──

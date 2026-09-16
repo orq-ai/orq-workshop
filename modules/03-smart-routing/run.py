@@ -113,7 +113,8 @@ def step_3_routing_rule() -> None:
     cel = ""  # TODO: 'metadata["tier"] == "free" && model == "openai/gpt-5.6-luna"'  (CEL reads metadata as a map: metadata.tier is rejected)
     # TODO: orq.routing_rules.create(display_name=settings.key("route-mini-to-nano"), project_id=PROJECT_ID, enabled=True,
     #       expression={"cel": cel}, models_config={"mode": "weighted", "models": [{"model": "openai/gpt-5.4-nano", "weight": 1.0}]}, priority=50)
-    # Then call chat(EASY, extra_body={"metadata": {"tier": "free"}}) and read model_used(); disable the rule at the end.
+    # Then call chat(EASY, extra_body={"metadata": {"tier": "free"}}) and read model_used(). Disable the rule in a
+    # `finally`: a failed gateway call must not leave a live rule behind.
 
     print("── Step 3 · Pin traffic with a routing rule ───────────")
     if not cel:

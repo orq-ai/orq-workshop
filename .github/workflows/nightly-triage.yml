@@ -32,6 +32,9 @@ env:
 jobs:
   triage:
     runs-on: ubuntu-latest
+    # The key is an environment secret (see instructor/index.md). `nightly` has no reviewers and
+    # is limited to main, so the cron never waits; `evals` (reviewers) would block it forever.
+    environment: nightly
     timeout-minutes: 20
     steps:
       - name: Install orq CLI

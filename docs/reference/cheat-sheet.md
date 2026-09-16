@@ -59,7 +59,7 @@ orq = Orq(api_key=ORQ_API_KEY)
 orq.responses.create(model="agent/<key>", input="...", memory={"entity_id": "customer-42"})
 orq.knowledge.search(knowledge_id=..., query="...", search_type="hybrid_search", rerank_config={"model": "cohere/rerank-multilingual-v3.0"})
 orq.traces.search(from_="1h")
-orq.annotations.create(trace_id=..., span_id=..., annotations=[{"key": "rating", "value": 1}])
+orq.annotations.create(trace_id=..., span_id=..., annotations=[{"key": "rating", "value": "good"}])
 ```
 
 ## Makefile

@@ -6,6 +6,10 @@
 # no browser for an OAuth handshake and the run must not touch a home-directory config, so the
 # skill falls back to the orq CLI (`orq traces search`, `orq traces list-spans`) and the REST
 # API with ORQ_API_KEY, which is what --allowedTools permits below.
+#
+# Secrets: ORQ_API_KEY comes from the GitHub environment `evals` (required reviewers), so a
+# labelled PR waits for approval before the key is released, and only the two `orq launch` steps
+# see it. Same-repository PRs only; forks get no secrets.
 name: pr-failure-analysis
 
 on:
@@ -22,13 +26,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
   ORQ_PROJECT: orq-workshop
 
 jobs:
   analyze:
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'analyze-traces'
+    if: >-
+      (github.event_name == 'workflow_dispatch' || github.event.label.name == 'analyze-traces')
+      && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
+    environment: evals
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -46,11 +52,15 @@ jobs:
         run: npm i -g @anthropic-ai/claude-code
 
       - name: Show the resolved launch (key redacted, nothing runs)
+        env:
+          ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
         run: orq launch claude --no-mcp --dry-run -- -p "noop"
 
       - name: Analyze traces
         # `orq launch claude` sets ANTHROPIC_BASE_URL to the orq gateway and links the orq skills
         # into ./.claude/skills for the session. Everything after `--` goes to claude as-is.
+        env:
+          ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
         run: |
           orq launch claude --no-mcp --model anthropic/claude-sonnet-5 -- \
             -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours and write a short markdown report. Use the orq CLI (orq traces search --from 24h --to now --json, orq traces list-spans) to read traces. Print the report as your final answer, do not create files." \

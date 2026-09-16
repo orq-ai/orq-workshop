@@ -4,15 +4,16 @@
 # The refund agent as a managed orq Agent. Modules 01 to 07 kept the loop in
 # `app/refund_agent/agent.py`; here instructions, model, tools, limits, knowledge base and memory
 # become one versioned entity, and the app shrinks to "execute this tool call and send the result
-# back". Five steps: inspect the agent, invoke it through the Responses API and run its
-# `function_call` items locally, stream a reply, give it memory per customer, publish a version and
-# pin it with `@version`.
+# back". Nine steps, the same surface as the Run Agents docs page: inspect the agent, invoke it
+# through the Responses API (Python, curl, CLI) and run its `function_call` items locally, stream
+# a reply, pass variables and metadata, continue a conversation, control tool calls, give it
+# memory per customer, publish a version and pin it with `@version`, then the CLI.
 #
 # | | |
 # |---|---|
 # | **Time** | 40 min |
 # | **Prerequisites** | modules 00 to 02, `make seed` |
-# | **You will have** | the refund agent invoked through the Responses API with a local tool loop, streamed, given memory, versioned and pinned by `@version` |
+# | **You will have** | the refund agent invoked through the Responses API with a local tool loop, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version` |
 #
 # This file is both the solution script (`make m08`) and the notebook source
 # (`make notebooks` turns it into `modules/08-managed-agents/notebook.ipynb`). Run the cells top to
@@ -66,7 +67,7 @@ try:
 except Exception as exc:  # noqa: BLE001
     print(f"patch    : rejected, {type(exc).__name__}: {str(exc)[:70]}…")
 print("write    : settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]")
-print("next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 5")
+print("next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 8")
 
 # %% [markdown]
 # ## Step 2 · Invoke it and execute the tool calls
@@ -80,6 +81,17 @@ print("next     : open Agents > ws-refund-agent in the Studio; the Versions tab 
 # **Try it first:** write the loop before reading `run_agent`.
 
 # %%
+def output_text(response: dict[str, Any]) -> str:
+    """The assistant text of a response: every `output_text` part of every `message` item."""
+    return " ".join(
+        content["text"]
+        for item in response["output"]
+        if item["type"] == "message"
+        for content in item["content"]
+        if content["type"] == "output_text"
+    )
+
+
 def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_steps: int = 8, **kw: Any) -> dict[str, Any]:
     """One customer turn. Executes every `function_call` locally and continues with previous_response_id."""
     store = store or OrderStore()
@@ -100,14 +112,7 @@ def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_ste
         # state is server-side: send only the tool results, chained on the previous response id
         response = orq.responses.create(model=f"agent/{agent}", previous_response_id=response["id"], input=outputs, **kw).model_dump(by_alias=True)
         traces.append(response["telemetry"]["trace_id"])
-    text_out = " ".join(
-        content["text"]
-        for item in response["output"]
-        if item["type"] == "message"
-        for content in item["content"]
-        if content["type"] == "output_text"
-    )
-    return {"text": text_out, "tool_calls": called, "traces": traces, "response_id": response["id"], "model": response["model"], "usage": response["usage"]}
+    return {"text": output_text(response), "tool_calls": called, "traces": traces, "response_id": response["id"], "model": response["model"], "usage": response["usage"]}
 
 
 # %%
@@ -157,7 +162,96 @@ print(f"text     : {''.join(tokens)}")
 print("next     : the first token arrived well before the full text; that is what a chat UI renders")
 
 # %% [markdown]
-# ## Step 4 · Memory
+# ## Step 4 · Variables, metadata, identity, thread
+#
+# Four request fields that change nothing in the agent and everything in what you can find later.
+# `variables` fill `{{placeholders}}` in the instructions and in the input; the seeded instructions
+# have none, so this step puts one in the input. `metadata` is free-form string pairs, echoed on the
+# response and stored on the trace. `identity` and `thread` are not echoed; they land on the trace
+# as `identity_id` and `thread_id`, which is what groups traces into customers and conversations in
+# the Studio.
+
+# %%
+tagged = orq.responses.create(
+    model=f"agent/{AGENT}",
+    input="My name is {{customer_name}}. Greet me by name in one sentence, nothing else.",
+    variables={"customer_name": "Jane Okafor"},
+    metadata={"session_id": "sess-ws-1", "channel": "chat"},
+    identity={"id": settings.identity_id},
+    thread={"id": "conv-ws-1"},
+).model_dump(by_alias=True, exclude_none=True)
+
+print("── Step 4 · Variables, metadata, identity, thread ─────")
+print(f"answer   : {output_text(tagged)[:100]}")
+print(f"variables: {tagged.get('variables')}  (echoed; the placeholder was rendered server-side)")
+print(f"metadata : {tagged.get('metadata')}  (echoed, and stored on the trace)")
+print(f"identity : {tagged.get('identity') or 'not echoed'}; thread: {tagged.get('thread') or 'not echoed'}  (both land on the trace)")
+print(f"trace    : {tagged['telemetry']['trace_id']}")
+print(f"next     : orq traces get {tagged['telemetry']['trace_id']} -o json | jq '.trace | {{identity_id, thread_id, metadata: .attributes.metadata}}'")
+
+# %% [markdown]
+# ## Step 5 · Continue a conversation
+#
+# `previous_response_id` is not only for tool results. Send it with a new user message and the
+# agent answers with the whole conversation in context, server-side, nothing resent. Any stored
+# response can be fetched again with `orq.responses.get`, and `background=True` returns at once
+# with `status: queued`, so that same `get` doubles as polling.
+
+# %%
+first = run_agent(AGENT, QUESTION)
+follow_up = orq.responses.create(
+    model=f"agent/{AGENT}",
+    previous_response_id=first["response_id"],
+    input="Thanks. What was the refund amount, digits only?",
+).model_dump(by_alias=True, exclude_none=True)
+fetched = orq.responses.get(response_id=follow_up["id"]).model_dump(by_alias=True, exclude_none=True)
+
+started = time.time()
+queued = orq.responses.create(model=f"agent/{AGENT}", input="Say hello in one sentence and ask how you can help.", background=True).model_dump(by_alias=True, exclude_none=True)
+queued_status = queued["status"]
+while time.time() - started < 60:
+    polled = orq.responses.get(response_id=queued["id"]).model_dump(by_alias=True, exclude_none=True)
+    if polled["status"] not in ("queued", "in_progress"):
+        break
+    time.sleep(1)
+
+print("── Step 5 · Continue a conversation ───────────────────")
+print(f"turn 1   : {first['text'][:80]}…  ({' → '.join(first['tool_calls'])})")
+print(f"turn 2   : {output_text(follow_up)!r}  via previous_response_id={first['response_id']}")
+print(f"get      : {fetched['id']} status {fetched['status']}, {len(fetched['output'])} output item(s), same text: {output_text(fetched) == output_text(follow_up)}")
+print(f"background: created with status {queued_status}, polled to {polled['status']} in {time.time() - started:.1f}s: {output_text(polled)[:60]!r}")
+print(f"next     : orq responses get {follow_up['id']} -o json | jq '.output[0].content[0].text'")
+
+# %% [markdown]
+# ## Step 6 · Control tool calls
+#
+# `tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least
+# one, `{"type": "function", "name": ...}` forces a named one. A `tools` array in the request is
+# accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration
+# (MCP and HTTP tools included, modules 10 and 15).
+
+# %%
+def output_types(response: dict[str, Any]) -> list[str]:
+    """The output item types, with the tool name for calls: what the agent decided to do."""
+    return [f"{item['type']}:{item['name']}" if item.get("name") else item["type"] for item in response["output"]]
+
+
+cases = {
+    "none": (QUESTION, "none"),
+    "required": ("Hello!", "required"),
+    "get_policy": ("Refund ord_a2 please.", {"type": "function", "name": "get_policy"}),
+}
+print("── Step 6 · Control tool calls ────────────────────────")
+for label, (text, choice) in cases.items():
+    steered = orq.responses.create(model=f"agent/{AGENT}", input=text, tool_choice=choice).model_dump(by_alias=True, exclude_none=True)
+    print(f"{label:<9}: {output_types(steered)}")
+weather_tool = {"type": "function", "name": "get_weather", "description": "Current weather for a city.", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}
+ignored = orq.responses.create(model=f"agent/{AGENT}", input="What is the weather in Paris? Use a tool if you have one.", tools=[weather_tool]).model_dump(by_alias=True, exclude_none=True)
+print(f"req tools: {output_types(ignored)}  (get_weather echoed on the response, never called: agent tools are configuration)")
+print("next     : `required` on a plain greeting forced a tool the agent did not need; which one varies per run (get_policy or a knowledge tool)")
+
+# %% [markdown]
+# ## Step 7 · Memory
 #
 # A memory store is an embedding-backed store of documents per `entity_id`. The agent reads and
 # writes it through server-side tools, so it needs three things: the store attached, the tools
@@ -206,7 +300,7 @@ def ensure_memory_agent() -> str:
 
 
 # %%
-print("── Step 4 · Memory ────────────────────────────────────")
+print("── Step 7 · Memory ────────────────────────────────────")
 agent = ensure_memory_agent()
 entity = {"entity_id": f"{settings.identity_id}-{int(time.time())}"}   # fresh entity per run, so recall is not stale
 first_turn = run_agent(agent, "Hi, my name is Jane Okafor. Please remember that I prefer store credit over card refunds.", memory=entity)
@@ -220,7 +314,7 @@ print(f"trace 2  : {second_turn['traces'][-1]}")
 print(f"next     : open trace 2; expect retrieve_memory_stores and query_memory_store spans, then `orq memory-stores list-memories {MEMORY_STORE}`")
 
 # %% [markdown]
-# ## Step 5 · Versions and `@version` routing
+# ## Step 8 · Versions and `@version` routing
 #
 # `orq.agents.update(..., version_increment="minor", version_description=...)` publishes a
 # version. Invoke a pinned version with `agent/<key>@<version>`, an environment with
@@ -232,7 +326,7 @@ print(f"next     : open trace 2; expect retrieve_memory_stores and query_memory_
 agent_info = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
 marker = "[m08 v-bump]"  # the marker in the description makes the bump idempotent
 
-print("── Step 5 · Versions and @version routing ─────────────")
+print("── Step 8 · Versions and @version routing ─────────────")
 if marker not in (agent_info["description"] or ""):
     agent_info = orq.agents.update(
         agent_key=AGENT,
@@ -255,7 +349,11 @@ for suffix in ("@1.0.0", f"@{agent_info['version']}", "@latest", "@production"):
 print("next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves")
 
 # %% [markdown]
-# ## Step 6 · The same from the CLI
+# ## Step 9 · The same from the CLI
+#
+# Every step above has a CLI twin (`orq responses create --model agent/<key> ...` with
+# `--stream`, `--variables k=v`, `--metadata k=v`, `--previous-response-id`, `--tool-choice`,
+# `--memory`, and `orq responses get <id>`); the README shows them next to the Python. Traces:
 #
 # ```bash
 # orq responses create --model agent/ws-refund-agent --input '"One sentence: what is the refund window?"' -o json | jq '{trace: .telemetry.trace_id, text: .output[0].content[0].text}'
@@ -263,7 +361,7 @@ print("next     : assign the production environment in Agents > ws-refund-agent 
 # ```
 
 # %%
-print("── Step 6 · The same from the CLI ─────────────────────")
+print("── Step 9 · The same from the CLI ─────────────────────")
 print("search   : orq traces search --from 5m --to now")
 print(f"next     : open {TRACES_URL} and search a trace id from the steps above")
 
@@ -274,5 +372,8 @@ print(f"next     : open {TRACES_URL} and search a trace id from the steps above"
 #   with `function_call_output` plus `previous_response_id`. Match on `call_id`.
 # - Calls followed by an `orq:<tool>` item were already answered server-side; do not answer them.
 # - Every Responses call is its own trace; the last one renders the whole conversation.
+# - `variables` render placeholders server-side, `metadata` rides on the response and the trace,
+#   `identity` and `thread` only on the trace. `previous_response_id` continues any conversation,
+#   `responses.get` fetches any stored response, `tool_choice` steers the agent's own tools.
 # - Memory tools make `memory.entity_id` mandatory on every call, so put memory on a copy.
 # - `agent/<key>@<version>` pins a version; `@<environment>` follows whatever the Studio assigns.

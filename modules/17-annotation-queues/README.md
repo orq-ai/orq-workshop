@@ -64,7 +64,7 @@ That is the output before the automation exists. Create it, run the step again, 
 
 ### Step 3 · Review by API
 
-In the Studio a reviewer clicks a value and it saves immediately. Over the API it is `annotations.create` on the item's span. The item's `used_human_review_ids` turns non-empty: that is the reviewed mark. Here a rule stands in for the human: *a customer asked about the policy and got a refusal instead of the policy* is bad, with the defect `incompleteness`. A human reviewer may disagree, which is the point of a queue. Empty answers are skipped: they are tool-loop hops that were already in the queue.
+In the Studio a reviewer clicks a value and it saves immediately. Over the API it is `annotations.create` on the item's span. The item's `used_human_review_ids` turns non-empty: that is the reviewed mark. Here a rule stands in for the human: *a customer asked about the policy and got a refusal instead of the policy* is bad, with the defect `incompleteness`. A human reviewer may disagree, which is the point of a queue. Empty answers are not rated: they are the first response of a tool loop, stopped at a `function_call` the caller never answered. Step 4 removes them from the queue together with the reviewed ones.
 
 ```text
 ── Step 3 · Review by API ─────────────────────────────
@@ -102,7 +102,7 @@ Point module 07's experiment at `ws-review-dataset` and the promoted row becomes
 ```bash
 $ orq annotation-queues list -o json | jq '.data[] | {_id, display_name, human_review_ids}'
 $ orq annotation-queues add-items 01M2K8Y73M0Y5N5AX0C1VJZQ7B --items '[{"trace_id": "<trace>", "span_id": "<root span>"}]'
-$ orq request POST /v3/traces/<trace>/spans/<span>/annotation --stdin <<< '{"annotations": [{"key": "rating", "value": "good"}]}'
+$ orq request POST /v2/traces/<trace>/spans/<span>/annotation --stdin <<< '{"annotations": [{"key": "rating", "value": "good"}]}'
 $ orq datasets list-datapoints 01M2K8Y76P0NKE810G62V969S6
 ```
 

@@ -240,7 +240,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 
 ![Studio: Datasets list showing ws-refund-eval, the dataset built in Step 5.](assets/studio-datasets.png)
 
-![Studio: an Experiment run for ws-refund-regression — the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts. Lives in the workspace's Default project, see Gotchas.](assets/studio-experiment.png)
+![Studio: an Experiment run for ws-refund-regression — the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts, under the orq-workshop project.](assets/studio-experiment.png)
 
 ## Done when
 
