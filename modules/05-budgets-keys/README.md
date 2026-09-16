@@ -1,6 +1,6 @@
 # 05 · Budgets and keys
 
-!!! abstract "Factor 5: Unify execution state and business state"
+!!! abstract "Spend is a request attribute, not a spreadsheet"
     Who is calling, on whose behalf, and how much they may spend are attributes of the request, enforced by the gateway. Not a spreadsheet you reconcile after the invoice.
 
 | | |
@@ -26,6 +26,8 @@ mgmt.budgets.create(
 )
 ```
 
+![Diagram: two credentials, two jobs. An API key calls models through the AI Gateway and is scoped by project and permission mode, but the admin endpoints refuse it with 403. A Management Key administers API keys and budgets, cannot call models, and cannot delete itself.](assets/05-two-credentials.png)
+
 ## Steps
 
 The run needs a Management Key in the shell. Create it, export it, run, delete it. It never goes into `.env`.
@@ -41,6 +43,8 @@ $ make m05
 ```
 
 ### Step 1 · API keys, and a key for the CI runner
+
+![Diagram: what a key is allowed to do. Permission mode — ALL, READ_ONLY, or RESTRICTED with a per-domain access map — crossed with project scope, all projects or a single one. A panel records what this workspace stored in September 2026 when a restricted single-project key was requested: permission mode all, project scope all, access null.](assets/05-key-scopes.png)
 
 ```console
 $ orq api-keys list -o json | jq '.[0] | {id, name, permission_mode, project_scope, token}'
@@ -91,6 +95,8 @@ $ orq identities list --search customer-user_001 -o json | jq '.data[] | {_id, e
 Open Traces, filter by identity `customer-user_001`: the calls from this module and from module 02 sit together.
 
 ### Step 3 · Budgets: the third call fails
+
+![Diagram: which budget stops the call. The six targets a budget can attach to — workspace, project, identity, api key, provider, model — with identity highlighted as the one this module trips, the rule that every matching budget is checked and the most restrictive wins, and the real 429 body naming scope_kind IDENTITY and scope_target_id customer-user_001.](assets/05-budget-scopes.png)
 
 The identity budget allows 2 requests per minute and USD 5 per month. Three calls, tagged with the identity, through `ws-ci-key`:
 

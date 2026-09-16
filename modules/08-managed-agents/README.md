@@ -1,6 +1,6 @@
 # 08 · Managed agents
 
-!!! abstract "Factor 4: Tools are structured outputs, Factor 6: Launch, pause, resume, Factor 10: Small, focused agents"
+!!! abstract "The agent lives in orq, your code executes the tools"
     The agent lives in orq. Your code is the tool executor: every `function_call` item comes back to you, you answer it, the conversation resumes server-side. One agent, three tools, eight iterations max.
 
 | | |

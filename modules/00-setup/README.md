@@ -1,6 +1,6 @@
 # 00 · Setup
 
-!!! abstract "Factor 11: Trigger from anywhere"
+!!! abstract "One key, three doors"
     One credential, three doors: the OpenAI-compatible gateway, the native SDK, and the `orq` CLI that also wires your coding agent. Everything in this workshop goes through the same key.
 
 | | |
@@ -161,8 +161,8 @@ Open **Traces** in the Studio, paste the trace id in the search box. You see the
 
 ```text
 app/refund_agent/
-  tools.py     lookup_order, issue_refund, get_policy   (Factor 4: tools are structured outputs)
-  agent.py     run_turn(messages) -> messages           (Factor 12: stateless reducer)
+  tools.py     lookup_order, issue_refund, get_policy   (the model emits JSON, this file runs it)
+  agent.py     run_turn(messages) -> messages           (no hidden state: items in, items out)
   config.py    every setting comes from .env
 app/data/
   orders.json  10 orders, some with traps (over-limit, post-window, refunded, PII in notes)

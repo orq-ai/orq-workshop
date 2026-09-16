@@ -176,7 +176,7 @@ print(f"trace    : {result.trace_id}")
 print("next     : the trace shows only chat spans; knowledge.search is a separate API call, not a span in the gateway trace")
 
 # %% [markdown]
-# ## Step 5 · Pre-fetch the context (Factor 13)
+# ## Step 5 · Pre-fetch the context
 #
 # Three ways to put policy in front of the model without a tool round-trip.
 #
@@ -227,7 +227,7 @@ print(f"question : {POLICY_QUESTION}")
 print(f"tokens   : prompt_tokens={prefetched_completion.usage.prompt_tokens}")
 print(f"answer   : {prefetched_completion.choices[0].message.content[:160]!r}")
 print(f"trace    : {prefetched_raw.headers.get('x-orq-trace-id')}")
-print("next     : the difference in prompt_tokens is the policy text; that is Factor 13 in five lines")
+print("next     : the difference in prompt_tokens is the policy text; that is pre-fetching in five lines")
 
 # %% [markdown]
 # (c) The managed version. A knowledge base attached to an agent is only searched if the agent also

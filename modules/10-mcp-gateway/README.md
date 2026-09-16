@@ -1,6 +1,6 @@
 # 10 · MCP Gateway
 
-!!! abstract "Factor 4: Tools are structured outputs, and Factor 10: Small, focused agents"
+!!! abstract "One set of tools, three callers, one allow-list"
     The three refund tools return the same JSON whether the local loop, an MCP client or a managed agent calls them. The gateway decides which of them a given client is allowed to see. A small agent gets `lookup_order` and `get_policy`; nobody outside gets `issue_refund`.
 
 | | |

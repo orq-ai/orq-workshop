@@ -5,7 +5,7 @@
 | Clock | Segment | Slides |
 |---|---|---|
 | 0:00 | Opening, how today works, "how do you use orq today" | 1 to 3 |
-| 0:12 | The map: picture, refund agent, 12-factor spine, what's new | 4 to 8 |
+| 0:12 | The map: picture, refund agent, what's new | 4 to 8 |
 | 0:27 | Vote | 9 |
 | 0:32 | Block 1 (25 to 30 min) | block section |
 | 1:00 | Block 2 | |

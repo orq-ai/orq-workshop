@@ -1,6 +1,6 @@
 # 14 · Alerts and webhooks
 
-!!! abstract "Factor 11: Trigger from anywhere, Factor 9: Compact errors into the context window"
+!!! abstract "The platform pushes to you"
     Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Reporting API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
 
 | | |

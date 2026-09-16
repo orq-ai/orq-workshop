@@ -1,6 +1,6 @@
 # 04 · Guardrails
 
-!!! abstract "Factor 7: Contact humans with tool calls"
+!!! abstract "A block is the hand-off to a human"
     A guardrail that blocks is the agent saying "I need a person". The gateway returns an error the app can catch, and the app opens the escalation path. The model never has to be prompted into asking for help.
 
 | | |
@@ -161,7 +161,7 @@ verdict  : passed
 answer   : Your refund of €24.99 has been issued to the original payment method. Please all…
 ```
 
-This is Factor 7. The model produced the forbidden sentence, the gateway refused to deliver it, and the app's `except` branch is where the human enters: the trace id goes on a review ticket, the customer gets "a colleague will confirm". No answer, no apology written by the model, no retry loop. The `failures` array names the evaluator, the stage and the outcome, so the ticket can say why.
+This is the hand-off. The model produced the forbidden sentence, the gateway refused to deliver it, and the app's `except` branch is where the human enters: the trace id goes on a review ticket, the customer gets "a colleague will confirm". No answer, no apology written by the model, no retry loop. The `failures` array names the evaluator, the stage and the outcome, so the ticket can say why.
 
 On the router the block arrives as `openai.BadRequestError` (400). Agents and deployments return `422`, so `solution/run.py` catches both.
 

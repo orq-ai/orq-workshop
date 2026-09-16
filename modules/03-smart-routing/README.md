@@ -1,6 +1,6 @@
 # 03 · Smart routing
 
-!!! abstract "Factor 8: Own your control flow"
+!!! abstract "Which model answers is a decision"
     Which model answers is a decision. This module moves that decision out of the code and into two places you can read and change at runtime: a Smart Router that picks per request, and a routing rule that overrides it.
 
 | | |

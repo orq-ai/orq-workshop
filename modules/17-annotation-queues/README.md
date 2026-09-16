@@ -1,6 +1,6 @@
 # 17 · Annotation queues and automations
 
-!!! abstract "Factor 7: Contact humans with tool calls"
+!!! abstract "The human loop"
     Module 14 made the platform push numbers and events to you. This module is the human loop: a queue collects the traces worth a look, an automation fills it without you, a reviewer scores each one, and the reviewed traces become a dataset the next experiment runs on.
 
 | | |

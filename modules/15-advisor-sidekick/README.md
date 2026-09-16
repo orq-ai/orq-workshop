@@ -1,6 +1,6 @@
 # 15 · Advisor and sidekick
 
-!!! abstract "Factor 10: Small, focused agents, Factor 3: Own your context window"
+!!! abstract "Hand one step to a second model"
     One agent on one model runs every step. The `advisor` and `sidekick` tools hand single steps to a second model configured at design time, each metered on its own span. Neither is a sub-agent: one call, no tools, no memory of its own.
 
 | | |

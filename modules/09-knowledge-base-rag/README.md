@@ -1,6 +1,6 @@
 # 09 · Knowledge base and RAG
 
-!!! abstract "Factor 3: Own your context window, and Factor 13: Pre-fetch context"
+!!! abstract "Retrieval decides what the model sees"
     Retrieval decides what the model sees. Chunking decides what retrieval can find. Both are settings you own, and the cheapest RAG is the one that searches before the model call instead of asking the model to search.
 
 | | |
@@ -20,7 +20,7 @@ A knowledge base is datasources, chunks and one embedding model. Search returns 
 ```python
 matches = orq.knowledge.search(knowledge_id=kb, query=q, top_k=3, search_type="hybrid_search",
                                search_options={"include_scores": True, "include_metadata": True}).matches
-context = "\n\n".join(m.text for m in matches)          # Factor 13: fetched before the model call
+context = "\n\n".join(m.text for m in matches)          # fetched before the model call
 client.chat.completions.create(model=..., messages=[{"role": "system", "content": f"Answer only from:\n{context}"}, ...])
 ```
 
@@ -69,6 +69,10 @@ verdict  : no rerank_score: no rerank model is enabled in this workspace, so the
 next     : the same search from the CLI: orq knowledge-bases search ws-refund-policy --query '...' --search-type keyword_search
 ```
 
+Read the three rankings against each other. Keyword search puts `refund_basics` at 1.000 because the query's words are in that file; vector search puts `post_window_exceptions` first because the question is about elapsed time, which no shared vocabulary would catch; hybrid runs both and the engine fuses the two lists into one ranking.
+
+The scores are not comparable across modes. Keyword scores come from a text-match calculation, vector and hybrid scores from embedding distance, so a keyword `1.000` and a hybrid `0.654` say nothing about each other. Compare within a mode, and check what a mode actually scores before setting a threshold against it. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) has the full pipeline, the `top_k` versus rerank `top_k` split, and the internal-versus-external division of labour.
+
 Read step 1's `model` line: the seeded base is embedded with `openai/text-embedding-3-large`. That is deliberate. In September 2026 every vector or hybrid search on a base embedded with `openai/text-embedding-3-small` returned HTTP 500 in this workspace (keyword search worked), so `EMBEDDING_MODEL` defaults to the large model and the solution keeps a fallback: if the seeded base fails vector search, it re-embeds the same documents as `ws-refund-policy-large` and compares. Rerank has no score column because no rerank model is enabled here; enable one under **Models** and the `rerank_score` appears.
 
 The CLI does the same search:
@@ -104,6 +108,8 @@ With one chunk per file, every search returns whole documents and the score is a
 
 `chat(..., policy_fn=...)` swaps `get_policy`'s implementation without touching the tool schema. The model still calls `get_policy(topic)`; the function now searches the knowledge base for the topic and returns the chunks as `text`, `source: "kb"`.
 
+![Diagram: retrieval as a tool. The model asks for get_policy and your own loop executes it: your process searches the knowledge base and sends the chunks back as a tool result on the next round. The gateway proxies only the model calls, so the search never appears as a span in the trace.](assets/09-step4-retrieval-as-tool.png)
+
 ```text
 ── Step 4 · The local agent reads policy from the KB ──
 question : Refund ord_a3 please, I changed my mind.
@@ -115,9 +121,15 @@ next     : the trace shows only chat spans; knowledge.search is a separate API c
 
 No retrieval span appears: the gateway traces the model calls it proxies, and `knowledge.search` is a separate API call. To see retrieval inside the trace, either instrument it yourself (module 02, `TRACING=otel`) or let orq run it (steps 5c and 6).
 
-### Step 5 · Pre-fetch the context (Factor 13)
+### Step 5 · Pre-fetch the context
 
 Three ways to put policy in front of the model without a tool round-trip.
+
+![Diagram: gateway-side retrieval. Your code names the knowledge base in extra_body and asks the gateway to inject the chunks. In this workspace nothing was injected: the model saw 25 prompt tokens and asked which retailer's policy to check.](assets/09-step5a-gateway-side.png)
+
+![Diagram: pre-fetched context. Your code searches the knowledge base first and puts the chunks into a system message, so a single gateway call carries 591 prompt tokens and no tool round trip happens.](assets/09-step5b-prefetch.png)
+
+![Diagram: managed agent retrieval. Your code calls the agent by model name; the agent holds the knowledge base and the two built-in server tools, so orq runs the search itself and records it in the trace before calling the model.](assets/09-step5c-managed-agent.png)
 
 ```text
 ── Step 5a · Gateway-side retrieval (orq.knowledge_bases) ──
@@ -131,7 +143,7 @@ question : I opened my electronics 20 days ago, can I still return them? Quote t
 tokens   : prompt_tokens=591
 answer   : 'Yes—if the order was delivered 20 days ago, it is within the 30-day refund window. The policy states:\n\n> “A customer is entitled to a refund on an order when al'
 trace    : 8fd6c17f2911cc896242ca8d4a880a38
-next     : the difference in prompt_tokens is the policy text; that is Factor 13 in five lines
+next     : the difference in prompt_tokens is the policy text; that is pre-fetching in five lines
 ── Step 5c · The managed agent searches its own KB ────
 agent    : agent/ws-refund-agent
 question : Can I return an item that was damaged in transit 45 days after delivery? What evidence do you need?
@@ -162,6 +174,8 @@ next     : the response keys are still just 'matches'; the refined query is not 
 
 orq can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. `app/edge.py` implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
 
+![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq post the query to your own /search endpoint and wait for matches with scores. Orq then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.](assets/09-step7-external-kb.png)
+
 orq's servers make the call, so the endpoint must be public HTTPS (loopback and private addresses are rejected). Two ways to get there: a tunnel to your laptop, or the instance the instructor hosts for the room (`make edge-docker` on any host):
 
 ```bash
@@ -183,7 +197,7 @@ With `WS_EDGE_URL` set, the step registers `ws-refund-policy-ext` (`type: extern
     the same search from the CLI: orq knowledge-bases search 01M2KDXAHZE2Y1XH5WWC6CAQGJ --query 'damaged in transit after 45 days' --top-k 2
 ```
 
-The external knowledge base attaches to agents and deployments exactly like the managed one (step 5c), and agentic RAG works on it. What you give up: chunking, embeddings and metadata filters are yours now, reranking is post-processing, and orq waits at most 50 s for your endpoint. Without `WS_EDGE_URL` the step prints the contract and stops.
+The external knowledge base attaches to agents and deployments exactly like the managed one (step 5c). What changes is the division of labour: chunking, embeddings, metadata filters and the search itself are yours now, but orq still cuts the results to `top_k`, applies the threshold and reranks them before handing them back. You own retrieval; the platform still owns ranking. It waits at most 50 s and then answers the caller `504`; a non-2xx from your endpoint is passed through as it is, and anything else becomes a `502`. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) lays the two engines side by side. Without `WS_EDGE_URL` the step prints the contract and stops.
 
 ## With your coding agent
 

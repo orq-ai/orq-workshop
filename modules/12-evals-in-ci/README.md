@@ -1,6 +1,6 @@
 # 12 · Evals in CI
 
-!!! abstract "Factor 6: Launch, pause, resume with simple APIs, and Factor 11: Trigger from anywhere"
+!!! abstract "A gate is an agent run with an exit code"
     A gate is an agent run you can start from a workflow, read as an exit code, and resume from a JSON file. The same key that runs the refund agent also runs the judge, the red team and a headless coding agent, from a cron or a PR label.
 
 | | |

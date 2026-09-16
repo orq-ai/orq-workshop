@@ -1,6 +1,6 @@
 # 02 · Tracing
 
-!!! abstract "Factor 3: Own your context window, and Factor 5: Unify execution and business state"
+!!! abstract "The context window, readable after the fact"
     The trace is the context window you can read after the fact: every model call, every tool result, in order. Identity, thread and metadata ride on the same request, so who asked, in which conversation, on which plan, is on the trace and not in a side table.
 
 | | |
