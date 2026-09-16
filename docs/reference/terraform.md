@@ -21,7 +21,7 @@ provider "orq" {}   # reads ORQ_API_KEY (a Management Key); ORQ_API_BASE_URL for
 | Quality and cost | `orq_evaluator` (LLM-as-judge and Python), `orq_guardrail_rule`, `orq_budget` (spend, token and rate ceilings), `orq_notifier` (email, webhook) |
 | Data sources | `orq_projects` |
 
-Read the absences as carefully as the list: agents, knowledge bases, deployments, prompts, MCP servers, webhooks and annotation queues have **no** resources yet, so the Managed Agents and AI Observability tracks stay SDK or Studio work. Everything the provider covers is gateway and admin surface — which is why this page sits in this section.
+Read the absences as carefully as the list: agents, knowledge bases, deployments, prompts, MCP servers, webhooks and annotation queues have **no** resources yet, so the Managed Agents and AI Observability tracks stay SDK or Studio work. Everything the provider covers is gateway and admin surface, which is why this page sits in this section.
 
 Adoption does not require starting over. Every managed resource can be imported, one `import` block at a time with `terraform plan -generate-config-out=generated.tf`, or a whole existing workspace at once. See [Supported resources](https://docs.orq.ai/reference/terraform/resources) and [Importing an existing workspace](https://docs.orq.ai/reference/terraform/importing) for the current list and syntax.
 

@@ -1,8 +1,12 @@
 # orqi harness
 
-**orqi** (aka TonyBot) is the orq.ai helper agent in your terminal. Ask it to investigate a failing agent, check workspace health, cut cost, build evaluators, or explain the platform, and it answers with your workspace's own tools, models and skills already wired in. No setup, no glue code.
+**[orqi](https://github.com/orq-ai/orqi)** (aka TonyBot) is the orq.ai helper agent in your terminal. Ask it to investigate a failing agent, check workspace health, cut cost, build evaluators, or explain the platform, and it answers with your workspace's own tools, models and skills already wired in. No setup, no glue code.
 
 It embeds the [pi coding agent](https://github.com/earendil-works/pi) in-process and boots with the orq MCP tools, the orq skills and the orqi system prompt already wired in. It operates the platform; it does not build your app. For that, module 13 wires your own coding agent through `orq launch`.
+
+It is open source and developed in the open: the binary you install below is built from it, and issues and releases live there:
+
+[:octicons-mark-github-16: orq-ai/orqi](https://github.com/orq-ai/orqi){ .md-button .md-button--primary }
 
 ![orqi in the terminal: the startup header names the workspace, model, tool and skill counts; the prompt "how are my agents today?" triggers the orqi-workspace-health-check skill, which plans four tool steps before it answers.](../assets/orqi-health-check.png)
 

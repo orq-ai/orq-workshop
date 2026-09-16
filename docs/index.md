@@ -15,7 +15,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Keys and environment, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
+    The orq CLI and your keys, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
 
     [:octicons-arrow-right-24: Modules 00, 06, 13](modules/00.md)
 
@@ -23,25 +23,41 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Fallbacks and cache, smart routing and routing rules, guardrails and PII, budgets, keys and identities.
+    Fallbacks and cache, smart routing and routing rules, guardrails and PII, budgets, keys and identities, MCP servers and the MCP Gateway.
 
-    [:octicons-arrow-right-24: Modules 01, 03, 04, 05](modules/01.md)
+    [:octicons-arrow-right-24: Modules 01, 03, 04, 05, 10](modules/01.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
 
     ---
 
-    Tracing, failure analysis to evaluators to experiments, alerts and webhooks, annotation queues and automations.
+    Tracing across your code and the gateway, alerts and webhooks, annotation queues and trace automations.
 
-    [:octicons-arrow-right-24: Modules 02, 07, 14, 17](modules/02.md)
+    [:octicons-arrow-right-24: Modules 02, 14, 17](modules/02.md)
 
--   :material-robot:{ .lg .middle } **Managed Agents**
+-   :material-robot:{ .lg .middle } **Agents**
 
     ---
 
-    Managed agents, MCP servers and the MCP Gateway, agent simulation, evals and headless agents in CI, advisor and sidekick, red teaming.
+    The same agent three ways: your loop, a framework's, orq's, then managed agents, and delegation with advisor and sidekick.
 
-    [:octicons-arrow-right-24: Modules 08 to 12, 15, 16](modules/08.md)
+    [:octicons-arrow-right-24: Build your own agent](own-your-agent.md)
+
+-   :material-database-search:{ .lg .middle } **RAG and Retrieval**
+
+    ---
+
+    How retrieval actually works (chunking, embeddings, search modes, reranking) and a knowledge base wired three ways.
+
+    [:octicons-arrow-right-24: How retrieval works](reference/rag.md)
+
+-   :material-clipboard-check:{ .lg .middle } **Evaluation**
+
+    ---
+
+    evaluatorq and orq-arena, failure analysis to evaluators to experiments, agent simulation, red teaming, and the whole thing gated in CI.
+
+    [:octicons-arrow-right-24: evaluatorq](reference/evaluatorq.md)
 
 -   :material-new-box:{ .lg .middle } **What's new**
 
