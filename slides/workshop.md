@@ -34,7 +34,7 @@ Everything shown lives in the repo. Every block ends with "you try" and a "Done 
 
 <span class="tag">repo</span> `github.com/orq-ai/orq-workshop` · <span class="tag">docs</span> `orq-ai.github.io/orq-workshop`
 
-<!-- 0:03. Point at the parking lot. Ask everyone to have the repo cloned and `make smoke` green before the vote. -->
+<!-- 0:03. Point at the parking lot. Ask everyone to have the repo cloned and `make smoke` green before we start block 1. -->
 
 ---
 
@@ -52,7 +52,7 @@ Pre-filled from your survey. Correct it, add to it.
 | Most used areas | routing · budgets & keys · deployments & agents · tracing · experiments | |
 | What you want from today | managed agents · KB and RAG, internal **and** external search · MCP servers and gateway · your own framework with orq around it | |
 
-<!-- 0:05. Five minutes. Write their additions on the slide (or the whiteboard). These feed the vote. -->
+<!-- 0:05. Five minutes. Write their additions on the slide (or the whiteboard). These sharpen the four blocks; they do not change them. -->
 
 ---
 
@@ -60,7 +60,7 @@ Pre-filled from your survey. Correct it, add to it.
 
 # The map
 
-<!-- 0:12. Fifteen minutes on the map, then vote. -->
+<!-- 0:12. Fifteen minutes on the map, then straight into block 1. -->
 
 ---
 
@@ -437,20 +437,6 @@ Things we skipped, questions we could not answer, requests for a follow-up.
 
 ---
 
-## What we saw against what you asked for
-
-| You asked for | Where it lived today |
-|---|---|
-| Building agents with our own frameworks, orq as the layer around it | Block 1, and `examples/own-your-agent.py` |
-| Managed agents | Block 2, plus advisor and sidekick |
-| Knowledge Base API and RAG, internal **and** external search engines | Block 3, and the *How retrieval works* page |
-| MCP servers and the MCP gateway | Block 4 |
-| Routing, model testing and selection, monitoring | Appendix A, C, D — you said the docs cover these |
-
-<!-- Fill from the checkpoint slides. Be honest about what was skipped. -->
-
----
-
 ## Next steps
 
 1. **Today**: `make setup && make smoke` in this repo. Every block you missed is a module with a solution.
@@ -469,6 +455,9 @@ Things we skipped, questions we could not answer, requests for a follow-up.
 # Thank you
 
 Questions, and the parking lot.
+
+---
+
 <!-- _class: lead -->
 
 # Appendix
