@@ -119,6 +119,12 @@ html { font-size: 100%; }
    ponytail: CSS over rewriting 19 files; drop this if the metadata block becomes a list. */
 .md-typeset table:not([class]) thead:not(:has(th:not(:empty))) { display: none; }
 
+/* A diff of two prompt files is a diff of prose: the lines run to ~200 characters, and a
+   horizontal scrollbar hides exactly the half of the sentence that changed. Wrap them.
+   Matched by content (Pygments .gd/.gi) because Material emits no language class here, so
+   ordinary code blocks, where column alignment carries meaning, keep scrolling. */
+.md-typeset .highlight:has(.gd, .gi) code { white-space: pre-wrap; }
+
 /* Sidebar nav + TOC: ~content size, a touch bigger so the menu reads as chrome. */
 .md-nav { font-size: 1rem; }
 .md-nav__title { font-size: 1rem; }

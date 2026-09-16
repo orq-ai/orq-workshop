@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 3 · The managed agent, twice</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;
+      --color-ink:    #25232e;
+      --color-muted:  #025558;
+      --color-accent: #df5325;
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Step 3 · Module 11</p>
+    <h1>Same agent, two harnesses: who runs the tool call decides the score</h1>
+
+    <svg viewBox="0 0 960 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="s11-step3-title s11-step3-desc">
+      <title id="s11-step3-title">The managed agent simulated through two different targets</title>
+      <desc id="s11-step3-desc">Sequence diagram comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it because it cannot execute function calls, the assistant text comes back empty and the judge scores zero. With the ManagedRefundTarget adapter the harness executes the tool call itself, sends the result back as a function_call_output, and the agent answers with the refund, scoring one. The failure in the first case is the harness, not the agent.</desc>
+
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#299d8f"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Lifelines -->
+      <line x1="120" y1="112" x2="120" y2="716" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="376" y1="112" x2="376" y2="716" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="632" y1="112" x2="632" y2="716" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="856" y1="112" x2="856" y2="716" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- ALT frame -->
+      <rect x="96" y="184" width="784" height="504" rx="4" fill="rgba(37,35,46,0.02)" stroke="rgba(37,35,46,0.22)" stroke-width="1"/>
+      <rect x="96" y="184" width="40" height="16" rx="2" fill="#f9f8f6" stroke="rgba(37,35,46,0.22)" stroke-width="1"/>
+      <text x="116" y="196" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.12em">ALT</text>
+      <!-- region divider -->
+      <line x1="104" y1="432" x2="872" y2="432" stroke="rgba(37,35,46,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+
+      <!-- Guards -->
+      <text x="148" y="212" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.04em">[ target = &quot;agent:ws-refund-agent&quot; · the built-in target ]</text>
+      <text x="108" y="456" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.04em">[ target = ManagedRefundTarget(&quot;ws-refund-agent&quot;) · 21 lines in solution/refund_target.py ]</text>
+
+      <!-- ── Shared opening turn (above the frame) ── -->
+      <line x1="120" y1="160" x2="368" y2="160" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="180" y="140" width="128" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="244" y="149" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REFUND ORD_A1</text>
+
+      <!-- ── Region A ── -->
+      <line x1="376" y1="248" x2="624" y2="248" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="428" y="228" width="144" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="500" y="237" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">RESPONSES.CREATE</text>
+
+      <line x1="632" y1="288" x2="384" y2="288" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <rect x="432" y="268" width="144" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="504" y="277" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FUNCTION_CALL</text>
+
+      <!-- self message: dropped -->
+      <path d="M 376,320 H 440 V 348 H 384" fill="none" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <rect x="452" y="326" width="168" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="456" y="335" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">DROPPING TOOL CALL</text>
+
+      <line x1="376" y1="384" x2="128" y2="384" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <rect x="180" y="364" width="120" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="240" y="373" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">&apos;&apos; EMPTY TEXT</text>
+
+      <text x="632" y="388" fill="#25232e" font-size="12" font-style="italic" font-family="'Avio Sans', sans-serif">score 0.00 · criteria_0 broken</text>
+      <text x="632" y="406" fill="#25232e" font-size="12" font-style="italic" font-family="'Avio Sans', sans-serif">the harness failed, not the agent</text>
+
+      <!-- ── Region B ── -->
+      <line x1="376" y1="496" x2="624" y2="496" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="428" y="476" width="144" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="500" y="485" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">RESPONSES.CREATE</text>
+
+      <line x1="632" y1="536" x2="384" y2="536" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <rect x="432" y="516" width="144" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="504" y="525" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FUNCTION_CALL</text>
+
+      <line x1="376" y1="576" x2="848" y2="576" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="668" y="556" width="128" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="732" y="565" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">DISPATCH()</text>
+
+      <line x1="856" y1="608" x2="384" y2="608" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <rect x="668" y="588" width="128" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="732" y="597" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">ORDER JSON</text>
+
+      <line x1="376" y1="640" x2="624" y2="640" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="416" y="620" width="168" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="500" y="629" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FUNCTION_CALL_OUTPUT</text>
+
+      <line x1="632" y1="672" x2="384" y2="672" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <rect x="452" y="652" width="104" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="504" y="661" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FINAL TEXT</text>
+
+      <line x1="376" y1="704" x2="128" y2="704" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <rect x="168" y="684" width="144" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="240" y="693" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REFUNDED EUR 24.99</text>
+
+      <text x="640" y="700" fill="#25232e" font-size="12" font-style="italic" font-family="'Avio Sans', sans-serif">score 1.00 · goal achieved</text>
+
+      <!-- Actors (drawn last so lifelines sit behind) -->
+      <rect x="40" y="48" width="160" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="48" width="160" height="64" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="56" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="65" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SIM</text>
+      <text x="120" y="88" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">User simulator</text>
+      <text x="120" y="104" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">persona + judge</text>
+
+      <rect x="296" y="48" width="160" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="296" y="48" width="160" height="64" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="304" y="56" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="318" y="65" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">TGT</text>
+      <text x="376" y="88" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Target harness</text>
+      <text x="376" y="104" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">the only thing that changes</text>
+
+      <rect x="552" y="48" width="160" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="552" y="48" width="160" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <rect x="560" y="56" width="28" height="12" rx="2" fill="transparent" stroke="rgba(37,35,46,0.40)" stroke-width="0.8"/>
+      <text x="574" y="65" fill="#25232e" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+      <text x="632" y="88" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Managed agent</text>
+      <text x="632" y="104" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">agent/ws-refund-agent</text>
+
+      <rect x="776" y="48" width="160" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="776" y="48" width="160" height="64" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="784" y="56" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="798" y="65" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DB</text>
+      <text x="856" y="88" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Your tools</text>
+      <text x="856" y="104" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">dispatch · order store</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="740" x2="920" y2="740" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="756" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <line x1="40" y1="778" x2="68" y2="778" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="76" y="780" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Call</text>
+
+      <line x1="160" y1="778" x2="188" y2="778" stroke="#025558" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <text x="196" y="780" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Return</text>
+
+      <line x1="300" y1="778" x2="328" y2="778" stroke="#df5325" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <text x="336" y="780" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Where the two runs diverge</text>
+
+      <rect x="540" y="772" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="560" y="780" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Swapped between the two runs</text>
+    </svg>
+  </div>
+</body>
+</html>

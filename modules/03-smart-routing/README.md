@@ -15,7 +15,7 @@
 
 ## The one concept to understand first
 
-A [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-5.6-luna`. The profile (`COST`, `BALANCED`, `QUALITY`) shifts how aggressively it prefers the cheap band. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
+A [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-5.6-luna`. The profile (`COST`, `BALANCED`, `QUALITY`) tunes how aggressively it prefers economical models over stronger ones. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
 
 A routing rule sits in front of that: `expression.cel` decides if it applies, `models_config` says where the request goes instead. The CEL variables are `model`, `metadata["key"]`, `identity`, `headers["name"]` and `project`. When a rule matches it replaces the request's `model`, `load_balancer` and `fallbacks` entirely.
 
@@ -69,7 +69,47 @@ hard     : gpt-5.6-sol                  $0.009380  auto_router=True  trace=af4b1
 next     : compare with step 1; the pick moves only when two pool models are close in band
 ```
 
-Nothing moved. The bands come from an intelligence index, not from the profile: the easy question is a nano-band question under both profiles, the hard one a sol-band question under both. The profile shifts the band when candidates are close; here they are not. What can move is the hard answer's cost ($0.0101 to $0.0094 in this run, $0.0108 to $0.0052 in an earlier one) for the same question on the same model: answer length, not a routing decision. Read the model, not the bill, when you judge a router.
+Nothing moved, and the pool is why. The bands come from an intelligence index, not from the profile: the easy question is an Easy-band question under both profiles, the hard one a Hard-band question under both. `Hard` holds exactly one model, so no profile can change what answers a hard question. What can move is the hard answer's cost ($0.0101 to $0.0094 in this run, $0.0108 to $0.0052 in an earlier one) for the same question on the same model: answer length, not a routing decision. Read the model, not the bill, when you judge a router.
+
+#### What the bands actually are
+
+Open the router in the Studio and the pool is not a flat list — it is bucketed:
+
+![Studio: the Edit Smart Router panel for ws-refund-router. The mode is set to Quality out of Cost, Balanced and Quality. The model pool is grouped into three bands: Hard holds gpt-5.6-sol at intelligence 53.6 and $8.00, Medium holds gpt-5.6-terra at 45.6 and $4.50 and gpt-5.6-luna at 38.1 and $0.45, and Easy holds gpt-5.4-nano at 30.2 and $0.46 and claude-haiku-4-5-20251001 at 23.7 and $2.00.](assets/studio-smart-router-bands.png)
+
+Each model carries an **intelligence index** — sourced from [Artificial Analysis](https://artificialanalysis.ai), not from orq — and a **price per million tokens**. The platform ranks the pool by that index and cuts it into three bands, so the bands re-form themselves whenever you change the pool:
+
+| Band | Model | Index | $/M |
+|---|---|---|---|
+| **Hard** | `gpt-5.6-sol` | 53.6 | $8.00 |
+| **Medium** | `gpt-5.6-terra` | 45.6 | $4.50 |
+| | `gpt-5.6-luna` | 38.1 | $0.45 |
+| **Easy** | `gpt-5.4-nano` | 30.2 | $0.46 |
+| | `claude-haiku-4-5-20251001` | 23.7 | $2.00 |
+
+Two things follow, and both explain the output above.
+
+![Diagram: how a Smart Router picks a model by prompt complexity. An easy request and a hard request both reach a complexity score step that rates the prompt itself, and the score selects one of three bands the pool is sorted into by intelligence index: Hard holding gpt-5.6-sol at 53.6, Medium holding gpt-5.6-terra at 45.6 and gpt-5.6-luna at 38.1, and Easy holding gpt-5.4-nano at 30.2 and claude-haiku-4-5 at 23.7. The cost, balanced and quality mode feeds the scoring step as a preference dial that tunes how aggressively the router prefers economical models over stronger ones, rather than choosing the band itself. A note records that the index sorts the bands and the price does not, since gpt-5.6-luna sits in Medium at $0.45 per million tokens while claude-haiku-4-5 sits in Easy at $2.00.](assets/complexity-bands.png)
+
+
+**The request gets classified, then the band gets picked.** The router scores how hard the *prompt* is and sends it to the matching band. "2+2" is an Easy-band question and "explain the refund policy edge cases" is a Hard-band one, under every mode. The mode does not choose the band — the prompt does.
+
+#### Cost, Balanced and Quality
+
+The mode is a dial on one axis: [how aggressively the router prefers economical models over stronger ones](https://docs.orq.ai/docs/ai-gateway/smart-router).
+
+| Mode | Favours | The shape of it | Reach for it when |
+|---|---|---|---|
+| **Cost** | less expensive models | start from a strong baseline and send the simpler requests down to cheaper models, escalating only what needs it | the workload is mostly routine and the bill is the thing you are trying to move |
+| **Balanced** | trades off both | neither end weighted | you have no strong opinion, or you are measuring before you tune |
+| **Quality** | more capable models | start from a cost-efficient baseline and escalate to stronger models whenever the task justifies it | wrong answers cost more than tokens do — a refund desk, a medical triage form |
+
+Two consequences worth holding on to. The dial only has something to move **within the reach the pool gives it**: it can prefer a cheaper or stronger model, but it cannot invent one the pool does not contain. And if routing is unavailable the request **falls back to the strongest model in the pool**, so a Smart Router never fails closed — it fails expensive.
+
+**Index and price are independent axes.** `gpt-5.6-luna` sits in Medium at $0.45 while `claude-haiku-4-5` sits in Easy at $2.00 — the cheaper model is the *more* capable one here. That is the whole argument for a router over a hardcoded model: the ranking you would have guessed from price is wrong, and it changes every few weeks.
+
+The practical consequence: **a band with one model is not a routing decision.** `Hard` holds only `gpt-5.6-sol`, so every hard question costs $8.00/M whatever the profile says. If you want the profile to have something to choose between, put two models in the band.
+
 
 ### Step 3 · Pin traffic with a routing rule
 
@@ -123,7 +163,17 @@ $ orq request GET '/v2/routing-rules?project_id=01a082d7-b8cc-7c86-bfe8-83f9cb47
 {"_id":"rrl_01m2k94dh6v5317h4r7yg42s2k","display_name":"ws-route-mini-to-nano","enabled":false,"cel":"metadata[\"tier\"] == \"free\" && model == \"openai/gpt-5.6-luna\""}
 ```
 
-`orq smart-routers create --example` and `orq request POST /v2/routing-rules` take the same bodies the SDK sends.
+Creating one is a single command — the pool and the profile are the whole configuration:
+
+```bash
+$ orq smart-routers create \
+    --key ws-refund-router \
+    --models openai/gpt-5.6-sol --models openai/gpt-5.6-terra \
+    --models openai/gpt-5.6-luna --models openai/gpt-5.4-nano \
+    --body-profile SMART_ROUTER_PROFILE_COST
+```
+
+Three gotchas the `--help` spells out: `--models` repeats once per model (2 to 50, all distinct and enabled in the workspace), the profile flag is **`--body-profile`** because `--profile` is reserved for the CLI's own auth profiles, and `--key` must be unique in the workspace because it becomes the `model_ref` your app calls. `orq smart-routers create --example` prints the raw body if you would rather pipe JSON on stdin, and `orq request POST /v2/routing-rules` takes the same bodies the SDK sends for rules.
 
 ## With your coding agent
 

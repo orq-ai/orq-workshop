@@ -15,7 +15,9 @@ This workshop drives orq.ai from the terminal. The `orq` CLI is how we do it: it
 
 ## The one concept to understand first
 
-[`orq` the CLI](https://docs.orq.ai/reference/cli) is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq MCP server and the orq skills. Learn it once, use it in every module.
+`orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq MCP server and the orq skills. Every entity in the workspace is a subcommand you can script. Learn it once, use it in every module.
+
+It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is catalogued in the [CLI reference](https://docs.orq.ai/reference/cli).
 
 ## Steps
 
@@ -38,6 +40,16 @@ active_workspace_key: <your-workspace>
 active_project_name: <your-project>
 cli: 8.0.x
 ```
+
+Two other doors, and one command worth knowing:
+
+```bash
+$ npm install -g @orq-ai/cli   # if you would rather have it from npm
+$ orq update                   # replace the binary with the latest
+$ orq version                  # the CLI version AND the orq API it was built against
+```
+
+That second line of `orq version` matters: when a command exists in the docs but not in your binary, the API version it was built against is usually why.
 
 ### Step 2 · Pick a project and mint a key into this repo
 

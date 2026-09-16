@@ -175,6 +175,7 @@ async def step_1_simulate_local() -> None:
         upload_results=True,
         exit_on_failure=False,
         executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
     )
     print_results(results)
     print(f"next     : open Experiments > {settings.key('sim-local')} (Default project); one row per conversation with transcript, criteria and judge reasoning")
@@ -201,6 +202,7 @@ async def step_2_generate() -> None:
         upload_results=True,
         exit_on_failure=False,
         executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
     )
     print_results(results)
     print("next     : save the cases with `eq sim generate --datapoints cases.jsonl`, fix the scenario by hand, replay with `eq sim run`")
@@ -227,6 +229,7 @@ async def step_3_managed() -> None:
         upload_results=False,
         exit_on_failure=False,
         executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
     )
     print_results(results)
     print_transcript(results[0])
@@ -246,6 +249,7 @@ async def step_3_managed() -> None:
         upload_results=True,
         exit_on_failure=False,
         executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
     )
     print_results(results)
     print_transcript(results[0])

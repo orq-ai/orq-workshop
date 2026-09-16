@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 1 · Two personas, two scenarios</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;
+      --color-ink:    #25232e;
+      --color-muted:  #025558;
+      --color-accent: #df5325;
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Step 1 · Module 11</p>
+    <h1>Four conversations, and two that only look like failures</h1>
+
+    <svg viewBox="0 0 960 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="s11-step1-title s11-step1-desc">
+      <title id="s11-step1-title">Two personas crossed with two scenarios, four scored conversations</title>
+      <desc id="s11-step1-desc">Matrix of two simulated customer personas crossed with two refund scenarios, giving four conversations against the local agent. Both in-window ord_a1 conversations end with the goal achieved in one turn. Both post-window ord_a3 conversations end with the goal not achieved after four turns, which is the agent correctly refusing an out-of-window refund, so the run is gated on the rules-broken criteria rather than on whether the persona reached its goal.</desc>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Corner label -->
+      <text x="40" y="74" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.14em">PERSONA  ×  SCENARIO</text>
+      <text x="40" y="88" fill="#6b6975" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">simulate() · max_turns = 4</text>
+
+      <!-- Column header: in-window -->
+      <rect x="256" y="56" width="320" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="416" y="74" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">In-window refund ord_a1</text>
+      <text x="416" y="88" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">EUR 24.99 · delivered 3 days ago</text>
+
+      <!-- Column header: post-window -->
+      <rect x="592" y="56" width="320" height="40" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="752" y="74" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Post-window refund ord_a3</text>
+      <text x="752" y="88" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">EUR 42.50 · delivered 45 days ago</text>
+
+      <!-- Row header: impatient -->
+      <rect x="40" y="112" width="200" height="84" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="140" y="148" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Impatient repeat buyer</text>
+      <text x="140" y="164" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">patience 0.2 · terse</text>
+      <text x="140" y="178" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">threatens chargebacks</text>
+
+      <!-- Row header: polite -->
+      <rect x="40" y="212" width="200" height="84" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="140" y="248" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Polite first-time customer</text>
+      <text x="140" y="264" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">patience 0.8 · verbose</text>
+      <text x="140" y="278" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">apologises a lot</text>
+
+      <!-- Cell 1,1 -->
+      <rect x="256" y="112" width="320" height="84" rx="6" fill="#f9f8f6"/>
+      <rect x="256" y="112" width="320" height="84" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="416" y="144" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">goal achieved</text>
+      <text x="416" y="164" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">score 1.00 · 1 turn · ended by judge</text>
+      <text x="416" y="180" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">rules broken: none</text>
+
+      <!-- Cell 1,2 (focal) -->
+      <rect x="592" y="112" width="320" height="84" rx="6" fill="#f9f8f6"/>
+      <rect x="592" y="112" width="320" height="84" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="752" y="144" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">goal not achieved</text>
+      <text x="752" y="164" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">score 0.20 · 4 turns · ended by max_turns</text>
+      <text x="752" y="180" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">rules broken: none</text>
+
+      <!-- Cell 2,1 -->
+      <rect x="256" y="212" width="320" height="84" rx="6" fill="#f9f8f6"/>
+      <rect x="256" y="212" width="320" height="84" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="416" y="244" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">goal achieved</text>
+      <text x="416" y="264" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">score 1.00 · 1 turn · ended by judge</text>
+      <text x="416" y="280" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">rules broken: none</text>
+
+      <!-- Cell 2,2 (focal) -->
+      <rect x="592" y="212" width="320" height="84" rx="6" fill="#f9f8f6"/>
+      <rect x="592" y="212" width="320" height="84" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="752" y="244" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">goal not achieved</text>
+      <text x="752" y="264" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">score 0.35 · 4 turns · ended by max_turns</text>
+      <text x="752" y="280" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">rules broken: none</text>
+
+      <!-- Experiment node -->
+      <rect x="40" y="332" width="280" height="72" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="332" width="280" height="72" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <rect x="48" y="340" width="28" height="12" rx="2" fill="transparent" stroke="rgba(2,85,88,0.50)" stroke-width="0.8"/>
+      <text x="62" y="349" fill="#025558" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">EXP</text>
+      <text x="180" y="370" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Experiment · ws-sim-local</text>
+      <text x="180" y="386" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">one row per conversation</text>
+      <text x="180" y="400" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">summary: goal achieved 2/4</text>
+
+      <!-- Callout under the focal column -->
+      <path d="M 752,296 V 332" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="752" cy="296" r="2" fill="#25232e"/>
+      <text x="752" y="356" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">The persona wanted a refund it should</text>
+      <text x="752" y="374" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">not get. Gate on rules broken,</text>
+      <text x="752" y="392" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif" text-anchor="middle">not on goal achieved.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="428" x2="920" y2="428" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="444" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="460" width="14" height="10" rx="2" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="60" y="468" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Simulated persona</text>
+
+      <rect x="180" y="460" width="14" height="10" rx="2" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="200" y="468" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Conversation the persona won</text>
+
+      <rect x="400" y="460" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="420" y="468" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Refusal — reads as a failure, is the agent working</text>
+
+      <rect x="740" y="460" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="760" y="468" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">orq entity</text>
+    </svg>
+  </div>
+</body>
+</html>

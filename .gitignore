@@ -8,6 +8,8 @@ site/
 slides/*.html
 slides/*.pdf
 .evaluatorq/
+# FastHTML session key, written into the repo root by `eq dashboard` (modules 11 and 16)
+.sesskey
 evals/results/
 modules/**/reports/
 .context/

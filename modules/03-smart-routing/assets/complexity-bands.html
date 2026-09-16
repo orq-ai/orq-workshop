@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complexity bands · Architecture</title>
+  <style>
+    /* orq brand fonts, self-hosted in docs/stylesheets/fonts (see docs/stylesheets/extra.css). */
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-RegularItalic.woff2") format("woff2"); font-weight: 400; font-style: italic; }
+    @font-face { font-family: "Avio Sans"; src: url("../../../docs/stylesheets/fonts/AvioSans-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); font-weight: 600; font-style: normal; }
+    @font-face { font-family: "Kurrent Mono"; src: url("../../../docs/stylesheets/fonts/ESKlarheitKurrentMono-Md.woff2") format("woff2"); font-weight: 500; font-style: normal; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:  #f9f8f6;   /* orq sand */
+      --color-ink:    #25232e;   /* orq ink */
+      --color-muted:  #025558;   /* orq teal */
+      --color-accent: #df5325;   /* orq orange-deep */
+      --font-sans:  'Avio Sans', system-ui, sans-serif;
+      --font-title: 'Kurrent', 'Avio Sans', sans-serif;
+      --font-mono:  'Kurrent Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-title); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Module 03</p>
+    <h1>The prompt picks the band, the mode leans cheap or strong</h1>
+
+    <svg viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="complexity-bands-title complexity-bands-desc">
+      <title id="complexity-bands-title">How a Smart Router picks a model by prompt complexity</title>
+      <desc id="complexity-bands-desc">Architecture diagram. Two requests, an easy one and a hard one, both reach a complexity score step that rates the prompt itself. The score selects one of three bands the model pool is sorted into by intelligence index: Easy holding gpt-5.4-nano at 30.2 and claude-haiku-4-5 at 23.7, Medium holding gpt-5.6-terra at 45.6 and gpt-5.6-luna at 38.1, and Hard holding gpt-5.6-sol at 53.6. The cost, balanced and quality mode feeds the scoring step as a preference dial, tuning how aggressively the router prefers economical models over stronger ones rather than choosing the band itself. A note records that the index sorts the bands and the price does not: gpt-5.6-luna sits in Medium at $0.45 per million tokens while claude-haiku-4-5 sits in Easy at $2.00.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#025558"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#df5325"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f9f8f6"/>
+
+      <!-- Arrows first (z-order: behind the boxes) -->
+      <!-- easy request -> score -->
+      <path d="M 248,156 H 272 Q 280,156 280,164 V 244 Q 280,252 288,252 H 312" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- hard request -> score -->
+      <path d="M 248,396 H 272 Q 280,396 280,388 V 308 Q 280,300 288,300 H 312" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- score -> Easy band (corridor x=524) -->
+      <path d="M 488,252 H 516 Q 524,252 524,260 V 368 Q 524,376 532,376 H 560" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- score -> Hard band (corridor x=540, offset so the two never share a segment) -->
+      <path d="M 488,300 H 532 Q 540,300 540,292 V 140 Q 540,132 548,132 H 560" fill="none" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <!-- profile -> score, dashed: it tunes the decision, it does not make it -->
+      <line x1="400" y1="380" x2="400" y2="332" stroke="#df5325" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-accent)"/>
+
+      <!-- Arrow labels (mask + 8px gap from the stroke) -->
+      <rect x="188" y="194" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="192" y="203" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">EASY PROMPT</text>
+
+      <rect x="188" y="342" width="76" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="192" y="351" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">HARD PROMPT</text>
+
+      <rect x="408" y="344" width="88" height="12" rx="2" fill="#f9f8f6"/>
+      <text x="412" y="353" fill="#df5325" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.06em">PREFERENCE</text>
+
+      <!-- Band: Hard -->
+      <rect x="560" y="96" width="360" height="72" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="96" width="360" height="72" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="572" y="116" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.14em">HARD</text>
+      <text x="580" y="146" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">gpt-5.6-sol</text>
+      <text x="908" y="146" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="end">53.6 · $8.00</text>
+
+      <!-- Band: Medium -->
+      <rect x="560" y="200" width="360" height="96" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="200" width="360" height="96" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="572" y="220" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.14em">MEDIUM</text>
+      <text x="580" y="248" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">gpt-5.6-terra</text>
+      <text x="908" y="248" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="end">45.6 · $4.50</text>
+      <text x="580" y="276" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">gpt-5.6-luna</text>
+      <text x="908" y="276" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="end">38.1 · $0.45</text>
+
+      <!-- Band: Easy -->
+      <rect x="560" y="328" width="360" height="96" rx="6" fill="#f9f8f6"/>
+      <rect x="560" y="328" width="360" height="96" rx="6" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="572" y="348" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.14em">EASY</text>
+      <text x="580" y="376" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">gpt-5.4-nano</text>
+      <text x="908" y="376" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="end">30.2 · $0.46</text>
+      <text x="580" y="404" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif">claude-haiku-4-5</text>
+      <text x="908" y="404" fill="#df5325" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="end">23.7 · $2.00</text>
+
+      <!-- Node: easy request -->
+      <rect x="40" y="120" width="208" height="72" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="120" width="208" height="72" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="128" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="137" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">REQ</text>
+      <text x="144" y="160" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">An easy question</text>
+      <text x="144" y="178" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">&quot;what is 2+2?&quot;</text>
+
+      <!-- Node: hard request -->
+      <rect x="40" y="360" width="208" height="72" rx="6" fill="#f9f8f6"/>
+      <rect x="40" y="360" width="208" height="72" rx="6" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <rect x="48" y="368" width="28" height="12" rx="2" fill="transparent" stroke="rgba(107,105,117,0.40)" stroke-width="0.8"/>
+      <text x="62" y="377" fill="#6b6975" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">REQ</text>
+      <text x="144" y="400" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">A hard question</text>
+      <text x="144" y="418" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">refund policy edge cases</text>
+
+      <!-- Node: the scorer (focal) -->
+      <rect x="312" y="228" width="176" height="96" rx="6" fill="#f9f8f6"/>
+      <rect x="312" y="228" width="176" height="96" rx="6" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <rect x="320" y="236" width="28" height="12" rx="2" fill="transparent" stroke="rgba(223,83,37,0.50)" stroke-width="0.8"/>
+      <text x="334" y="245" fill="#df5325" font-size="7" font-family="'Kurrent Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SCORE</text>
+      <text x="400" y="272" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Complexity score</text>
+      <text x="400" y="290" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">rates the prompt,</text>
+      <text x="400" y="304" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">not the caller</text>
+
+      <!-- Node: the profile dial -->
+      <rect x="312" y="380" width="176" height="64" rx="6" fill="#f9f8f6"/>
+      <rect x="312" y="380" width="176" height="64" rx="6" fill="#ffffff" stroke="#25232e" stroke-width="1"/>
+      <text x="400" y="404" fill="#25232e" font-size="12" font-weight="600" font-family="'Avio Sans', sans-serif" text-anchor="middle">Profile</text>
+      <text x="400" y="420" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">cost · balanced · quality</text>
+      <text x="400" y="434" fill="#025558" font-size="9" font-family="'Kurrent Mono', monospace" text-anchor="middle">cheaper &#8596; stronger</text>
+
+      <!-- Editorial note: the point most readers miss -->
+      <path d="M 700,424 V 456" fill="none" stroke="rgba(37,35,46,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+      <circle cx="700" cy="424" r="2" fill="#25232e"/>
+      <text x="560" y="480" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">The index sorts the bands. The price does not:</text>
+      <text x="560" y="498" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">luna is Medium at $0.45, haiku is Easy at $2.00.</text>
+
+      <text x="40" y="480" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">Switching cost to quality moved</text>
+      <text x="40" y="498" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">nothing here: Hard holds one model,</text>
+      <text x="40" y="516" fill="#25232e" font-size="14" font-style="italic" font-family="'Avio Sans', sans-serif">so there was nothing to prefer.</text>
+
+      <!-- Legend strip -->
+      <line x1="40" y1="548" x2="920" y2="548" stroke="rgba(37,35,46,0.10)" stroke-width="0.8"/>
+      <text x="40" y="564" fill="#025558" font-size="8" font-family="'Kurrent Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+
+      <rect x="40" y="580" width="14" height="10" rx="2" fill="rgba(2,85,88,0.10)" stroke="#6b6975" stroke-width="1"/>
+      <text x="60" y="588" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Incoming request</text>
+
+      <rect x="180" y="580" width="14" height="10" rx="2" fill="rgba(223,83,37,0.08)" stroke="#df5325" stroke-width="1"/>
+      <text x="200" y="588" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Where the decision is made</text>
+
+      <rect x="380" y="580" width="14" height="10" rx="2" fill="rgba(37,35,46,0.05)" stroke="#025558" stroke-width="1"/>
+      <text x="400" y="588" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Band · intelligence index · $/M tokens</text>
+
+      <line x1="640" y1="586" x2="668" y2="586" stroke="#025558" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="676" y="588" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Routing path</text>
+
+      <line x1="780" y1="586" x2="808" y2="586" stroke="#df5325" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow-accent)"/>
+      <text x="816" y="588" fill="#025558" font-size="8" font-family="'Avio Sans', sans-serif">Tunes, does not decide</text>
+    </svg>
+  </div>
+</body>
+</html>
