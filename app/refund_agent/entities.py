@@ -113,10 +113,11 @@ def ensure_external_knowledge_base(
     """
     orq = orq or make_orq()
     key = K(name)
-    api_url = (api_url or settings.edge_url).rstrip("/") + "/search"
-    api_key = api_key or settings.webhook_secret
-    if not api_url:
+    base_url = (api_url or settings.edge_url).rstrip("/")
+    if not base_url:
         raise RuntimeError("WS_EDGE_URL is not set: nothing public for orq to call")
+    api_url = base_url + "/search"
+    api_key = api_key or settings.webhook_secret
     body = {
         "key": key,
         "path": settings.path,
