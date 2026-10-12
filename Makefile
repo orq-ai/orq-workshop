@@ -70,9 +70,10 @@ docs-serve: ## Live docs at http://127.0.0.1:8000
 docs-build: ## Strict docs build (fails on broken links)
 	$(RUN) mkdocs build --strict
 
-slides: ## Render slides/workshop.md to HTML and PDF with Marp
-	$(MARP) slides/workshop.md --theme slides/orq-theme.css -o slides/workshop.html
-	$(MARP) slides/workshop.md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/workshop.pdf
+DECK ?= workshop
+slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for the TechDays deck)
+	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css -o slides/$(DECK).html
+	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/$(DECK).pdf
 
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
