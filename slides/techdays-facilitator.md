@@ -35,7 +35,7 @@ Two facilitators. One drives the demo screen, the other walks the room and keeps
 
 ### Participant access
 
-Default plan, until decided otherwise: one shared workshop workspace, a key minted per seat in advance, and a distinct `WS_PREFIX` per seat (`ws01`, `ws02`, ...; keys become `ws01-refund-agent`) so the 20 copies of the agent do not collide. Hand each person a card with the key and prefix. `make reset` deletes by prefix afterwards.
+One shared workshop workspace, a key minted per seat in advance, and a distinct `WS_PREFIX` per seat (`ws01`, `ws02`, ...; keys become `ws01-refund-agent`) so the 20 copies of the agent do not collide. Hand each person a card with the key and prefix. `make reset` deletes by prefix afterwards.
 
 - Corporate laptops often block `curl | sh`. Anyone who cannot install follows along on the demo screen and reads the expected-output blocks. Say this up front so nobody feels behind.
 - Twenty people running simulations and judges at once share one workspace's rate limits. Run `make traffic` and a simulation from three or four laptops at once beforehand to see where it breaks.
