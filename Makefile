@@ -49,6 +49,9 @@ edge: ## Run app/edge.py on :8001 (module 09 external KB + module 14 webhook rec
 edge-docker: ## The same as a container (what the instructor hosts for the room)
 	docker build -t orq-edge . && docker run --rm -p 8001:8001 -e WS_WEBHOOK_SECRET=$$WS_WEBHOOK_SECRET orq-edge
 
+web: ## Run the refund agent chat UI on :8002
+	$(RUN) uvicorn app.web:app --port 8002
+
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
@@ -87,4 +90,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker og-card diagrams docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides modules
