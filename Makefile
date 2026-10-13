@@ -50,7 +50,7 @@ edge-docker: ## The same as a container (what the instructor hosts for the room)
 	docker build -t orq-edge . && docker run --rm -p 8001:8001 -e WS_WEBHOOK_SECRET=$$WS_WEBHOOK_SECRET orq-edge
 
 web: ## Run the refund agent chat UI on :8002
-	$(RUN) uvicorn app.web:app --port 8002
+	$(RUN) python -m app.web
 
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py

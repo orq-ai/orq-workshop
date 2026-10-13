@@ -8,8 +8,8 @@ import dataclasses
 import json
 
 import httpx
-from fastapi.testclient import TestClient
 from openai import OpenAI
+from starlette.testclient import TestClient
 
 from app import web
 
