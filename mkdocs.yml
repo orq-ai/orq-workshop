@@ -93,6 +93,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Start here:
+      - TechDays 15 Oct: techdays.md
       - Agenda: agenda.md
       - What's new in orq: whats-new.md
   - Setup:

@@ -2,7 +2,7 @@
 
 Three sections, the same three as [docs.orq.ai](https://docs.orq.ai), after a **Setup** block that installs the three harnesses you will work from: the orq CLI, your coding agent, and orqi. **AI Gateway** puts the control plane under your hands: every call goes through orq, and you decide what it may cost, route to, redact and block, and who pays for it. **AI Observability** turns the traces that produces into evidence: threads, spans, a failure taxonomy and evaluators built from those traces and an experiment that scores the fix, alerts and webhooks that push them to you, and a review queue that collects what a human should read. **Managed Agents** hands the agent to orq and attacks it: knowledge, tools, simulation, CI, delegation, red teaming.
 
-Module numbers are the build order (`make m01` … `make m17`), sections are the topic, so the numbers below are not contiguous. Modules build on each other, but `make seed` creates every prerequisite entity, so a room can start anywhere or skip a module. Take a break between any two modules. The instructor notes in the repo (`instructor/`) say what to cut when a room runs slow.
+Module numbers are the build order (`make m01` … `make m18`), sections are the topic, so the numbers below are not contiguous. Modules build on each other, but `make seed` creates every prerequisite entity, so a room can start anywhere or skip a module. Take a break between any two modules. The instructor notes in the repo (`instructor/`) say what to cut when a room runs slow.
 
 ## Setup
 
@@ -29,6 +29,7 @@ Module numbers are the build order (`make m01` … `make m17`), sections are the
 | [02 Tracing](modules/02.md) | agent, tool and LLM spans with identity and thread |
 | [07 Failure analysis to experiments](modules/07.md) | a failure taxonomy, a judge, an experiment |
 | [14 Alerts and webhooks](modules/14.md) | a cost alert that fired on a burst you caused, and orq events arriving signed at a receiver you run |
+| [18 Trace insights](modules/18.md) | failure clusters named from your own simulated conversations, and the Pass/Fail sentence that becomes an evaluator |
 | [17 Annotation queues and automations](modules/17.md) | a review queue an automation fills, reviewed by API, and the reviewed traces promoted to a dataset |
 
 ## Managed Agents
