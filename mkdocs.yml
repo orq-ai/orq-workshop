@@ -122,6 +122,7 @@ nav:
       - reference/orq-arena.md
       - Evals and agents in CI: modules/12.md
       - Agent simulation: modules/11.md
+      - Trace insights: modules/18.md
       - Red teaming: modules/16.md
       - Failure analysis to experiments: modules/07.md
   - Reference:
