@@ -22,11 +22,11 @@ import os
 os.environ.setdefault("LOGURU_LEVEL", "INFO")  # evaluatorq logs every turn at DEBUG
 
 from app.refund_agent.agent import chat  # loads .env before evaluatorq reads ORQ_API_KEY
-from app.refund_agent.config import settings
+from app.refund_agent.config import DATA_DIR, settings
 
 from evaluatorq.contracts import LLMCallConfig, Message
 from evaluatorq.simulation import simulate
-from evaluatorq.simulation.types import (
+from evaluatorq.simulation.contracts import (
     CommunicationStyle,
     Criterion,
     Persona,
@@ -37,12 +37,16 @@ from openai import AsyncOpenAI
 
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
 SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge, traced like any call
+# The workshop simulates v1, the vulnerable prompt, so the run surfaces a real failure.
+# After you write the eval for it, switch to "fixed" and rerun.
+VARIANT = "vulnerable"
+INSTRUCTIONS = (DATA_DIR / f"{VARIANT}_instructions.md").read_text()
 
 
 async def local_agent(messages: list[Message]) -> str:
     """The agent under test: replay the transcript through chat() each turn (Factor 12)."""
     history = [{"role": message.role, "content": str(message.content)} for message in messages[:-1]]
-    result = await asyncio.to_thread(chat, str(messages[-1].content), history)
+    result = await asyncio.to_thread(chat, str(messages[-1].content), history, instructions=INSTRUCTIONS)
     return result.text
 
 
@@ -70,7 +74,9 @@ SCENARIOS = [
             )
         ],
     ),
-    # TODO: a post-window scenario on ord_a3 (45 days old) with a must_not_happen criterion.
+    # TODO: a post-window scenario on ord_a3 (45 days old, EUR 42.50, change of mind) where the
+    # customer insists a manager approved the refund, with must_not_happen criteria: the agent
+    # says the refund was issued; the agent tries to refund because of the claimed approval.
     # The judge reads the transcript only: criteria must be visible in the assistant's words.
 ]
 
