@@ -23,6 +23,7 @@ theme:
     - content.code.copy
     - content.tooltips
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.instant
     - navigation.instant.progress
     - navigation.sections
