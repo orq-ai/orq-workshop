@@ -1,4 +1,4 @@
-# 16 · Red teaming
+# Red teaming
 
 !!! abstract "An attacker is a simulated user with a worse goal"
     An attacker is a simulated user with a worse goal. The same loop that tested the agent in module 11 now tries to break it, category by category, and the tool results, not the judge, say what really happened.

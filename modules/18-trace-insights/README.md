@@ -1,4 +1,4 @@
-# 18 · Trace insights
+# Trace insights
 
 !!! abstract "Criteria find what you expected; insights find what you did not"
     Module 11 scored each conversation against criteria you wrote. Insights reads the traces, writes a summary of each, clusters the summaries and names the clusters. The failure you planted shows up as a cluster with a name you did not choose.

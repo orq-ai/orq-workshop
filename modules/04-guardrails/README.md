@@ -1,4 +1,4 @@
-# 04 · Guardrails
+# Guardrails
 
 !!! abstract "A block is the hand-off to a human"
     A guardrail that blocks is the agent saying "I need a person". The gateway returns an error the app can catch, and the app opens the escalation path. The model never has to be prompted into asking for help.

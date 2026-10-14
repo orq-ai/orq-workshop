@@ -15,11 +15,11 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | Clock | Block | You run | Module |
 |---|---|---|---|
 | 0:00 | Welcome, how today works | | |
-| 0:05 | Get your key and set up | `make setup && make doctor && make smoke` | [00 Setup](modules/00.md) |
-| 0:25 | 1 · The refund agent | `make seed`, one turn, open the trace | [00 Setup](modules/00.md), [08 Managed agents](modules/08.md) |
-| 0:40 | 2 · Simulate customers | the TODOs in `modules/11-simulation/run.py`, then `uv run eq dashboard` | [11 Agent simulation](modules/11.md) |
-| 1:15 | 3 · Read the traces | `make m18`, then Insights in `uv run eq dashboard` | [18 Trace insights](modules/18.md) |
-| 1:40 | 4 · From insight to eval | `make eval`, `make eval-vulnerable` | [07 Failure analysis](modules/07.md), [12 Evals in CI](modules/12.md) |
+| 0:05 | Get your key and set up | `make setup && make doctor && make smoke` | [Setup](modules/00.md) |
+| 0:25 | 1 · The refund agent | `make seed`, one turn, open the trace | [Setup](modules/00.md), [Managed agents](modules/08.md) |
+| 0:40 | 2 · Simulate customers | the TODOs in `modules/11-simulation/run.py`, then `uv run eq dashboard` | [Agent simulation](modules/11.md) |
+| 1:15 | 3 · Read the traces | `make m18`, then Insights in `uv run eq dashboard` | [Trace insights](modules/18.md) |
+| 1:40 | 4 · From insight to eval | `make eval`, `make eval-vulnerable` | [Failure analysis](modules/07.md), [Evals in CI](modules/12.md) |
 | 1:52 | Take home, questions | | |
 
 ## Get your key (0:05)

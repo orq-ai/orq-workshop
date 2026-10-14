@@ -1,4 +1,4 @@
-# 06 · Troubleshooting with orqi
+# Troubleshooting with orqi
 
 !!! abstract "Ask your workspace questions in plain language"
     The workspace you have been filling with traces, guardrail blocks and timeouts can be questioned from a terminal in plain language. orqi is the orq helper agent: it operates the platform, it does not build your app.

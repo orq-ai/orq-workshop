@@ -1,4 +1,4 @@
-# 00 · Setup
+# Setup
 
 !!! abstract "One key, three doors"
     One credential, three doors: the OpenAI-compatible gateway, the native SDK, and the `orq` CLI that also wires your coding agent. Everything in this workshop goes through the same key.

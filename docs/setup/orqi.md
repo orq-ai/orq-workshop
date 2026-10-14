@@ -119,4 +119,4 @@ orqi keeps its own agent dir (`~/.orqi/agent`) and never touches `~/.pi`.
 
 ## Next
 
-[Module 06](../modules/06.md) puts orqi to work on the failures modules 01 to 04 left in your workspace: a health check, a root-cause report for a real trace, a client-side 404 it cannot see in Traces, and a docs question.
+[Troubleshooting with orqi](../modules/06.md) puts orqi to work on the failures modules 01 to 04 left in your workspace: a health check, a root-cause report for a real trace, a client-side 404 it cannot see in Traces, and a docs question.
