@@ -306,3 +306,70 @@ body::before{background:linear-gradient(to top,rgba(223,83,37,.14),transparent)!
 .take-home{grid-template-columns:minmax(0,1fr) 500px}
 .access .card .url{font-size:20px}
 .meta .docs-chip+.docs-chip{margin-top:-8px}
+
+/* Review round 1 */
+.slide:not(.full) .slide-body{grid-template-rows:auto auto 1fr;padding-bottom:120px}
+.meta{grid-row:3;align-self:end;margin:0;padding:0}
+.meta .time{min-width:322px;box-sizing:border-box;border-top:0;box-shadow:inset 0 4px 0 var(--orange),0 24px 50px -24px rgba(20,19,25,.6)}
+.meta .time span{font-size:20px}
+.docs-chip span{font-size:16px}
+.slide:not(.full) .panel{align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.slide:not(.full) .panel.cmd{justify-content:flex-start}
+.reveal .copy-code{display:none}
+.slide .cmd pre,.slide .cmd .code-wrap pre{font-size:28px;line-height:1.8;padding:28px 32px}
+.slide .cmd pre .c{color:var(--gray);font-style:normal}
+.slide .panel>.cmd pre{font-size:22px;line-height:1.6;padding:20px 28px}
+.access{margin-top:64px;grid-template-columns:1fr 1.2fr 1fr}
+.access .card{min-height:600px}
+.access .card img{max-width:420px}
+.access .card.code{border-top:0;box-shadow:inset 0 4px 0 var(--orange),0 24px 50px -28px rgba(20,19,25,.45)}
+.access .card.code strong{font-size:56px;line-height:1.05}
+.access .card.code p{font-size:22px}
+.take-home{align-items:stretch;margin-top:24px}
+.take-home .access{margin:0}
+.take-home .access .card{min-height:0}
+.take-home .access .card img{max-width:340px}
+.next-steps{display:flex;flex-direction:column;justify-content:space-between;height:100%}
+.slide.title .slide-body{justify-content:center;padding-top:40px}
+
+/* Review round 2 */
+.slide:not(.full) .slide-body{position:relative;height:840px;box-sizing:border-box}
+.slide:not(.full) .subtitle{margin-bottom:48px}
+.meta{position:absolute;left:0;bottom:120px;margin:0}
+.meta .time{width:368px;min-width:0}
+.slide:not(.full) .panel{justify-content:flex-start}
+.slide:not(.full) .panel>.flow-caption{margin-top:auto}
+.slide .panel.cmd .code-wrap pre{font-size:30px;line-height:1.9}
+.access .card.code strong{white-space:nowrap;font-size:40px;letter-spacing:0;overflow-wrap:normal}
+.take-home{align-items:start}
+.next-steps{justify-content:flex-start;gap:48px;height:auto}
+.next-steps li:first-child{padding-top:0}
+
+/* Review round 3 */
+.slide:not(.full) .panel>.flow-caption{margin-top:52px}
+.slide:not(.full) .panel>.cmd{margin-top:40px}
+.slide:not(.full) .subtitle{text-wrap:balance;max-width:420px}
+.meta{height:304px;justify-content:flex-start}
+.slide .panel>.cmd pre{font-size:28px;line-height:1.7;padding:24px 32px}
+/* slide 4: success criterion as a check pill */
+.panel.cmd{gap:32px}
+.slide:not(.full) .panel.cmd>.flow-caption{margin-top:0;align-self:flex-start;background:var(--ink);color:var(--sand);border-radius:44px;padding:16px 32px;font-size:24px}
+.flow-caption .done{color:var(--orange);font:500 20px 'Kurrent Mono',monospace;letter-spacing:.08em;margin-right:18px}
+.panel.cmd .flow-caption code{color:var(--sand)}
+/* slide 3 */
+.access .card.code{justify-content:flex-start}
+.access .card.code .code-body{margin:auto 0;display:flex;flex-direction:column;gap:22px}
+.access .card:last-child:not(.code){background:transparent;box-shadow:none;border:1.5px dashed var(--rule)}
+/* slide 10 */
+.take-home{margin-top:80px;align-items:stretch}
+.next-steps{justify-content:space-between;height:auto;gap:0;align-self:stretch}
+.slide .next-steps li{align-items:start;padding:0 0 24px}
+.slide .next-steps li::before{line-height:1;align-self:start}
+.slide .next-steps b{align-self:start;font-size:40px;line-height:1}
+.slide .next-steps span{font-size:26px}
+.next-steps li:first-child{padding-top:0}
+/* slide 1 */
+.slide.title .slide-body{position:relative}
+.hero-time{position:absolute;right:72px;bottom:30px;width:420px;box-sizing:border-box;background:linear-gradient(160deg,#26232c,#141319);border-radius:16px;padding:22px 32px 20px;box-shadow:inset 0 4px 0 var(--orange),0 24px 50px -24px rgba(20,19,25,.6);color:var(--sand)}
+.hero-time strong{display:block;font-size:96px;line-height:1;font-weight:500;letter-spacing:-.05em;color:var(--orange)}
+.hero-time span{display:block;margin-top:10px;white-space:nowrap;font:500 18px 'Kurrent Mono',monospace;letter-spacing:.1em}
