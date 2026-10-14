@@ -294,7 +294,7 @@ body::before{background:linear-gradient(to top,rgba(223,83,37,.14),transparent)!
 .access .card img{width:100%;max-width:340px;aspect-ratio:1;align-self:center}
 .access .card .url{font:500 22px 'Kurrent Mono',monospace;overflow-wrap:anywhere;color:var(--ink);text-decoration:none;border-top:1px solid var(--rule);padding-top:18px}
 .access .card.code{background:linear-gradient(160deg,#26232c,#141319);border-top:4px solid var(--orange);color:var(--sand);justify-content:center}
-.access .card.code strong{font:500 76px 'Kurrent Mono',monospace;letter-spacing:.04em;color:var(--orange);overflow-wrap:anywhere;line-height:1.1}
+.access .card.code strong{font:500 36px 'Kurrent Mono',monospace;letter-spacing:0;color:var(--orange);overflow-wrap:anywhere;line-height:1.1}
 .access .card.code p{font-size:24px;line-height:1.4;color:#CBC4BD;margin:0}
 .access .card .eyebrow{margin:0}
 .take-home{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:80px;align-items:center;margin-top:24px}
@@ -305,3 +305,4 @@ body::before{background:linear-gradient(to top,rgba(223,83,37,.14),transparent)!
 .slide.title .eyebrow{margin:48px 0 14px}
 .take-home{grid-template-columns:minmax(0,1fr) 500px}
 .access .card .url{font-size:20px}
+.meta .docs-chip+.docs-chip{margin-top:-8px}
