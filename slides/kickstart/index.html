@@ -83,11 +83,11 @@
 <p class="subtitle">Paste the block from your email, then wire up your coding agent.</p>
 <div class="meta"><div class="time"><strong>25</strong><span>MIN · FROM 0:05</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/00/"><span>DOCS</span>Setup CLI</a><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/13/"><span>DOCS</span>Coding agents</a></div>
 <div class="panel cmd">
-<div class="code-wrap"><button class="copy-code" type="button">Copy</button><pre><code>git clone https://github.com/orq-ai/orq-workshop
-cd orq-workshop
-cp .env.example .env     <span class="c"># paste the block from your email</span>
-make setup &amp;&amp; make doctor &amp;&amp; make smoke
-orq launch claude        <span class="c"># or codex, opencode, pi</span></code></pre></div>
+<div class="term"><div class="term-bar"><i></i><i></i><i></i><span>zsh — orq-workshop</span></div><pre><code><span class="p">❯</span> <span class="k">git</span> clone <span class="s">https://github.com/orq-ai/orq-workshop</span>
+<span class="p">❯</span> <span class="k">cd</span> <span class="s">orq-workshop</span>
+<span class="p">❯</span> <span class="k">cp</span> <span class="s">.env.example .env</span>     <span class="c"># paste the block from your email</span>
+<span class="p">❯</span> <span class="k">make</span> setup <span class="o">&amp;&amp;</span> <span class="k">make</span> doctor <span class="o">&amp;&amp;</span> <span class="k">make</span> smoke
+<span class="p">❯</span> <span class="k">orq</span> launch <span class="s">claude</span>        <span class="c"># or codex, opencode, pi</span></code></pre></div>
 <p class="flow-caption"><span class="done">DONE WHEN</span><code>make smoke</code> prints a trace id and your agent answers.</p>
 </div>
 </div>
@@ -184,8 +184,8 @@ orq launch claude        <span class="c"># or codex, opencode, pi</span></code><
   <rect x="435" y="358" width="400" height="44" rx="22" fill="var(--orange)"/>
   <text x="635" y="387" text-anchor="middle" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">NEXT FAILURE → NEW ROW</text>
 </svg>
-<div class="cmd"><pre><code>make eval              <span class="c"># fixed prompt: exits 0</span>
-make eval-vulnerable   <span class="c"># v1: exits 1</span></code></pre></div>
+<div class="cmd"><div class="term"><div class="term-bar"><i></i><i></i><i></i><span>zsh — regression gate</span></div><pre><code><span class="p">❯</span> <span class="k">make</span> eval              <span class="c"># fixed prompt: exits </span><span class="ok">0</span>
+<span class="p">❯</span> <span class="k">make</span> eval-vulnerable   <span class="c"># v1: exits </span><span class="bad">1</span></code></pre></div></div>
 </div>
 </div>
 <footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>

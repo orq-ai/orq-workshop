@@ -373,3 +373,16 @@ body::before{background:linear-gradient(to top,rgba(223,83,37,.14),transparent)!
 .hero-time{position:absolute;right:72px;bottom:30px;width:420px;box-sizing:border-box;background:linear-gradient(160deg,#26232c,#141319);border-radius:16px;padding:22px 32px 20px;box-shadow:inset 0 4px 0 var(--orange),0 24px 50px -24px rgba(20,19,25,.6);color:var(--sand)}
 .hero-time strong{display:block;font-size:96px;line-height:1;font-weight:500;letter-spacing:-.05em;color:var(--orange)}
 .hero-time span{display:block;margin-top:10px;white-space:nowrap;font:500 18px 'Kurrent Mono',monospace;letter-spacing:.1em}
+/* Terminal code blocks: macOS window chrome, bash highlighting */
+.slide .term{background:#1d1b22;border-radius:16px;overflow:hidden;box-shadow:0 30px 60px -28px rgba(20,19,25,.6),inset 0 0 0 1px rgba(255,255,255,.06)}
+.slide .term-bar{position:relative;display:flex;align-items:center;gap:10px;height:48px;padding:0 20px;background:#2a2730;border-bottom:1px solid rgba(255,255,255,.06)}
+.slide .term-bar i{width:15px;height:15px;border-radius:50%;background:#ff5f57}
+.slide .term-bar i:nth-child(2){background:#febc2e}.slide .term-bar i:nth-child(3){background:#28c840}
+.slide .term-bar span{position:absolute;left:0;right:0;text-align:center;font:500 16px 'Kurrent Mono',monospace;letter-spacing:.04em;color:#8c868f;pointer-events:none}
+.slide .term pre,.slide .cmd .term pre,.slide .panel>.cmd .term pre,.slide .panel.cmd .term pre{margin:0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#EBE6E0;max-height:none;padding:26px 32px 30px}
+.slide .panel.cmd .term pre{font-size:28px;line-height:1.8}
+.slide .panel>.cmd .term pre{font-size:26px;line-height:1.7}
+.slide .term .p{color:var(--orange)}.slide .term .k{color:#F0915F;font-weight:500}
+.slide .term .s{color:#9fd3b8}.slide .term .o{color:#CBC4BD}
+.slide .term .c{color:#7d7782;font-style:normal}
+.slide .term .ok{color:#28c840}.slide .term .bad{color:#ff5f57}
