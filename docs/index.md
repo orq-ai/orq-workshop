@@ -8,6 +8,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 [Start with Setup](modules/00.md){ .md-button .md-button--primary }
 [See the agenda](agenda.md){ .md-button }
+[TechDays, 15 Oct](techdays.md){ .md-button }
 
 <div class="grid cards" markdown>
 
