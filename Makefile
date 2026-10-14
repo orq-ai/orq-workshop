@@ -68,10 +68,10 @@ lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
 	$(RUN) jupyter lab
 
 docs-serve: ## Live docs at http://127.0.0.1:8000
-	$(RUN) mkdocs serve
+	$(RUN) --group docs mkdocs serve
 
 docs-build: ## Strict docs build (fails on broken links)
-	$(RUN) mkdocs build --strict
+	$(RUN) --group docs mkdocs build --strict
 
 DECK ?= workshop
 slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for the TechDays deck)
