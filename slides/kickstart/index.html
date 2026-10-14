@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>KickstartAI · Testing agents with evals</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23141319'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='%23DF5325' stroke-width='9'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/reveal/reveal.css">
+<link rel="stylesheet" href="deck.css">
+</head>
+<body>
+<!-- Present with the real login code: open index.html?code=XXXX. The code is never committed. -->
+<div class="reveal"><div class="slides">
+
+<!-- ponytail: header/footer repeated per slide, same markup as the AFAS build output -->
+<section class="slide full title top">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Is your agent behaving like you expect?</h1>
+<p class="subtitle">Testing agents with evals. Two hours, one refund agent.</p>
+<span class="eyebrow">KICKSTARTAI TECHDAYS · 15 OCT 2026</span>
+<p class="hosts">Bauke Brenninkmeijer · Arian Pasquali · orq.ai</p>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Today</h1>
+<p class="subtitle">Break one agent, find out why, fix it, keep it fixed.</p>
+<svg class="flow" viewBox="0 0 1600 600" role="img" aria-label="Onboard, coding agent, refund agent, simulate, then fix with a regression eval. If time allows: trace insights and red teaming." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="20" y="90" width="250" height="160" rx="12" fill="var(--orange)"/><rect x="340" y="90" width="250" height="160" rx="12"/>
+    <rect x="660" y="90" width="250" height="160" rx="12"/><rect x="980" y="90" width="250" height="160" rx="12"/>
+    <rect x="1300" y="90" width="280" height="160" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--rule)" stroke-width="2" stroke-dasharray="8 8">
+    <rect x="820" y="350" width="270" height="130" rx="12"/><rect x="1150" y="350" width="270" height="130" rx="12"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a2)">
+    <path d="M270 170H330"/><path d="M590 170H650"/><path d="M910 170H970"/><path d="M1230 170H1290"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" stroke-dasharray="6 6" marker-end="url(#a2)">
+    <path d="M1060 250L985 340"/><path d="M1400 250L1320 340"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="17" letter-spacing="1" fill="var(--gray)">
+    <text x="50" y="128" fill="var(--sand)">START · 0:05</text><text x="370" y="128">0:20</text><text x="690" y="128">0:30</text>
+    <text x="1010" y="128">BREAK IT · 0:45</text><text x="1330" y="128" fill="var(--orange)">FIX IT · 1:20</text>
+    <text x="850" y="388">IF TIME ALLOWS</text><text x="1180" y="388">IF TIME ALLOWS</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="27" fill="var(--ink)">
+    <text x="50" y="178" font-size="31" fill="var(--sand)">Onboard</text>
+    <text x="370" y="178">Coding agent</text><text x="690" y="178">Refund agent</text>
+    <text x="1010" y="178">Simulate</text><text x="1330" y="178" fill="var(--sand)">Regression eval</text>
+    <text x="850" y="436">Trace insights</text><text x="1180" y="436">Red teaming</text>
+  </g>
+  <rect x="560" y="530" width="480" height="44" rx="22" fill="var(--orange)"/>
+  <text x="588" y="559" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">CONCEPT HERE → HANDS ON THERE</text>
+</svg>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Get your key</h1>
+<p class="subtitle">Scan, enter your email and the login code, check your inbox.</p>
+<div class="access">
+  <div class="card"><span class="eyebrow">1 · REGISTER</span><img src="assets/qr-register.svg" alt="QR code for orq-kickstart.vercel.app"><a class="url" href="https://orq-kickstart.vercel.app">orq-kickstart.vercel.app</a></div>
+  <div class="card code"><span class="eyebrow">2 · LOGIN CODE</span><strong data-login-code>PASSCODE</strong><p>Your email brings a ready-to-paste <code>.env</code> block: key, project and seat prefix.</p></div>
+  <div class="card"><span class="eyebrow">3 · RESOURCES</span><img src="assets/qr-github.svg" alt="QR code for github.com/orq-ai/orq-workshop"><a class="url" href="https://github.com/orq-ai/orq-workshop">github.com/orq-ai/orq-workshop</a></div>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Set up</h1>
+<p class="subtitle">Paste the block from your email, then three commands.</p>
+<div class="meta"><div class="time"><strong>15</strong><span>MIN · FROM 0:05</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/00/"><span>DOCS</span>Setup CLI</a></div>
+<div class="panel cmd">
+<div class="code-wrap"><button class="copy-code" type="button">Copy</button><pre><code>git clone https://github.com/orq-ai/orq-workshop
+cd orq-workshop
+cp .env.example .env     <span class="c"># paste the block from your email</span>
+make setup &amp;&amp; make doctor &amp;&amp; make smoke</code></pre></div>
+<p class="flow-caption">Done when <code>make smoke</code> prints an answer, the tools it called and a trace id.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Your coding agent</h1>
+<p class="subtitle">The workspace, one prompt away.</p>
+<div class="meta"><div class="time"><strong>10</strong><span>MIN · FROM 0:20</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/13/"><span>DOCS</span>Coding agents</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 520" role="img" aria-label="Your coding agent talks to orq through MCP and skills, and reaches agents, traces and experiments in your workspace." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="180" width="300" height="160" rx="12" fill="var(--orange)"/><rect x="400" y="180" width="300" height="160" rx="12"/>
+    <rect x="830" y="20" width="440" height="130" rx="12"/><rect x="830" y="195" width="440" height="130" rx="12"/><rect x="830" y="370" width="440" height="130" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a5)">
+    <path d="M300 260H390"/><path d="M700 230L820 95"/><path d="M700 260H820"/><path d="M700 290L820 425"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="17" letter-spacing="1" fill="var(--gray)">
+    <text x="30" y="218" fill="var(--sand)">YOU ASK</text><text x="430" y="218">VIA</text>
+    <text x="860" y="58">AGENTS</text><text x="860" y="233">TRACES</text><text x="860" y="408" fill="var(--orange)">EXPERIMENTS</text>
+    <text x="30" y="310" font-size="15" fill="var(--sand)">CLAUDE CODE · CODEX · PI</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="27" fill="var(--ink)">
+    <text x="30" y="264" font-size="31" fill="var(--sand)">Coding agent</text><text x="430" y="264">orq MCP + skills</text>
+    <text x="860" y="104">Create and update</text><text x="860" y="279">Read every turn</text><text x="860" y="454" fill="var(--sand)">Run and compare</text>
+  </g>
+</svg>
+<p class="flow-caption">Every session is a traced, budgeted client of your workspace.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>The refund agent</h1>
+<p class="subtitle">Hosted by orq. Your code runs the tools.</p>
+<div class="meta"><div class="time"><strong>15</strong><span>MIN · FROM 0:30</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/08/"><span>DOCS</span>Managed agents</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 560" role="img" aria-label="A customer talks to the managed refund agent in orq. The agent asks your code to run three tools: lookup_order, get_policy and issue_refund." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="190" width="240" height="150" rx="12"/><rect x="320" y="160" width="380" height="210" rx="12" fill="var(--orange)"/>
+    <rect x="830" y="20" width="440" height="120" rx="12"/><rect x="830" y="205" width="440" height="120" rx="12"/><rect x="830" y="390" width="440" height="120" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a6)">
+    <path d="M240 265H310"/><path d="M700 220L820 85"/><path d="M700 265H820"/><path d="M700 310L820 445"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="17" letter-spacing="1" fill="var(--gray)">
+    <text x="30" y="228">USER</text><text x="350" y="198" fill="var(--sand)">MANAGED IN ORQ</text>
+    <text x="860" y="56">TOOL · YOUR CODE</text><text x="860" y="241">TOOL · YOUR CODE</text><text x="860" y="426" fill="var(--orange)">MOVES MONEY</text>
+    <text x="350" y="340" font-size="15" fill="var(--sand)">INSTRUCTIONS · MODEL · MEMORY</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="27" fill="var(--ink)">
+    <text x="30" y="274">Customer</text><text x="350" y="252" font-size="31" fill="var(--sand)">ws07-refund-agent</text>
+    <text x="860" y="104" font-family="Kurrent Mono,monospace" font-size="26">lookup_order</text>
+    <text x="860" y="289" font-family="Kurrent Mono,monospace" font-size="26">get_policy</text>
+    <text x="860" y="474" font-family="Kurrent Mono,monospace" font-size="26" fill="var(--sand)">issue_refund</text>
+  </g>
+</svg>
+<p class="flow-caption">Every turn is a trace. Open your smoke trace and point at its tool calls.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Simulate customers</h1>
+<p class="subtitle">Fake customers find what you did not test.</p>
+<div class="meta"><div class="time"><strong>35</strong><span>MIN · FROM 0:45</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/11/"><span>DOCS</span>Agent simulation</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 560" role="img" aria-label="Personas and scenarios feed a user simulator, which talks to the agent. A judge scores each transcript against your criteria and catches the planted defect: a manager approved it, so a refund is issued." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="0" width="270" height="100" rx="12"/><rect x="0" y="120" width="270" height="100" rx="12"/>
+    <rect x="0" y="260" width="270" height="100" rx="12"/><rect x="0" y="380" width="270" height="100" rx="12"/>
+    <rect x="360" y="160" width="260" height="160" rx="12" fill="var(--orange)"/><rect x="700" y="160" width="250" height="160" rx="12"/>
+    <rect x="1030" y="160" width="240" height="160" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a7)">
+    <path d="M270 50L352 205"/><path d="M270 170L352 225"/><path d="M270 310L352 260"/><path d="M270 430L352 285"/>
+    <path d="M620 220H690"/><path d="M700 265H630"/><path d="M950 240H1020"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="16" letter-spacing="1" fill="var(--gray)">
+    <text x="24" y="34">PERSONA</text><text x="24" y="154">PERSONA</text><text x="24" y="294">SCENARIO</text><text x="24" y="414">SCENARIO</text>
+    <text x="390" y="198" fill="var(--sand)">USER SIMULATOR</text><text x="730" y="198">AGENT · V1</text><text x="1060" y="198" fill="var(--orange)">THEN JUDGE</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="25" fill="var(--ink)">
+    <text x="24" y="74">Impatient regular</text><text x="24" y="194">Polite first-timer</text>
+    <text x="24" y="334">In-window refund</text><text x="24" y="454">ord_a3 · day 45</text>
+    <text x="390" y="250" font-size="29" fill="var(--sand)">Plays the user</text>
+    <text x="730" y="250" font-size="29">Refund agent</text><text x="1060" y="250" font-size="29" fill="var(--sand)">Your criteria</text>
+  </g>
+  <path d="M1150 320V430" fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a7)"/>
+  <rect x="700" y="440" width="570" height="48" rx="24" fill="var(--orange)"/>
+  <text x="728" y="471" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">"A MANAGER APPROVED IT" → REFUNDED</text>
+</svg>
+<p class="flow-caption">v1 of the prompt has a planted defect. Find the row that shows it.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Fix it, keep it fixed</h1>
+<p class="subtitle">One failure becomes one row in a regression set.</p>
+<div class="meta"><div class="time"><strong>25</strong><span>MIN · FROM 1:20</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/12/"><span>DOCS</span>Evals in CI</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 420" role="img" aria-label="The failure leads to a prompt fix, a regression dataset managed in orq, an evaluatorq run that scores every row, and a CI gate that exits 0 or 1. The next failure becomes a new row." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="60" width="215" height="160" rx="12" fill="var(--orange)"/><rect x="265" y="60" width="215" height="160" rx="12"/>
+    <rect x="530" y="60" width="215" height="160" rx="12"/><rect x="795" y="60" width="215" height="160" rx="12"/>
+    <rect x="1055" y="60" width="215" height="160" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a8)">
+    <path d="M215 140H255"/><path d="M480 140H520"/><path d="M745 140H785"/><path d="M1010 140H1045"/>
+    <path d="M1162 220V350H107V230"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="16" letter-spacing="1" fill="var(--gray)">
+    <text x="24" y="98" fill="var(--sand)">FAILURE</text><text x="289" y="98">FIX</text><text x="554" y="98">DATASET · ORQ</text>
+    <text x="819" y="98">EVALUATORQ</text><text x="1079" y="98" fill="var(--orange)">THEN GATE</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="26" fill="var(--ink)">
+    <text x="24" y="146" fill="var(--sand)">Manager said</text><text x="24" y="180" fill="var(--sand)">yes</text>
+    <text x="289" y="146">Prompt v2</text><text x="554" y="146">Regression</text><text x="554" y="180">rows</text>
+    <text x="819" y="146">Score every</text><text x="819" y="180">row</text>
+    <text x="1079" y="146" fill="var(--sand)">CI exits</text><text x="1079" y="180" fill="var(--sand)">0 or 1</text>
+  </g>
+  <rect x="440" y="328" width="390" height="44" rx="22" fill="var(--orange)"/>
+  <text x="468" y="357" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">NEXT FAILURE → NEW ROW</text>
+</svg>
+<div class="cmd"><pre><code>make eval              <span class="c"># fixed prompt: exits 0</span>
+make eval-vulnerable   <span class="c"># v1: exits 1</span></code></pre></div>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Trace insights</h1>
+<p class="subtitle">Find what you did not write a criterion for.</p>
+<div class="meta"><div class="time"><strong>+25</strong><span>MIN · IF TIME ALLOWS</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/18/"><span>DOCS</span>Trace insights</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 420" role="img" aria-label="Simulation traces are summarised, clustered and named. The failure cluster becomes a Pass/Fail sentence, which becomes an evaluator." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="60" width="215" height="160" rx="12" fill="var(--orange)"/><rect x="265" y="60" width="215" height="160" rx="12"/>
+    <rect x="530" y="60" width="215" height="160" rx="12"/><rect x="795" y="60" width="215" height="160" rx="12"/>
+    <rect x="1055" y="60" width="215" height="160" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a9)">
+    <path d="M215 140H255"/><path d="M480 140H520"/><path d="M745 140H785"/><path d="M1010 140H1045"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="16" letter-spacing="1" fill="var(--gray)">
+    <text x="24" y="98" fill="var(--sand)">START</text><text x="289" y="98">SUMMARISE</text><text x="554" y="98">CLUSTER</text>
+    <text x="819" y="98">NAME</text><text x="1079" y="98" fill="var(--orange)">THEN WRITE</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="26" fill="var(--ink)">
+    <text x="24" y="146" fill="var(--sand)">Simulation</text><text x="24" y="180" fill="var(--sand)">traces</text>
+    <text x="289" y="146">One line per</text><text x="289" y="180">trace</text><text x="554" y="146">Similar</text><text x="554" y="180">failures</text>
+    <text x="819" y="146">The failure</text><text x="819" y="180">cluster</text>
+    <text x="1079" y="146" fill="var(--sand)">Pass/Fail</text><text x="1079" y="180" fill="var(--sand)">sentence</text>
+  </g>
+  <rect x="440" y="300" width="390" height="44" rx="22" fill="var(--orange)"/>
+  <text x="468" y="329" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">SENTENCE → EVALUATOR</text>
+</svg>
+<p class="flow-caption">Criteria find what you expected. Insights find what you did not.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Red teaming</h1>
+<p class="subtitle">An attacker is a simulated user with a worse goal.</p>
+<div class="meta"><div class="time"><strong>+30</strong><span>MIN · IF TIME ALLOWS</span></div><a class="docs-chip" href="https://orq-ai.github.io/orq-workshop/modules/16/"><span>DOCS</span>Red teaming</a></div>
+<div class="panel">
+<svg class="flow" viewBox="0 0 1270 420" role="img" aria-label="An attacker works through OWASP categories against the agent. Tool results show what really happened, and a CLI gate exits 0 or 1." xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="a10" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--orange)"/></marker></defs>
+  <g fill="#F7F3EF" class="nodes">
+    <rect x="0" y="60" width="280" height="160" rx="12" fill="var(--orange)"/><rect x="340" y="60" width="280" height="160" rx="12"/>
+    <rect x="680" y="60" width="280" height="160" rx="12"/><rect x="1020" y="60" width="250" height="160" rx="12" fill="var(--ink)"/>
+  </g>
+  <g fill="none" stroke="var(--orange)" stroke-width="3" marker-end="url(#a10)">
+    <path d="M280 140H330"/><path d="M620 140H670"/><path d="M960 140H1010"/>
+  </g>
+  <g font-family="Kurrent Mono,monospace" font-size="16" letter-spacing="1" fill="var(--gray)">
+    <text x="24" y="98" fill="var(--sand)">ATTACKER</text><text x="364" y="98">TARGET</text><text x="704" y="98">EVIDENCE</text>
+    <text x="1044" y="98" fill="var(--orange)">THEN GATE</text>
+  </g>
+  <g font-family="Kurrent,Arial,sans-serif" font-size="26" fill="var(--ink)">
+    <text x="24" y="146" fill="var(--sand)">OWASP attack</text><text x="24" y="180" fill="var(--sand)">categories</text>
+    <text x="364" y="146">Refund agent</text><text x="364" y="180">v1 and fixed</text>
+    <text x="704" y="146">Tool results,</text><text x="704" y="180">not the judge</text>
+    <text x="1044" y="146" fill="var(--sand)">CLI exits</text><text x="1044" y="180" fill="var(--sand)">0 or 1</text>
+  </g>
+  <rect x="380" y="300" width="510" height="44" rx="22" fill="var(--orange)"/>
+  <text x="408" y="329" font-family="Kurrent Mono,monospace" font-size="19" letter-spacing="1" fill="var(--sand)">SAME LOOP AS SIMULATION, WORSE GOAL</text>
+</svg>
+<p class="flow-caption">v1 fails the attack set; the fixed agent passes the same set.</p>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>KickstartAI · Testing agents with evals</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Take it home</h1>
+<p class="subtitle">Same repo, same agent, more to break.</p>
+<div class="take-home">
+<ol class="next-steps">
+  <li><b>The full course</b><span>18 modules, from the gateway to red teaming.</span></li>
+  <li><b>Run it in your CI</b><span>The regression eval is a GitHub Actions gate.</span></li>
+  <li><b>Your key ends today</b><span>Workshop keys are deleted after the session.</span></li>
+</ol>
+<div class="access"><div class="card"><span class="eyebrow">RESOURCES</span><img src="assets/qr-github.svg" alt="QR code for github.com/orq-ai/orq-workshop"><a class="url" href="https://github.com/orq-ai/orq-workshop">github.com/orq-ai/orq-workshop</a></div></div>
+</div>
+</div>
+<footer><span>orq.ai × KickstartAI</span><span>orq-ai.github.io/orq-workshop</span></footer>
+</section>
+
+</div></div>
+<script src="assets/reveal/reveal.js"></script>
+<script>
+const slides = document.querySelectorAll('.reveal .slides > section');
+slides.forEach((s, i) => s.querySelector('.slide-num').textContent =
+  `${String(i + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`);
+const code = new URLSearchParams(location.search).get('code');
+if (code) document.querySelectorAll('[data-login-code]').forEach(el => el.textContent = code);
+document.addEventListener('click', async e => {
+  const button = e.target.closest('.copy-code');
+  if (!button) return;
+  await navigator.clipboard.writeText(button.closest('.code-wrap').querySelector('code').innerText);
+  button.textContent = 'Copied';
+  setTimeout(() => { button.textContent = 'Copy'; }, 1600);
+});
+Reveal.initialize({width: 1920, height: 1080, center: false, margin: 0, controls: false,
+  progress: true, hash: true, transition: 'none', showSlideNumber: false});
+</script>
+</body>
+</html>

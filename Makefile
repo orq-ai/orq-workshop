@@ -78,6 +78,9 @@ slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for
 	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css -o slides/$(DECK).html
 	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/$(DECK).pdf
 
+deck: ## Serve the KickstartAI reveal.js deck on :8000 (add ?code=XXXX to show the login code)
+	python3 -m http.server 8000 -d slides/kickstart
+
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
 
@@ -90,4 +93,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides deck modules
