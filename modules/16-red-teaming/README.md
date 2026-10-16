@@ -98,7 +98,7 @@ $ uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static \
 ```
 
 !!! warning "Fails on evaluatorq 1.73.x"
-    This command currently fails on evaluatorq 1.73.x with `the JSON object must be str, bytes or bytearray, not NoneType`. That is an upstream bug. The solution script and `make redteam-gate` work. The output below assumes `--save final`.
+    This command currently fails on evaluatorq 1.73.x with `the JSON object must be str, bytes or bytearray, not NoneType`. That is an upstream bug: typer 0.27 (checked up to 0.27.3) treats the default `--llm-config` as set. `uv run --with typer==0.24.1 eq redteam run ...` works. The solution script and `make redteam-gate` work. The output below assumes `--save final`.
 
 ??? example "The full CLI output"
 
