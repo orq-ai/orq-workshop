@@ -38,7 +38,6 @@ Expected output (abridged):
 authenticated: true
 active_workspace_key: <your-workspace>
 active_project_name: <your-project>
-cli: 11.6.0-rc.2
 ```
 
 Two other doors, and one command worth knowing:
@@ -113,7 +112,7 @@ checks[16]:
   ...
 ```
 
-The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 11.6.0-rc.2` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
+The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 11.6.0-rc.2` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `mcp` (when an agent is wired), `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
 
 ```bash
 $ orq doctor | grep -c "status: fail"     # 0 on a healthy machine
@@ -233,7 +232,7 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 
 ## Gotchas
 
-- Model ids are `provider/model`. `gpt-5.6-luna` alone returns `400 invalid model format`.
+- Model ids are `provider/model`. `gpt-6-luna` alone returns `400 invalid model format`.
 - The repo `.env` overrides a stale `ORQ_API_KEY` exported in your shell. If `make smoke` says "API key is not valid for this workspace", the key belongs to another workspace.
 - `orq launch` without `ORQ_API_KEY` mints a one-hour token that cannot refresh mid-session. `source .env` first for long sessions.
 

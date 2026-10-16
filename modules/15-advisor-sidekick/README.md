@@ -9,6 +9,8 @@
 | **Prerequisites** | module 08, `make seed` |
 | **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 Size the agent's model for the hardest step and every routine step pays for it. Size it for the routine steps and it fails exactly where quality matters. The refund agent has both kinds of step: reading an order and a policy is mechanical; deciding whether a refusal is consistent with the policy is a judgement; writing the closing note is formatting. Delegation lets each step run on the model it deserves, and the trace shows what that cost.
@@ -45,7 +47,7 @@ Open `modules/15-advisor-sidekick/run.py`. Steps 3, 4 and 5 are `TODO`s. The sol
 
 ```bash
 $ orq agents retrieve ws-refund-agent-delegating -o json | jq '.settings.tools[] | select(.action_type == "advisor" or .action_type == "sidekick") | {action_type, configuration}'
-$ uv run python modules/15-advisor-sidekick/run.py
+$ uv run python modules/15-advisor-sidekick/solution/run.py
 ```
 
 Expected output:
@@ -76,7 +78,7 @@ delegate : advisor, sidekick
 steps    : 1 responses in 11.3s
 answer   : Thanks for reaching out to us, and I’m sorry to hear your frame arrived scratched. Since your order …
 trace    : <trace-id>
-next     : orq traces thread <trace-id>
+next     : orq traces conversation <trace-id>
 ```
 
 No `issue_refund` in the list: luna reads the EUR 620 off `lookup_order`, knows the limit from `get_policy`, and goes to the advisor before ever trying the tool. On gpt-4o-mini the same agent tried the refund first and let the tool's limit error send it to the advisor; a stronger base model moves the judgement earlier.

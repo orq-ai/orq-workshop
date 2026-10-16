@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 and 02 |
 | **You will have** | a failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 Half of the traffic this module reads was produced by a prompt with three lines missing. Nobody notices that from a dashboard. You notice it by reading twenty conversations, naming what went wrong, and then writing a scorer for each name. Evaluators built before that reading measure the failures you imagined, not the ones you have.
@@ -171,7 +173,7 @@ This judge would not pass that bar today. Run it on a correct in-window "change 
 ### Step 5 · Datasets
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/run.py 5
+$ uv run python modules/07-failure-analysis-evals/solution/run.py 5
 ```
 
 ```text
@@ -197,7 +199,7 @@ Twenty rows cover four decisions and every trap in `orders.json`. When the taxon
 ### Step 6 · Experiment: fixed vs vulnerable
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/run.py 6
+$ uv run python modules/07-failure-analysis-evals/solution/run.py 6
 ```
 
 ```text

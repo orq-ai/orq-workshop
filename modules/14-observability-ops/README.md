@@ -9,6 +9,8 @@
 | **Prerequisites** | module 02, `make seed`, a public URL for the receiver (see step 3) |
 | **You will have** | a cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 A trace nobody reads is a log file. Three things turn traces into operations: a number you can watch, a rule that watches it while you sleep, and a feed into the systems you already have. All three read the same trace store the Studio charts, and all three are one API call away. The fourth, a queue that collects what a human should look at, is module 17.
@@ -37,7 +39,7 @@ Open `modules/14-observability-ops/run.py`. Every step has a `TODO`. The solutio
 `POST /v2/reporting`. `mode: scalar` aggregates the window into one row; `group_by` turns it into a top list. The SDK's `orq.reporting.query` rejects the response in 4.14 (it echoes `grain: ""`), so `entities.reporting_query` posts the same body over REST.
 
 ```bash
-$ uv run python modules/14-observability-ops/run.py
+$ uv run python modules/14-observability-ops/solution/run.py
 ```
 
 ```text
@@ -92,7 +94,7 @@ Three terminals:
 $ orq webhooks generate-secret -o json | jq -r .secret        # -> WS_WEBHOOK_SECRET in .env
 $ make edge                                                  # terminal 1: http://127.0.0.1:8001 (app/edge.py, also module 09's external KB)
 $ npx localtunnel --port 8001                                # terminal 2 -> https://<random>.loca.lt, into WS_EDGE_URL in .env
-$ uv run python modules/14-observability-ops/run.py          # terminal 3
+$ uv run python modules/14-observability-ops/solution/run.py          # terminal 3
 ```
 
 The step creates `ws-events-webhook` on `llm.response` and `agent.updated`, then fires one of each: a call to the refund agent, and a description touch on `ws-refund-agent-delegating`. Then it asks the receiver what came in.

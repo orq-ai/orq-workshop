@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 to 02, `make seed` |
 | **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
