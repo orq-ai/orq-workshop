@@ -2,10 +2,13 @@ name: docs
 on:
   push:
     branches: [main]
-    paths: ["docs/**", "modules/**/README.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py"]
+    paths: ["docs/**", "modules/**/*.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py", "pyproject.toml", "uv.lock"]
   pull_request:
-    paths: ["docs/**", "modules/**/README.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py"]
+    paths: ["docs/**", "modules/**/*.md", "modules/**/assets/**", "mkdocs.yml", "overrides/**", "scripts/mkdocs_hooks.py", "pyproject.toml", "uv.lock"]
   workflow_dispatch:
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   pages: write
