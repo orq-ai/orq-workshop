@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 to 02, `make seed` |
 | **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 `get_policy(topic)` works because the policy is four short files with known names. Real policy is hundreds of pages that change weekly. A knowledge base turns "which file" into "which chunks match this question", and the same search is available to your code, to the gateway, to managed agents and to the coding-agent skills. This module shows where retrieval can run and what each option puts in the trace.

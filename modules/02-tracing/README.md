@@ -72,20 +72,36 @@ $ orq traces conversation 6d3815f83d19c502ea7bef614d67bc8a
 ```
 
 ```text
-<thread trace="6d3815f83d19c502ea7bef614d67bc8a" span="14b9946e7718e1d7" format="responses" model="gpt-5.6-luna" duration_ms="1530" tokens="1485">
+<conversation trace="6d3815f83d19c502ea7bef614d67bc8a" span="14b9946e7718e1d7" format="responses" model="gpt-6-luna" duration_ms="1530" tokens="1485">
 
-<message index="0" role="user">
+<message index="0" role="system">
+You are the customer-service refund agent for Lumen Goods, ...
+</message>
+
+<message index="1" role="user">
 It was damaged in transit. Please refund it.
 </message>
 
-<message index="1" role="assistant">
-[content unavailable: 2 items]
+<message index="2" role="assistant">
+<tool_call id="call_..." name="lookup_order">
+{ "order_id": "ord_a3" }
+</tool_call>
 </message>
 
-</thread>
+...
+
+<message index="14" role="assistant">
+I can't approve an out-of-window refund without a valid carrier tracking reference ...
+
+<reasoning>
+[encrypted]
+</reasoning>
+</message>
+
+</conversation>
 ```
 
-`[content unavailable: 2 items]` is the CLI, not the trace: orq-cli 8.6 renders chat-completions transcripts and shows Responses output items (a reasoning item plus the message) as unavailable, in every output format. The Studio's thread view renders them. Chat-completions traces render in full, as module 04's captures show.
+The CLI renders Responses traces in full: system prompt, user turns, tool calls and results, and the final answer. Reasoning items stay `[encrypted]` (the provider does not return them), and tool results are the real JSON the app sent back. Chat-completions traces render the same way, as module 04's captures show.
 
 ### Step 2 · Name, identity, thread, metadata
 
@@ -209,7 +225,7 @@ Paste `agent_prompt.md`:
 - `orq traces search` needs `--from` and `--to`; relative values are `now-10m` and `now`. Without `ORQ_API_KEY` in the shell the CLI searches the project of your `orq` session, which is not necessarily this one.
 - `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.14.14. `orq request GET /v3/traces/<id> -o json | jq .body.trace.attributes.metadata` shows it.
 - `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes. Gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions; filter on both.
-- `orq traces thread` prints `[content unavailable: N items]` for a Responses-format assistant turn (orq-cli 8.6). Use the Studio thread view, or `orq traces get-span` on the span for the raw output.
+- Reasoning items in `orq traces conversation` show as `[encrypted]`; the text, tool calls and tool results render in full.
 
 ## New in orq.ai 4.14
 

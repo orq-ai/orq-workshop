@@ -9,6 +9,8 @@
 | **Prerequisites** | module 01 |
 | **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 `MODEL=openai/gpt-5.6-luna` in `.env` is a guess frozen at deploy time. Easy questions overpay on a strong model, hard ones underdeliver on a cheap one. A Smart Router grades each request and picks from a pool; a routing rule pins traffic that matches a CEL expression to a target. Both leave a span in the trace, so the decision is auditable.

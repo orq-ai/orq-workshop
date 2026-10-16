@@ -109,8 +109,8 @@ print("── Step 3 · Cache an identical request ─────────�
 print(f"question : {CACHE_QUESTION}")
 print(f"first    : {first_seconds:.2f}s  trace {first.trace_id}")
 print(f"second   : {second_seconds:.2f}s  trace {second.trace_id}")
-print(f"verdict  : {'second call served from cache' if second_seconds < first_seconds else 'second call was not faster: cache miss? rerun the cell'}")
-print("next     : open the second trace; the cached span reports zero provider cost")
+print("verdict  : timing is noisy; the proof is span.cache_retrieval in each trace: cache-miss on the first, cache-hit on the second")
+print(f"next     : `orq traces list-spans {second.trace_id} -o json` (indexing takes up to a minute); the cache-hit trace reports zero provider cost")
 
 # %% [markdown]
 # ## Step 4 · Split traffic between two models

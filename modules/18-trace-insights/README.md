@@ -22,7 +22,7 @@ eq insights --agent ws-refund-agent-vulnerable --window-days 1 \
   --dimension failure --dimension intent --label made_errors
 ```
 
-The population is what you filter it to. `--agent` keeps only the managed agent's own traces, so the simulator's and the judge's calls, which go through the same router with the same key, stay out.
+The population is what you filter it to. `--agent` keeps only the managed agent's own traces, so the simulator's and the judge's calls, which go through the same router with the same key, stay out. Insights needs at least five traces with signal per dimension. If `--agent` matches fewer (check with `orq traces list-facet-values agent_name --from 1d --to now`; the facet is indexed some minutes after the traces and a short simulation can leave only one), Insights stops with `dimension failure skipped: only 0 traces have signal (need at least 5)`. Wait a few minutes and run `--only=2`, or run step 1 again to add traces.
 
 ## Steps
 

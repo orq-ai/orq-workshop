@@ -298,7 +298,7 @@ While it thinks, run `make m13` in another terminal: the session you are in shou
 - With the repo key exported you see `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is the expected message when the CLI login and the project key differ. The key decides where the traces go.
 - The `claude` binary is what `orq launch` runs; a shell alias with `--dangerously-skip-permissions` does not apply. For headless runs pass the agent's own flags after `--`, for example `--allowedTools "Bash(orq doctor:*)"`.
 - `orq traces search` and `query-oql` need both `--from` and `--to`; relative values (`24h`, `now`) work.
-- `orq traces thread <id>` prints `[content unavailable]` for Claude Code turns: the gateway stores the Messages request without the message bodies. Use `list_spans` or the Studio for the content.
+- `orq traces conversation <id>` may omit message bodies for Claude Code turns: the gateway stores the Messages request without them. Use `list-spans` or the Studio for the content.
 - The 401 warning in `orq launch opencode --dry-run` (`Could not fetch enabled models`) means the shell's `ORQ_API_KEY` belongs to another workspace. `launch` falls back to a default model and still runs.
 - `orq skills` (platform Skill entities) and `orq connect skills` (files for agents) are different nouns.
 

@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 02 and 07, `make seed` |
 | **You will have** | `ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 Evaluators (module 07) score at scale; humans score what evaluators cannot yet. The queue is where the two meet: an automation samples production traces into it, a reviewer says good or bad and why, and the bad ones become the rows a future experiment is measured on. Every step but one has an API; the one that does not, the automation, is a Studio form you fill once.

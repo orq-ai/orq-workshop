@@ -214,7 +214,7 @@ Read the two `tagged` lines. A project rule matches requests that belong to the 
 ── Step 5 · Read the indicators on the span ───────────
 trace    : 32cf0ca40c878009ebcb1a5f3fdd0308
     chat.openai                trace                  error     1880 ms
-    chat gpt-5.6-luna          span.chat_completion   ok        1581 ms
+    chat gpt-6-luna          span.chat_completion   ok        1581 ms
     ws-refund-limit-guard      span.evaluator         ok         291 ms  passed=False outcome=condition_failed stage=output action=block
 next     : open https://my.orq.ai/traces, filter the last 5 minutes, look for the shield icon on the spans
 ```

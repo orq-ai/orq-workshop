@@ -64,7 +64,7 @@ Fill in `step_2_fallback`: primary `openai/gpt-5.6-sol`, `timeout.call_timeout` 
 
 ```text
 ── Step 2 · Force a fallback ──────────────────────────
-primary  : openai/gpt-5.6-sol, call_timeout 1500 ms, then gpt-5.4-nano, then openai/gpt-5.6-luna
+primary  : openai/gpt-5.6-sol, call_timeout 1500 ms, then gpt-5.4-nano, then openai/gpt-6-luna
 answer   : Your refund of €89 has been issued to the original payment method. It should arrive within 5–7 busin…
 tools    : lookup_order → get_policy → issue_refund
 trace    : c3340b63763b85dad14bb82b470e26b8
@@ -90,8 +90,8 @@ Two failed attempts on the primary: the `retry` you asked for, then the fallback
 question : What is your refund window?
 first    : 2.95s  trace ca1e8094619bf349048dd21fc324dfd2
 second   : 1.62s  trace a707450029628fa2abe716673a0b2fd8
-verdict  : second call served from cache
-next     : open the second trace; the cached span reports zero provider cost
+verdict  : timing is noisy; the proof is span.cache_retrieval in each trace: cache-miss on the first, cache-hit on the second
+next     : `orq traces list-spans <second-trace-id> -o json` (indexing takes up to a minute); the cache-hit trace reports zero provider cost
 ```
 
 `exact_match` caches on the full request body, so the second run of the same question with the same tools and system prompt is served from cache. Look at the second trace: the cached span reports zero provider cost. The maximum `ttl` is 259200 seconds.
@@ -102,7 +102,7 @@ next     : open the second trace; the cached span reports zero provider cost
 
 ```text
 ── Step 4 · Split traffic between two models ──────────
-models   : openai/gpt-5.6-luna (0.5), openai/gpt-5.6-terra (0.5)
+models   : openai/gpt-6-luna (0.5), openai/gpt-5.6-terra (0.5)
 calls    : 4
 traces   : eb220618454f4093bbb3c6044d8a330b, 8d2bb7afd83f7009652ba27f74e5c562, 06e33d1d9e65f9727b701549165959c7, 7bd4463b4b0f897caa13ed9c4131b6a8
 next     : open each trace and read orq.load_balancer.selected_model on the model span
@@ -111,7 +111,7 @@ next     : open each trace and read orq.load_balancer.selected_model on the mode
 ### Step 5 · The same thing from the CLI
 
 ```console
-$ orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
+$ orq chat create --model openai/gpt-6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
 "ok"
 $ orq traces search --from 5m --to now -o json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
 ```
