@@ -52,10 +52,13 @@ class Settings:
         default_factory=lambda: _env("ORQ_BASE_URL", "https://my.orq.ai").rstrip("/")
     )
     project: str = field(default_factory=lambda: _env("ORQ_PROJECT", "orq-workshop"))
+    # Workspace key (the slug in Studio URLs, `active_workspace_key` in `orq doctor`). The API key
+    # only carries the workspace UUID, so `make web` reads this to deep-link a trace.
+    workspace: str = field(default_factory=lambda: _env("ORQ_WORKSPACE"))
     # Every entity key starts with this, so `entities reset` can find what the workshop created.
     prefix: str = field(default_factory=lambda: _env("WS_PREFIX", "ws"))
-    model: str = field(default_factory=lambda: _env("MODEL", "openai/gpt-5.6-luna"))
-    judge_model: str = field(default_factory=lambda: _env("JUDGE_MODEL", "openai/gpt-5.6-luna"))
+    model: str = field(default_factory=lambda: _env("MODEL", "openai/gpt-6-luna"))
+    judge_model: str = field(default_factory=lambda: _env("JUDGE_MODEL", "openai/gpt-6-luna"))
     embedding_model: str = field(
         default_factory=lambda: _env("EMBEDDING_MODEL", "openai/text-embedding-3-large")
     )

@@ -49,6 +49,9 @@ edge: ## Run app/edge.py on :8001 (module 09 external KB + module 14 webhook rec
 edge-docker: ## The same as a container (what the instructor hosts for the room)
 	docker build -t orq-edge . && docker run --rm -p 8001:8001 -e WS_WEBHOOK_SECRET=$$WS_WEBHOOK_SECRET orq-edge
 
+web: ## Run the refund agent chat UI on :8002
+	$(RUN) python -m app.web
+
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
@@ -65,14 +68,18 @@ lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
 	$(RUN) jupyter lab
 
 docs-serve: ## Live docs at http://127.0.0.1:8000
-	$(RUN) mkdocs serve
+	$(RUN) --group docs mkdocs serve
 
 docs-build: ## Strict docs build (fails on broken links)
-	$(RUN) mkdocs build --strict
+	$(RUN) --group docs mkdocs build --strict
 
-slides: ## Render slides/workshop.md to HTML and PDF with Marp
-	$(MARP) slides/workshop.md --theme slides/orq-theme.css -o slides/workshop.html
-	$(MARP) slides/workshop.md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/workshop.pdf
+DECK ?= workshop
+slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for the TechDays deck)
+	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css -o slides/$(DECK).html
+	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/$(DECK).pdf
+
+deck: ## Serve the KickstartAI reveal.js deck on :8000 (add ?code=XXXX to show the login code)
+	python3 -m http.server 8000 -d slides/kickstart
 
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
@@ -86,4 +93,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker og-card diagrams docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides deck modules

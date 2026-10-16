@@ -112,11 +112,11 @@ The same knowledge base is reachable from four places, and the choice decides wh
 | **Managed agent**: the agent holds the knowledge base and the built-in knowledge tools | orq | the retrieval, as its own item and span |
 | **External base**: any of the above, but the search is your endpoint | your service, called by orq | depends on the shape above it |
 
-[Module 09](../modules/09.md) runs all four against the same four policy files and prints the prompt-token count for each, which is the cheapest way to see what actually reached the model.
+[Knowledge base and RAG](../modules/09.md) runs all four against the same four policy files and prints the prompt-token count for each, which is the cheapest way to see what actually reached the model.
 
 ## Related
 
-- [Module 09 · Knowledge base and RAG](../modules/09.md): the hands-on version
+- [Knowledge base and RAG](../modules/09.md): the hands-on version
 - [Glossary](glossary.md): one-line definitions
 - [orq docs · Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
 - [orq docs · External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases)

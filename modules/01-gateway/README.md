@@ -1,4 +1,4 @@
-# 01 · Gateway
+# Gateway
 
 !!! abstract "Two decisions you can read in a trace"
     The model turns "refund ord_a2" into a `lookup_order` call. The gateway turns "the provider is down" into a fallback, without a line of app code. Both are structured decisions you can read in a trace.

@@ -1,4 +1,4 @@
-# 03 · Smart routing
+# Smart routing
 
 !!! abstract "Which model answers is a decision"
     Which model answers is a decision. This module moves that decision out of the code and into two places you can read and change at runtime: a Smart Router that picks per request, and a routing rule that overrides it.

@@ -144,7 +144,7 @@ There is a fourth owner the comparison misses: a **coding-agent harness**. `orq 
 
 What orq supplies here is not the loop and not the agent — it is the four seams underneath one: the **model** (routed, traced, budgeted like any other call), the **tools** (the orq MCP server), the **skills** that teach it your platform workflows, and the **spend controls** that apply because the traffic is ordinary gateway traffic.
 
-That makes it the strongest version of this page's argument. You can bring a loop you wrote, a loop a framework wrote, a loop orq runs, or a loop a vendor shipped in a binary — and the seams do not change. [Module 13](modules/13.md) wires this one up for real.
+That makes it the strongest version of this page's argument. You can bring a loop you wrote, a loop a framework wrote, a loop orq runs, or a loop a vendor shipped in a binary — and the seams do not change. [Coding agents](modules/13.md) wires this one up for real.
 
 ## The four connection points
 
@@ -162,7 +162,7 @@ Everything the client of this workshop asked for maps to one of four seams. None
 | Framework callback | `orq_ai_sdk.langchain.setup()`, one line | you use LangChain or LangGraph |
 | OpenTelemetry + `@traced` | `TRACING=otel`, decorators, `traceparent` | you already run OTEL, or want custom spans |
 
-orq's own guidance is to *pick the callback handler unless you have a specific reason not to*, and reach for OpenTelemetry when you have existing OTEL infrastructure or need control over span attributes. [Module 02](modules/02.md) runs all three.
+orq's own guidance is to *pick the callback handler unless you have a specific reason not to*, and reach for OpenTelemetry when you have existing OTEL infrastructure or need control over span attributes. [Tracing](modules/02.md) runs all three.
 
 **Tool tracing.** In legs 1 and 2 the tools run in your process, so what the trace shows is what you instrument: the gateway sees the model calls, and a tool span appears only if the framework emits one (LangGraph does) or you decorate the dispatch yourself (module 02, step 3). A managed agent is the exception: orq executes server-side tools, and the retrieval or delegation lands in the trace without you doing anything.
 
@@ -183,5 +183,5 @@ The three are not exclusive. A managed agent can call tools your service exposes
 ## Related
 
 - [`examples/own-your-agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/examples/own-your-agent.py): the script behind this page
-- [Module 08 · Managed agents](modules/08.md) · [Module 02 · Tracing](modules/02.md) · [How retrieval works](reference/rag.md)
+- [Managed agents](modules/08.md) · [Tracing](modules/02.md) · [How retrieval works](reference/rag.md)
 - [orq.ai · Tracing LangGraph](https://orq.ai/blog/tracing-langgraph-orq-ai) · [Building a LangGraph agent on orq.ai](https://orq.ai/blog/langgraph-agent-orq-ai)
