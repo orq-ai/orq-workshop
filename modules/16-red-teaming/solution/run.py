@@ -111,7 +111,7 @@ async def step_1_red_team() -> None:
 # `eq redteam run` against the managed vulnerable agent. The built-in `agent:` target cannot
 # execute your function tools, so attacks the agent answers with a tool call come back empty and
 # the judge abstains; --min-evaluation-coverage 0 lets the report print instead of failing on
-# coverage. The exit code is what CI gates on (module 12).
+# coverage. (-t agent:<prefix>-refund-agent-vulnerable-hosted runs the tools in orq and needs no override.) The exit code is what CI gates on (module 12).
 def step_2_cli() -> None:
     cmd = [
         "uv",

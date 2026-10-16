@@ -5,11 +5,12 @@ with three models: a user simulator playing a persona with a goal, the agent und
 judge that scores the transcript. Every simulator and judge call routes through the orq router,
 so it is traced and budgeted like any other call, and every run lands as an Experiment. Three
 steps: simulate() the local agent (2 personas x 2 scenarios, 4 turns), generate_and_simulate()
-three personas from a one-line description, and simulate() the managed agent twice, first with
-the built-in "agent:<key>" target (tools stubbed), then through the ManagedRefundTarget adapter.
+three personas from a one-line description, and simulate() the managed agent twice with the
+built-in "agent:<key>" target: first the function-tool agent (tools stubbed), then, replaying the
+same saved case with `previous_run`, the hosted agent whose tools run in orq.
 
 Run it with `uv run python modules/11-simulation/solution/run.py` (or `make m11`), about two
-minutes; `--only=1,3` picks steps. Module 16 reuses refund_target.py to red team the same agents.
+minutes; `--only=1,3` picks steps. Module 16 reuses refund_target.py to red team the local agent.
 """
 
 # isort: skip_file
@@ -20,7 +21,6 @@ import asyncio
 import os
 import sys
 from collections import defaultdict
-from pathlib import Path
 
 os.environ.setdefault("LOGURU_LEVEL", "INFO")  # evaluatorq logs every turn at DEBUG
 
@@ -39,12 +39,10 @@ from evaluatorq.simulation.contracts import (
 )
 from openai import AsyncOpenAI
 
-sys.path.insert(0, str(Path(__file__).parent))
-from refund_target import ManagedRefundTarget
-
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
 SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge
-MANAGED_AGENT_KEY = settings.key("refund-agent")
+MANAGED_AGENT_KEY = settings.key("refund-agent")  # function tools: your code runs them
+HOSTED_AGENT_KEY = settings.key("refund-agent-hosted")  # code tools: orq runs them
 # The workshop simulates v1, the vulnerable prompt, so the run surfaces a real failure.
 # After you write the eval for it (block 4), switch to "fixed" and re-run.
 VARIANT = "vulnerable"
@@ -221,10 +219,11 @@ async def step_2_generate() -> None:
 # ws-refund-agent has function tools that your code executes (module 08). The built-in
 # "agent:<key>" target does not know how to run lookup_order: it stubs the pending tool call,
 # the assistant text comes back empty and the judge scores an empty transcript. That is the
-# harness failing, not the agent. ManagedRefundTarget (refund_target.py) executes the
-# function_call items itself, module 08's loop wrapped in the AgentTarget contract.
+# harness failing, not the agent. ws-refund-agent-hosted is the same agent with its tools as orq
+# code tools, so orq runs them and the same built-in target needs no help. previous_run replays
+# the case 3a just saved (same persona, scenario and opening message), so only the target changes.
 async def step_3_managed() -> None:
-    print("── Step 3a · The managed agent with the built-in target ──")
+    print("── Step 3a · The function-tool agent with the built-in target ──")
     print(f"target   : agent:{MANAGED_AGENT_KEY} (pending tool calls get an error stub)")
     print("turns    : max 1; a second turn after the empty answer is a 400 on the simulator side")
     results = await simulate(
@@ -238,20 +237,20 @@ async def step_3_managed() -> None:
         upload_results=False,
         exit_on_failure=False,
         executive_summary=False,
-        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
+        save=True,  # also what previous_run replays in 3b
     )
     print_results(results)
     print_transcript(results[0])
     print("next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`")
 
-    print("── Step 3b · The managed agent through ManagedRefundTarget ──")
-    print(f"target   : ManagedRefundTarget({MANAGED_AGENT_KEY!r}) (function_call items executed here)")
+    print("── Step 3b · The hosted agent, replaying the same case ──")
+    print(f"target   : agent:{HOSTED_AGENT_KEY} (tools run in orq)")
+    print("replay   : previous_run='latest', the case 3a just saved")
     print("turns    : max 2")
     results = await simulate(
         evaluation_name=settings.key("sim-managed"),
-        target=ManagedRefundTarget(MANAGED_AGENT_KEY),
-        personas=PERSONAS[:1],
-        scenarios=SCENARIOS[:1],
+        target=f"agent:{HOSTED_AGENT_KEY}",
+        previous_run="latest",  # resolves to the newest run in .evaluatorq/sim-runs/: 3a's
         max_turns=2,
         llm_config=SIM_LLM,
         evaluator_names=["goal_achieved"],
@@ -262,7 +261,7 @@ async def step_3_managed() -> None:
     )
     print_results(results)
     print_transcript(results[0])
-    print(f"next     : Experiments > {settings.key('sim-managed')} has the row; the agent's trace shows the tool calls the harness ran")
+    print(f"next     : Experiments > {settings.key('sim-managed')} has the row; the agent's trace shows the tool calls orq ran")
 
 
 async def main() -> None:

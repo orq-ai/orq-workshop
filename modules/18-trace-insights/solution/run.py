@@ -28,14 +28,13 @@ from evaluatorq.simulation import simulate
 
 M11 = ROOT / "modules" / "11-simulation" / "solution"
 sys.path.insert(0, str(M11))
-from refund_target import ManagedRefundTarget
 
 # Module 11's personas, scenarios and judge config, loaded by path: both files are named run.py.
 _spec = importlib.util.spec_from_file_location("m11", M11 / "run.py")
 m11 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(m11)
 
-AGENT_KEY = settings.key("refund-agent-vulnerable")
+AGENT_KEY = settings.key("refund-agent-vulnerable-hosted")  # code tools: orq runs them, so the built-in target works
 RUN_JSON = ROOT / ".evaluatorq" / f"{AGENT_KEY}-insights.json"
 
 
@@ -45,10 +44,10 @@ RUN_JSON = ROOT / ".evaluatorq" / f"{AGENT_KEY}-insights.json"
 # yours among the simulator's and judge's own calls.
 async def step_1_simulate() -> None:
     print("── Step 1 · Simulate the managed v1 agent ─────────────")
-    print(f"target   : ManagedRefundTarget({AGENT_KEY!r})")
+    print(f"target   : agent:{AGENT_KEY}")
     results = await simulate(
         evaluation_name=settings.key("sim-insights"),
-        target=ManagedRefundTarget(AGENT_KEY),
+        target=f"agent:{AGENT_KEY}",
         personas=m11.PERSONAS,
         scenarios=m11.SCENARIOS,
         max_turns=3,

@@ -65,3 +65,34 @@ def test_dataset_with_rows_is_not_refilled(monkeypatch):
 
 def test_empty_dataset_from_a_failed_seed_is_refilled(monkeypatch):
     assert _ensure(monkeypatch, rows=0).added
+
+
+class _HostedOrq:
+    """Fake orq: no tools or agents exist yet; records what is created."""
+
+    def __init__(self):
+        self.agents_created = []
+        self.tools = SimpleNamespace(
+            list=lambda limit: SimpleNamespace(data=[]), create=lambda request: None
+        )
+
+    @property
+    def agents(self):
+        def retrieve(agent_key):
+            raise LookupError(agent_key)
+
+        return SimpleNamespace(retrieve=retrieve, create=lambda **payload: self.agents_created.append(payload))
+
+
+@pytest.mark.parametrize(
+    ("variant", "key", "instructions"),
+    [("fixed", "ws-refund-agent-hosted", "fixed"), ("vulnerable", "ws-refund-agent-vulnerable-hosted", "vulnerable")],
+)
+def test_hosted_agent_has_a_key_per_variant_and_code_tools(monkeypatch, variant, key, instructions):
+    monkeypatch.setattr(entities, "K", lambda name: f"ws-{name}")
+    orq = _HostedOrq()
+    assert entities.ensure_hosted_agent(orq, variant) == key
+    (payload,) = orq.agents_created
+    assert payload["key"] == key
+    assert payload["instructions"].startswith((entities.DATA_DIR / f"{instructions}_instructions.md").read_text())
+    assert {tool["type"] for tool in payload["settings"]["tools"]} == {"code"}

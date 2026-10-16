@@ -7,7 +7,7 @@
 |---|---|
 | **Time** | 30 min |
 | **Prerequisites** | modules 00 and 07, `make seed` |
-| **You will have** | four simulation runs as Experiments and in the local dashboard, an adapter that makes a managed agent testable, and one honest surprise about judges. |
+| **You will have** | four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges. |
 
 ## Why
 
@@ -180,18 +180,18 @@ results = await generate_and_simulate(
 
 ### Step 3 · The managed agent, twice
 
-One agent, one attack, two harnesses. The only thing that changes between 3a and 3b is who executes the `function_call` the agent asks for:
+One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays the case 3a just saved (`previous_run="latest"`: same persona, scenario and opening message), so the only thing that changes is who executes the `function_call` the agent asks for:
 
-| | 3a · `agent:ws-refund-agent` | 3b · `ManagedRefundTarget` |
+| | 3a · `agent:ws-refund-agent` | 3b · `agent:ws-refund-agent-hosted` |
 |---|---|---|
-| Who runs `lookup_order` | nobody — the call is stubbed | your code, via `dispatch()` |
-| What the log says | `Dropping tool call 'lookup_order'` | the tool result goes back as `function_call_output` |
+| Who runs `lookup_order` | nobody — the call is stubbed | orq, as a code tool |
+| What the log says | `Dropping tool call 'lookup_order'` | no dropped tool call |
 | Assistant text | `''` (empty) | the refund confirmation |
-| Score | 0.00, `criteria_0` broken | 1.00, rules broken: none |
-| Ended by | `max_turns` | `judge` |
+| Score | 0.00, `criteria_0` broken | the judge scores a real answer |
+| Ended by | `max_turns` | `judge` once the agent answers |
 | What actually failed | **the harness** | nothing |
 
-![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the ManagedRefundTarget adapter the harness executes the tool call itself, sends the result back as a function_call_output, and the agent answers with the refund.](assets/11-step3-managed-twice.png)
+![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the hosted twin, whose tools are orq code tools, orq executes the tool call itself and the agent answers with the refund.](assets/11-step3-managed-twice.png)
 
 ??? example "The full run output"
 
@@ -206,16 +206,11 @@ One agent, one attack, two harnesses. The only thing that changes between 3a and
     user     : 'Refund order ord_a1 (Desk lamp Nord, EUR 24.99). It arrived 3 days ago in the wrong colour. Please process the'
     assistant : ''
     next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`
-    ── Step 3b · The managed agent through ManagedRefundTarget ──
-    target   : ManagedRefundTarget('ws-refund-agent') (function_call items executed here)
+    ── Step 3b · The hosted agent, replaying the same case ──
+    target   : agent:ws-refund-agent-hosted (tools run in orq)
+    replay   : previous_run='latest', the case 3a just saved
     turns    : max 2
     persona  : Impatient repeat buyer × In-window refund ord_a1
-    verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
-    agent    : 'Your full refund of €24.99 for the Desk lamp Nord has been processed to the original payment method. It should arrive within 5–7 business days.'
-    summary  : goal achieved 1/1
-    user     : 'Refund order ord_a1, Desk lamp Nord (€24.99). It arrived 3 days ago in the wrong colour. Process the full refu'
-    assistant : 'Your full refund of €24.99 for the Desk lamp Nord has been processed to the original payment method. It should'
-    next     : Experiments > ws-sim-managed has the row; the agent's trace shows the tool calls the harness ran
     ```
 
 ### Step 4 · Read the runs in the dashboard
@@ -242,9 +237,9 @@ Read the target column against the score: the two `callback` rows are the local 
 
 **Compare runs** puts that difference on one page. Pick `ws-sim-managed` against `ws-sim-managed-builtin` and press Compare:
 
-![Screenshot: run comparison between ws-sim-managed and ws-sim-managed-builtin. KPI deltas show goal-achieved dropping to 0% (-100% relative to A), mean score -1.00, and identical turn counts. A "how conversations ended" chart shows the adapter run ending by judge and the built-in-target run ending by max_turns, and the per-conversation score change is -1.00.](assets/11-dashboard-compare.png)
+![Screenshot: run comparison between ws-sim-managed and ws-sim-managed-builtin. KPI deltas show goal-achieved dropping to 0% (-100% relative to A), mean score -1.00, and identical turn counts. A "how conversations ended" chart shows the hosted-agent run ending by judge and the built-in-target run ending by max_turns, and the per-conversation score change is -1.00.](assets/11-dashboard-compare.png)
 
-`-100%` on goal-achieved, and the two runs end differently: the adapter run ends `judge` (the judge saw an answer and scored it), the built-in run ends `max_turns` (there was never an answer to score). That is the step 3 lesson as a chart — the agent did not get worse, the harness stopped executing its tools.
+`-100%` on goal-achieved, and the two runs end differently: the replay on the hosted agent ends `judge` (the judge saw an answer and scored it), the built-in run ends `max_turns` (there was never an answer to score). That is the step 3 lesson as a chart — the agent did not get worse, the harness stopped executing its tools.
 
 ## With your coding agent
 

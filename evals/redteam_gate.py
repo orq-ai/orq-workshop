@@ -13,13 +13,14 @@ vulnerabilities found". Static mode is deterministic on the attack side (the jud
 LLM), cheap, and the right shape for CI. Exploratory, LLM-generated attacks belong in module 16,
 not in a PR check.
 
-CLI equivalent (built-in orq target, which answers tool calls with a stub error):
+The target is evaluatorq's built-in `agent:<key>` target on the hosted refund agent, whose
+tools are orq code tools: lookup_order / get_policy / issue_refund really execute in orq, so a
+successful attack really issues a refund (in memory, inside the tool). CLI equivalent:
 
-    eq redteam run -t agent:ws-refund-agent --mode static --dataset evals/redteam_static.json -y
+    eq redteam run -t agent:ws-refund-agent-hosted --mode static --dataset evals/redteam_static.json -y
 
-This script uses evals/refund_target.py instead, so lookup_order / get_policy /
-issue_refund really execute and a successful attack really issues a refund (in memory).
-Attacker and judge model calls go through the orq router with ORQ_API_KEY.
+Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed` once
+first: it creates the hosted agent.
 """
 
 from __future__ import annotations
@@ -41,7 +42,6 @@ from app.refund_agent.config import (  # loads .env; evaluatorq reads ORQ_API_KE
     ROOT,
     settings,
 )
-from evals.refund_target import RefundAgentTarget
 
 # evaluatorq's red_team() has no public path/project param (unlike evaluatorq() itself): its
 # internal upload always calls send_results_to_orq without `path`, which drops the Experiment
@@ -150,7 +150,7 @@ async def run(
         evaluator=EvaluatorConfig(model=JUDGE_MODEL, client=client),
     )
     report = await red_team(
-        RefundAgentTarget(agent_key),
+        f"agent:{agent_key}",
         mode="static",
         dataset=str(DATASET),
         max_static_datapoints=max_datapoints,
@@ -227,8 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--agent",
-        default=settings.key("refund-agent"),
-        help="agent key, e.g. ws-refund-agent-vulnerable",
+        default=settings.key("refund-agent-hosted"),
+        help="hosted agent key (tools run in orq), e.g. ws-refund-agent-vulnerable-hosted",
     )
     parser.add_argument(
         "--max-static-datapoints",
