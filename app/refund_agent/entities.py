@@ -41,17 +41,21 @@ def ensure_dataset(
 ) -> str:
     """Create the dataset `K(name)` and fill it from a JSONL file. Returns the dataset id.
 
-    Idempotency key: `display_name`. An existing dataset is returned as is, rows are not re-added.
+    Idempotency key: `display_name`. An existing dataset with rows is returned as is; an existing
+    *empty* one (a seed that failed after creating it) is filled when `rows` is given.
     `rows=None` creates an empty dataset (module 17 fills `ws-review-dataset` from reviewed traces).
     """
     orq = orq or make_orq()
     key = K(name)
-    for dataset in orq.datasets.list(limit=100).data or []:
+    points = [] if rows is None else [json.loads(line) for line in rows.read_text().splitlines() if line.strip()]
+    # search=: a shared workspace holds far more than one page of datasets (one per seat, at least).
+    for dataset in orq.datasets.list(limit=100, search=key).data or []:
         if dataset.display_name == key:
+            if points and not orq.datasets.list_datapoints(dataset_id=dataset.id, limit=1).data:
+                orq.datasets.create_datapoint(dataset_id=dataset.id, request_body=points)
             return dataset.id
     created = orq.datasets.create(request={"display_name": key, "path": settings.path})
-    if rows is not None:
-        points = [json.loads(line) for line in rows.read_text().splitlines() if line.strip()]
+    if points:
         orq.datasets.create_datapoint(dataset_id=created.id, request_body=points)
     return created.id
 
@@ -837,7 +841,7 @@ def reset(orq=None) -> None:
         ),
         (
             "dataset",
-            lambda: orq.datasets.list(limit=100).data,
+            lambda: orq.datasets.list(limit=100, search=settings.prefix + "-").data,
             lambda i: orq.datasets.delete(dataset_id=i),
             lambda x: x.display_name,
             lambda x: x.id,
