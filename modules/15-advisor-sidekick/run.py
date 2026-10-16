@@ -87,7 +87,7 @@ def step_1_inspect() -> None:
     for tool in delegating["settings"]["tools"]:
         if tool["action_type"] in ("advisor", "sidekick"):
             print(f"{tool['action_type']:<8} : configuration={tool.get('configuration')}")
-    print("next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
+    print(f"next     : Agents > {settings.prefix}-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
 
 
 def step_2_run() -> dict[str, Any]:
@@ -102,7 +102,7 @@ def step_2_run() -> dict[str, Any]:
     print(f"steps    : {len(turn['traces'])} responses")
     print(f"answer   : {turn['text'][:100]}…")
     print(f"trace    : {turn['traces'][-1]}")
-    print(f"next     : orq traces thread {turn['traces'][-1]}")
+    print(f"next     : orq traces conversation {turn['traces'][-1]}")
     return turn
 
 

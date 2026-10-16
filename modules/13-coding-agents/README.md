@@ -40,21 +40,13 @@ $ orq connect --status
 Expected output (this machine):
 
 ```text
-     AGENT   CAPABILITY  SCOPE   WORKSPACE     LOCATION
-  ✓  claude  mcp         global                ~/.claude.json
-  ✓          skills      global                ~/.claude/skills
-  ✓  codex   gateway             orq-research  ~/.codex/orq.config.toml
-  ✓          mcp         global                ~/.codex/config.toml
-  ✓  kimi    gateway             orq-research  ~/.kimi-code/config.toml
-  ✓          mcp         global                ~/.kimi-code/mcp.json
-  ✓  kilo    gateway             orq-research  ~/.config/kilo/kilo.json
-  ✓          mcp         global                ~/.config/kilo/kilo.json
-  ✓  pi      gateway             orq-research  ~/.pi/agent/models.json
-- skills version 415edd5
-- detected but not wired: opencode
+     AGENT  CAPABILITY  LOCATION
+  ✓  omp    gateway     ~/.omp/agent/models.yml
+
+- detected but not wired: claude, codex, opencode, kimi, kilo, pi. Run `orq connect claude codex opencode kimi kilo pi` to wire them
 ```
 
-Claude Code has no `gateway` row: it is configured through environment variables, not a config file, so only `launch` can route it. This machine also has `kimi` and `kilo` wired and `opencode` detected but not wired; your list will differ. Now ask what a project-local wiring would touch, one agent at a time:
+Claude Code has no `gateway` row: it is configured through environment variables, not a config file, so only `launch` can route it. On this machine only `omp` is wired and the other agents are detected but not wired; your list will differ, because it shows what is installed and wired on your machine. Now ask what a project-local wiring would touch, one agent at a time:
 
 ```bash
 $ orq connect claude --local --dry-run
@@ -66,28 +58,32 @@ $ orq connect codex --local --dry-run
 Expected output:
 
 ```text
-! --local scopes mcp and skills only: gateway is machine-wide either way
+! --local scopes mcp and skills only: gateway and otel are machine-wide either way
 - dry run — files that would change, nothing written
 - claude   gateway   no gateway provider config for this agent
 - claude   mcp       ~/conductor/workspaces/orq-workshop/djibouti/.mcp.json
+- claude   otel      ~/.claude/settings.json  (installs orq-trace@orq-claude-plugin)
 - claude   skills    ~/conductor/workspaces/orq-workshop/djibouti/.claude/skills
 
-! --local scopes mcp and skills only: gateway is machine-wide either way
+! --local scopes mcp and skills only: gateway and otel are machine-wide either way
 - dry run — files that would change, nothing written
 - opencode gateway   ~/.config/opencode/opencode.json
 - opencode mcp       ~/conductor/workspaces/orq-workshop/djibouti/opencode.json
+- opencode otel      no plugin mechanism in this agent to trace sessions with
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
 
-! --local scopes mcp and skills only: gateway is machine-wide either way
+! --local scopes mcp and skills only: gateway and otel are machine-wide either way
 - dry run — files that would change, nothing written
 - pi       gateway   ~/.pi/agent/models.json
 - pi       mcp       no MCP support in this agent
+- pi       otel      no plugin mechanism in this agent to trace sessions with
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
 
-! --local scopes mcp and skills only: gateway is machine-wide either way
+! --local scopes mcp and skills only: gateway and otel are machine-wide either way
 - dry run — files that would change, nothing written
 - codex    gateway   ~/.codex/orq.config.toml
 - codex    mcp       ~/conductor/workspaces/orq-workshop/djibouti/.codex/config.toml
+- codex    otel      no plugin mechanism in this agent to trace sessions with
 -          skills    ~/conductor/workspaces/orq-workshop/djibouti/.agents/skills
 ```
 
@@ -103,7 +99,7 @@ Expected output:
 
 ```text
 binary: claude
-args:   
+args:   --mcp-config <session tempdir>/mcp.json
 env:
   ANTHROPIC_API_KEY=
   ANTHROPIC_AUTH_TOKEN=<redacted>
@@ -111,15 +107,25 @@ env:
   ANTHROPIC_DEFAULT_HAIKU_MODEL=anthropic/claude-haiku-4-5
   ANTHROPIC_DEFAULT_OPUS_MODEL=anthropic/claude-opus-5
   ANTHROPIC_DEFAULT_SONNET_MODEL=anthropic/claude-sonnet-5
-  ANTHROPIC_MODEL=anthropic/claude-sonnet-5
-  ANTHROPIC_SMALL_FAST_MODEL=anthropic/claude-haiku-4-5
+  CLAUDE_CODE_ENABLE_TELEMETRY=1
   ORQ_API_KEY=<redacted>
+  ORQ_CONFIG_PATH=<session tempdir>/orq-config.json
   ORQ_SERVER=https://my.orq.ai
-note:   a real run links 14 skills into /Users/arian/conductor/workspaces/orq-workshop/djibouti/.claude/skills for the session and removes them on exit
-Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins. Pass --model against that workspace's catalogue, or re-run 'orq setup' to mint a key for the one you logged into.
+  ORQ_TRACE_PROFILE=orq-launch
+  OTEL_EXPORTER_OTLP_ENDPOINT=https://my.orq.ai/v2/otel
+  OTEL_EXPORTER_OTLP_HEADERS=Authorization=Bearer <redacted>
+  OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+  OTEL_LOGS_EXPORTER=otlp
+  OTEL_METRICS_EXPORTER=otlp
+  OTEL_TRACES_EXPORTER=none
+tempdir: <session tempdir>
+note:   a real run loads the orq-trace plugin for the session with --plugin-dir, or uses your installed copy if claude has one enabled
+note:   a real run links 14 skills into <REPO>/.claude/skills for the session and removes them on exit
+Warning: gateway routing sends this session's model calls through the orq.ai AI Router; usage bills to the workspace this API key belongs to, not your Claude subscription
+Warning: gateway routing records each model call twice, once in the AI Router and once in the session trace, so summed costs across both double-count; pass --no-otel to keep one copy
 ```
 
-Four things to notice. `ANTHROPIC_BASE_URL` points at the gateway's Anthropic Messages endpoint, `ANTHROPIC_AUTH_TOKEN` is your orq.ai key, `ANTHROPIC_API_KEY` is set to empty on purpose (a value there makes Claude Code bypass the gateway), and every model id carries the `anthropic/` prefix. MCP is not in the env because Claude Code already has the `orq-workspace` entry from Step 1; for a clean machine `launch` adds it for the session.
+Four things to notice. `ANTHROPIC_BASE_URL` points at the gateway's Anthropic Messages endpoint, `ANTHROPIC_AUTH_TOKEN` is your orq.ai key, `ANTHROPIC_API_KEY` is set to empty on purpose (a value there makes Claude Code bypass the gateway), and every model id carries the `anthropic/` prefix. MCP is not in the env: `args` carries `--mcp-config` pointing at a temp file, which is how `launch` adds `orq-workspace` for the session. The telemetry and `OTEL_*` variables send the session's traces to the gateway's OTEL endpoint, and the two warnings say what that costs in double counting.
 
 ```bash
 $ orq launch opencode --dry-run
@@ -142,7 +148,7 @@ Either way, every model call the agent makes is a trace with tokens, latency and
 
 ### Step 3 · The skills that ship in the CLI
 
-`orq doctor -o json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`) and `orq connect --status` prints the short form `skills version 415edd5`. The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
+`orq doctor -o json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`). The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
 
 ```bash
 $ make m13     # step 3 lists them from the snapshot
@@ -150,7 +156,7 @@ $ make m13     # step 3 lists them from the snapshot
 
 ```text
 ── Step 3 · The skills that ship in the CLI ───────────
-snapshot : /Users/arian/.orq/snapshot/gen-2a16641ad77bdb01
+snapshot : ~/.orq/snapshot/gen-<fingerprint>
     evaluatorq                       Write and run evaluatorq evaluation scripts (Python or TypeScript) for a single agent or d
     orq-analyze-trace-failures       Read production traces, identify what's failing, and build failure taxonomies using open c
     orq-build-agent                  Design, create, and configure orq.ai Agents with tools, instructions, knowledge bases, and
@@ -231,7 +237,15 @@ $ make m13     # step 4
 
 ```text
 ── Step 4 · Coding-agent sessions as traces ───────────
-sessions : 0 in the last 24h
+sessions : 4 in the last 24h
+session  : <trace-id>  calls=1 model=gpt-6-luna tokens=1133 cached=0 cost=$0.0001
+query    : orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "<trace-id>"'
+session  : <trace-id>  calls=1 model=gpt-6-luna tokens=871 cached=0 cost=$0.0001
+query    : orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "<trace-id>"'
+session  : <trace-id>  calls=1 model=gpt-6-luna tokens=777 cached=0 cost=$0.0001
+query    : orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "<trace-id>"'
+session  : <trace-id>  calls=1 model=gpt-6-luna tokens=1203 cached=1099 cost=$0.0000
+query    : orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == "<trace-id>"'
 next     : open https://my.orq.ai/traces and filter by model anthropic/claude-sonnet-5
 ```
 
@@ -275,7 +289,7 @@ While it thinks, run `make m13` in another terminal: the session you are in shou
 - [ ] `orq connect --status` lists at least one agent, and you can say which file `--local` would write for it
 - [ ] `orq launch claude --dry-run` shows `ANTHROPIC_BASE_URL=https://my.orq.ai/v3/anthropic` and an empty `ANTHROPIC_API_KEY`
 - [ ] You can name the fourteen bundled skills and the skill you would paste first in a new repo
-- [ ] `make m13` step 4 shows one session id with more than one call and a cost
+- [ ] `make m13` step 4 shows a session id per run with its calls and a cost
 - [ ] You can explain the difference between the orq.ai MCP server and the MCP Gateway of module 10
 
 ## Gotchas

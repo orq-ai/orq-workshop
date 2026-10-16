@@ -34,9 +34,9 @@ Open `modules/09-knowledge-base-rag/run.py`. The solution is in `solution/run.py
 
 ```bash
 $ orq knowledge-bases list -o json | jq -c '.data[] | select(.key | startswith("ws-")) | {key, id: ._id, model}'
-{"key":"ws-refund-policy","id":"01M2K8Y4HRF33KBXZVMTQVM6KB","model":"openai/text-embedding-3-large"}
+{"key":"ws-refund-policy","id":"01M52DNKCW0A2RGPXM5T73AA4K","model":"openai/text-embedding-3-large"}
 $ orq knowledge-bases retrieve ws-refund-policy -o json | jq -c '{key, id: ._id, model, retrieval_settings}'
-{"key":"ws-refund-policy","id":"01M2K8Y4HRF33KBXZVMTQVM6KB","model":"openai/text-embedding-3-large","retrieval_settings":{"retrieval_type":"hybrid_search","threshold":0,"top_k":5}}
+{"key":"ws-refund-policy","id":"01M52DNKCW0A2RGPXM5T73AA4K","model":"openai/text-embedding-3-large","retrieval_settings":{"retrieval_type":"hybrid_search","threshold":0,"top_k":5}}
 $ uv run python modules/09-knowledge-base-rag/run.py
 ```
 
@@ -44,7 +44,7 @@ Expected output (solution, step 1):
 
 ```text
 ── Step 1 · Inspect the seeded knowledge base ─────────
-kb       : ws-refund-policy (01M2K8Y4HRF33KBXZVMTQVM6KB)
+kb       : ws-refund-policy (01M52DNKCW0A2RGPXM5T73AA4K)
 model    : openai/text-embedding-3-large
 settings : {'retrieval_type': 'hybrid_search', 'top_k': 5, 'threshold': 0.0}
 file     : abuse_patterns.md          chunks=1 status=completed completed=1 failed=0 queued=0
@@ -61,10 +61,10 @@ One chunk per file: `chunk_size` 300 is in tokens, and each policy file is under
 ```text
 ── Step 2 · Three search modes, with and without a reranker ──
 query    : opened electronics after 20 days, can I return?
-hybrid   : 0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
-vector   : 0.654 # Post-window exceptions | 0.619 # Shipping and scope | 0.615 # Refund basics
+hybrid   : 0.654 # Post-window exceptions | 0.625 # Refund basics | 0.619 # Shipping and scope
+vector   : 0.654 # Post-window exceptions | 0.625 # Refund basics | 0.619 # Shipping and scope
 keyword  : 1.000 # Refund basics | 0.501 # Abuse patterns
-rerank   : {'search_score': 0.653556764125824} # Post-window except | {'search_score': 0.6187750101089478} # Shipping and scope | {'search_score': 0.6148313283920288} # Refund basics
+rerank   : {'search_score': 0.653556764125824} # Post-window except | {'search_score': 0.6252089440822601} # Refund basics | {'search_score': 0.6187750101089478} # Shipping and scope
 verdict  : no rerank_score: no rerank model is enabled in this workspace, so the gateway skipped reranking
 next     : the same search from the CLI: orq knowledge-bases search ws-refund-policy --query '...' --search-type keyword_search
 ```
@@ -113,9 +113,9 @@ With one chunk per file, every search returns whole documents and the score is a
 ```text
 ── Step 4 · The local agent reads policy from the KB ──
 question : Refund ord_a3 please, I changed my mind.
-answer   : I’m unable to refund ord_a3 because it was delivered more than 30 days ago, and “changed my mind” is…
-tools    : lookup_order → get_policy → get_policy
-trace    : 4af13fddf056e91f657f5b79f0e89e67
+answer   : I can’t refund this order because it’s outside the 30-day window, and changing your mind isn’t an el…
+tools    : lookup_order → get_policy
+trace    : 692ec8807c953d3be157a335b93cd42b
 next     : the trace shows only chat spans; knowledge.search is a separate API call, not a span in the gateway trace
 ```
 
@@ -127,7 +127,7 @@ Three ways to put policy in front of the model without a tool round-trip.
 
 ![Diagram: gateway-side retrieval. Your code names the knowledge base in extra_body and asks the gateway to inject the chunks. In this workspace nothing was injected: the model saw 25 prompt tokens and asked which retailer's policy to check.](assets/09-step5a-gateway-side.png)
 
-![Diagram: pre-fetched context. Your code searches the knowledge base first and puts the chunks into a system message, so a single gateway call carries 591 prompt tokens and no tool round trip happens.](assets/09-step5b-prefetch.png)
+![Diagram: pre-fetched context. Your code searches the knowledge base first and puts the chunks into a system message, so a single gateway call carries 599 prompt tokens and no tool round trip happens.](assets/09-step5b-prefetch.png)
 
 ![Diagram: managed agent retrieval. Your code calls the agent by model name; the agent holds the knowledge base and the two built-in server tools, so orq.ai runs the search itself and records it in the trace before calling the model.](assets/09-step5c-managed-agent.png)
 
@@ -135,28 +135,28 @@ Three ways to put policy in front of the model without a tool round-trip.
 ── Step 5a · Gateway-side retrieval (orq.knowledge_bases) ──
 question : I opened my electronics 20 days ago, can I still return them? Quote the policy.
 tokens   : prompt_tokens=25
-answer   : 'Which retailer’s policy should I check? Please provide the store/website and your country or region—'
-trace    : 97d2e8fdaabb0bf095bde649c5f38406
+answer   : 'Which retailer did you buy them from, and in what country? Return rules for opened electronics vary,'
+trace    : 55d4253eb4fd350c4c50352313fce579
 next     : compare prompt_tokens with 5b; a count this low means no policy text was injected
 ── Step 5b · Pre-fetched in code ──────────────────────
 question : I opened my electronics 20 days ago, can I still return them? Quote the policy.
-tokens   : prompt_tokens=591
-answer   : 'Yes—if the order was delivered 20 days ago, it is within the 30-day refund window. The policy states:\n\n> “A customer is entitled to a refund on an order when al'
-trace    : 8fd6c17f2911cc896242ca8d4a880a38
+tokens   : prompt_tokens=599
+answer   : 'The policy says: “The order was delivered within the last 30 days,” and the other requirements are that you’re the registered owner, the order hasn’t already be'
+trace    : 5bb63c99576a1c856a2c3832fac6222d
 next     : the difference in prompt_tokens is the policy text; that is pre-fetching in five lines
 ── Step 5c · The managed agent searches its own KB ────
 agent    : agent/ws-refund-agent
 question : Can I return an item that was damaged in transit 45 days after delivery? What evidence do you need?
-tokens   : input_tokens=902
-items    : reasoning → message
-answer   : 'Please provide your order ID so I can check it. For a damage claim 45 days after delivery, you’ll need verifiable evidence such as the tracking reference and cl'
-trace    : 43b5633b1e3c9e93c61b1570410a18f2
-next     : the orq:query_knowledge_base item is the retrieval; open the trace to see it as a span
+tokens   : input_tokens=2449
+items    : function_call → function_call → orq:ws-get_policy → orq:ws-get_policy → message
+answer   : 'At 45 days after delivery, a damaged-in-transit refund may be considered if you provide a carrier tracking reference in a valid format: UPS (starts with “1Z” pl'
+trace    : 35c4392d6b12f53c73a4a51c65f32751
+next     : the orq:* output items are the tools the agent used; open the trace to see each as a span
 ```
 
 - 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 25 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
-- 5b is five lines of code and works everywhere: search, then a system message. 591 prompt tokens, an answer that quotes the policy.
-- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in `app/refund_agent/entities.py`), which is why the step calls `agent/ws-refund-agent` and the `orq:query_knowledge_base` output item appears, carrying the query the agent wrote, the chunk, the file name and the score. An agent with the knowledge base attached but without those two tools never searches it.
+- 5b is five lines of code and works everywhere: search, then a system message. 599 prompt tokens, an answer that quotes the policy.
+- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in `app/refund_agent/entities.py`), which is why the step calls `agent/ws-refund-agent` and the output items show what it used. When it searches the knowledge base an `orq:query_knowledge_base` item appears, carrying the query the agent wrote, the chunk, the file name and the score; in the run above it answered through its `get_policy` tool instead, so the items read `orq:ws-get_policy`. Either way the agent decides, so ask a question the four files cannot answer to see the search. An agent with the knowledge base attached but without those two tools never searches it.
 
 ### Step 6 · Agentic RAG
 
@@ -218,7 +218,7 @@ Paste `agent_prompt.md`:
 - [ ] `orq knowledge-bases search ws-refund-policy --query "..." --search-type keyword_search` and `vector_search` return different top chunks for the step 2 query
 - [ ] You can say why a knowledge base embedded with `text-embedding-3-small` returned 500 on hybrid search in this workspace, and what the fix is
 - [ ] `run.py` step 4 prints `source: kb` policy in the tool result (add a print in `kb_policy`) and the refund for `ord_a3` is refused
-- [ ] Trace `e3c4e4001f3f8787b5b7b74712449189` (or your own from step 5c) shows `orq:query_knowledge_base` with a score in `orq traces thread`
+- [ ] Trace `e3c4e4001f3f8787b5b7b74712449189` (or your own from step 5c) shows the retrieval tool the agent used (`orq:query_knowledge_base` when it searched, with a score) in `orq traces conversation`
 - [ ] The external stub answers `curl` with a `matches` array
 
 ## Gotchas

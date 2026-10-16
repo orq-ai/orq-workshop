@@ -94,9 +94,8 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Start here:
-      - TechDays 15 Oct: techdays.md
+      - TechDays 15 Oct: sessions/techdays-2026.md
       - Agenda: agenda.md
-      - What's new in orq: whats-new.md
   - Setup:
       - Setup CLI: modules/00.md
       - Coding agents: modules/13.md

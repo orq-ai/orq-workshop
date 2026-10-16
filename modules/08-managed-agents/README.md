@@ -44,10 +44,7 @@ Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`
 
 ## Steps
 
-Open `modules/08-managed-agents/run.py`. `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. !!! note "Recorded output"
-    The `text` blocks below were recorded when `ws-refund-agent` still had function tools. With code tools the tool names read `ws-lookup_order`, `ws-issue_refund`, `ws-get_policy`, a turn is one request instead of four, and agent versions differ per workspace. Run `make m08` for your own numbers.
-
-The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
+Open `modules/08-managed-agents/run.py`. `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
 
 ### Step 1 · Inspect the agent
 
@@ -60,14 +57,14 @@ Expected output:
 
 ```text
 ── Step 1 · Inspect the agent ─────────────────────────
-agent    : ws-refund-agent v1.1.0 (live)
-model    : openai/gpt-5.6-luna
+agent    : ws-refund-agent v1.0.0 (live)
+model    : openai/gpt-6-luna
 limits   : max_iterations 8, max_execution_time 120s
 approval : tool_approval_required=respect_tool
-tools    : [('code', 'ws-lookup_order', 'S4GC7Z'), ('code', 'ws-issue_refund', '7NXF3X'), ('code', 'ws-get_policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
-kb       : [{'knowledge_id': '01M2K8Y4HRF33KBXZVMTQVM6KB'}]
+tools    : [('code', 'ws-lookup_order', 'FATJ21'), ('code', 'ws-issue_refund', 'TC5FDV'), ('code', 'ws-get_policy', 'HF132Z'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
+kb       : [{'knowledge_id': '01M52HK6ZJ0PD67CET6J0VMSAX'}]
 memory   : []
-patch    : rejected, ValueError: Could not find discriminator field type in {'id': '01M2K8Y61FFSQ5BE3BV…
+patch    : rejected, ValueError: Could not find discriminator field type in {'id': '01M52HK9EHPWJGG12SK…
 write    : settings.tools = [{'type': 'code', 'key': 'ws-lookup_order'}, ...]
 next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 8
 ```
@@ -102,13 +99,15 @@ All three return the same response object: `id`, `status: completed`, `output[]`
 ── Step 2 · Invoke it ─────────────────────────────────
 question : Refund ord_a2 please, the dock does not fit.
 tools    : ws-lookup_order → ws-get_policy → ws-issue_refund
-requests : 1 in <seconds>s, cost $<cost>
-answer   : Your refund of €89.00 for the charging dock has been processed …
-trace    : <trace id>
-next     : run `orq traces thread <trace id>`; the spans show each tool call orq ran
+requests : 1 in 5.3s, cost $0.00040
+answer   : Your refund of €89 has been issued to the original payment method. It should arrive within 5–7 busin…
+trace    : 744e2c5fa451cb225ef6898b661d5842
+next     : run `orq traces conversation 744e2c5fa451cb225ef6898b661d5842`; the spans show each tool call orq ran
 ```
 
-The trace has an `agent.response` span, the `chat` spans of the model and one span per tool call. `orq traces thread <trace>` renders the conversation as the customer saw it. The code tools start from the same orders on every call, so a refund is not remembered between calls.
+`requests : 1` is because the seeded agent uses code tools, so orq runs the whole tool loop inside one request; the function-tool variant in step 2b takes four.
+
+The trace has an `agent.response` span, the `chat` spans of the model and one span per tool call. `orq traces conversation <trace>` renders the conversation as the customer saw it. The code tools start from the same orders on every call, so a refund is not remembered between calls.
 
 If a model confirms the order first and waits ("Would you like to proceed?"), the turn ends with two tool calls and no refund. The fixed instructions say the request is the confirmation; a prompt that asks for one needs a second turn before `issue_refund` shows up.
 
@@ -120,6 +119,8 @@ If a model confirms the order first and waits ("Would you like to proceed?"), th
 ── Step 2b · Hybrid: function tools your code runs ────
 tools    : lookup_order → get_policy → issue_refund  (executed by dispatch() in this process)
 requests : 4, one per round of the loop, one trace each
+answer   : Your refund of €89 has been issued to the original payment method. It should arrive within 5–7 busin…
+next     : run `orq traces conversation cfc4dc136c2cffce5c6c7a7f36c54183`; the last trace renders the whole conversation
 ```
 
 From curl the continuation is the same two-step cycle:
@@ -135,7 +136,7 @@ Pick function tools when the tool must reach something only your code can reach 
 
 ### Step 3 · Stream
 
-`stream=True` returns an event stream; from curl it is `"stream": true` with `-N`, from the CLI `--stream`. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`, and the complete item on `response.output_item.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches the policy for "what is the refund window?"), so the step asks something the agent answers by itself.
+`stream=True` returns an event stream; from curl it is `"stream": true` with `-N`. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`, and the complete item on `response.output_item.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches the policy for "what is the refund window?"), so the step asks something the agent answers by itself.
 
 ```bash
 $ curl -N -X POST https://my.orq.ai/v3/router/responses \
@@ -155,13 +156,13 @@ $ curl -N -X POST https://my.orq.ai/v3/router/responses \
 ```text
 ── Step 3 · Stream ────────────────────────────────────
 events   : 17
-first    : token at 0.71s
+first    : token at 1.05s
 tokens   : ['Hello', '!', ' How', ' can', ' I', ' help']
 text     : Hello! How can I help you today?
 next     : the first token arrived well before the full text; that is what a chat UI renders
 ```
 
-The CLI does the same: `orq responses create --model agent/ws-refund-agent --input '"..."' --stream`. (`orq agents stream` still exists; it speaks the older A2A shape and the SDK marks it deprecated.)
+The CLI's `--stream` flag does not work in this version: `orq responses create ... --stream` fails with `Not sure how to unmarshal text/event-stream`, so stream with the curl form above. (`orq agents stream` still exists; it speaks the older A2A shape and the SDK marks it deprecated.)
 
 ### Step 4 · Variables, metadata, identity, thread
 
@@ -197,8 +198,8 @@ answer   : Hello, Jane Okafor!
 variables: {'customer_name': 'Jane Okafor'}  (echoed; the placeholder was rendered server-side)
 metadata : {'channel': 'chat', 'session_id': 'sess-ws-1'}  (echoed, and stored on the trace)
 identity : not echoed; thread: not echoed  (both land on the trace)
-trace    : 88fa5f5072c149abf2e9b2d647c50211
-next     : orq traces get 88fa5f5072c149abf2e9b2d647c50211 -o json | jq '.trace | {identity_id, thread_id, metadata: .attributes.metadata}'
+trace    : dc72f5ee97761c3ca3776d0e3d565cea
+next     : orq traces get dc72f5ee97761c3ca3776d0e3d565cea -o json | jq '.trace | {identity_id, thread_id, metadata: .attributes.metadata}'
 ```
 
 Metadata values must be strings (a number is a 400). A variable can also be a secret, `{"secret": true, "value": "..."}`: it is passed to platform tools and redacted from traces. To put placeholders in the agent itself, see the Build Agents docs on variables and templates.
@@ -225,11 +226,11 @@ $ orq responses get resp_...
 
 ```text
 ── Step 5 · Continue a conversation ───────────────────
-turn 1   : Your refund of **€89** for order **ord_a2** has been issued to the original paym…  (ws-lookup_order → ws-get_policy → ws-issue_refund)
-turn 2   : '89'  via previous_response_id=resp_01M2MVV8ZH7FCMZ8JDQM7BVSR3
-get      : resp_01M2MVVADCXV02Y4VGAZ2BM10V status completed, 1 output item(s), same text: True
-background: created with status queued, polled to completed in 1.2s: 'Hello! How can I help you today?'
-next     : orq responses get resp_01M2MVVADCXV02Y4VGAZ2BM10V -o json | jq '.output[0].content[0].text'
+turn 1   : Your €89 refund has been issued to the original payment method. It should arrive…  (ws-lookup_order → ws-get_policy → ws-issue_refund)
+turn 2   : '89'  via previous_response_id=resp_01M52HM0T6TEW9V6MAJHNXZHNE
+get      : resp_01M52HM5PHDNM9BKEB9PV07KXC status completed, 1 output item(s), same text: True
+background: created with status queued, polled to completed in 2.2s: 'Hello! How can I help you today?'
+next     : orq responses get resp_01M52HM5PHDNM9BKEB9PV07KXC -o json | jq '.output[0].content[0].text'
 ```
 
 `previous_response_id` needs the earlier response stored (`store` defaults to true). A background response that ends in a tool call has no text yet: read `output[].type` before `content`.
@@ -254,10 +255,10 @@ $ orq responses create --model agent/ws-refund-agent --input '"Refund ord_a2 ple
 ```text
 ── Step 6 · Control tool calls ────────────────────────
 none     : ['message']
-required : ['reasoning', 'function_call:ws-get_policy']
-get_policy: ['reasoning', 'function_call:ws-get_policy']
+required : ['function_call:ws-get_policy', 'orq:ws-get_policy:ws-get_policy', 'message']
+get_policy: ['function_call:ws-get_policy', 'orq:ws-get_policy:ws-get_policy', 'function_call:ws-lookup_order', 'orq:ws-lookup_order:ws-lookup_order', 'function_call:ws-issue_refund', 'orq:ws-issue_refund:ws-issue_refund', 'message']
 req tools: ['message']  (get_weather echoed on the response, never called: agent tools are configuration)
-next     : `required` on a plain greeting forced a tool the agent did not need; which one varies per run (a policy tool or a knowledge tool)
+next     : `required` on a plain greeting forced a tool the agent did not need; which one varies per run (get_policy or a knowledge tool)
 ```
 
 With `tool_choice="none"` the agent explains it cannot look the order up: the refusal is the instructions working without tools. `required` on a greeting is the anti-pattern the docs warn about; use it for a retrieval step that must always run.
@@ -268,11 +269,13 @@ A memory store is an embedding-backed store of documents per `entity_id`. The ag
 
 ```text
 ── Step 7 · Memory ────────────────────────────────────
+created  : memory store ws_refund_memory
+created  : agent ws-refund-agent-memory
 agent    : ws-refund-agent-memory
-entity   : customer-user_001-1789512500
-turn 1   : Nice to meet you, Jane Okafor, I’ll remember that you prefer store credit over card refunds.
-turn 2   : Yes, Jane, I remember that you prefer store credit over card refunds.
-trace 2  : 9b16877b2c0de9424a4ed024cf44f584
+entity   : customer-user_001-1792160713
+turn 1   : Hi Jane, I’ll keep in mind that you prefer store credit over card refunds.
+turn 2   : Hi Jane! You prefer store credit over card refunds.
+trace 2  : 6983826fc11e5da254516d90c684851c
 next     : open trace 2; expect retrieve_memory_stores and query_memory_store spans, then `orq memory-stores list-memories ws_refund_memory`
 ```
 
@@ -284,11 +287,11 @@ Two things the solution does deliberately. The store key is `ws_refund_memory`: 
 
 ```text
 ── Step 8 · Versions and @version routing ─────────────
-version  : ws-refund-agent already at v1.1.0 (bump skipped, idempotent)
-call     : agent/ws-refund-agent@1.0.0        ok, trace 7a78a06c0065a70736d88491695a8904
-call     : agent/ws-refund-agent@1.1.0        ok, trace 4ad271bc8ac4a57675fe2ae3d606d04c
-call     : agent/ws-refund-agent@latest       ok, trace 72c0cca86acfce6b3ff22f09ee2281c9
-call     : agent/ws-refund-agent@production   version @production not found for agent ws-refund-agent
+version  : bumped ws-refund-agent to v1.1.0
+call     : agent/ws-refund-agent@1.0.0      ok, trace c4164efea735ad177f2d39be8558aefd
+call     : agent/ws-refund-agent@1.1.0      ok, trace eeae2eb23978fc60ca82858b9b7d33c5
+call     : agent/ws-refund-agent@latest     ok, trace 59778bff93a1d71c10d6b0307cebb953
+call     : agent/ws-refund-agent@production version @production not found for agent ws-refund-agent
 next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves
 ```
 
@@ -296,7 +299,7 @@ Environments are assigned in the Studio: **Agents** > `ws-refund-agent` > **Vers
 
 ### Step 9 · The same from the CLI
 
-Every step above has a CLI twin, all on `orq responses create --model agent/<key>`: `--stream`, `--variables k=v`, `--metadata k=v`, `--identity`, `--thread`, `--previous-response-id`, `--tool-choice`, `--memory`, `--background`, and `orq responses get <id>`. What the CLI adds is the trace search:
+Every step above has a CLI twin, all on `orq responses create --model agent/<key>`: `--variables k=v`, `--metadata k=v`, `--identity`, `--thread`, `--previous-response-id`, `--tool-choice`, `--memory`, `--background`, and `orq responses get <id>`; streaming is the exception, use curl (step 3). What the CLI adds is the trace search:
 
 ```bash
 $ orq responses create --model agent/ws-refund-agent --input '"One sentence: what is the refund window?"' -o json | jq '{trace: .telemetry.trace_id, text: .output[0].content[0].text}'
@@ -311,7 +314,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces thread <trace_id>`.
+> Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces conversation <trace_id>`.
 
 ## Proof
 
@@ -319,7 +322,7 @@ Paste `agent_prompt.md`:
 
 ## Done when
 
-- [ ] `run.py` completes a refund in one request with `tools=['ws-lookup_order', 'ws-get_policy', 'ws-issue_refund']`, and `orq traces thread <trace>` shows the answer
+- [ ] `run.py` completes a refund in one request with `tools=['ws-lookup_order', 'ws-get_policy', 'ws-issue_refund']`, and `orq traces conversation <trace>` shows the answer
 - [ ] A stream printed its first token before the full answer
 - [ ] The step 4 response echoes `variables` and `metadata`, and `orq traces get` shows `identity_id` and `thread_id`
 - [ ] Turn 2 answered `89` from `previous_response_id` alone, and `orq responses get` returned the same response

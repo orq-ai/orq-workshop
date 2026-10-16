@@ -51,7 +51,7 @@ def step_1_fill() -> None:
         filters=[{"field": "name", "op": "eq", "values": [AGENT]}],
     ).model_dump(by_alias=True)["data"]
     print("── Step 1 · Fill the queue by API ─────────────────────")
-    print(f"queue    : ws-review-queue {QUEUE}")
+    print(f"queue    : {settings.prefix}-review-queue {QUEUE}")
     print(f"traces   : {len(recent)} recent {AGENT} traces")
     print(f"items    : {len(queue_items())} in the queue")
     # TODO: for the newest 5 that are not queued yet: root span = the list_spans entry with type "trace";
@@ -64,7 +64,7 @@ def step_1_fill() -> None:
 # the queue for its trace id: if it shows up without add_items, the automation works.
 def step_2_automation() -> None:
     print("── Step 2 · Let an automation fill it ─────────────────")
-    print(f"studio   : Traces > Automations > Create, filter agent is {AGENT}, action add to ws-review-queue")
+    print(f"studio   : Traces > Automations > Create, filter agent is {AGENT}, action add to {settings.prefix}-review-queue")
     # TODO: orq.responses.create(model=f"agent/{AGENT}", input=...), poll queue_items() for its trace_id for 30 s
     print("TODO     : run one agent turn with responses.create and poll the queue for its trace id for 30 s, then rerun")
 

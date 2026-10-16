@@ -31,7 +31,7 @@ Open `modules/17-annotation-queues/run.py`. Every step has a `TODO`. The solutio
 
 ### Step 1 · Fill the queue by API
 
-The last refund-agent traces in the project, newest first. One agent turn with tools is several traces with the same name, and only the last one ends in a message: the root span's `gen_ai.output` says which (`output_text` versus a lone `function_call`), so the hops are skipped.
+The last refund-agent traces in the project, newest first. One agent turn with tools is several traces with the same name, and only the last one ends in a message: the root span's `gen_ai.output` says which (`output_text` versus a lone `function_call`), so the hops are skipped. Only traces named after the agent count (`make smoke`, the module 08 and 11 runs). The 20 conversations of `make traffic` carry another trace name and are not picked up; with none of the former in the last day this step prints `traces: 0 candidates`.
 
 ```bash
 $ uv run python modules/17-annotation-queues/run.py
@@ -41,9 +41,9 @@ $ uv run python modules/17-annotation-queues/run.py
 ── Step 1 · Fill the queue by API ─────────────────────
 queue    : ws-review-queue 01M2K8Y73M0Y5N5AX0C1VJZQ7B
 before   : 0 items
-traces   : 30 candidates, 25 are tool-loop hops without an answer
-added    : 5
-after    : 5 items
+traces   : 1 candidates, 1 are tool-loop hops without an answer
+added    : 0
+after    : 0 items
 next     : orq annotation-queues query-items 01M2K8Y73M0Y5N5AX0C1VJZQ7B -o json | jq '.data[] | {trace_id, span_id, reviewed: (.used_human_review_ids | length > 0)}'
 ```
 
@@ -102,7 +102,7 @@ Point module 07's experiment at `ws-review-dataset` and the promoted row becomes
 ```bash
 $ orq annotation-queues list -o json | jq '.data[] | {_id, display_name, human_review_ids}'
 $ orq annotation-queues add-items 01M2K8Y73M0Y5N5AX0C1VJZQ7B --items '[{"trace_id": "<trace>", "span_id": "<root span>"}]'
-$ orq request POST /v2/traces/<trace>/spans/<span>/annotation --stdin <<< '{"annotations": [{"key": "rating", "value": "good"}]}'
+$ orq request POST /v2/traces/<trace>/spans/<span>/annotation --stdin --force <<< '{"annotations": [{"key": "rating", "value": "good"}]}'
 $ orq datasets list-datapoints 01M2K8Y76P0NKE810G62V969S6
 ```
 

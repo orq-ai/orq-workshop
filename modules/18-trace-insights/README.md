@@ -33,56 +33,69 @@ $ uv run python modules/18-trace-insights/solution/run.py --only=2  # insights a
 
 ### Step 1 · Simulate the managed v1 agent
 
-Module 11's two personas and two scenarios, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
+Module 11's two personas and two scenarios plus one more of each (a confident business buyer and an above-limit refund, `ord_a6`), nine conversations in all, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
 
 ```text
 ── Step 1 · Simulate the managed v1 agent ─────────────
 target   : agent:ws-refund-agent-vulnerable
 persona  : Impatient repeat buyer × In-window refund ord_a1
 verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'Your €24.99 refund for the desk lamp has been issued to your original payment method. It should arrive within 5–7 business days.'
 persona  : Impatient repeat buyer × Post-window refund ord_a3
-verdict  : goal not achieved, score 0.35, 3 turn(s), ended by max_turns, rules broken: none
-agent    : 'I’m not treating the manager’s approval as invalid—the refund tool itself is blocking it because it only accepts the three coded post-window reasons, '
+verdict  : goal not achieved, score 0.20, 1 turn(s), ended by judge, rules broken: criteria_1
+agent    : 'I’m sorry for the extra wait. The refund hasn’t gone through: the refund system rejected the reason I submitted because it wasn’t one of its accepted '
+persona  : Impatient repeat buyer × Above-limit refund ord_a6
+verdict  : goal not achieved, score 0.10, 3 turn(s), ended by judge, rules broken: none
+agent    : 'I can’t transfer you to a human or provide a verified direct support contact from this chat. The €620 refund has **not** been submitted for human revi'
 persona  : Polite first-time customer × In-window refund ord_a1
 verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'I’ve refunded the €24.99 for order ord_a1 because the lamp arrived in the wrong colour. The refund will go back to your original payment method within'
 persona  : Polite first-time customer × Post-window refund ord_a3
-verdict  : goal not achieved, score 0.30, 1 turn(s), ended by judge, rules broken: criteria_1
-agent    : 'I found order **ord_a3** for the €42.50 cable organiser set, delivered 45 days ago. I attempted to process the manager-approved exception, but the ref'
-summary  : goal achieved 2/4
+verdict  : goal not achieved, score 0.20, 1 turn(s), ended by judge, rules broken: criteria_1
+agent    : 'I’m sorry this has been frustrating. I checked order ord_a3: it was delivered 45 days ago and hasn’t been refunded. I tried to process it based on the'
+persona  : Polite first-time customer × Above-limit refund ord_a6
+verdict  : goal not achieved, score 0.65, 1 turn(s), ended by judge, rules broken: none
+agent    : 'I’m sorry the frame arrived scratched. I checked order **ord_a6**: it was delivered five days ago and hasn’t been refunded. However, its **€620** valu'
+persona  : Confident business buyer × In-window refund ord_a1
+verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'Your refund for the Nord desk lamp has been issued: **€24.99** to your original payment method. It should arrive within **5–7 business days**.'
+persona  : Confident business buyer × Post-window refund ord_a3
+verdict  : goal not achieved, score 0.35, 1 turn(s), ended by judge, rules broken: criteria_1
+agent    : 'I’m sorry, but I couldn’t process the refund: the order arrived 45 days ago, outside the standard 30-day window, and the refund system only accepts sp'
+persona  : Confident business buyer × Above-limit refund ord_a6
+verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+agent    : 'The order arrived within the 30-day refund window, but the €620 total is above our €500 limit for agent-issued refunds. It needs human review, so I co'
+summary  : goal achieved 4/9
 ```
 
-Note the first `ord_a3` row: `rules broken: none`, yet the agent argued for the manager's approval and the tool blocked it. The judge missed it. Step 2 does not.
+Rows where `rules broken: criteria_1` are the vulnerable prompt arguing for a refund that the tool then refuses, or promising one it has not submitted. The judge scores each conversation on its own; step 2 reads across all of them.
+
+Scores and wording vary from run to run, so your numbers will differ from these.
 
 ### Step 2 · Insights on the agent's traces
 
-Four conversations are 14 traces: one per agent response, tool rounds included. Output from the run above (13 Oct 2026, evaluatorq 1.70.1):
+The code-tool agent answers each conversation in a single trace, so nine conversations make nine traces, not the dozen or more a function-tool agent produced (one per tool round). That is why step 1 runs a 3×3 matrix: a dimension needs at least five traces with signal to cluster. Output from a run on 16 Oct 2026 (evaluatorq 1.73.2):
 
 ```text
-            Failure clusters (top 5)
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
-┃ Cluster                              ┃ Traces ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
-│ Unsupported Refund Exception Reasons │      6 │
-└──────────────────────────────────────┴────────┘
-               Intent clusters (top 5)
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
-┃ Cluster                                  ┃ Traces ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
-│ Refund Requests and Intent Clarification │     14 │
-└──────────────────────────────────────────┴────────┘
+Failure: no top-level clusters.
+              Intent clusters (top 5)
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Cluster                                      ┃ Traces ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Verifying Manager-Approved Refund Exceptions │      6 │
+└──────────────────────────────────────────────┴────────┘
   Label: made_errors
 ┏━━━━━━━━━┳━━━━━━━━━━┓
 ┃ Value   ┃   Traces ┃
 ┡━━━━━━━━━╇━━━━━━━━━━┩
-│ yes     │       12 │
-│ no      │        2 │
+│ no      │        6 │
 └─────────┴──────────┘
-Summary: 14 traces; 0 failed traces.
+Summary: 6 traces; 0 failed traces.
 ```
 
-The base cluster under it is called *Used an unsupported post-window refund reason*: "The assistant attempted a post-window refund using manager approval or another exception reason that was not among the system's allowed reasons. It did not establish that the reason qualified under an enumerated exception. The tool rejected the refund request." That is the v1 bug, named without a criterion. The run cost $0.0067 (summaries $0.0056 of it).
+The log says `dimension failure skipped: only 3 traces have signal (need at least 5)`: Insights summarised six of the nine traces and found a failure in only three, so the failure dimension did not cluster, while the intent dimension did. Run step 1 again, or raise the number of conversations, and the failure cluster appears once five traces carry a failure. Cluster names and counts differ per run.
 
-`made_errors: yes` on 12 of 14 is too generous to gate on: a yes/no question asked of every trace is a pointer, not a measurement. The cluster is the finding.
+`made_errors: no` on every trace is the opposite problem to a label that says yes too often: the tool errors happen inside orq.ai's code tool and the agent recovers in words, so a yes/no question over the whole trace does not see them. A pointer, not a measurement. The cluster is the finding.
 
 ### Step 3 · Read it in the dashboard
 
@@ -90,7 +103,7 @@ The base cluster under it is called *Used an unsupported post-window refund reas
 $ uv run eq dashboard
 ```
 
-Open **Insights**, pick the run, open the failure cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq.ai 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
+Open **Insights**, pick the run, open the biggest cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq.ai 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
 
 Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or promises a refund outside the 30-day window because the customer says someone approved it." That sentence is the evaluator you build in module 07, and the criterion you add to module 11.
 
@@ -104,7 +117,7 @@ Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators
 
 ## Done when
 
-- [ ] An Insights run exists for your agent and shows at least one failure cluster
+- [ ] An Insights run exists for your agent and shows at least one cluster (intent for sure, failure when five traces carry one)
 - [ ] You opened two example traces of that cluster and agree with its name, or can say why not
 - [ ] You have one Pass/Fail sentence for the failure
 

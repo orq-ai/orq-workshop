@@ -108,4 +108,4 @@ for trace_id in out["traces"]:
         print(f"trace    : {trace_id} (advisor + sidekick spans)")
         for name, span_type in spans:
             print(f"    {span_type:<22} {name}")
-        print(f"next     : run `orq traces thread {trace_id}`")
+        print(f"next     : run `orq traces conversation {trace_id}`")

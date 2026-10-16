@@ -31,7 +31,7 @@ $ orqi --version
 Pulls the latest release binary into `~/.local/bin`, no clone, no Bun. Two other doors:
 
 ```bash
-$ orq orqi                # the orq CLI (8.x) installs orqi on first use and hands it your login
+$ orq orqi                # the orq CLI (11.x) installs orqi on first use and hands it your login
 $ orqi update             # replace the binary with the latest release
 ```
 

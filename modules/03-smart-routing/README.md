@@ -38,6 +38,8 @@ Open `modules/03-smart-routing/run.py`. Fill the `TODO`s; the solution is in `so
 
 Pick 3 or 4 enabled models. `orq models list -o json | jq -r '.[] | select(.enabled) | .provider + "/" + .model_id'` lists what is enabled in your workspace (the ids in the pool below were). Create with profile `COST`, then send one easy and one hard prompt to the `model_ref`.
 
+An existing router keeps its profile: the workshop workspace's `ws-refund-router` is `QUALITY`, so `COST` only applies when the script creates it. The router key must be lowercase (`^[a-z0-9-]+$`), so `WS_PREFIX` must be lowercase.
+
 ```bash
 $ uv run python modules/03-smart-routing/run.py
 ```

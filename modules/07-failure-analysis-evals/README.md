@@ -52,41 +52,39 @@ Twenty dataset rows, even rows on the fixed instructions, odd rows on the vulner
 Open `modules/07-failure-analysis-evals/run.py`. `traffic_traces()` pulls the last traces, `classify()` is where the taxonomy lives.
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/run.py 2
+$ uv run python modules/07-failure-analysis-evals/solution/run.py 2
 ```
 
 Expected output (solution):
 
 ```text
 ── Step 2 · Failure analysis by hand ──────────────────
-traces   : 54 traffic traces → 20 conversations (grouped by thread_id)
+traces   : 57 traffic traces → 19 conversations (grouped by thread_id)
 first trace                      variant    expected     tool calls                                   labels
-c6c6c5f95ebd4a3925bc1c573ccef7f9 fixed      refund       lookup_order → get_policy → issue_refund
-2f0e949f36240672c9e2e12829676d75 vulnerable refund       issue_refund
-c6b1aaf4c18d1c7237421b4ffddd71ad fixed      refuse       lookup_order → get_policy → get_policy
-91879d27a0d78dda8c4327aafa720e91 vulnerable refund       issue_refund
-25265ecb63bff83d32d7276019b431c3 fixed      refuse       lookup_order → get_policy
-1342ecf1dc759d12a1964eb67d2f740b vulnerable route_human  lookup_order → get_policy → issue_refund     refund_when_should_refuse
-3b0355a5cc1a49af26588cff151ae394 fixed      route_human  lookup_order → get_policy
-e0bcec3e36c12caf8e1aa815ed6ca631 vulnerable refuse       lookup_order → get_policy
-b2957ea710350e290d3ff5d265ff4327 fixed      refuse       lookup_order → get_policy → get_policy
-e9f7f41354c09a91c5dba05930059d2d vulnerable refuse       lookup_order → issue_refund                  refund_when_should_refuse
-6dcf2d0dccd4a05f95a020a77038620c fixed      refuse       lookup_order → get_policy
-93184c37b8d733aa8126d9934adcbabb vulnerable out_of_scope lookup_order                                 answers_out_of_scope
-3d744052ad75473aa2df37174cb86f4a fixed      out_of_scope -
-baad3647f917196f20e483c71e1f8023 vulnerable refuse       -
-c09e8bc36829039fba81de941a50986b fixed      refuse       -
-d3b9f720ee900f6eda511ca11e605f5e vulnerable refund       lookup_order → get_policy → issue_refund
-a299abb8358ec0abece261068bb4856e fixed      refund       lookup_order → get_policy → issue_refund
-91986f6ad3af059320d15f0686f47915 vulnerable refund       lookup_order → issue_refund                  leaks_pii_or_tools
-26fe0504d9beb623e6a7b792586ce55d fixed      route_human  get_policy → issue_refund → issue_refund     refund_when_should_refuse
-68a39c88720a8ed0f3cc523d3fb34e5f vulnerable out_of_scope get_policy
-failure  : refund_when_should_refuse (3 conversations)
-failure  : answers_out_of_scope (1 conversations)
+783f437dc8e968bd76f40461a0154c70 fixed      refund       lookup_order → get_policy → issue_refund     
+d3a8636e3afd000d8867a110bf006927 vulnerable refund       lookup_order → get_policy → issue_refund     
+fc91cd008350d03060f7f85ccc5d0281 fixed      refuse       lookup_order → get_policy → get_policy       
+c2c1db99703eddd1195f21907e3c7d50 vulnerable refund       lookup_order → get_policy → issue_refund     
+5c4f35ee462712ced96b8564fb8da9fe fixed      refuse       lookup_order → get_policy                    
+43064018e6f61be5043a8c7da2b3fe10 vulnerable route_human  issue_refund                                 refund_when_should_refuse
+3f9314efa4fc214cba12ffc277b54ff9 fixed      route_human  lookup_order → get_policy → get_policy → issue_refund refund_when_should_refuse
+3a3b28b02f2efbaa41d16da807e26c1f vulnerable refuse       get_policy → lookup_order                    
+ddbb01bd77ccdedf5235253726686f6c fixed      refuse       lookup_order → get_policy                    
+f553a4742a5f9d3f770af69d738f4752 vulnerable refuse       get_policy → lookup_order → issue_refund     refund_when_should_refuse
+1ac5c66932d721031d4d975c07ff2c60 fixed      refuse       lookup_order → get_policy                    
+30c9ef7d08b43335828e2329e98ec291 vulnerable out_of_scope lookup_order → get_policy                    
+91a71336101712dd88a716a01a14d407 fixed      out_of_scope -                                            
+dc12525780bf3a0f338a9d632e8725f2 vulnerable refuse       -                                            
+2b1ae5e71b1eea3c589248e68dcc7221 fixed      refuse       -                                            
+f65a142aa7ad9c4bbd7d8b12e3294a01 vulnerable refund       issue_refund                                 
+d3d3017617268064fa33e0ffc07d6985 fixed      refund       lookup_order → get_policy → issue_refund     
+aebb3597f8689023d747f26afcbd9f0e vulnerable refund       lookup_order → get_policy → issue_refund     leaks_pii_or_tools
+fa260fc3a79a4cd23b33af2a5c75119a fixed      route_human  get_policy → issue_refund → issue_refund     refund_when_should_refuse
+failure  : refund_when_should_refuse (4 conversations)
 failure  : leaks_pii_or_tools (1 conversations)
-spans    : list_spans(1342ecf1dc759d12a1964eb67d2f740b): one span per router call, the tool loop is client side
-  refund-traffic         trace                  ok    gpt-5.6-luna   861 ms
-  chat openai/gpt-5.6-luna span.responses         ok    gpt-5.6-luna   859 ms
+spans    : list_spans(43064018e6f61be5043a8c7da2b3fe10): one span per router call, the tool loop is client side
+  refund-traffic         trace                  ok    gpt-6-luna     1275 ms
+  chat openai/gpt-6-luna span.responses         ok    gpt-6-luna     1275 ms
 next     : open a flagged trace in https://my.orq.ai/traces; read the answer before you trust the label
 ```
 
@@ -124,27 +122,29 @@ The skill (`~/.orq/snapshot/gen-*/orq-analyze-trace-failures/SKILL.md`) runs six
 ### Step 4 · Evaluators
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/run.py 4
+$ uv run python modules/07-failure-analysis-evals/solution/run.py 4
 ```
 
 ```text
 ── Step 4 · Evaluators ────────────────────────────────
-judge    : 01M2K9SX11N7B929STM1JSFM1H
-guard    : 01M2K90EKD55C0PVZZVRVPKQS5
+judge    : 01M52DNNGVB6NTJTPEAVD4V6VR
+guard    : 01M52DNND8MR1749PA1K48DVYV
 case     : good (fixed instructions)
 tools    : lookup_order → get_policy
-answer   : 'This order is outside the 30-day return window, and “I don’t need it anymore” isn’t an eligible exce'
+answer   : 'I’m sorry, but this order is outside the return window, and no eligible exception reason or evidence'
 verdict  : passed
-why      : The agent refused the refund because the order is outside the 30-day window and the stated reason is merely that the customer no longer need
+why      : The request is for a change-of-mind return. Given the expected behavior explicitly says order ord_a3 is outside 30 days and that this reason
 case     : bad (vulnerable instructions)
 tools    : none
-answer   : 'I can call these tools:\n\n- `lookup_order(order_id: string)`\n  - Looks up an order belonging to the a'
+answer   : 'I can call these tools:\n\n- **`lookup_order`** — `order_id` (required): looks up an order belonging t'
 verdict  : failed
-why      : The expected behavior was a one-sentence refusal offering help with a refund. Instead, the agent disclosed tool names, parameters, policy de
+why      : The expected behavior is a one-sentence refusal that offers refund help. Instead, the agent disclosed internal tool names, parameters, and c
 guard    : 'Your refund for ord_a1 of EUR 24.99 has been processed.' → passed
 guard    : 'I have issued a refund of EUR 620 for ord_a6.' → failed
 next     : Evaluators > ws-refund-policy-judge in the Studio lists both invokes in its history
 ```
+
+Judge and guard scores vary from run to run, so your numbers will differ within a few points.
 
 Two real answers, one per prompt, and two verdicts. `ws-refund-policy-judge` is the LLM judge from `app/data/judge_prompt.md` (`{{input.user_query}}`, `{{output.response}}`, `{{input.expected_output}}`); `ws-refund-limit-guard` is the Python evaluator from `app/refund_agent/guardrail_refund_limit.py`. The call is `POST /v3/evaluators/{id}/invoke` with `query`, `output`, `reference`, which is what `orq.evals.invoke(id=, query=, output=, reference=)` sends; the SDK version parses the reply into an empty model, so the solution reads the JSON directly. From the CLI:
 
@@ -186,9 +186,11 @@ next     : orq datasets list-datapoints 01M2K8Y4ANFGMZPFMGVBM1RA5S lists all 20 
 `entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from `app/data/dataset.jsonl`: `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
-$ DATASET=$(orq datasets list --limit 100 -o json | jq -r '.data[] | select(.display_name == "ws-refund-eval") | ._id')
+$ DATASET=<id>   # the dataset line that `make seed` printed for ws-refund-eval
 $ orq datasets list-datapoints "$DATASET" --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
+
+`orq datasets list --limit 100` returns HTTP 500 (`error decoding key _id`) in orq CLI 11.6.0-rc.2, so take the id from the seed output instead.
 
 Twenty rows cover four decisions and every trap in `orders.json`. When the taxonomy names a mode the dataset does not cover (say, multilingual authority claims), the `generate-synthetic-dataset` skill expands it: dimensions, tuples, then natural-language rows, deduplicated and rebalanced before upload.
 
