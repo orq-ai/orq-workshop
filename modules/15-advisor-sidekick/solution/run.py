@@ -63,7 +63,8 @@ def run_agent(
             for o in response["output"]
             if o["type"] == "function_call" and o["call_id"] not in done_by_server
         ]
-        if not pending:
+        # code tools run in orq: a turn that ended in a message has nothing left for us
+        if not pending or any(o["type"] == "message" for o in response["output"]):
             break
         outputs = []
         for call in pending:
@@ -126,7 +127,7 @@ print(f"agent    : {delegating['key']} v{delegating['version']} model={delegatin
 print(f"base     : {base['key']} model={base['model']['id']}")
 for tool in delegating["settings"]["tools"]:
     if tool["action_type"] not in ("advisor", "sidekick"):
-        continue  # the three function tools, same as the base agent
+        continue  # the three code tools, same as the base agent
     config = tool.get("configuration") or {}
     if tool["action_type"] == "advisor":
         extra = f"max_transcript_tokens={config.get('max_transcript_tokens')}"
@@ -137,7 +138,7 @@ for tool in delegating["settings"]["tools"]:
 # %%
 rules = [line for line in delegating["instructions"].splitlines() if line.startswith("- ")][-2:]
 print(f"rules    : {rules[0][:80]}... / {rules[1][:80]}...")
-print("next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools")
+print("next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
 
 # %% [markdown]
 # ## Step 2 · Run a refund the agent has to refuse

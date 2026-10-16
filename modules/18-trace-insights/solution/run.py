@@ -34,7 +34,7 @@ _spec = importlib.util.spec_from_file_location("m11", M11 / "run.py")
 m11 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(m11)
 
-AGENT_KEY = settings.key("refund-agent-vulnerable-hosted")  # code tools: orq runs them, so the built-in target works
+AGENT_KEY = settings.key("refund-agent-vulnerable")  # code tools: orq runs them, so the built-in target works
 RUN_JSON = ROOT / ".evaluatorq" / f"{AGENT_KEY}-insights.json"
 
 

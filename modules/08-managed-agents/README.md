@@ -1,43 +1,53 @@
 # Managed agents
 
-!!! abstract "The agent lives in orq.ai, your code executes the tools"
-    The agent lives in orq.ai. Your code is the tool executor: every `function_call` item comes back to you, you answer it, the conversation resumes server-side. One agent, three tools, eight iterations max.
+!!! abstract "The agent and its tools live in orq.ai"
+    The agent lives in orq.ai, and so do its three refund tools: they are code tools, small Python functions orq runs for you. One Responses call is one customer turn, eight iterations max. The hybrid alternative, function tools that your own code runs, is step 2b.
 
 | | |
 |---|---|
 | **Time** | 40 min |
 | **Prerequisites** | modules 00 to 02, `make seed` |
-| **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with a local tool loop, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
+| **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
 
 ## Why
 
-Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to "execute this tool call and send the result back". That is the split the Responses API is built for, and it is what the Studio, the CLI and the coding-agent skills operate on.
+Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
 
 ## The one concept to understand first
 
-A managed agent does not run your Python. When it decides to call `lookup_order`, the response comes back `status: completed` with a `function_call` output item and stops. You execute it, then continue the same response chain:
+Who runs the tools? The refund tools are **code tools**: Python registered in orq (`make seed` generates it from `app/refund_agent/tools.py`). When the agent decides to call `lookup_order`, orq runs the code, feeds the result to the model and loops until it has an answer. One call, one finished response:
 
 ```python
 from orq_ai_sdk import Orq
 
 orq = Orq(api_key=os.environ["ORQ_API_KEY"])          # app/refund_agent/client.py: make_orq()
 r = orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please")
+# r.output: function_call (ws-lookup_order), orq:ws-lookup_order (its result), ..., message (the answer)
+```
+
+The other option is a **function tool**: orq runs the model, your code runs the tool. The response then stops at a `function_call` item and you continue the chain yourself. That is the hybrid method (step 2b), for tools that must touch your own systems:
+
+```python
+r = orq.responses.create(model="agent/ws-refund-agent-function", input="Refund ord_a2 please")
 call = r.output[0]                                   # type=function_call, name, arguments, call_id
 result = dispatch(store, call.name, json.loads(call.arguments))
 r = orq.responses.create(
-    model="agent/ws-refund-agent",
+    model="agent/ws-refund-agent-function",
     previous_response_id=r.id,                       # server-side state, no history resent
     input=[{"type": "function_call_output", "call_id": call.call_id, "output": json.dumps(result)}],
 )
 ```
 
-![Diagram: the Responses API tool loop. Your app calls responses.create on agent/ws-refund-agent; the agent runs the model and returns a function_call item with a call_id; your app executes it with tools.dispatch and sends a function_call_output with previous_response_id; the loop repeats until a message item with a trace id comes back.](assets/responses-tool-loop.png)
+![Diagram: the Responses API tool loop for function tools. Your app calls responses.create on agent/ws-refund-agent-function; the agent runs the model and returns a function_call item with a call_id; your app executes it with tools.dispatch and sends a function_call_output with previous_response_id; the loop repeats until a message item with a trace id comes back.](assets/responses-tool-loop.png)
 
 Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`) also emit a `function_call` item, followed by an `orq:<tool>` item carrying the result; those are not yours to answer. Every call returns `telemetry.trace_id`.
 
 ## Steps
 
-Open `modules/08-managed-agents/run.py`. The loop in `run_agent` has two `TODO`s, and steps 4 to 6 one each. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
+Open `modules/08-managed-agents/run.py`. `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. !!! note "Recorded output"
+    The `text` blocks below were recorded when `ws-refund-agent` still had function tools. With code tools the tool names read `ws-lookup_order`, `ws-issue_refund`, `ws-get_policy`, a turn is one request instead of four, and agent versions differ per workspace. Run `make m08` for your own numbers.
+
+The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
 
 ### Step 1 · Inspect the agent
 
@@ -54,15 +64,15 @@ agent    : ws-refund-agent v1.1.0 (live)
 model    : openai/gpt-5.6-luna
 limits   : max_iterations 8, max_execution_time 120s
 approval : tool_approval_required=respect_tool
-tools    : [('function', 'ws-lookup-order', 'S4GC7Z'), ('function', 'ws-issue-refund', '7NXF3X'), ('function', 'ws-get-policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
+tools    : [('code', 'ws-lookup_order', 'S4GC7Z'), ('code', 'ws-issue_refund', '7NXF3X'), ('code', 'ws-get_policy', 'Z2QE66'), ('retrieve_knowledge_bases', 'Retrieve Knowledge Bases', '55XZ86'), ('query_knowledge_base', 'Query Knowledge Base', 'X018W4')]  (action_type, key, id suffix: the READ shape)
 kb       : [{'knowledge_id': '01M2K8Y4HRF33KBXZVMTQVM6KB'}]
 memory   : []
 patch    : rejected, ValueError: Could not find discriminator field type in {'id': '01M2K8Y61FFSQ5BE3BV…
-write    : settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]
+write    : settings.tools = [{'type': 'code', 'key': 'ws-lookup_order'}, ...]
 next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 8
 ```
 
-Reads and writes have different shapes. A GET returns tools as `{action_type, id, key, requires_approval}`; a create or update wants `{"type": "function", "key": "ws-lookup-order"}`. Inline function schemas are rejected: register the tool once (`orq tools create`), then reference it by key. Open the agent in the Studio (**Agents** > `ws-refund-agent`): the same instructions, the tool list, the limits, and a **Versions** tab.
+Reads and writes have different shapes. A GET returns tools as `{action_type, id, key, requires_approval}`; a create or update wants `{"type": "code", "key": "ws-lookup_order"}`. Inline tool schemas are rejected: register the tool once (`orq tools create`), then reference it by key. The model sees the key as the tool name, which is why the code tools use underscores. Open the agent in the Studio (**Agents** > `ws-refund-agent`): the same instructions, the tool list, the limits, and a **Versions** tab.
 
 ### Step 2 · Invoke it: Python SDK, curl, CLI
 
@@ -86,50 +96,46 @@ The CLI:
 $ orq responses create --model agent/ws-refund-agent --input '"Refund ord_a2 please, the dock does not fit."' -o json
 ```
 
-All three return the same response object: `id`, `status: completed`, `output[]` and `telemetry.trace_id`. For this question the first `output` item is a `function_call`, so the turn is not over: `run_agent` executes it and continues, four requests in total.
+All three return the same response object: `id`, `status: completed`, `output[]` and `telemetry.trace_id`. Because the tools are code tools, that one response already holds the whole turn: a `function_call` item per tool call, the `orq:<tool>` item with its result, and the final `message`. `run_agent` is a single call that reads the tool names from the output.
 
 ```text
-── Step 2 · Invoke it and execute the tool calls ──────
+── Step 2 · Invoke it ─────────────────────────────────
 question : Refund ord_a2 please, the dock does not fit.
-tools    : lookup_order → get_policy → issue_refund
-requests : 4 in 4.5s, cost $0.00007
-answer   : Your refund of **€89.00** for the charging dock has been processed to the original payment method. P…
-first    : 06fd53186e9a2ea2ed92fab1a22017a4
-last     : 523e86384f5756caac784033b06cc2f3
-next     : run `orq traces thread 523e86384f5756caac784033b06cc2f3`; the last trace renders the whole conversation
+tools    : ws-lookup_order → ws-get_policy → ws-issue_refund
+requests : 1 in <seconds>s, cost $<cost>
+answer   : Your refund of €89.00 for the charging dock has been processed …
+trace    : <trace id>
+next     : run `orq traces thread <trace id>`; the spans show each tool call orq ran
 ```
 
-Four requests, four traces: each Responses call is its own trace with an `agent.response` span and a `chat openai/gpt-5.6-luna` span. State is server-side, so the last trace's thread view is the conversation as the customer saw it; the tool calls and their results sit in the three traces before it:
+The trace has an `agent.response` span, the `chat` spans of the model and one span per tool call. `orq traces thread <trace>` renders the conversation as the customer saw it. The code tools start from the same orders on every call, so a refund is not remembered between calls.
 
-```console
-$ orq traces thread c4e68bf2a8a0e9814b9e08eb9dabb93c --slice -2:
-<thread trace="c4e68bf2a8a0e9814b9e08eb9dabb93c" span="26b1f583bbd66a49" format="responses" model="gpt-5.6-luna" duration_ms="1398" tokens="1343">
+If a model confirms the order first and waits ("Would you like to proceed?"), the turn ends with two tool calls and no refund. The fixed instructions say the request is the confirmation; a prompt that asks for one needs a second turn before `issue_refund` shows up.
 
-<message index="0" role="user">
-Refund ord_a2 please, the dock does not fit.
-</message>
+### Step 2b · Hybrid: function tools your code runs
 
-<message index="1" role="assistant">
-Your refund of **€89** for the charging dock has been issued to the original payment method. It should arrive within **5–7 business days**.
-</message>
+`ws-refund-agent-function` is the same agent with the three tools registered as function tools (`ws-lookup-order`, ...). orq runs the model, your process runs the tools. The solution's `run_function_agent` is the loop from the diagram above: execute each `function_call` with `tools.dispatch`, send a `function_call_output` keyed on `call_id`, continue with `previous_response_id`, until a message comes back. One request per round, one trace each; the last trace's thread view is the whole conversation.
 
-</thread>
+```text
+── Step 2b · Hybrid: function tools your code runs ────
+tools    : lookup_order → get_policy → issue_refund  (executed by dispatch() in this process)
+requests : 4, one per round of the loop, one trace each
 ```
 
-From curl the continuation is the same two-step cycle: `previous_response_id` plus a `function_call_output` item keyed on `call_id`:
+From curl the continuation is the same two-step cycle:
 
 ```bash
 $ curl -X POST https://my.orq.ai/v3/router/responses \
   -H "Authorization: Bearer $ORQ_API_KEY" -H "Content-Type: application/json" \
-  -d '{"model": "agent/ws-refund-agent", "previous_response_id": "resp_...",
+  -d '{"model": "agent/ws-refund-agent-function", "previous_response_id": "resp_...",
        "input": [{"type": "function_call_output", "call_id": "call_...", "output": "{\"ok\": true, \"order\": {...}}"}]}'
 ```
 
-If a model confirms the order first and waits ("Would you like to proceed?"), the turn ends with two tool calls and no refund. The fixed instructions say the request is the confirmation; a prompt that asks for one needs a second turn before `issue_refund` shows up.
+Pick function tools when the tool must reach something only your code can reach (your database, a private API) or needs your own approval step; pick code tools when the logic can live in orq.
 
 ### Step 3 · Stream
 
-`stream=True` returns an event stream; from curl it is `"stream": true` with `-N`, from the CLI `--stream`. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`, and the complete item, with `arguments` and `call_id` ready for the continuation, on `response.output_item.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches `get_policy` for "what is the refund window?"), so the step asks something the agent answers by itself.
+`stream=True` returns an event stream; from curl it is `"stream": true` with `-N`, from the CLI `--stream`. Text arrives as `response.output_text.delta` events; a `function_call` arrives as `response.function_call_arguments.delta` and `.done`, and the complete item on `response.output_item.done`. A prompt the agent answers with a tool call streams no text at all (luna fetches the policy for "what is the refund window?"), so the step asks something the agent answers by itself.
 
 ```bash
 $ curl -N -X POST https://my.orq.ai/v3/router/responses \
@@ -219,7 +225,7 @@ $ orq responses get resp_...
 
 ```text
 ── Step 5 · Continue a conversation ───────────────────
-turn 1   : Your refund of **€89** for order **ord_a2** has been issued to the original paym…  (lookup_order → get_policy → issue_refund)
+turn 1   : Your refund of **€89** for order **ord_a2** has been issued to the original paym…  (ws-lookup_order → ws-get_policy → ws-issue_refund)
 turn 2   : '89'  via previous_response_id=resp_01M2MVV8ZH7FCMZ8JDQM7BVSR3
 get      : resp_01M2MVVADCXV02Y4VGAZ2BM10V status completed, 1 output item(s), same text: True
 background: created with status queued, polled to completed in 1.2s: 'Hello! How can I help you today?'
@@ -230,28 +236,28 @@ next     : orq responses get resp_01M2MVVADCXV02Y4VGAZ2BM10V -o json | jq '.outp
 
 ### Step 6 · Control tool calls
 
-`tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least one, `{"type": "function", "name": "get_policy"}` forces a named one. A `tools` array in the request is accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration, MCP and HTTP tools included ([module 10](https://orq-ai.github.io/orq-workshop/modules/10/), [module 15](https://orq-ai.github.io/orq-workshop/modules/15/)). Built-in tools (`orq:current_date` in SDK 4.14, `orq:datetime` in the docs) follow the same rule: attach them to the agent.
+`tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least one, `{"type": "function", "name": "ws-get_policy"}` forces a named one (the tool key). A `tools` array in the request is accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration, MCP and HTTP tools included ([module 10](https://orq-ai.github.io/orq-workshop/modules/10/), [module 15](https://orq-ai.github.io/orq-workshop/modules/15/)). Built-in tools (`orq:current_date` in SDK 4.14, `orq:datetime` in the docs) follow the same rule: attach them to the agent.
 
 ```python
 orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please, the dock does not fit.", tool_choice="none")
 orq.responses.create(model="agent/ws-refund-agent", input="Hello!", tool_choice="required")
-orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please.", tool_choice={"type": "function", "name": "get_policy"})
+orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please.", tool_choice={"type": "function", "name": "ws-get_policy"})
 ```
 
 ```bash
 $ curl -X POST https://my.orq.ai/v3/router/responses \
   -H "Authorization: Bearer $ORQ_API_KEY" -H "Content-Type: application/json" \
   -d '{"model": "agent/ws-refund-agent", "input": "Refund ord_a2 please, the dock does not fit.", "tool_choice": "none"}'
-$ orq responses create --model agent/ws-refund-agent --input '"Refund ord_a2 please."' --tool-choice '{"type": "function", "name": "get_policy"}'
+$ orq responses create --model agent/ws-refund-agent --input '"Refund ord_a2 please."' --tool-choice '{"type": "function", "name": "ws-get_policy"}'
 ```
 
 ```text
 ── Step 6 · Control tool calls ────────────────────────
 none     : ['message']
-required : ['reasoning', 'function_call:get_policy']
-get_policy: ['reasoning', 'function_call:get_policy']
+required : ['reasoning', 'function_call:ws-get_policy']
+get_policy: ['reasoning', 'function_call:ws-get_policy']
 req tools: ['message']  (get_weather echoed on the response, never called: agent tools are configuration)
-next     : `required` on a plain greeting forced a tool the agent did not need; which one varies per run (get_policy or a knowledge tool)
+next     : `required` on a plain greeting forced a tool the agent did not need; which one varies per run (a policy tool or a knowledge tool)
 ```
 
 With `tool_choice="none"` the agent explains it cannot look the order up: the refusal is the instructions working without tools. `required` on a greeting is the anti-pattern the docs warn about; use it for a retrieval step that must always run.
@@ -270,7 +276,7 @@ trace 2  : 9b16877b2c0de9424a4ed024cf44f584
 next     : open trace 2; expect retrieve_memory_stores and query_memory_store spans, then `orq memory-stores list-memories ws_refund_memory`
 ```
 
-Two things the solution does deliberately. The store key is `ws_refund_memory`: memory store keys must match `^[A-Za-z]([A-Za-z0-9]*([._][A-Za-z0-9]+)*)?$`, so the `ws-` prefix is not allowed. And the memory goes on a copy, `ws-refund-agent-memory`, not on `ws-refund-agent`: once an agent has memory tools, every call without `memory.entity_id` is a `400 Memory entity ID is required`, which would break every other module that invokes `agent/ws-refund-agent`. Check the store: `orq memory-stores list-memories ws_refund_memory`.
+Two things the solution does deliberately. The store key is `ws_refund_memory`: memory store keys must match `^[A-Za-z]([A-Za-z0-9]*([._][A-Za-z0-9]+)*)?$`, so the `ws-` prefix is not allowed. And the memory goes on a copy, `ws-refund-agent-memory`, not on `ws-refund-agent`: once an agent has memory tools, every call without `memory.entity_id` is a `400 Memory entity ID is required`, which would break every other module that invokes `agent/ws-refund-agent`. The copy is built from the same code tools. Check the store: `orq memory-stores list-memories ws_refund_memory`.
 
 ### Step 8 · Versions and `@version` routing
 
@@ -305,7 +311,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces thread <trace_id>`.
+> Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces thread <trace_id>`.
 
 ## Proof
 
@@ -313,21 +319,21 @@ Paste `agent_prompt.md`:
 
 ## Done when
 
-- [ ] `run.py` completes a refund with `tools=['lookup_order', 'get_policy', 'issue_refund']` and `orq traces thread <last trace>` shows the answer
+- [ ] `run.py` completes a refund in one request with `tools=['ws-lookup_order', 'ws-get_policy', 'ws-issue_refund']`, and `orq traces thread <trace>` shows the answer
 - [ ] A stream printed its first token before the full answer
 - [ ] The step 4 response echoes `variables` and `metadata`, and `orq traces get` shows `identity_id` and `thread_id`
 - [ ] Turn 2 answered `89` from `previous_response_id` alone, and `orq responses get` returned the same response
 - [ ] `tool_choice="none"` produced a `message` and no `function_call`
 - [ ] `orq memory-stores list-memories ws_refund_memory` lists an entity with one document, and turn 2 recalled the name
 - [ ] `orq agents retrieve ws-refund-agent -o json | jq .version` is `1.1.0` and `@1.0.0` still answers
-- [ ] You can say which output item types your loop must answer and which it must not
+- [ ] You can say when a tool should be a code tool and when a function tool, and which output item types a function-tool loop must answer and which it must not
 
 ## Gotchas
 
 - `orq agents get` does not exist; it is `orq agents retrieve <key>`.
 - Each `responses.create` is a new trace, also with `previous_response_id`. Search by agent name, or pass `thread={"id": ...}` to group them in the thread view.
-- `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and a server-side tool with `requires_approval: true` still ran in our test. See `solution/stretch_factor7.py`.
-- The agent's attached knowledge base (`ws-refund-policy`) is never searched in these traces; the agent uses `get_policy`. Module 09 covers why, and what retrieval looks like.
+- `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See `solution/stretch_factor7.py`.
+- The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
 - SDK 4.14 rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.

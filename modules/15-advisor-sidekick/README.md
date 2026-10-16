@@ -57,12 +57,12 @@ base     : ws-refund-agent model=openai/gpt-5.6-luna
 advisor  : model=openai/gpt-5.6-sol max_uses=2 max_transcript_tokens=4000
 sidekick : model=openai/gpt-5.4-nano max_uses=2 output_format='Two sentences.'
 rules    : - Before refusing a post-window or above-limit request, ask the advisor whether ... / - After any refund decision, delegate writing the two-sentence customer-facing c...
-next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools
+next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools
 ```
 
 The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
 
-`make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three function tools, each with its model.
+`make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
 
 ### Step 2 · Run a refund the agent has to refuse
 

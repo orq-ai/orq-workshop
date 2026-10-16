@@ -41,8 +41,8 @@ from openai import AsyncOpenAI
 
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
 SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge
-MANAGED_AGENT_KEY = settings.key("refund-agent")  # function tools: your code runs them
-HOSTED_AGENT_KEY = settings.key("refund-agent-hosted")  # code tools: orq runs them
+MANAGED_AGENT_KEY = settings.key("refund-agent-function")  # function tools: your code runs them
+HOSTED_AGENT_KEY = settings.key("refund-agent")  # code tools: orq runs them
 # The workshop simulates v1, the vulnerable prompt, so the run surfaces a real failure.
 # After you write the eval for it (block 4), switch to "fixed" and re-run.
 VARIANT = "vulnerable"
@@ -216,10 +216,10 @@ async def step_2_generate() -> None:
 
 
 # ── Step 3 · The managed agent, twice ──
-# ws-refund-agent has function tools that your code executes (module 08). The built-in
+# ws-refund-agent-function has function tools that your code executes (module 08). The built-in
 # "agent:<key>" target does not know how to run lookup_order: it stubs the pending tool call,
 # the assistant text comes back empty and the judge scores an empty transcript. That is the
-# harness failing, not the agent. ws-refund-agent-hosted is the same agent with its tools as orq
+# harness failing, not the agent. ws-refund-agent is the same agent with its tools as orq
 # code tools, so orq runs them and the same built-in target needs no help. previous_run replays
 # the case 3a just saved (same persona, scenario and opening message), so only the target changes.
 async def step_3_managed() -> None:

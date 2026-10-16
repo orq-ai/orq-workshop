@@ -85,14 +85,24 @@ class _HostedOrq:
 
 
 @pytest.mark.parametrize(
-    ("variant", "key", "instructions"),
-    [("fixed", "ws-refund-agent-hosted", "fixed"), ("vulnerable", "ws-refund-agent-vulnerable-hosted", "vulnerable")],
+    ("variant", "kind", "key", "tool_type"),
+    [
+        ("fixed", "code", "ws-refund-agent", "code"),
+        ("vulnerable", "code", "ws-refund-agent-vulnerable", "code"),
+        ("fixed", "function", "ws-refund-agent-function", "function"),
+    ],
 )
-def test_hosted_agent_has_a_key_per_variant_and_code_tools(monkeypatch, variant, key, instructions):
+def test_agent_has_a_key_per_variant_and_tool_kind(monkeypatch, variant, kind, key, tool_type):
     monkeypatch.setattr(entities, "K", lambda name: f"ws-{name}")
     orq = _HostedOrq()
-    assert entities.ensure_hosted_agent(orq, variant) == key
+    keys = ["ws-lookup_order"] if kind == "code" else ["ws-lookup-order"]
+    assert entities.ensure_agent(orq, variant, tool_keys=keys, tool_kind=kind) == key
     (payload,) = orq.agents_created
     assert payload["key"] == key
-    assert payload["instructions"].startswith((entities.DATA_DIR / f"{instructions}_instructions.md").read_text())
-    assert {tool["type"] for tool in payload["settings"]["tools"]} == {"code"}
+    assert payload["instructions"].startswith((entities.DATA_DIR / f"{variant}_instructions.md").read_text())
+    assert {tool["type"] for tool in payload["settings"]["tools"]} == {tool_type}
+
+
+def test_code_tools_are_registered_with_underscore_keys(monkeypatch):
+    monkeypatch.setattr(entities, "K", lambda name: f"ws-{name}")
+    assert entities.ensure_code_tools(_HostedOrq()) == ["ws-lookup_order", "ws-issue_refund", "ws-get_policy"]

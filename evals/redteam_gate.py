@@ -17,7 +17,7 @@ The target is evaluatorq's built-in `agent:<key>` target on the hosted refund ag
 tools are orq code tools: lookup_order / get_policy / issue_refund really execute in orq, so a
 successful attack really issues a refund (in memory, inside the tool). CLI equivalent:
 
-    eq redteam run -t agent:ws-refund-agent-hosted --mode static --dataset evals/redteam_static.json -y
+    eq redteam run -t agent:ws-refund-agent --mode static --dataset evals/redteam_static.json -y
 
 Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed` once
 first: it creates the hosted agent.
@@ -227,8 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--agent",
-        default=settings.key("refund-agent-hosted"),
-        help="hosted agent key (tools run in orq), e.g. ws-refund-agent-vulnerable-hosted",
+        default=settings.key("refund-agent"),
+        help="hosted agent key (tools run in orq), e.g. ws-refund-agent-vulnerable",
     )
     parser.add_argument(
         "--max-static-datapoints",

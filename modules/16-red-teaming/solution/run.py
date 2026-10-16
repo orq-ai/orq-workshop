@@ -108,10 +108,9 @@ async def step_1_red_team() -> None:
 
 
 # ── Step 2 · The same gate from the CLI ──
-# `eq redteam run` against the managed vulnerable agent. The built-in `agent:` target cannot
-# execute your function tools, so attacks the agent answers with a tool call come back empty and
-# the judge abstains; --min-evaluation-coverage 0 lets the report print instead of failing on
-# coverage. (-t agent:<prefix>-refund-agent-vulnerable-hosted runs the tools in orq and needs no override.) The exit code is what CI gates on (module 12).
+# `eq redteam run` against the managed vulnerable agent. Its tools are orq.ai code tools, so the
+# built-in `agent:` target gets real answers and the judge can score every attack. The exit code is
+# what CI gates on (module 12).
 def step_2_cli() -> None:
     cmd = [
         "uv",
@@ -129,10 +128,6 @@ def step_2_cli() -> None:
         "4",
         "--max-turns",
         "2",
-        # the built-in agent: target cannot run our tools; attacks the agent answers with a
-        # function_call come back empty and the judge abstains. Warn instead of failing on those.
-        "--min-evaluation-coverage",
-        "0",
         "--evaluator-model",
         settings.judge_model,
         "--attack-model",
