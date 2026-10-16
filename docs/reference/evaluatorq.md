@@ -50,7 +50,7 @@ $ uv add "evaluatorq[dashboard]"           # + the local dashboard
 $ uv add "evaluatorq[all]"                 # everything
 ```
 
-There are also framework extras (`langchain`, `langgraph`, `openai-agents`, `pydantic-ai`, `crewai`, `otel`) because the target can be any of those, a plain async function, or an orq-hosted agent by key.
+There are also framework extras (`langchain`, `langgraph`, `openai-agents`, `pydantic-ai`, `crewai`, `otel`) because the target can be any of those, a plain async function, or an orq.ai-hosted agent by key.
 
 !!! warning "`eq dashboard` needs its own extra"
     Without `evaluatorq[dashboard]` the command refuses to start and only the older, deprecated `eq sim ui` / `eq redteam ui` Streamlit views work.
@@ -65,7 +65,7 @@ The same call does both. The credential is the switch:
 | **How you read them** | `eq dashboard` on `127.0.0.1:8080` | the Studio, or the local dashboard, or both |
 | **Who else can see them** | nobody (nothing leaves the machine) | everyone with workspace access |
 | **History** | whatever is in the folder | every run, versioned, comparable, with per-row verdicts |
-| **Which models you can call** | any provider key you hold | the orq AI Router, so the calls are traced, costed and budgeted |
+| **Which models you can call** | any provider key you hold | the orq.ai Router, so the calls are traced, costed and budgeted |
 | **Cost visibility** | the run's own token counts | the run **and** its spend, against budgets and identities |
 
 Two details that bite:

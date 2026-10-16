@@ -1,7 +1,7 @@
 # Managed agents
 
-!!! abstract "The agent lives in orq, your code executes the tools"
-    The agent lives in orq. Your code is the tool executor: every `function_call` item comes back to you, you answer it, the conversation resumes server-side. One agent, three tools, eight iterations max.
+!!! abstract "The agent lives in orq.ai, your code executes the tools"
+    The agent lives in orq.ai. Your code is the tool executor: every `function_call` item comes back to you, you answer it, the conversation resumes server-side. One agent, three tools, eight iterations max.
 
 | | |
 |---|---|
@@ -11,7 +11,7 @@
 
 ## Why
 
-Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to "execute this tool call and send the result back". That is the split the Responses API is built for, and it is what the Studio, the CLI and the coding-agent skills operate on.
+Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to "execute this tool call and send the result back". That is the split the Responses API is built for, and it is what the Studio, the CLI and the coding-agent skills operate on.
 
 ## The one concept to understand first
 
@@ -332,7 +332,7 @@ Paste `agent_prompt.md`:
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
 - SDK 4.14 rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 Agents can delegate: an `advisor` tool consults a second model mid-turn and a `sidekick` tool hands off a discrete task, each metered on its own span. Module 15 is that pattern on `ws-refund-agent-delegating`, down to the cost split in the trace. 4.12 added a configurable timeout per agent tool.
 

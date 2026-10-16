@@ -44,7 +44,7 @@ $ make m05
 
 ### Step 1 · API keys, and a key for the CI runner
 
-![Diagram: what a key is allowed to do. Permission mode — ALL, READ_ONLY, or RESTRICTED with a per-domain access map — crossed with project scope, all projects or a single one. A panel records what this workspace stored in September 2026 when a restricted single-project key was requested: permission mode all, project scope all, access null.](assets/05-key-scopes.png)
+![Diagram: what a key is allowed to do. Permission mode (ALL, READ_ONLY, or RESTRICTED with a per-domain access map) crossed with project scope, all projects or a single one. A panel records what this workspace stored in September 2026 when a restricted single-project key was requested: permission mode all, project scope all, access null.](assets/05-key-scopes.png)
 
 ```console
 $ orq api-keys list -o json | jq '.[0] | {id, name, permission_mode, project_scope, token}'
@@ -96,7 +96,7 @@ Open Traces, filter by identity `customer-user_001`: the calls from this module 
 
 ### Step 3 · Budgets: the third call fails
 
-![Diagram: which budget stops the call. The six targets a budget can attach to — workspace, project, identity, api key, provider, model — with identity highlighted as the one this module trips, the rule that every matching budget is checked and the most restrictive wins, and the real 429 body naming scope_kind IDENTITY and scope_target_id customer-user_001.](assets/05-budget-scopes.png)
+![Diagram: which budget stops the call. The six targets a budget can attach to: workspace, project, identity, api key, provider, model, with identity highlighted as the one this module trips, the rule that every matching budget is checked and the most restrictive wins, and the real 429 body naming scope_kind IDENTITY and scope_target_id customer-user_001.](assets/05-budget-scopes.png)
 
 The identity budget allows 2 requests per minute and USD 5 per month. Three calls, tagged with the identity, through `ws-ci-key`:
 
@@ -188,7 +188,7 @@ $ orq launch claude
 
 Paste the prompt from `agent_prompt.md` in this module directory:
 
-> Use the orq MCP tool `query_analytics` to break down spend by model for the last 24 hours in this workspace. Give me a table with model, requests and cost, name the most expensive model, and propose one budget for it: scope, period, amount and a requests-per-minute value, with the exact `orq budgets create` command. Do not create it.
+> Use the orq.ai MCP tool `query_analytics` to break down spend by model for the last 24 hours in this workspace. Give me a table with model, requests and cost, name the most expensive model, and propose one budget for it: scope, period, amount and a requests-per-minute value, with the exact `orq budgets create` command. Do not create it.
 
 ## Done when
 
@@ -207,7 +207,7 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 - Requests-per-minute is a rolling 60 s window independent of the period. The `x-ratelimit-*` headers show a budget's values only on the `429` it raises; on a `200` they show the platform limit.
 - SDK 4.14: `mgmt.budgets.list()` fails on an empty list (`data` missing) and `api_keys.create()` rejects the documented `single` scope. The solution uses `httpx` against `/v2/budgets` and `/v2/api-keys`.
 
-## New in orq 4.11
+## New in orq.ai 4.11
 
 Budgets became a first-class entity with six scopes, cost, token and requests-per-minute limits, threshold alerts to notifiers, and Management Keys to administer them from code. 4.12 added an activity overview per model and API key.
 

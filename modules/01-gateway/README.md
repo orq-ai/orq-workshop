@@ -11,7 +11,7 @@
 
 ## Why
 
-Most teams start with orq as a proxy: point the OpenAI SDK at `https://my.orq.ai/v3/router` and every call is traced. This module shows that the same request body also carries resilience and cost controls. The app stays a plain OpenAI client; the request grows.
+Most teams start with orq.ai as a proxy: point the OpenAI SDK at `https://my.orq.ai/v3/router` and every call is traced. This module shows that the same request body also carries resilience and cost controls. The app stays a plain OpenAI client; the request grows.
 
 ## The one concept to understand first
 
@@ -124,7 +124,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
 
 ## Done when
 
@@ -140,7 +140,7 @@ Paste `agent_prompt.md`:
 - `cache` keys on the exact request. A different `thread` or `metadata` value is a different cache key.
 - The load balancer picks per request. With two models and four calls you may see the same model four times.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 Router error envelopes are consistent across providers, so the OpenAI SDK parses every error, and rate-limited requests return `Retry-After`. Incremental streaming (4.11) lowers time to first token on the same endpoint.
 

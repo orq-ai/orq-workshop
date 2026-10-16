@@ -49,26 +49,26 @@ This trips people up. A keyword search can return `1.000` while a hybrid search'
 
 ## Internal and external knowledge bases
 
-![Diagram: internal versus external knowledge bases. With an internal base orq chunks, embeds and searches your documents; with an external one you do all three behind your own endpoint and orq stores no chunks and no vectors. Either way orq applies the same tail (top_k, threshold, rerank, rerank threshold), so both return matches in the same shape.](../assets/diagrams/rag-internal-external.png)
+![Diagram: internal versus external knowledge bases. With an internal base orq.ai chunks, embeds and searches your documents; with an external one you do all three behind your own endpoint and orq.ai stores no chunks and no vectors. Either way orq.ai applies the same tail (top_k, threshold, rerank, rerank threshold), so both return matches in the same shape.](../assets/diagrams/rag-internal-external.png)
 
-An **internal** knowledge base stores your documents: orq chunks, embeds and indexes them. An **external** one stores nothing: you register an HTTPS endpoint and orq calls it. The division of labour:
+An **internal** knowledge base stores your documents: orq.ai chunks, embeds and indexes them. An **external** one stores nothing: you register an HTTPS endpoint and orq.ai calls it. The division of labour:
 
 | Concern | Internal | External |
 |---|---|---|
-| chunking, embedding, storage | orq, via `embedding_model` | **yours** (orq holds no chunks and no vectors) |
-| the search itself | orq: `vector_search` / `keyword_search` / `hybrid_search` | **yours** (an external base has no `retrieval_type`; your endpoint decides how to search) |
-| `top_k`, `threshold` | orq applies them | sent to you in the request **and** re-applied by orq to what you return |
-| rerank | orq, via `rerank_config` | **orq**, on the results you returned |
+| chunking, embedding, storage | orq.ai, via `embedding_model` | **yours** (orq.ai holds no chunks and no vectors) |
+| the search itself | orq.ai: `vector_search` / `keyword_search` / `hybrid_search` | **yours** (an external base has no `retrieval_type`; your endpoint decides how to search) |
+| `top_k`, `threshold` | orq.ai applies them | sent to you in the request **and** re-applied by orq.ai to what you return |
+| rerank | orq.ai, via `rerank_config` | **orq.ai**, on the results you returned |
 | auth | your workspace API key | `Authorization: Bearer <api_key>`, stored encrypted |
-| transport | inside the platform | public HTTPS (orq calls you, so the endpoint must be reachable) |
+| transport | inside the platform | public HTTPS (orq.ai calls you, so the endpoint must be reachable) |
 
-The row worth dwelling on is rerank. Going external does **not** mean giving up orq's ranking: after your endpoint answers, orq applies the same tail it applies internally: cut to `top_k`, filter by `threshold`, rerank, filter by the rerank threshold. You own retrieval; the platform still owns ranking discipline. Reranking can also be called on its own, so candidates from a vector database you already run can be ordered by orq without registering anything.
+The row worth dwelling on is rerank. Going external does **not** mean giving up orq.ai's ranking: after your endpoint answers, orq.ai applies the same tail it applies internally: cut to `top_k`, filter by `threshold`, rerank, filter by the rerank threshold. You own retrieval; the platform still owns ranking discipline. Reranking can also be called on its own, so candidates from a vector database you already run can be ordered by orq.ai without registering anything.
 
-Internal and external are therefore not a binary. Between them sit useful mixtures: your store with orq's reranking, or orq's store with your chunking done up front through the chunking API.
+Internal and external are therefore not a binary. Between them sit useful mixtures: your store with orq.ai's reranking, or orq.ai's store with your chunking done up front through the chunking API.
 
 ### The external contract
 
-orq POSTs to your `api_url` with `Authorization: Bearer <api_key>`:
+orq.ai POSTs to your `api_url` with `Authorization: Bearer <api_key>`:
 
 ```json
 {
@@ -91,7 +91,7 @@ and expects the same shape a knowledge base search returns:
 }
 ```
 
-Scores belong in 0 to 1, because orq's threshold filter compares against them directly. `filter_by`, `search_options` and `rerank_config` are forwarded to you: implement what you can, ignore the rest.
+Scores belong in 0 to 1, because orq.ai's threshold filter compares against them directly. `filter_by`, `search_options` and `rerank_config` are forwarded to you: implement what you can, ignore the rest.
 
 What happens when your endpoint misbehaves is worth knowing before a demo:
 
@@ -109,8 +109,8 @@ The same knowledge base is reachable from four places, and the choice decides wh
 |---|---|---|
 | **Search, then prompt**: search in your code, put the chunks in a system message | your process | the model call only |
 | **Retrieval as a tool**: the model calls a tool your loop executes | your process | the model calls; the search is a separate API call |
-| **Managed agent**: the agent holds the knowledge base and the built-in knowledge tools | orq | the retrieval, as its own item and span |
-| **External base**: any of the above, but the search is your endpoint | your service, called by orq | depends on the shape above it |
+| **Managed agent**: the agent holds the knowledge base and the built-in knowledge tools | orq.ai | the retrieval, as its own item and span |
+| **External base**: any of the above, but the search is your endpoint | your service, called by orq.ai | depends on the shape above it |
 
 [Knowledge base and RAG](../modules/09.md) runs all four against the same four policy files and prints the prompt-token count for each, which is the cheapest way to see what actually reached the model.
 
@@ -118,6 +118,6 @@ The same knowledge base is reachable from four places, and the choice decides wh
 
 - [Knowledge base and RAG](../modules/09.md): the hands-on version
 - [Glossary](glossary.md): one-line definitions
-- [orq docs · Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
-- [orq docs · External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases)
-- [orq docs · Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base)
+- [orq.ai docs · Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
+- [orq.ai docs · External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases)
+- [orq.ai docs · Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base)

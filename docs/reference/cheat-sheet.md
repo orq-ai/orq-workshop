@@ -7,7 +7,7 @@
 | OpenAI-compatible gateway | `https://my.orq.ai/v3/router` (`/chat/completions`, `/responses`, `/embeddings`, ...) |
 | Anthropic-compatible gateway | `https://my.orq.ai/v3/anthropic` |
 | OTLP traces | `https://my.orq.ai/v2/otel/v1/traces` with `Authorization: Bearer $ORQ_API_KEY` |
-| Orq MCP server (coding agents) | `https://my.orq.ai/v2/mcp` |
+| orq.ai MCP server (coding agents) | `https://my.orq.ai/v2/mcp` |
 | MCP Gateway (your tools) | `https://my.orq.ai/v3/mcp/<gateway-key>` |
 | REST API | `https://my.orq.ai/v2/...` |
 
@@ -86,5 +86,5 @@ make docs-serve slides          # docs site, deck
 | Admin as code | [Terraform provider](https://docs.orq.ai/reference/terraform) · [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys) |
 | Quality | [Evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators) · [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets) · [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments) · [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations) · [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming) |
 | Agents | [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents) · [Run agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) · [Responses API](https://docs.orq.ai/docs/ai-gateway/features/responses-api) · [Memory stores](https://docs.orq.ai/docs/ai-studio/ai-engineering/memory-stores) · [Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases) |
-| MCP and coding agents | [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers) · [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways) · [Orq MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp) · [Orq Skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills) · [CLI](https://docs.orq.ai/reference/cli) |
+| MCP and coding agents | [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers) · [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways) · [orq.ai MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp) · [orq.ai skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills) · [CLI](https://docs.orq.ai/reference/cli) |
 | API and SDK | [REST reference](https://docs.orq.ai/reference/client-libraries) · [Python SDK: traces](https://docs.orq.ai/reference/sdk/traces) · [Changelog](https://docs.orq.ai/docs/changelog) |

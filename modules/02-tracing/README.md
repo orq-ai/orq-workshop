@@ -186,7 +186,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
+> Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
 
 ## Proof
 
@@ -209,7 +209,7 @@ Paste `agent_prompt.md`:
 - `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes. Gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions; filter on both.
 - `orq traces thread` prints `[content unavailable: N items]` for a Responses-format assistant turn (orq-cli 8.6). Use the Studio thread view, or `orq traces get-span` on the span for the raw output.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 Every trace span now shows guardrail and evaluator indicators, the Traces view has a time-range selector and search by id, and (since 4.11) Human Review is called Annotations with queues and the API used in step 4.
 

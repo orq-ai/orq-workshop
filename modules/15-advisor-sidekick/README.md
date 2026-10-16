@@ -168,7 +168,7 @@ Paste `agent_prompt.md`:
 - `max_uses` is per turn. With `max_uses: 2` the agent may ask the advisor twice; the broken agent did.
 - A secondary model that fails does not fail the turn and does not error the span. Alerting on `genai.error_rate` will not see it (module 14); reading the `orq:advisor` result will.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 Advisor and Sidekick tools on Agents, metered separately with their own spans. 4.12 added a configurable timeout per agent tool, which applies to these too.
 

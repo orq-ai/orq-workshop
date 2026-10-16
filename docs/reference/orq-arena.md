@@ -48,7 +48,7 @@ Before it spends anything it prints a **run plan**: the prompt file, the model p
 
 ![Screenshot: the orq-arena run plan screen. It lists the prompts file and prompt count, then a table of the model pool with the number of calls, input and output price per million tokens, and a worst-case cost ceiling per model, shown before the run starts.](../assets/orq-arena/run-plan.svg)
 
-Needs Python 3.10+ and an orq.ai API key. Every model and judge call goes through the orq AI Router, so the whole tournament is traced, costed and budgeted like any other workload in this workshop, which is also how the cost axis of the report gets its numbers.
+Needs Python 3.10+ and an orq.ai API key. Every model and judge call goes through the orq.ai Router, so the whole tournament is traced, costed and budgeted like any other workload in this workshop, which is also how the cost axis of the report gets its numbers.
 
 ## orq-arena or evaluatorq?
 

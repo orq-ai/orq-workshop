@@ -73,11 +73,11 @@ Nothing moved, and the pool is why. The bands come from an intelligence index, n
 
 #### What the bands actually are
 
-Open the router in the Studio and the pool is not a flat list — it is bucketed:
+Open the router in the Studio and the pool is not a flat list. It is bucketed:
 
 ![Studio: the Edit Smart Router panel for ws-refund-router. The mode is set to Quality out of Cost, Balanced and Quality. The model pool is grouped into three bands: Hard holds gpt-5.6-sol at intelligence 53.6 and $8.00, Medium holds gpt-5.6-terra at 45.6 and $4.50 and gpt-5.6-luna at 38.1 and $0.45, and Easy holds gpt-5.4-nano at 30.2 and $0.46 and claude-haiku-4-5-20251001 at 23.7 and $2.00.](assets/studio-smart-router-bands.png)
 
-Each model carries an **intelligence index** — sourced from [Artificial Analysis](https://artificialanalysis.ai), not from orq — and a **price per million tokens**. The platform ranks the pool by that index and cuts it into three bands, so the bands re-form themselves whenever you change the pool:
+Each model carries an **intelligence index** (sourced from [Artificial Analysis](https://artificialanalysis.ai), not from orq.ai) and a **price per million tokens**. The platform ranks the pool by that index and cuts it into three bands, so the bands re-form themselves whenever you change the pool:
 
 | Band | Model | Index | $/M |
 |---|---|---|---|
@@ -92,7 +92,7 @@ Two things follow, and both explain the output above.
 ![Diagram: how a Smart Router picks a model by prompt complexity. An easy request and a hard request both reach a complexity score step that rates the prompt itself, and the score selects one of three bands the pool is sorted into by intelligence index: Hard holding gpt-5.6-sol at 53.6, Medium holding gpt-5.6-terra at 45.6 and gpt-5.6-luna at 38.1, and Easy holding gpt-5.4-nano at 30.2 and claude-haiku-4-5 at 23.7. The cost, balanced and quality mode feeds the scoring step as a preference dial that tunes how aggressively the router prefers economical models over stronger ones, rather than choosing the band itself. A note records that the index sorts the bands and the price does not, since gpt-5.6-luna sits in Medium at $0.45 per million tokens while claude-haiku-4-5 sits in Easy at $2.00.](assets/complexity-bands.png)
 
 
-**The request gets classified, then the band gets picked.** The router scores how hard the *prompt* is and sends it to the matching band. "2+2" is an Easy-band question and "explain the refund policy edge cases" is a Hard-band one, under every mode. The mode does not choose the band — the prompt does.
+**The request gets classified, then the band gets picked.** The router scores how hard the *prompt* is and sends it to the matching band. "2+2" is an Easy-band question and "explain the refund policy edge cases" is a Hard-band one, under every mode. The mode does not choose the band: the prompt does.
 
 #### Cost, Balanced and Quality
 
@@ -102,11 +102,11 @@ The mode is a dial on one axis: [how aggressively the router prefers economical 
 |---|---|---|---|
 | **Cost** | less expensive models | start from a strong baseline and send the simpler requests down to cheaper models, escalating only what needs it | the workload is mostly routine and the bill is the thing you are trying to move |
 | **Balanced** | trades off both | neither end weighted | you have no strong opinion, or you are measuring before you tune |
-| **Quality** | more capable models | start from a cost-efficient baseline and escalate to stronger models whenever the task justifies it | wrong answers cost more than tokens do — a refund desk, a medical triage form |
+| **Quality** | more capable models | start from a cost-efficient baseline and escalate to stronger models whenever the task justifies it | wrong answers cost more than tokens do: a refund desk, a medical triage form |
 
-Two consequences worth holding on to. The dial only has something to move **within the reach the pool gives it**: it can prefer a cheaper or stronger model, but it cannot invent one the pool does not contain. And if routing is unavailable the request **falls back to the strongest model in the pool**, so a Smart Router never fails closed — it fails expensive.
+Two consequences worth holding on to. The dial only has something to move **within the reach the pool gives it**: it can prefer a cheaper or stronger model, but it cannot invent one the pool does not contain. And if routing is unavailable the request **falls back to the strongest model in the pool**, so a Smart Router never fails closed: it fails expensive.
 
-**Index and price are independent axes.** `gpt-5.6-luna` sits in Medium at $0.45 while `claude-haiku-4-5` sits in Easy at $2.00 — the cheaper model is the *more* capable one here. That is the whole argument for a router over a hardcoded model: the ranking you would have guessed from price is wrong, and it changes every few weeks.
+**Index and price are independent axes.** `gpt-5.6-luna` sits in Medium at $0.45 while `claude-haiku-4-5` sits in Easy at $2.00. The cheaper model is the *more* capable one here. That is the whole argument for a router over a hardcoded model: the ranking you would have guessed from price is wrong, and it changes every few weeks.
 
 The practical consequence: **a band with one model is not a routing decision.** `Hard` holds only `gpt-5.6-sol`, so every hard question costs $8.00/M whatever the profile says. If you want the profile to have something to choose between, put two models in the band.
 
@@ -163,7 +163,7 @@ $ orq request GET '/v2/routing-rules?project_id=01a082d7-b8cc-7c86-bfe8-83f9cb47
 {"_id":"rrl_01m2k94dh6v5317h4r7yg42s2k","display_name":"ws-route-mini-to-nano","enabled":false,"cel":"metadata[\"tier\"] == \"free\" && model == \"openai/gpt-5.6-luna\""}
 ```
 
-Creating one is a single command — the pool and the profile are the whole configuration:
+Creating one is a single command, and the pool and the profile are the whole configuration:
 
 ```bash
 $ orq smart-routers create \
@@ -183,7 +183,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Create a smart router called `ws-refund-router` with the orq MCP tools or the `orq smart-routers` CLI over `openai/gpt-5.6-luna`, `openai/gpt-5.4-nano`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-5.6-sol`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
+> Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the `orq smart-routers` CLI over `openai/gpt-5.6-luna`, `openai/gpt-5.4-nano`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-5.6-sol`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
 
 ## Proof
 
@@ -208,9 +208,9 @@ Paste `agent_prompt.md`:
 - `anthropic/claude-haiku-4-5` shows `enabled: false` while the dated id `anthropic/claude-haiku-4-5-20251001` is enabled, and the router never picked it: the OpenAI 5.x bands cover both ends. Test a model with `orq chat create` before putting it in a pool.
 - `gpt-5.4-nano` and `gpt-5.6-luna` cost the same; the COST profile still prefers nano for easy questions because the bands rank by intelligence index, not by price alone.
 - Routing rule list items dump as `_id`; create and update responses as `id`.
-- Since orq API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+- Since orq.ai API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 The Smart Router got its own page in the AI Gateway: every router, the band each pool model lands in from the intelligence index, and a copyable invocation snippet. `route_pool` picks from N candidates instead of one strong and one cheap model.
 

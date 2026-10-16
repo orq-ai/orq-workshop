@@ -119,7 +119,7 @@ trace    : 4af13fddf056e91f657f5b79f0e89e67
 next     : the trace shows only chat spans; knowledge.search is a separate API call, not a span in the gateway trace
 ```
 
-No retrieval span appears: the gateway traces the model calls it proxies, and `knowledge.search` is a separate API call. To see retrieval inside the trace, either instrument it yourself (module 02, `TRACING=otel`) or let orq run it (steps 5c and 6).
+No retrieval span appears: the gateway traces the model calls it proxies, and `knowledge.search` is a separate API call. To see retrieval inside the trace, either instrument it yourself (module 02, `TRACING=otel`) or let orq.ai run it (steps 5c and 6).
 
 ### Step 5 · Pre-fetch the context
 
@@ -129,7 +129,7 @@ Three ways to put policy in front of the model without a tool round-trip.
 
 ![Diagram: pre-fetched context. Your code searches the knowledge base first and puts the chunks into a system message, so a single gateway call carries 591 prompt tokens and no tool round trip happens.](assets/09-step5b-prefetch.png)
 
-![Diagram: managed agent retrieval. Your code calls the agent by model name; the agent holds the knowledge base and the two built-in server tools, so orq runs the search itself and records it in the trace before calling the model.](assets/09-step5c-managed-agent.png)
+![Diagram: managed agent retrieval. Your code calls the agent by model name; the agent holds the knowledge base and the two built-in server tools, so orq.ai runs the search itself and records it in the trace before calling the model.](assets/09-step5c-managed-agent.png)
 
 ```text
 ── Step 5a · Gateway-side retrieval (orq.knowledge_bases) ──
@@ -172,11 +172,11 @@ next     : the response keys are still just 'matches'; the refined query is not 
 
 ### Step 7 · An external knowledge base
 
-orq can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. `app/edge.py` implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
+orq.ai can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq.ai POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. `app/edge.py` implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
 
-![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq post the query to your own /search endpoint and wait for matches with scores. Orq then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.](assets/09-step7-external-kb.png)
+![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq.ai post the query to your own /search endpoint and wait for matches with scores. orq.ai then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.ai.](assets/09-step7-external-kb.png)
 
-orq's servers make the call, so the endpoint must be public HTTPS (loopback and private addresses are rejected). Two ways to get there: a tunnel to your laptop, or the instance the instructor hosts for the room (`make edge-docker` on any host):
+orq.ai's servers make the call, so the endpoint must be public HTTPS (loopback and private addresses are rejected). Two ways to get there: a tunnel to your laptop, or the instance the instructor hosts for the room (`make edge-docker` on any host):
 
 ```bash
 $ make edge                                   # terminal 1: http://127.0.0.1:8001
@@ -187,7 +187,7 @@ $ curl -s -X POST $WS_EDGE_URL/search -H "authorization: Bearer $WS_WEBHOOK_SECR
 {"id":"ext_refund_basics","scores":{"search_score":0.25},"metadata":{"topic":"refund_basics"}}
 ```
 
-With `WS_EDGE_URL` set, the step registers `ws-refund-policy-ext` (`type: external`, `external_config: {name, api_url: <WS_EDGE_URL>/search, api_key}`, `entities.ensure_external_knowledge_base`) and runs the same `knowledge.search` you used in step 2 against it. orq calls your `/search`, your terminal 1 prints the query, and the matches come back through the same API:
+With `WS_EDGE_URL` set, the step registers `ws-refund-policy-ext` (`type: external`, `external_config: {name, api_url: <WS_EDGE_URL>/search, api_key}`, `entities.ensure_external_knowledge_base`) and runs the same `knowledge.search` you used in step 2 against it. orq.ai calls your `/search`, your terminal 1 prints the query, and the matches come back through the same API:
 
 ```text
 [7] external KB ws-refund-policy-ext 01M2KDXAHZE2Y1XH5WWC6CAQGJ -> https://wide-onions-write.loca.lt/search: 3 matches
@@ -197,7 +197,7 @@ With `WS_EDGE_URL` set, the step registers `ws-refund-policy-ext` (`type: extern
     the same search from the CLI: orq knowledge-bases search 01M2KDXAHZE2Y1XH5WWC6CAQGJ --query 'damaged in transit after 45 days' --top-k 2
 ```
 
-The external knowledge base attaches to agents and deployments exactly like the managed one (step 5c). What changes is the division of labour: chunking, embeddings, metadata filters and the search itself are yours now, but orq still cuts the results to `top_k`, applies the threshold and reranks them before handing them back. You own retrieval; the platform still owns ranking. It waits at most 50 s and then answers the caller `504`; a non-2xx from your endpoint is passed through as it is, and anything else becomes a `502`. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) lays the two engines side by side. Without `WS_EDGE_URL` the step prints the contract and stops.
+The external knowledge base attaches to agents and deployments exactly like the managed one (step 5c). What changes is the division of labour: chunking, embeddings, metadata filters and the search itself are yours now, but orq.ai still cuts the results to `top_k`, applies the threshold and reranks them before handing them back. You own retrieval; the platform still owns ranking. It waits at most 50 s and then answers the caller `504`; a non-2xx from your endpoint is passed through as it is, and anything else becomes a `502`. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) lays the two engines side by side. Without `WS_EDGE_URL` the step prints the contract and stops.
 
 ## With your coding agent
 
@@ -207,7 +207,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the manage-knowledge-base idea with the orq Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
+> Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
 
 ## Proof
 
@@ -229,11 +229,11 @@ Paste `agent_prompt.md`:
 - `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 The Chunking API (`orq.chunking.parse`) exposes seven strategies (`token`, `sentence`, `recursive`, `semantic`, `agentic`, `fast`, `late`) as a stateless call, so chunking can be tuned in a script before a datasource is rebuilt. Knowledge base retrieval settings (search type, threshold, top_k, rerank, agentic RAG) can be overridden per request with `retrieval_config`.
 
 ## Go further
 
-- `app/edge.py`: the `/search` contract in 20 lines. Point it at a real index (Weaviate, Pinecone, pgvector) instead of keyword scoring and nothing on the orq side changes.
+- `app/edge.py`: the `/search` contract in 20 lines. Point it at a real index (Weaviate, Pinecone, pgvector) instead of keyword scoring and nothing on the orq.ai side changes.
 - Docs: [Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases), [Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base), [Knowledge bases via AI Gateway](https://docs.orq.ai/docs/ai-gateway/features/knowledge-bases), [External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases), [Chunking guide](https://docs.orq.ai/docs/ai-studio/ai-engineering/chunking), [Chunking API](https://docs.orq.ai/reference/chunking/parse-text).
