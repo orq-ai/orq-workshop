@@ -266,7 +266,7 @@ def step_5_agent_copy(server: Any) -> None:
             description=base.description,
             instructions=base.instructions,
             path=settings.path,
-            model=settings.model,
+            model={"id": settings.model, "parameters": {"reasoning_effort": "none"}},  # as in entities.agent_payload
             settings={"max_iterations": 8, "max_execution_time": 120, "tools": tools},
         )
     try:

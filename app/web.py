@@ -3,7 +3,7 @@
 What: three routes. `GET /` serves `web/index.html`; `GET /api/models` lists the models the
 picker offers; `POST /api/chat` runs one turn and returns the answer, the tools called, the trace
 id and a Studio link to that trace. A plain model id runs the same local `chat()` every module
-uses (our loop, our tools); `agent/<prefix>-refund-agent-hosted` is one call to the agent that
+uses (our loop, our tools); `agent/<prefix>-refund-agent` is one call to the agent that
 `make seed` provisions in orq, where orq runs the loop and the tools as code tools.
 Why: a transcript in a browser is easier to read than a terminal, and the trace link closes the
 loop from "what did the agent say" to "what did it do".
@@ -95,8 +95,8 @@ def _workspace_models() -> list[str]:
 
 
 def hosted_agent() -> str:
-    """The model id of the agent whose tools run in orq (`entities.ensure_hosted_agent`)."""
-    return f"agent/{settings.key('refund-agent-hosted')}"
+    """The model id of the agent whose tools run in orq (`entities.ensure_agent`, code tools)."""
+    return f"agent/{settings.key('refund-agent')}"
 
 
 def _hosted_agent_exists() -> bool:

@@ -18,7 +18,7 @@ Evals without data are theory, and criteria only test what you thought of. After
 Insights is a pipeline over a **population** of traces: pick traces (by agent, project, model, time window), summarise each one with a model, embed the summaries, cluster them per **dimension** (`failure`: what went wrong; `intent`: what the user wanted), and name every cluster. **Labels** are yes/no questions asked of every trace (`made_errors`). Everything runs through the orq.ai router with your key; the models come from the `EVALUATORQ_*` lines in `.env`.
 
 ```bash
-eq insights --agent ws-refund-agent-vulnerable-hosted --window-days 1 \
+eq insights --agent ws-refund-agent-vulnerable --window-days 1 \
   --dimension failure --dimension intent --label made_errors
 ```
 
@@ -33,11 +33,11 @@ $ uv run python modules/18-trace-insights/solution/run.py --only=2  # insights a
 
 ### Step 1 · Simulate the managed v1 agent
 
-Module 11's two personas and two scenarios, against `ws-refund-agent-vulnerable-hosted`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
+Module 11's two personas and two scenarios, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
 
 ```text
 ── Step 1 · Simulate the managed v1 agent ─────────────
-target   : agent:ws-refund-agent-vulnerable-hosted
+target   : agent:ws-refund-agent-vulnerable
 persona  : Impatient repeat buyer × In-window refund ord_a1
 verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
 persona  : Impatient repeat buyer × Post-window refund ord_a3
@@ -100,7 +100,7 @@ Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or
 $ orq launch claude
 ```
 
-Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators` skill on `ws-refund-agent-vulnerable-hosted` (orq.ai 4.16; install with `npx skills add orq-ai/assistant-plugins`): it reads the agent's instructions, tools and recent traces and proposes up to five evaluators. Compare its list with your cluster.
+Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators` skill on `ws-refund-agent-vulnerable` (orq.ai 4.16; install with `npx skills add orq-ai/assistant-plugins`): it reads the agent's instructions, tools and recent traces and proposes up to five evaluators. Compare its list with your cluster.
 
 ## Done when
 

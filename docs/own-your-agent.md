@@ -59,7 +59,7 @@ Two details this leg pays for, both visible in the output below: it speaks **cha
 
 ### 3 · A managed agent: orq.ai runs the loop
 
-The agent is configuration in orq.ai, not code here: instructions, model and tool schemas live server-side. Your code posts the question and answers the `function_call` items it gets back.
+The agent is configuration in orq.ai, not code here: instructions, model and tool schemas live server-side. Its refund tools are function tools, so your code posts the question and answers the `function_call` items it gets back. (`ws-refund-agent` has the same tools as code tools that orq runs itself: one call, no loop.)
 
 ```python
 response = orq.responses.create(
@@ -126,7 +126,7 @@ Three trace ids, one question. Open them side by side in the Studio: same tools 
 | | Raw orq.ai SDK | LangGraph | Managed agent |
 |---|---|---|---|
 | Who owns the loop | you | the framework | orq.ai |
-| Where it lives | `app/refund_agent/agent.py` | `create_react_agent` | `ws-refund-agent`, in orq.ai |
+| Where it lives | `app/refund_agent/agent.py` | `create_react_agent` | `ws-refund-agent-function`, in orq.ai |
 | Protocol | Responses API | chat-completions | `model="agent/<key>"` |
 | Tools execute in | your process | your process | your process, or orq.ai's |
 | Tracing setup | none (the gateway traces it) | one line | none |

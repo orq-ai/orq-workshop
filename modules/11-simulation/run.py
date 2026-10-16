@@ -140,8 +140,8 @@ async def step_2_generate() -> None:
 # The built-in "agent:<key>" target cannot run the agent's function tools, so the answer comes
 # back empty. The hosted twin runs its tools in orq, so the same target works; replay the case.
 async def step_3_managed() -> None:
-    # TODO: simulate(target=f"agent:{settings.key('refund-agent')}", ...) and read the assistant text: it is empty,
-    #       the built-in target stubs the function_call items. Then simulate(target=f"agent:{settings.key('refund-agent-hosted')}",
+    # TODO: simulate(target=f"agent:{settings.key('refund-agent-function')}", ...) and read the assistant text: it is empty,
+    #       the built-in target stubs the function_call items. Then simulate(target=f"agent:{settings.key('refund-agent')}",
     #       previous_run="latest", ...) replays the same case against the hosted agent, whose tools run in orq.
     print("── Step 3 · The managed agent, twice ──────────────────")
     print("TODO     : simulate the managed agent with the built-in target, then replay the case against the hosted agent, then rerun")

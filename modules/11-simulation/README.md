@@ -182,7 +182,7 @@ results = await generate_and_simulate(
 
 One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays the case 3a just saved (`previous_run="latest"`: same persona, scenario and opening message), so the only thing that changes is who executes the `function_call` the agent asks for:
 
-| | 3a · `agent:ws-refund-agent` | 3b · `agent:ws-refund-agent-hosted` |
+| | 3a · `agent:ws-refund-agent-function` | 3b · `agent:ws-refund-agent` |
 |---|---|---|
 | Who runs `lookup_order` | nobody (the call is stubbed) | orq.ai, as a code tool |
 | What the log says | `Dropping tool call 'lookup_order'` | no dropped tool call |
@@ -191,13 +191,13 @@ One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays 
 | Ended by | `max_turns` | `judge` once the agent answers |
 | What actually failed | **the harness** | nothing |
 
-![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the hosted twin, whose tools are orq.ai code tools, orq.ai executes the tool call itself and the agent answers with the refund.](assets/11-step3-managed-twice.png)
+![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the hosted agent, whose tools are orq.ai code tools, orq.ai executes the tool call itself and the agent answers with the refund.](assets/11-step3-managed-twice.png)
 
 ??? example "The full run output"
 
     ```text
     ── Step 3a · The managed agent with the built-in target ──
-    target   : agent:ws-refund-agent (pending tool calls get an error stub)
+    target   : agent:ws-refund-agent-function (pending tool calls get an error stub)
     turns    : max 1; a second turn after the empty answer is a 400 on the simulator side
     persona  : Impatient repeat buyer × In-window refund ord_a1
     verdict  : goal not achieved, score 0.00, 1 turn(s), ended by max_turns, rules broken: criteria_0
@@ -207,7 +207,7 @@ One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays 
     assistant : ''
     next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`
     ── Step 3b · The hosted agent, replaying the same case ──
-    target   : agent:ws-refund-agent-hosted (tools run in orq)
+    target   : agent:ws-refund-agent (tools run in orq)
     replay   : previous_run='latest', the case 3a just saved
     turns    : max 2
     persona  : Impatient repeat buyer × In-window refund ord_a1

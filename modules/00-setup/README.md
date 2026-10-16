@@ -180,7 +180,7 @@ dataset  : 01M2... (ws-refund-eval)
 kb       : 01M2... (ws-refund-policy)
 guard    : 01M2... (ws-refund-limit-guard)
 judge    : 01M2... (ws-refund-policy-judge)
-tools    : ws-lookup-order, ws-get-policy, ws-issue-refund
+tools    : ws-lookup_order, ws-issue_refund, ws-get_policy (code tools: orq runs them)
 agent    : ws-refund-agent
 ...
 ```

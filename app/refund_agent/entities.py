@@ -273,24 +273,37 @@ def agent_payload(
     knowledge_base_id: str | None = None,
     memory_store_id: str | None = None,
     tool_keys: list[str] | None = None,
+    tool_kind: str = "code",
 ) -> dict[str, Any]:
     """The `agents.create` body for one instruction variant (`app/data/<variant>_instructions.md`).
 
-    Pure apart from `ensure_tools()` when `tool_keys` is not given. The fixed variant is keyed
-    `ws-refund-agent`, every other one `ws-refund-agent-<variant>`.
+    `tool_kind="code"` (the default) gives the agent remote Python tools: orq runs the loop AND
+    the tools, one Responses call per turn. `"function"` gives it function tools: orq runs the
+    model and your code runs the tools (the hybrid method, module 08 step 2b). Pure apart from
+    `ensure_code_tools()` / `ensure_tools()` when `tool_keys` is not given. The fixed code agent
+    is keyed `ws-refund-agent`, every other one `ws-refund-agent-<variant>`, and a function-tool
+    agent adds `-function`.
     """
     instructions = (DATA_DIR / f"{variant}_instructions.md").read_text()
-    tools: list[dict[str, Any]] = [
-        {"type": "function", "key": tool_key} for tool_key in tool_keys or ensure_tools()
-    ]
+    if tool_keys is None:
+        tool_keys = ensure_code_tools() if tool_kind == "code" else ensure_tools()
+    tools: list[dict[str, Any]] = [{"type": tool_kind, "key": tool_key} for tool_key in tool_keys]
+    key = K("refund-agent" if variant == "fixed" else f"refund-agent-{variant}")
+    model: Any = settings.model
+    if tool_kind == "code":
+        # The model sees a code tool's key as its name, so say which names exist.
+        instructions += "\n\nYour tools are named " + ", ".join(tool_keys) + "."
+        model = {"id": settings.model, "parameters": {"reasoning_effort": "none"}}
+    else:
+        key += "-function"
     payload: dict[str, Any] = {
-        "key": K(f"refund-agent-{variant}") if variant != "fixed" else K("refund-agent"),
-        "display_name": f"Refund agent ({variant})",
+        "key": key,
+        "display_name": f"Refund agent ({variant}{', function tools' if tool_kind == 'function' else ''})",
         "role": "Customer-service refund agent for Lumen Goods.",
         "description": "Handles refund requests for authenticated retail customers. Tools: lookup_order, get_policy, issue_refund.",
         "instructions": instructions,
         "path": settings.path,
-        "model": settings.model,
+        "model": model,
         "settings": {"max_iterations": 8, "max_execution_time": 120, "tools": tools},
     }
     if knowledge_base_id:
@@ -387,15 +400,12 @@ def hosted_tool_code(name: str) -> str:
     return "\n\n\n".join([header, *parts]) + "\n"
 
 
-def ensure_hosted_agent(orq=None, variant: str = "fixed") -> str:
-    """A refund agent with its three tools as orq code tools: orq runs the loop AND the tools.
+def ensure_code_tools(orq=None) -> list[str]:
+    """Register the three refund tools as orq code tools: remote Python that orq runs. Returns the keys.
 
-    Idempotency key: the tool keys (`<prefix>-lookup_order`, ...) and the agent key
-    `<prefix>-refund-agent-hosted` (`<prefix>-refund-agent-<variant>-hosted` for another
-    instruction variant). Existing ones are left as is. Returns the agent key.
-    Call it with `model="agent/<key>"` on the Responses API; nothing runs on your machine.
-    Because the tools run in orq, evaluatorq's built-in `agent:<key>` target drives it as is:
-    simulations, evals and red-team runs need no adapter.
+    Idempotency key: the tool `key` (`ws-lookup_order`, ...; the model sees the key as the tool
+    name). Existing tools are skipped. An agent that references them runs its loop AND its tools
+    in orq, so evaluatorq's built-in `agent:<key>` target drives it with no adapter.
     """
     from .tools import TOOL_SCHEMAS
 
@@ -435,20 +445,7 @@ def ensure_hosted_agent(orq=None, variant: str = "fixed") -> str:
                 },
             }
         )
-    key = K("refund-agent-hosted" if variant == "fixed" else f"refund-agent-{variant}-hosted")
-    try:
-        orq.agents.retrieve(agent_key=key)
-        return key
-    except Exception:  # noqa: BLE001, S110
-        pass  # not found: create it below
-    payload = agent_payload(variant, tool_keys=tool_keys)
-    payload["key"] = key
-    payload["display_name"] = f"Refund agent ({variant}, hosted tools)"
-    payload["model"] = {"id": settings.model, "parameters": {"reasoning_effort": "none"}}
-    payload["settings"]["tools"] = [{"type": "code", "key": tool_key} for tool_key in tool_keys]
-    payload["instructions"] += "\n\nYour tools are named " + ", ".join(tool_keys) + "."
-    orq.agents.create(**payload)
-    return key
+    return tool_keys
 
 
 def ensure_delegating_agent(
@@ -471,7 +468,7 @@ def ensure_delegating_agent(
     except Exception:  # noqa: BLE001
         pass  # not found: create it below
     knowledge_base_id = ensure_knowledge_base(orq)
-    payload = agent_payload("fixed", knowledge_base_id=knowledge_base_id, tool_keys=ensure_tools(orq))
+    payload = agent_payload("fixed", knowledge_base_id=knowledge_base_id, tool_keys=ensure_code_tools(orq))
     payload["key"] = key
     payload["display_name"] = "Refund agent (advisor + sidekick)"
     payload["instructions"] += (
@@ -915,13 +912,14 @@ def seed(orq=None) -> None:
     print(f"guard    : {ensure_python_guardrail(orq)} ({K('refund-limit-guard')})")
     print(f"judge    : {ensure_llm_judge(orq)} ({K('refund-policy-judge')})")
     knowledge_base_id = ensure_knowledge_base(orq)  # already exists: returns the id without work
-    tool_keys = ensure_tools(orq)
-    print(f"tools    : {', '.join(tool_keys)}")
+    tool_keys = ensure_code_tools(orq)
+    print(f"tools    : {', '.join(tool_keys)} (code tools: orq runs them)")
     print(f"agent    : {ensure_agent(orq, 'fixed', knowledge_base_id=knowledge_base_id, tool_keys=tool_keys)}")
     print(f"agent    : {ensure_agent(orq, 'vulnerable', knowledge_base_id=knowledge_base_id, tool_keys=tool_keys)}")
     print(f"agent    : {ensure_delegating_agent(orq)}")
-    print(f"agent    : {ensure_hosted_agent(orq)} (tools run in orq)")
-    print(f"agent    : {ensure_hosted_agent(orq, 'vulnerable')} (tools run in orq)")
+    function_keys = ensure_tools(orq)
+    print(f"tools    : {', '.join(function_keys)} (function tools: your code runs them)")
+    print(f"agent    : {ensure_agent(orq, 'fixed', tool_keys=function_keys, tool_kind='function')}")
     notifier_id = ensure_notifier(orq)
     print(f"notifier : {notifier_id} ({K('alert-notifier')})")
     print(f"alert    : {ensure_alert(orq, notifier_id=notifier_id)} ({K('cost-alert')})")

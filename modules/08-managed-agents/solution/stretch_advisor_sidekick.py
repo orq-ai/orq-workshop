@@ -21,7 +21,7 @@ from pathlib import Path
 
 from app.refund_agent.client import make_orq
 from app.refund_agent.config import settings
-from app.refund_agent.entities import agent_payload
+from app.refund_agent.entities import agent_payload, ensure_code_tools
 
 sys.path.insert(0, str(Path(__file__).parent))
 from run import run_agent  # noqa: E402  the same loop as solution/run.py
@@ -38,7 +38,7 @@ def ensure_delegating_agent() -> str:
     except Exception:  # noqa: BLE001  (not found: create it below)
         pass
     kb = next(knowledge.id for knowledge in orq.knowledge.list(limit=100).data if knowledge.key == settings.key("refund-policy"))
-    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=[settings.key("lookup-order"), settings.key("issue-refund"), settings.key("get-policy")])
+    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=ensure_code_tools(orq))
     payload["key"] = AGENT
     payload["display_name"] = "Refund agent (advisor + sidekick)"
     payload["instructions"] += (
