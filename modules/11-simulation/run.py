@@ -5,10 +5,10 @@ with three models: a user simulator playing a persona with a goal, the agent und
 judge that scores the transcript. Every simulator and judge call routes through the orq router,
 so it is traced and budgeted like any other call. Three steps: simulate() the local agent,
 generate_and_simulate() personas from a one-line description, and simulate() the managed agent
-twice (built-in "agent:<key>" target, then an AgentTarget adapter that runs the tools).
+twice with the built-in "agent:<key>" target (function tools, then hosted code tools).
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is in solution/run.py (with refund_target.py, the AgentTarget adapters).
+The solution is in solution/run.py (with refund_target.py, the AgentTarget for the local agent).
 Run it with `uv run python modules/11-simulation/run.py`.
 """
 
@@ -138,13 +138,13 @@ async def step_2_generate() -> None:
 
 # ── Step 3 · The managed agent, twice ──
 # The built-in "agent:<key>" target cannot run the agent's function tools, so the answer comes
-# back empty. An AgentTarget that executes the function_call items fixes the harness.
+# back empty. The hosted twin runs its tools in orq, so the same target works; replay the case.
 async def step_3_managed() -> None:
     # TODO: simulate(target=f"agent:{settings.key('refund-agent')}", ...) and read the assistant text: it is empty,
-    #       the built-in target stubs the function_call items. Then wrap orq.responses.create in an AgentTarget
-    #       that executes them (see solution/refund_target.py, ManagedRefundTarget) and simulate again.
+    #       the built-in target stubs the function_call items. Then simulate(target=f"agent:{settings.key('refund-agent-hosted')}",
+    #       previous_run="latest", ...) replays the same case against the hosted agent, whose tools run in orq.
     print("── Step 3 · The managed agent, twice ──────────────────")
-    print("TODO     : simulate the managed agent with the built-in target, then with an AgentTarget that runs its tools, then rerun")
+    print("TODO     : simulate the managed agent with the built-in target, then replay the case against the hosted agent, then rerun")
 
 
 if __name__ == "__main__":

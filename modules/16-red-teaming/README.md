@@ -15,7 +15,7 @@ Module 11 asked "does the agent serve customers"; this one asks "what can a cust
 
 ## The one concept to understand first
 
-The target is the same `AgentTarget` contract as in module 11 (`solution/refund_target.py` there). Two instances, one per instruction file, is the whole experiment:
+The target is the `AgentTarget` contract from module 11 (`LocalRefundTarget` in `solution/refund_target.py`; orq-hosted agents need no class, just `agent:<key>`). Two instances, one per instruction file, is the whole experiment:
 
 ```python
 report = await red_team(
@@ -119,7 +119,7 @@ $ uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static \
     next     : read Eval Coverage before ASR; the full report is in /tmp/ws-redteam-cli.json
     ```
 
-`--max-static-datapoints 4` takes the first four rows of the file, so only LLM01 and LLM07 ran. Read `Eval Coverage 75%` before the ASR. The two LLM07 attacks were scored and one leaked (50% for that category); one LLM01 attack was scored and resisted, so the overall ASR is 1 of 3 judged attacks, 33%. The other LLM01 attack names an order, the agent answered it with a `lookup_order` call, and the CLI's `agent:` target cannot execute your tools. The log says `Dropping tool call 'lookup_order': result is None`, the response is empty, and the judge abstains (`evaluation/no_evaluation`, "No model response is provided"). Which attacks hit a tool call varies from run to run. Without `--min-evaluation-coverage 0` the run exits 1 for coverage below 80%, which is the right default for CI; here it is lowered so the report prints. `make redteam-gate` (`evals/redteam_gate.py`) is the CI form with a threshold and a real tool loop; module 11's `ManagedRefundTarget` is the adapter that executes the tools.
+`--max-static-datapoints 4` takes the first four rows of the file, so only LLM01 and LLM07 ran. Read `Eval Coverage 75%` before the ASR. The two LLM07 attacks were scored and one leaked (50% for that category); one LLM01 attack was scored and resisted, so the overall ASR is 1 of 3 judged attacks, 33%. The other LLM01 attack names an order, the agent answered it with a `lookup_order` call, and the CLI's `agent:` target cannot execute your tools. The log says `Dropping tool call 'lookup_order': result is None`, the response is empty, and the judge abstains (`evaluation/no_evaluation`, "No model response is provided"). Which attacks hit a tool call varies from run to run. Without `--min-evaluation-coverage 0` the run exits 1 for coverage below 80%, which is the right default for CI; here it is lowered so the report prints. `make redteam-gate` (`evals/redteam_gate.py`) is the CI form with a threshold and a real tool loop; the hosted twin `ws-refund-agent-vulnerable-hosted` (tools are orq code tools, created by `make seed`) works with this same `agent:` target and needs no coverage override, because orq executes the tools.
 
 ### Step 3 · Read the report
 

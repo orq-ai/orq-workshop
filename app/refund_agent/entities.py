@@ -387,12 +387,15 @@ def hosted_tool_code(name: str) -> str:
     return "\n\n\n".join([header, *parts]) + "\n"
 
 
-def ensure_hosted_agent(orq=None) -> str:
-    """The fixed refund agent with its three tools as orq code tools: orq runs the loop AND the tools.
+def ensure_hosted_agent(orq=None, variant: str = "fixed") -> str:
+    """A refund agent with its three tools as orq code tools: orq runs the loop AND the tools.
 
     Idempotency key: the tool keys (`<prefix>-lookup_order`, ...) and the agent key
-    `<prefix>-refund-agent-hosted`. Existing ones are left as is. Returns the agent key.
+    `<prefix>-refund-agent-hosted` (`<prefix>-refund-agent-<variant>-hosted` for another
+    instruction variant). Existing ones are left as is. Returns the agent key.
     Call it with `model="agent/<key>"` on the Responses API; nothing runs on your machine.
+    Because the tools run in orq, evaluatorq's built-in `agent:<key>` target drives it as is:
+    simulations, evals and red-team runs need no adapter.
     """
     from .tools import TOOL_SCHEMAS
 
@@ -432,15 +435,15 @@ def ensure_hosted_agent(orq=None) -> str:
                 },
             }
         )
-    key = K("refund-agent-hosted")
+    key = K("refund-agent-hosted" if variant == "fixed" else f"refund-agent-{variant}-hosted")
     try:
         orq.agents.retrieve(agent_key=key)
         return key
     except Exception:  # noqa: BLE001, S110
         pass  # not found: create it below
-    payload = agent_payload("fixed", tool_keys=tool_keys)
+    payload = agent_payload(variant, tool_keys=tool_keys)
     payload["key"] = key
-    payload["display_name"] = "Refund agent (hosted tools)"
+    payload["display_name"] = f"Refund agent ({variant}, hosted tools)"
     payload["model"] = {"id": settings.model, "parameters": {"reasoning_effort": "none"}}
     payload["settings"]["tools"] = [{"type": "code", "key": tool_key} for tool_key in tool_keys]
     payload["instructions"] += "\n\nYour tools are named " + ", ".join(tool_keys) + "."
@@ -918,6 +921,7 @@ def seed(orq=None) -> None:
     print(f"agent    : {ensure_agent(orq, 'vulnerable', knowledge_base_id=knowledge_base_id, tool_keys=tool_keys)}")
     print(f"agent    : {ensure_delegating_agent(orq)}")
     print(f"agent    : {ensure_hosted_agent(orq)} (tools run in orq)")
+    print(f"agent    : {ensure_hosted_agent(orq, 'vulnerable')} (tools run in orq)")
     notifier_id = ensure_notifier(orq)
     print(f"notifier : {notifier_id} ({K('alert-notifier')})")
     print(f"alert    : {ensure_alert(orq, notifier_id=notifier_id)} ({K('cost-alert')})")
