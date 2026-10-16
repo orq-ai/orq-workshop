@@ -2,7 +2,7 @@
 
 **[orqi](https://github.com/orq-ai/orqi)** (aka TonyBot) is the orq.ai helper agent in your terminal. Ask it to investigate a failing agent, check workspace health, cut cost, build evaluators, or explain the platform, and it answers with your workspace's own tools, models and skills already wired in. No setup, no glue code.
 
-It embeds the [pi coding agent](https://github.com/earendil-works/pi) in-process and boots with the orq MCP tools, the orq skills and the orqi system prompt already wired in. It operates the platform; it does not build your app. For that, module 13 wires your own coding agent through `orq launch`.
+It embeds the [pi coding agent](https://github.com/earendil-works/pi) in-process and boots with the orq.ai MCP tools, the orq.ai skills and the orqi system prompt already wired in. It operates the platform; it does not build your app. For that, module 13 wires your own coding agent through `orq launch`.
 
 It is open source and developed in the open: the binary you install below is built from it, and issues and releases live there:
 
@@ -35,7 +35,7 @@ $ orq orqi                # the orq CLI (8.x) installs orqi on first use and han
 $ orqi update             # replace the binary with the latest release
 ```
 
-orqi checks once a day and prints a header note when a newer release exists; `orqi update` itself never runs automatically. Keep the orq CLI on `PATH` either way: `/whoami`, `/workspace` and `/doctor` shell out to it.
+orqi checks once a day and prints a header note when a newer release exists; `orqi update` itself never runs automatically. Keep the orq.ai CLI on `PATH` either way: `/whoami`, `/workspace` and `/doctor` shell out to it.
 
 ## Sign in
 
@@ -73,11 +73,11 @@ The last field is the credential that won. `ORQ_API_KEY` means it used the key y
 
 | | |
 |---|---|
-| **orq AI Router** | The only model provider, so `/model` offers exactly the models the workspace has enabled. One credential covers the LLM and the tools |
+| **orq.ai Router** | The only model provider, so `/model` offers exactly the models the workspace has enabled. One credential covers the LLM and the tools |
 | **6 workspace commands** | `/tools`, `/whoami`, `/workspace [key]`, `/doctor`, `/whatsnew` (the orq.ai changelog), `/update` |
-| **43 orq MCP tools** | Every tool the workspace's MCP server exposes, wrapped as native tools with an `orq_` prefix. Results render as a one-line summary (`23 items · 6.0 KB`); `ctrl+o` expands to pretty-printed JSON. The model always receives the full payload |
+| **43 orq.ai MCP tools** | Every tool the workspace's MCP server exposes, wrapped as native tools with an `orq_` prefix. Results render as a one-line summary (`23 items · 6.0 KB`); `ctrl+o` expands to pretty-printed JSON. The model always receives the full payload |
 | **22 skills** | 15 from [orq-ai/assistant-plugins](https://github.com/orq-ai/assistant-plugins) plus 7 of its own: `workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`. The upstream 15 refresh themselves once a day |
-| **3 subagents** | `investigator`, `analyst`, `docs`, in-process, each with its own context window and a narrow orq tool subset |
+| **3 subagents** | `investigator`, `analyst`, `docs`, in-process, each with its own context window and a narrow orq.ai tool subset |
 
 The main agent delegates a self-contained task to a subagent when a question fits one pillar; the subagent sees nothing but that task:
 
@@ -85,7 +85,7 @@ The main agent delegates a self-contained task to a subagent when a question fit
 |---|---|
 | `investigator` | walks a failing trace's span tree to the first upstream failure, classifies it (specification / generalization / tool-retrieval / data-eval) and reports the root cause with trace ids, span names and failing arguments |
 | `analyst` | reads workspace analytics (cost, latency, error rate, model mix), shows the numbers behind every claim and quantifies any recommendation |
-| `docs` | answers platform questions strictly from the orq documentation, grounds each claim in a search hit, says so when the docs are silent |
+| `docs` | answers platform questions strictly from the orq.ai documentation, grounds each claim in a search hit, says so when the docs are silent |
 
 ## First session
 
@@ -97,7 +97,7 @@ Start it with the repo key exported and try the commands before the prompts:
 | `/whoami`, `/workspace` | which workspace and project the tools point at |
 | `/tools` | the 43 `orq_` tools by name |
 | `/model` | the workspace's enabled models, nothing else |
-| `/whatsnew` | the orq changelog, so "is this in 4.14?" has an answer |
+| `/whatsnew` | the orq.ai changelog, so "is this in 4.14?" has an answer |
 | `ctrl+o` | expand the last tool result or skill |
 | `escape` | interrupt the turn |
 
@@ -111,7 +111,7 @@ The five variables that matter in this workshop. The [README](https://github.com
 |---|---|
 | `ORQ_API_KEY` | Credential; falls back to the `orq auth login` session when unset or rejected. A pinned profile outranks it |
 | `ORQ_SERVER` | API base URL (default `https://api.orq.ai`), and so which login session the CLI resolves |
-| `ORQ_PROFILE` | Which API-key profile the orq CLI authenticates with; orqi follows it |
+| `ORQ_PROFILE` | Which API-key profile the orq.ai CLI authenticates with; orqi follows it |
 | `ORQI_MODEL` | Router model (default `openai/gpt-5.6-terra`) |
 | `CI` | Any value suppresses the daily update check; use it in scripts and in `make m06` |
 

@@ -217,13 +217,13 @@ report   : https://my.orq.ai/orq-research/experiments/01M21GA1TP2RPD2G3E2JFNN8YG
 next     : open the report; every row has both answers, both verdicts and the judge's explanation
 ```
 
-One `evaluatorq(...)` call: `data=DatasetIdInput(dataset_id=...)`, two jobs (`chat(...)` with each instruction file, returning `answer` and `TurnResult.tool_calls`), two evaluators. `decision_matches` is code: `issue_refund` called iff `expected_decision == "refund"`. `policy_judge` wraps the orq judge invoke as an evaluatorq scorer. `print_results=True` prints the table; with `ORQ_API_KEY` set the run is uploaded as an Experiment and the URL is printed. Open it: every row has both answers, both verdicts and the judge's explanation.
+One `evaluatorq(...)` call: `data=DatasetIdInput(dataset_id=...)`, two jobs (`chat(...)` with each instruction file, returning `answer` and `TurnResult.tool_calls`), two evaluators. `decision_matches` is code: `issue_refund` called iff `expected_decision == "refund"`. `policy_judge` wraps the orq.ai judge invoke as an evaluatorq scorer. `print_results=True` prints the table; with `ORQ_API_KEY` set the run is uploaded as an Experiment and the URL is printed. Open it: every row has both answers, both verdicts and the judge's explanation.
 
 The code scorer separates the prompts by 20 points, the judge by 25. The judge reads the policy text, so a refund the tool allowed (`post_window_exception=true` on a manager's say-so) still fails it; the code scorer only sees which tool was called. The per-row explanations show the fixed prompt's miss too: the same "moving abroad" bulk refund the taxonomy found, which no evaluator would have caught without the trace reading in step 2.
 
 ### Step 7 · The same from an agent
 
-The `run-experiment` skill does step 6 through the orq MCP tools: `create_experiment` with a dataset id, the two agents and the evaluator ids, then `get_experiment_run` and `list_experiment_runs` for the results. That is the Track B path below.
+The `run-experiment` skill does step 6 through the orq.ai MCP tools: `create_experiment` with a dataset id, the two agents and the evaluator ids, then `get_experiment_run` and `list_experiment_runs` for the results. That is the Track B path below.
 
 ## With your coding agent
 
@@ -263,7 +263,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 - Judges drift: the same 20 rows scored 0.65 and 0.75 in consecutive runs. Compare columns inside one run, not across runs.
 - `evaluatorq`'s upload does not target the current project: the Experiment lands in the workspace's **Default** project, not `orq-workshop`. It will not show under Studio > Experiments while `orq-workshop` is the active project. Open the printed URL directly, or switch the project picker to Default.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 Evaluator and guardrail results now show as indicators on every trace span, with a time-range selector and search by id in the Traces view. The verdicts step 4 produced are visible on the trace of each invoke, next to the model call they graded, instead of only in the evaluator's own history.
 

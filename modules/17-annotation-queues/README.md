@@ -95,7 +95,7 @@ cli      : orq datasets list-datapoints 01M2K8Y76P0NKE810G62V969S6 -o json | jq 
 next     : point modules/07 at this dataset, or an experiment: the bad answers of today are the regression test of tomorrow
 ```
 
-Point module 07's experiment at `ws-review-dataset` and the promoted row becomes a number that has to go up. Adding a trace to a dataset does not copy its annotations; the row carries the correction, the verdict stays on the trace, where the orq MCP tools can still query it.
+Point module 07's experiment at `ws-review-dataset` and the promoted row becomes a number that has to go up. Adding a trace to a dataset does not copy its annotations; the row carries the correction, the verdict stays on the trace, where the orq.ai MCP tools can still query it.
 
 ### Step 5 · The same from the CLI
 
@@ -114,7 +114,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> List the items of `ws-review-queue` with the orq MCP tools. For each one without a review, read the customer message and the answer, decide `rating` good or bad against the refund policy in `app/data/kb/*.md`, add a `defects` value from the workspace's fixed list where one fits, apply the annotations with the Annotations API, and give me a table: trace id, rating, defect, one-line reason. Do not remove anything from the queue and do not touch the dataset.
+> List the items of `ws-review-queue` with the orq.ai MCP tools. For each one without a review, read the customer message and the answer, decide `rating` good or bad against the refund policy in `app/data/kb/*.md`, add a `defects` value from the workspace's fixed list where one fits, apply the annotations with the Annotations API, and give me a table: trace id, rating, defect, one-line reason. Do not remove anything from the queue and do not touch the dataset.
 
 The agent is a better reviewer than the rule in step 3, and slower than a human with `J`/`K`. Compare its table with your own verdicts.
 
@@ -134,7 +134,7 @@ The agent is a better reviewer than the rule in step 3, and slower than a human 
 - Automations have no API and act on future traces only. Step 2 detects one by running a turn and polling for 30 seconds.
 - `make reset` deletes the queue and the dataset by prefix; annotations stay on the traces.
 
-## New in orq 4.11 and 4.14
+## New in orq.ai 4.11 and 4.14
 
 Human Review became **Annotations** with queues and an API in 4.11; 4.14 added **trace automations** with sampling and the two actions, dataset and annotation queue, and evaluator results can be corrected from the review screen.
 

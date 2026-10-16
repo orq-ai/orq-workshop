@@ -1,4 +1,4 @@
-# What's new in orq
+# What's new in orq.ai
 
 Features from recent releases that this workshop uses, and the module where each one shows up. Refresh this page before every client run: `orqi /whatsnew` prints the current changelog. Full notes at [docs.orq.ai/changelog](https://docs.orq.ai/docs/changelog).
 
@@ -9,12 +9,12 @@ Features from recent releases that this workshop uses, and the module where each
 | 4.16 | **Monitors** (Beta): widget pages over Traces, Metrics and Logs, alert from a widget. **Logs** (Beta): OpenTelemetry logs at `/v2/otel/v1/logs`, Logs Explorer. | [Alerts and webhooks](modules/14.md) |
 | 4.16 | Python evaluators return `{"value": ..., "explanation": ...}`, explanation shown next to the score; `llm.evaluator` webhook event for every evaluator result. | [Failure analysis and evals](modules/07.md), [Alerts and webhooks](modules/14.md) |
 | 4.16 | **Decisions API** (Beta): `POST /v3/router/decisions` answers yes/no, multiple-choice and scored questions with probabilities, natively on `typesafe/jev-latest`. A dataset created with `path` and `project_id` lands in that project. | [Failure analysis and evals](modules/07.md) |
-| 4.16 | Orq Skills `orq-recommend-evaluators` (new) and `orq-evaluator-alignment` (judge tested against a jury of models), installed with `npx skills add orq-ai/assistant-plugins`. | [Failure analysis and evals](modules/07.md), [Coding agents](modules/13.md) |
+| 4.16 | orq.ai skills `orq-recommend-evaluators` (new) and `orq-evaluator-alignment` (judge tested against a jury of models), installed with `npx skills add orq-ai/assistant-plugins`. | [Failure analysis and evals](modules/07.md), [Coding agents](modules/13.md) |
 | 4.16 | API Keys tab in the Home usage table; Azure cached token pricing; Audit Logs date filter. Keys created with a management key (`POST /v2/api-keys`) take a project, permissions and expiry; from a user login, `orq api-keys create --expires-at` still returned `unknown field "expires_at"` on 13 Oct 2026. | [Budgets and keys](modules/05.md) |
 | 4.16 | Evaluators and guardrails follow the plugins configured on the call, so PII redaction applies to them too. | [Guardrails](modules/04.md) |
 | 4.16 | Tool schema editor validates each parameter type and points to the error. | [Managed agents](modules/08.md) |
 | 4.16 | Streamed model calls through the router run up to 30 minutes (was 10); `limits.max_execution_time` still wins. | [Gateway](modules/01.md) |
-| 4.15 | **Orq CLI** (Beta): `orq setup` signs in and wires every detected agent; `orq launch <agent>`, `-p` for headless; `orq traces conversation` renders a run as text. | [Setup](modules/00.md), [Coding agents](modules/13.md) |
+| 4.15 | **orq.ai CLI** (Beta): `orq setup` signs in and wires every detected agent; `orq launch <agent>`, `-p` for headless; `orq traces conversation` renders a run as text. | [Setup](modules/00.md), [Coding agents](modules/13.md) |
 | 4.15 | Request metadata via `X-ORQ-METADATA-<key>` and `X-ORQ-THREAD-ID` headers, for agents that cannot change the body. | [Tracing](modules/02.md), [Coding agents](modules/13.md) |
 | 4.15 | Google GenAI-compatible wire under `/v3/google`: Gemini CLI and the Gen AI SDKs through the gateway. | [Gateway](modules/01.md), [Coding agents](modules/13.md) |
 | 4.15 | Span panel splits tokens into input, output and reasoning. | [Tracing](modules/02.md) |
@@ -45,7 +45,7 @@ Features from recent releases that this workshop uses, and the module where each
 | 4.9 | LangGraph graph view next to its trace; global LangChain callback registration. | [Tracing](modules/02.md) |
 | 4.6 | **Red teaming** in evaluatorq: OWASP LLM Top 10 and Agentic (ASI) categories, agent-aware attacks, exit-code gating, results as Experiment runs. **Auto Router**. | [Red teaming](modules/16.md), [Evals in CI](modules/12.md) |
 | CLI 8.x | `orq launch <agent>` (session-only gateway routing, MCP and skills), `orq connect --local` (permanent wiring per project), `orq traces thread`, `orq traces insights`, `orq doctor`, `orq orqi`. | [Setup](modules/00.md), [Troubleshooting with orqi](modules/06.md), [Coding agents](modules/13.md) |
-| orqi | Terminal helper agent with 43 orq MCP tools, the orq skills plus seven of its own (`investigate-root-cause`, `debug-conversation`, `workspace-health-check`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`). Alpha. | [Troubleshooting with orqi](modules/06.md), [Evals in CI](modules/12.md) |
+| orqi | Terminal helper agent with 43 orq.ai MCP tools, the orq.ai skills plus seven of its own (`investigate-root-cause`, `debug-conversation`, `workspace-health-check`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`). Alpha. | [Troubleshooting with orqi](modules/06.md), [Evals in CI](modules/12.md) |
 
 !!! note "Naming drift worth knowing"
     On Agents the delegation tools are `advisor` and `sidekick`. On the gateway's server tools they are `orq:advisor` and `orq:subagent`; `orq:sidekick` is a legacy alias. The MCP Tool type on agents is retired: MCP connections are managed in the MCP Portal.

@@ -11,7 +11,7 @@
 
 ## Why
 
-Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent with three models: a **user simulator** playing a persona with a goal, the **agent under test**, and a **judge** that scores the transcript. Every one of those model calls goes through the orq router with your key, so they are traced, costed and budgeted like the agent itself. Module 16 runs the same loop with an attacker instead of a customer.
+Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent with three models: a **user simulator** playing a persona with a goal, the **agent under test**, and a **judge** that scores the transcript. Every one of those model calls goes through the orq.ai router with your key, so they are traced, costed and budgeted like the agent itself. Module 16 runs the same loop with an attacker instead of a customer.
 
 ## The one concept to understand first
 
@@ -72,14 +72,14 @@ results = await simulate(
 )
 ```
 
-**Who is talking** — the persona drives the customer side of every turn:
+**Who is talking**: the persona drives the customer side of every turn:
 
 | Persona | Patience | Style | Behaves like |
 |---|---|---|---|
 | Impatient repeat buyer | 0.2 | terse | buys often, expects instant refunds, threatens chargebacks |
 | Polite first-time customer | 0.8 | verbose | unsure how refunds work, apologises, gives details when asked |
 
-**What they want** — the scenario sets the goal and, crucially, the criterion you gate on:
+**What they want**: the scenario sets the goal and, crucially, the criterion you gate on:
 
 | Scenario | Order | Goal | Gate |
 |---|---|---|---|
@@ -142,14 +142,14 @@ results = await generate_and_simulate(
 
 ![Diagram: a one-line description of the refund agent is passed to generate_and_simulate, which writes three personas and one scenario. The generated scenario asks for an in-window refund of defective EchoBuds earbuds but binds to fixture order ord_a3, which is really a cable organiser set delivered 45 days ago, so the agent correctly refuses and all three conversations score zero.](assets/11-step2-generated-cases.png)
 
-**What it invented** — three usable personas, and one scenario that does not match the fixtures:
+**What it invented**: three usable personas, and one scenario that does not match the fixtures:
 
 | Generated | Value | Usable? |
 |---|---|---|
 | Persona 1 | Practical Frequent Traveler | yes |
 | Persona 2 | Decisive Smart-Home Buyer | yes |
 | Persona 3 | Careful Gift Purchaser | yes |
-| Scenario | "In-Window Refund for Defective EchoBuds", on `ord_a3` | **no** — see below |
+| Scenario | "In-Window Refund for Defective EchoBuds", on `ord_a3` | **no** (see below) |
 
 | The scenario assumes | `ord_a3` actually is |
 |---|---|
@@ -176,7 +176,7 @@ results = await generate_and_simulate(
     next     : save the cases with `eq sim generate --datapoints cases.jsonl`, fix the scenario by hand, replay with `eq sim run`
     ```
 
-`generate_and_simulate(agent_description=..., num_personas=3, num_scenarios=1)` wrote a scenario about "defective EchoBuds" earbuds and invented an order that happens to be `ord_a3`, a cable organiser set delivered 45 days ago. The generated criteria assume the refund is legitimate; the agent, correctly, refused — so all three score 0.00 and the failure is in the case, not the agent. Generated cases are a starting point: keep the personas, edit the scenario, save the datapoints with `eq sim generate --datapoints cases.jsonl` and replay them.
+`generate_and_simulate(agent_description=..., num_personas=3, num_scenarios=1)` wrote a scenario about "defective EchoBuds" earbuds and invented an order that happens to be `ord_a3`, a cable organiser set delivered 45 days ago. The generated criteria assume the refund is legitimate; the agent, correctly, refused, so all three score 0.00 and the failure is in the case, not the agent. Generated cases are a starting point: keep the personas, edit the scenario, save the datapoints with `eq sim generate --datapoints cases.jsonl` and replay them.
 
 ### Step 3 · The managed agent, twice
 
@@ -184,14 +184,14 @@ One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays 
 
 | | 3a · `agent:ws-refund-agent` | 3b · `agent:ws-refund-agent-hosted` |
 |---|---|---|
-| Who runs `lookup_order` | nobody — the call is stubbed | orq, as a code tool |
+| Who runs `lookup_order` | nobody (the call is stubbed) | orq.ai, as a code tool |
 | What the log says | `Dropping tool call 'lookup_order'` | no dropped tool call |
 | Assistant text | `''` (empty) | the refund confirmation |
 | Score | 0.00, `criteria_0` broken | the judge scores a real answer |
 | Ended by | `max_turns` | `judge` once the agent answers |
 | What actually failed | **the harness** | nothing |
 
-![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the hosted twin, whose tools are orq code tools, orq executes the tool call itself and the agent answers with the refund.](assets/11-step3-managed-twice.png)
+![Diagram: sequence comparing two harnesses for the same managed refund agent. With the built-in agent-key target the agent asks for a lookup_order tool call, the harness drops it, the assistant text comes back empty and the judge scores zero. With the hosted twin, whose tools are orq.ai code tools, orq.ai executes the tool call itself and the agent answers with the refund.](assets/11-step3-managed-twice.png)
 
 ??? example "The full run output"
 
@@ -227,19 +227,19 @@ With no argument it scans **both** local stores: `.evaluatorq/sim-runs/` (this m
 ![Screenshot: the evaluatorq dashboard home. Twenty-eight jobs run, split red team 86% and agent sim 14%, with average cost per job, total spend and token usage, and a recent-runs table listing the four ws-sim runs this module just produced.](assets/11-dashboard-home.png)
 
 !!! warning "A run only shows up if it was saved"
-    The `eq sim` CLI auto-saves; the Python SDK does not. `simulate()` and `generate_and_simulate()` default to `save=False`, so a script that omits it uploads to Experiments and leaves nothing on disk — `eq dashboard` then shows an empty Agent Sim. Every call in `solution/run.py` passes `save=True` for exactly this reason.
+    The `eq sim` CLI auto-saves; the Python SDK does not. `simulate()` and `generate_and_simulate()` default to `save=False`, so a script that omits it uploads to Experiments and leaves nothing on disk. `eq dashboard` then shows an empty Agent Sim. Every call in `solution/run.py` passes `save=True` for exactly this reason.
 
 **Agent Sim** lists the four runs, each with the target it drove, the score, the number of conversations and what it cost:
 
-![Screenshot: the Agent Sim page. Nine simulations run, 33% goal completion, 1.7 average turns, $0.0008 average cost per simulation, and a table of the four runs — ws-sim-managed scoring 1.00, ws-sim-managed-builtin 0.00, ws-sim-generated 0.00 and ws-sim-local 0.75 — each tagged with its target, either the ws-refund-agent managed agent or a local callback.](assets/11-dashboard-agent-sim.png)
+![Screenshot: the Agent Sim page. Nine simulations run, 33% goal completion, 1.7 average turns, $0.0008 average cost per simulation, and a table of the four runs: ws-sim-managed scoring 1.00, ws-sim-managed-builtin 0.00, ws-sim-generated 0.00 and ws-sim-local 0.75, each tagged with its target, either the ws-refund-agent managed agent or a local callback.](assets/11-dashboard-agent-sim.png)
 
-Read the target column against the score: the two `callback` rows are the local agent from steps 1 and 2, the two `ws-refund-agent` rows are step 3, and they are the same agent with the same attack — only the harness differs.
+Read the target column against the score: the two `callback` rows are the local agent from steps 1 and 2, the two `ws-refund-agent` rows are step 3, and they are the same agent with the same attack: only the harness differs.
 
 **Compare runs** puts that difference on one page. Pick `ws-sim-managed` against `ws-sim-managed-builtin` and press Compare:
 
 ![Screenshot: run comparison between ws-sim-managed and ws-sim-managed-builtin. KPI deltas show goal-achieved dropping to 0% (-100% relative to A), mean score -1.00, and identical turn counts. A "how conversations ended" chart shows the hosted-agent run ending by judge and the built-in-target run ending by max_turns, and the per-conversation score change is -1.00.](assets/11-dashboard-compare.png)
 
-`-100%` on goal-achieved, and the two runs end differently: the replay on the hosted agent ends `judge` (the judge saw an answer and scored it), the built-in run ends `max_turns` (there was never an answer to score). That is the step 3 lesson as a chart — the agent did not get worse, the harness stopped executing its tools.
+`-100%` on goal-achieved, and the two runs end differently: the replay on the hosted agent ends `judge` (the judge saw an answer and scored it), the built-in run ends `max_turns` (there was never an answer to score). That is the step 3 lesson as a chart: the agent did not get worse, the harness stopped executing its tools.
 
 ## With your coding agent
 
@@ -267,7 +267,7 @@ The skill wraps `eq sim run --target agent:...`. Ask the agent to tell you which
 - The CLI reads `ORQ_API_KEY` from the shell. `uv run --env-file .env` does not override a stale key already exported, and a stale key fails with `openresponses.http.401` on every attack and "the target was not tested". `set -a; source .env; set +a` first.
 - Judges see text. A criterion like "agent looks the order up first" is invisible when the tool call happens inside your callable; write criteria the customer would notice.
 
-## New in orq 4.6
+## New in orq.ai 4.6
 
 Agent simulation and red teaming landed in evaluatorq together with 4.6; results are stored as Experiment runs, which is why every run above has a Studio URL. Locally, `eq dashboard` (step 4) reads the saved runs; the older `eq sim ui` / `eq redteam ui` Streamlit views still exist but print a deprecation warning.
 

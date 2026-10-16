@@ -32,7 +32,7 @@ The numbers are calibrated, not aspirational. On 2026-09-16, on `gpt-5.6-luna`, 
 $ sed -n 1,40p evals/scorers.py
 ```
 
-Three scorers, each under 25 lines, each returning an evaluatorq `EvaluationResult` with `pass_` set: `decision_matches` (was `issue_refund` called iff the row expects a refund, from `TurnResult.tool_calls`), `no_pii_leak` (no email or phone regex in the answer), `policy_judge` (the orq judge `ws-refund-policy-judge`, pass when it answers true). Code first, judge last: the judge costs a model call per row and is the least reliable of the three.
+Three scorers, each under 25 lines, each returning an evaluatorq `EvaluationResult` with `pass_` set: `decision_matches` (was `issue_refund` called iff the row expects a refund, from `TurnResult.tool_calls`), `no_pii_leak` (no email or phone regex in the answer), `policy_judge` (the orq.ai judge `ws-refund-policy-judge`, pass when it answers true). Code first, judge last: the judge costs a model call per row and is the least reliable of the three.
 
 ### Step 2 · Green, then red
 
@@ -119,7 +119,7 @@ next     : the Experiment run URL is in the log above; each attack is one row wi
 Exit code 0, about a minute. Read the `evaluated` line before the `resist` line: the gate counts attempted, evaluated and errored attacks separately, and anything short of a full clean run exits 1. An earlier version passed a run in which one attack errored (the gateway answered 400 to that payload) because the resistance rate only covered the seven attacks the judge could evaluate; a gate that passes when the judge is down is not a gate. Three things to know about this gate:
 
 - **Static mode** replays `evals/redteam_static.json`, ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
-- **Tools really run.** The target is `agent:ws-refund-agent-hosted`, evaluatorq's built-in target on the hosted twin of the refund agent, whose three tools are orq code tools. orq executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). The function-tool agent `ws-refund-agent` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed` creates the hosted agent.
+- **Tools really run.** The target is `agent:ws-refund-agent-hosted`, evaluatorq's built-in target on the hosted twin of the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). The function-tool agent `ws-refund-agent` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed` creates the hosted agent.
 - **The judge is generic.** The same run against `ws-refund-agent-vulnerable` scored 88% once and 100% once: the OWASP judge does not know the EUR 500 limit or the 30-day window. Policy laxity is the quality gate's job (step 2). This gate catches injection, leakage and agency, the classes the public dataset covers.
 
 The CLI form is `uv run eq redteam run -t agent:ws-refund-agent-hosted --mode static --dataset evals/redteam_static.json -y`, the same target the script uses.
@@ -150,7 +150,7 @@ jobs:
 
 ### Step 5 · Headless agents as routine tasks
 
-`.github/workflows/nightly-triage.yml` (cron `0 6 * * 1-5`) installs the orq CLI with `curl -fsSL https://cli.orq.ai/install.sh | sh -s -- --no-setup --no-modify-path` and orqi with `ORQI_VERSION` pinned, sets `CI=1` (no update check), and runs one prompt. The local equivalent:
+`.github/workflows/nightly-triage.yml` (cron `0 6 * * 1-5`) installs the orq.ai CLI with `curl -fsSL https://cli.orq.ai/install.sh | sh -s -- --no-setup --no-modify-path` and orqi with `ORQI_VERSION` pinned, sets `CI=1` (no update check), and runs one prompt. The local equivalent:
 
 ```bash
 $ set -a; source .env; set +a
@@ -187,7 +187,7 @@ Add a contract test that invokes the evaluator and validates its result type bef
 
 That first finding is real: the seeded guardrail `ws-refund-limit-guard` returned booleans with `output_type: number`, and module 07 fixed it with one `orq evals update`. A nightly job would have found it the morning after module 04. The workflow appends `triage.md` to the step summary and, only when `GH_TOKEN` is set, opens an issue with `gh issue create --body-file triage.md`.
 
-`.github/workflows/pr-failure-analysis.yml` runs when a PR gets the label `analyze-traces`. It installs the orq CLI and Claude Code (`npm i -g @anthropic-ai/claude-code`) and launches:
+`.github/workflows/pr-failure-analysis.yml` runs when a PR gets the label `analyze-traces`. It installs the orq.ai CLI and Claude Code (`npm i -g @anthropic-ai/claude-code`) and launches:
 
 ```bash
 $ orq launch claude --no-mcp --dry-run -- -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours and write a short markdown report"
@@ -204,7 +204,7 @@ env:
 note:   a real run links 14 skills into ./.claude/skills for the session and removes them on exit
 ```
 
-Everything after `--` goes to `claude` untouched, so `-p` (print mode) and `--allowedTools` are plain Claude Code flags. `--no-mcp` is deliberate: the orq MCP server entry Claude Code uses (`https://my.orq.ai/v2/mcp`, no headers) authenticates with OAuth, which needs a browser, so in CI the skill reads traces through the orq CLI on `PATH` (`orq traces search --from 24h --to now -o json`) with `ORQ_API_KEY`. The real run this module was verified with is the cheapest possible one:
+Everything after `--` goes to `claude` untouched, so `-p` (print mode) and `--allowedTools` are plain Claude Code flags. `--no-mcp` is deliberate: the orq.ai MCP server entry Claude Code uses (`https://my.orq.ai/v2/mcp`, no headers) authenticates with OAuth, which needs a browser, so in CI the skill reads traces through the orq.ai CLI on `PATH` (`orq traces search --from 24h --to now -o json`) with `ORQ_API_KEY`. The real run this module was verified with is the cheapest possible one:
 
 ```console
 $ orq launch claude --no-mcp --no-skills --model anthropic/claude-haiku-4-5 -- -p "Reply with the single word ok"
@@ -257,7 +257,7 @@ Paste `agent_prompt.md`:
 - `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behaviour in CI.
 - Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
 
-## New in orq 4.6
+## New in orq.ai 4.6
 
 Red teaming shipped in evaluatorq with OWASP LLM Top 10 and Agentic categories, agent-aware attacks, exit-code gating and results as Experiment runs. That release is what makes `evals/redteam_gate.py` a twenty-line file: the pipeline, the OWASP judges and the Studio upload are library code, the script only picks a target, a dataset and a bar.
 
@@ -265,4 +265,4 @@ Red teaming shipped in evaluatorq with OWASP LLM Top 10 and Agentic categories, 
 
 Replace the local `chat()` in `evals/regression.py` with one `orq.responses.create(model="agent/ws-refund-agent-hosted")` call (the hosted twin runs its own tool loop) and you gate the managed agent instead of the local loop, with the same scorers. Then add `--previous-run` style comparison: read the previous `latest.json` artifact and fail when any mean drops by more than 0.10, even if it is still above the bar. Today the gate is absolute; that step is what turns it into a true regression comparison.
 
-Docs: [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [Automate evals with Claude Code](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/automate-evals-and-observability-with-claude-code), [orq CLI reference](https://docs.orq.ai/reference/cli).
+Docs: [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [Automate evals with Claude Code](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/automate-evals-and-observability-with-claude-code), [orq.ai CLI reference](https://docs.orq.ai/reference/cli).

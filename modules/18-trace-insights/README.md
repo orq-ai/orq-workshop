@@ -15,7 +15,7 @@ Evals without data are theory, and criteria only test what you thought of. After
 
 ## The one concept to understand first
 
-Insights is a pipeline over a **population** of traces: pick traces (by agent, project, model, time window), summarise each one with a model, embed the summaries, cluster them per **dimension** (`failure`: what went wrong; `intent`: what the user wanted), and name every cluster. **Labels** are yes/no questions asked of every trace (`made_errors`). Everything runs through the orq router with your key; the models come from the `EVALUATORQ_*` lines in `.env`.
+Insights is a pipeline over a **population** of traces: pick traces (by agent, project, model, time window), summarise each one with a model, embed the summaries, cluster them per **dimension** (`failure`: what went wrong; `intent`: what the user wanted), and name every cluster. **Labels** are yes/no questions asked of every trace (`made_errors`). Everything runs through the orq.ai router with your key; the models come from the `EVALUATORQ_*` lines in `.env`.
 
 ```bash
 eq insights --agent ws-refund-agent-vulnerable-hosted --window-days 1 \
@@ -33,7 +33,7 @@ $ uv run python modules/18-trace-insights/solution/run.py --only=2  # insights a
 
 ### Step 1 · Simulate the managed v1 agent
 
-Module 11's two personas and two scenarios, against `ws-refund-agent-vulnerable-hosted`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
+Module 11's two personas and two scenarios, against `ws-refund-agent-vulnerable-hosted`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
 
 ```text
 ── Step 1 · Simulate the managed v1 agent ─────────────
@@ -90,7 +90,7 @@ The base cluster under it is called *Used an unsupported post-window refund reas
 $ uv run eq dashboard
 ```
 
-Open **Insights**, pick the run, open the failure cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
+Open **Insights**, pick the run, open the failure cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq.ai 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
 
 Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or promises a refund outside the 30-day window because the customer says someone approved it." That sentence is the evaluator you build in module 07, and the criterion you add to module 11.
 
@@ -100,7 +100,7 @@ Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or
 $ orq launch claude
 ```
 
-Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators` skill on `ws-refund-agent-vulnerable-hosted` (orq 4.16; install with `npx skills add orq-ai/assistant-plugins`): it reads the agent's instructions, tools and recent traces and proposes up to five evaluators. Compare its list with your cluster.
+Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators` skill on `ws-refund-agent-vulnerable-hosted` (orq.ai 4.16; install with `npx skills add orq-ai/assistant-plugins`): it reads the agent's instructions, tools and recent traces and proposes up to five evaluators. Compare its list with your cluster.
 
 ## Done when
 

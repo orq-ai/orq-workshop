@@ -7,7 +7,7 @@
 |---|---|
 | **Time** | 30 min |
 | **Prerequisites** | module 02, `make seed`, a public URL for the receiver (see step 3) |
-| **You will have** | a cost alert that opened a trigger on a burst you caused, and orq events arriving signed at a receiver you run. |
+| **You will have** | a cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run. |
 
 ## Why
 
@@ -24,7 +24,7 @@ orq.alerts.create(display_name="ws-cost-alert", project_id=PROJECT, signal="cost
 orq.webhooks.create(id="ws-events-webhook", url=WS_WEBHOOK_URL, events=["llm.response", "agent.updated"], secret=WS_WEBHOOK_SECRET, ...)
 ```
 
-![Diagram: your app sends traces into orq; the Reporting API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is module 17's subject.](assets/observability-ops.png)
+![Diagram: your app sends traces into orq.ai; the Reporting API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is module 17's subject.](assets/observability-ops.png)
 
 Two facts shape what you can alert on. Alerts are project-scoped, and only successful traces carry a project: a request the gateway rejected (unknown model, timeout, guardrail block) is an error trace with no project, so an error-rate alert on your project never sees it. Cost, latency and guardrail metrics come from successful traces and work. And reporting ingests in minutes, not seconds, so an alert with a five-minute window fires a tick or two after the fact.
 
@@ -83,7 +83,7 @@ Newest first. Above, every trigger is an earlier burst that a quiet window close
 
 ### Step 3 · The hook: a webhook into your own system
 
-Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. `app/webhook_receiver.py` is that endpoint, forty lines: it verifies the signature and keeps what arrived. orq cloud has to reach it, so it needs a public URL.
+Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. `app/webhook_receiver.py` is that endpoint, forty lines: it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
 
 Three terminals:
 
@@ -103,7 +103,7 @@ The step creates `ws-events-webhook` on `llm.response` and `agent.updated`, then
     llm.response     evt_30e44b6310ecc89953a721768d signature_valid=True data={"span_id": "c6237c108049b58b", "trace_id": "29c7efc5bf4e1127adb9713b8
 ```
 
-The receiver's terminal prints the same lines as they land, with orq's source IP. An `llm.response` event is the whole model span: `trace_id`, `span_id`, `gen_ai.input.messages`, `gen_ai.output.messages`, `gen_ai.system_instructions`, usage. That is "every model call, pushed to your data warehouse" in one subscription. `agent.updated` carries `{id, key, version}`: the version bumps on every description change (1.0.0 to 1.0.1 on the first run).
+The receiver's terminal prints the same lines as they land, with orq.ai's source IP. An `llm.response` event is the whole model span: `trace_id`, `span_id`, `gen_ai.input.messages`, `gen_ai.output.messages`, `gen_ai.system_instructions`, usage. That is "every model call, pushed to your data warehouse" in one subscription. `agent.updated` carries `{id, key, version}`: the version bumps on every description change (1.0.0 to 1.0.1 on the first run).
 
 ```bash
 $ curl -s $WS_EDGE_URL/$WS_PREFIX/events | jq '.events[] | {type, id, signature_valid}'
@@ -143,14 +143,14 @@ Paste `agent_prompt.md`:
 - Reporting shows the last complete minutes with a delay of a few minutes. A query for "the last 30 seconds" is empty.
 - Plan limits: Free, Team and Consumption plans allow 2 alerts checked hourly; Growth, Pro and Custom allow 5-minute checks. Saving below the plan minimum returns `evaluation interval 5m is below your plan's minimum of 1h`.
 - A webhook's secret has to exist before the webhook does, and the receiver needs the same one. Generate it, put it in `.env`, start the receiver, then run the step. With `WS_WEBHOOK_SECRET` empty the step generates one and prints it, and the receiver reports `signature_valid=None`.
-- Webhook deliveries take 3 to 30 seconds. The step polls for 30; orq retries failed deliveries later.
+- Webhook deliveries take 3 to 30 seconds. The step polls for 30; orq.ai retries failed deliveries later.
 - A new tunnel means a new URL. `make m14` re-points `ws-events-webhook` and `ws-alert-notifier` to the current `WS_WEBHOOK_URL`; nothing is recreated.
-- orq switches a webhook off after 10 failed deliveries (`enabled: false`, `failure_count: 10`); a dead tunnel gets there in minutes and nothing arrives afterwards even once the URL is right. `ensure_webhook` PATCHes `enabled: true` on every run; `orq webhooks list` shows both fields, the SDK's `get` hides `enabled`.
+- orq.ai switches a webhook off after 10 failed deliveries (`enabled: false`, `failure_count: 10`); a dead tunnel gets there in minutes and nothing arrives afterwards even once the URL is right. `ensure_webhook` PATCHes `enabled: true` on every run; `orq webhooks list` shows both fields, the SDK's `get` hides `enabled`.
 - SDK 4.14's `webhooks.update` returns 200 and changes nothing (it sends an empty body); `PATCH /v2/webhooks/<id>` over REST works, and `ensure_webhook` uses it to re-point the URL. `webhooks.get` returns `failure_count` as `None`, so a target that stores nothing (httpbin) gives no signal at all.
 - Notifiers and webhooks are different things: a notifier is where alerts and budgets send their notifications; a webhook is a subscription to workspace events. Both can point at the same URL.
 - `make reset` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 Alerts on Reporting API metrics with triggers and notifiers, the Reporting API's entity dimensions (`agent`, `tool`, `thread`, ...), and `llm.*` webhook events next to the agent, deployment and prompt lifecycle events from 4.6.
 

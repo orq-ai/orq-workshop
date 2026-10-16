@@ -7,7 +7,7 @@
 |---|---|
 | **Time** | 30 min |
 | **Prerequisites** | module 00, `make seed` |
-| **You will have** | the refund tools as an MCP server, an orq MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
+| **You will have** | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
 
 ## Why
 
@@ -19,7 +19,7 @@ Three entities, one direction of trust ([MCP Servers](https://docs.orq.ai/docs/a
 
 ![Diagram: the MCP trust chain. An MCP client calls the MCP Gateway with a bearer key; the gateway exposes two of the three tools synced from the MCP Server, which fronts app/mcp_server.py over HTTPS; a managed agent attaches to the MCP Server directly by tool id.](assets/mcp-trust-chain.png)
 
-The MCP Server is the upstream registration. The Gateway is what clients connect to. The upstream URL must be reachable from orq: loopback and private addresses are rejected, so `http://127.0.0.1:8000/mcp` cannot be registered. Set `MCP_SERVER_URL` in `.env` to the deployed server. When it is empty the solution registers a public no-auth MCP server (DeepWiki, three read-only tools) as a stand-in so every step still runs.
+The MCP Server is the upstream registration. The Gateway is what clients connect to. The upstream URL must be reachable from orq.ai: loopback and private addresses are rejected, so `http://127.0.0.1:8000/mcp` cannot be registered. Set `MCP_SERVER_URL` in `.env` to the deployed server. When it is empty the solution registers a public no-auth MCP server (DeepWiki, three read-only tools) as a stand-in so every step still runs.
 
 ## Steps
 
@@ -203,7 +203,7 @@ With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_c
 - Agents reference MCP tools by the server key plus a tool id, not by the gateway. Unverified: whether a gateway can be attached to an agent at all; the API has no field for it.
 - `orq traces search` needs both `--from` and `--to` in 8.0.4. Use `orq.traces.list_spans(trace_id=)` with the `telemetry.trace_id` from the response instead.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 The MCP Portal is new in 4.14: MCP Servers and MCP Gateway share one area, the old MCP Tool type is retired, every gateway call is logged with exposed and upstream name, and Management Keys can be scoped to MCP. Code Mode and Direct Mode are the two exposure modes of the same gateway.
 

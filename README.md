@@ -31,7 +31,7 @@ Setup first, then the same three sections as docs.orq.ai. Module numbers are the
 
 | Setup | AI Gateway | AI Observability | Managed Agents |
 |---|---|---|---|
-| 00 Setup: the orq CLI | 01 Gateway: fallbacks, retry, cache, load balancing | 02 Tracing: identity, thread, spans, annotations | 08 Managed agents |
+| 00 Setup: the orq.ai CLI | 01 Gateway: fallbacks, retry, cache, load balancing | 02 Tracing: identity, thread, spans, annotations | 08 Managed agents |
 | 13 Coding agents and wrap-up | 03 Smart routing and routing rules | 07 Failure analysis to evaluators to experiments | 09 Knowledge base and RAG |
 | orqi harness | 04 Guardrails and PII | 14 Alerts and webhooks | 10 MCP servers and the MCP Gateway |
 | 06 Troubleshooting with orqi | 05 Budgets, keys, identities, Terraform | 17 Annotation queues and automations | 11 Agent simulation |
@@ -47,7 +47,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 
 **By hand:** the Python SDK, the OpenAI-compatible gateway, the `orq` CLI, the Studio.
 
-**With your coding agent:** `orq launch claude` (or `opencode`, `pi`, `codex`) routes the agent through the gateway and wires the orq MCP server and the orq skills. Paste the module's `agent_prompt.md`. Both leave the same traces.
+**With your coding agent:** `orq launch claude` (or `opencode`, `pi`, `codex`) routes the agent through the gateway and wires the orq.ai MCP server and the orq.ai skills. Paste the module's `agent_prompt.md`. Both leave the same traces.
 
 ## Layout
 
@@ -63,7 +63,7 @@ slides/             Marp deck and facilitator guide for a live session
 
 ## Requirements
 
-Python 3.11 to 3.13, [uv](https://docs.astral.sh/uv/), the orq CLI 8.x, an orq.ai workspace with at least one chat model, one embedding model and one rerank model enabled. Node is only needed for `make slides` if `marp` is not installed.
+Python 3.11 to 3.13, [uv](https://docs.astral.sh/uv/), the orq.ai CLI 8.x, an orq.ai workspace with at least one chat model, one embedding model and one rerank model enabled. Node is only needed for `make slides` if `marp` is not installed.
 
 ## License
 
