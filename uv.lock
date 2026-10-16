@@ -1950,7 +1950,7 @@ wheels = [
 
 [[package]]
 name = "orq-ai-sdk"
-version = "4.14.14"
+version = "4.16.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpcore" },
@@ -1958,9 +1958,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/7d/4fff07ee95e12043dee8771fad7d93bbc98fc3b3b196847224e236a85a1e/orq_ai_sdk-4.14.14.tar.gz", hash = "sha256:d1dd4e083be242c219fd61c5946c7b37d17bafd9124f276abcaaf8208e9d44aa", size = 926313, upload-time = "2026-09-07T10:05:47.178Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/65/73/eb27025927330eab40f83e5c7b330d81609d9618ab36eaf214b9efd78619/orq_ai_sdk-4.16.7.tar.gz", hash = "sha256:584eedf59f725fdd8f0b9df5b311464b262c9b8ab06dd7bf43f45e96edbd6a72", size = 1002583, upload-time = "2026-10-14T10:29:17.992Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/65/b8/9f70daa864964d747278345f226f84a94cab3dab58985a74fb5909c04f0f/orq_ai_sdk-4.14.14-py3-none-any.whl", hash = "sha256:5221fcc9b1db84b0713f03fa9462e8333671b2ab0a12b001b5b1452a526dd9dd", size = 1430174, upload-time = "2026-09-07T10:05:43.992Z" },
+    { url = "https://files.pythonhosted.org/packages/96/52/ef486f794916fda937b148e73b96537024e389542bed58d392df32aa32d8/orq_ai_sdk-4.16.7-py3-none-any.whl", hash = "sha256:6d6d46ad7edb672109680fb4ab8e2644c4007d70e1e0e3594bedf4e9bb6898e8", size = 1609701, upload-time = "2026-10-14T10:29:16.429Z" },
 ]
 
 [[package]]
@@ -2015,7 +2015,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.60" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.30" },
     { name = "opentelemetry-sdk", specifier = ">=1.30" },
-    { name = "orq-ai-sdk", specifier = ">=4.14,<5" },
+    { name = "orq-ai-sdk", specifier = ">=4.16,<5" },
     { name = "python-dotenv", specifier = ">=1.0" },
 ]
 provides-extras = ["langgraph"]

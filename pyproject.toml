@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Hands-on orq.ai workshop: gateway, guardrails, tracing, evals, agents, RAG, MCP, simulation, red teaming, coding agents."
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "orq-ai-sdk>=4.14,<5",
+    "orq-ai-sdk>=4.16,<5",
     "openai>=1.60",
     "evaluatorq[redteam,dashboard,insights]>=1.70.1",
     "python-dotenv>=1.0",
