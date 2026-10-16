@@ -67,7 +67,7 @@ def step_2_invoke() -> None:
     print(f"question : {QUESTION}")
     print(f"tools    : {' → '.join(out['tool_calls'])}")
     print(f"answer   : {out['text'][:80]!r}")
-    print(f"next     : run `orq traces thread {out['traces'][-1]}`")
+    print(f"next     : run `orq traces conversation {out['traces'][-1]}`")
 
 
 # ── Step 3 · Stream ──

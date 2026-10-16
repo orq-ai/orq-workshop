@@ -12,15 +12,23 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 
 ## The two hours
 
-| Clock | Block | You run | Module |
-|---|---|---|---|
-| 0:00 | Welcome, how today works | | |
-| 0:05 | Get your key and set up | `make setup && make doctor && make smoke` | [Setup](modules/00.md) |
-| 0:25 | 1 · The refund agent | `make seed`, one turn, open the trace | [Setup](modules/00.md), [Managed agents](modules/08.md) |
-| 0:40 | 2 · Simulate customers | the TODOs in `modules/11-simulation/run.py`, then `uv run eq dashboard` | [Agent simulation](modules/11.md) |
-| 1:15 | 3 · Read the traces | `make m18`, then Insights in `uv run eq dashboard` | [Trace insights](modules/18.md) |
-| 1:40 | 4 · From insight to eval | `make eval`, `make eval-vulnerable` | [Failure analysis](modules/07.md), [Evals in CI](modules/12.md) |
-| 1:52 | Take home, questions | | |
+| Clock | Min | Block | You run | You leave with |
+|---|---|---|---|---|
+| 09:00 | 5 | Welcome, how today works |  |  |
+| 09:05 | 20 | [Get your key and set up](../modules/00.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
+| 09:25 | 15 | [1 · The refund agent](../modules/08.md) | `make seed` | your smoke trace open in the Studio |
+| 09:40 | 35 | [2 · Simulate customers](../modules/11.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
+| 10:15 | 25 | [3 · Read the traces](../modules/18.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
+| 10:40 | 12 | [4 · From insight to eval](../modules/07.md) | `make eval && make eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 10:52 | 8 | Take home, questions |  |  |
+
+Ends 11:00 (120 min).
+
+
+<iframe src="slides/deck.html" title="Slides" style="width:100%;aspect-ratio:16/9;border:0" allowfullscreen></iframe>
+
+[Open the slides full screen](techdays-2026/slides/deck.html){ .md-button }
+
 
 ## Get your key (0:05)
 
@@ -76,6 +84,6 @@ make eval-vulnerable   # v1: exits 1
 
 ## Take home
 
-- [The full course](agenda.md): 18 modules, from the gateway to red teaming.
-- [Red teaming](modules/16.md) and [annotation queues](modules/17.md) were left out today; they work on the same agent.
+- [The full course](../agenda.md): 18 modules, from the gateway to red teaming.
+- [Red teaming](../modules/16.md) and [annotation queues](../modules/17.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.

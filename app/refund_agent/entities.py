@@ -54,7 +54,7 @@ def ensure_dataset(
             if points and not orq.datasets.list_datapoints(dataset_id=dataset.id, limit=1).data:
                 orq.datasets.create_datapoint(dataset_id=dataset.id, request_body=points)
             return dataset.id
-    created = orq.datasets.create(request={"display_name": key, "path": settings.path})
+    created = orq.datasets.create(display_name=key, path=settings.path)
     if points:
         orq.datasets.create_datapoint(dataset_id=created.id, request_body=points)
     return created.id
@@ -575,11 +575,9 @@ def ensure_annotation_queue(orq=None, name: str = "review-queue") -> str:
         if queue.display_name == key:
             return queue.model_dump(by_alias=True)["_id"]
     queue = orq.annotation_queues.create(
-        request={
-            "display_name": key,
-            "description": "Workshop: error traces to review (filled by the trace automation)",
-            "project_id": project_id(orq),
-        }
+        display_name=key,
+        description="Workshop: error traces to review (filled by the trace automation)",
+        project_id=project_id(orq),
     )
     return queue.model_dump(by_alias=True)["_id"]
 
@@ -769,6 +767,9 @@ def reset(orq=None) -> None:
     a row). A kind that cannot be listed is skipped and a failed delete is reported; neither stops
     the run.
     """
+    if settings.prefix == "ws" and "--yes" not in sys.argv:
+        # The bare default is shared by everyone who never set a seat prefix: refuse to wipe it by accident.
+        sys.exit("reset refused: WS_PREFIX is the shared default `ws`. Set your own seat prefix in .env (e.g. WS_PREFIX=ws07), or pass --yes.")
     orq = orq or make_orq()
     prefix = settings.prefix + "-"
     prefix_us = settings.prefix + "_"  # memory store keys reject hyphens

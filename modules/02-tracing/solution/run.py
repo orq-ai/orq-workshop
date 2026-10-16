@@ -114,7 +114,7 @@ print(f"turn 1   : {turn_1.trace_id}  tools {' → '.join(turn_1.tool_calls) or 
 print(f"turn 2   : {turn_2.trace_id}  tools {' → '.join(turn_2.tool_calls) or '(none)'}")
 print(f"search   : thread_id={thread_id} → {len(thread_hits)} traces: {', '.join(hit['trace_id'] for hit in thread_hits)}")
 print(f"fields   : name={turn_2_trace['name']} identity_id={turn_2_trace['identity_id']} thread_id={turn_2_trace['thread_id']}")
-print(f"cli      : orq traces thread {turn_2.trace_id}")
+print(f"cli      : orq traces conversation {turn_2.trace_id}")
 print(f"next     : in {TRACES_URL} filter on Thread ID {thread_id}; every model call of the conversation lines up")
 
 # %% [markdown]

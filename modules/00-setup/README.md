@@ -38,7 +38,7 @@ Expected output (abridged):
 authenticated: true
 active_workspace_key: <your-workspace>
 active_project_name: <your-project>
-cli: 8.0.x
+cli: 11.6.0-rc.2
 ```
 
 Two other doors, and one command worth knowing:
@@ -102,9 +102,9 @@ auth:
   status: authenticated
   user_email: you@example.com
 binary:
-  api_version: 4.14.19
+  api_version: 4.17.0-rc.24
   name: orq
-  version: 8.6.7
+  version: 11.6.0-rc.2
 checks[16]:
   -
     id: session_file
@@ -113,7 +113,7 @@ checks[16]:
   ...
 ```
 
-The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 8.6.7` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
+The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 11.6.0-rc.2` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
 
 ```bash
 $ orq doctor | grep -c "status: fail"     # 0 on a healthy machine
@@ -128,12 +128,12 @@ $ orq doctor | grep -B3 "status: fail"    # the message of every failing check
 $ make test
 ```
 
-Runs `pytest -q` over `tests/test_tools.py`: five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq.ai: this is the business logic every later module leans on, and the reason a refund "outside policy" in module 16 is a prompt problem, not a tool problem.
+Runs `pytest -q` over `tests/`: the session and build tests plus five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq.ai: this is the business logic every later module leans on, and the reason a refund "outside policy" in module 16 is a prompt problem, not a tool problem.
 
 ```text
 uv run pytest -q
 .....                                                                    [100%]
-5 passed in 0.03s
+24 passed in 0.9s
 ```
 
 #### 3d · `make smoke`: one real turn through the gateway
@@ -146,9 +146,9 @@ Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, 
 
 ```text
 ── Step 1 · One refund turn through the gateway ───────
-model    : openai/gpt-5.6-luna
+model    : openai/gpt-6-luna
 question : Hi, I want a refund for order ord_a1, I changed my mind.
-answer   : Your refund of **€24.99** for order **ord_a1** has been issued to the original payment method. It sh…
+answer   : Your refund of €24.99 has been issued to the original payment method. It should arrive within 5–7 bu…
 tools    : lookup_order → get_policy → issue_refund
 trace    : 2e3d6942bbbbd4d48e95f8bcf600b4ad
 verdict  : OK, the call went through orq and the model called lookup_order
@@ -171,7 +171,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 $ make seed
 ```
 
-Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with the `ws-` prefix (`WS_PREFIX`). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix.
+Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix, and refuses the bare shared `ws`.
 
 ```text
 uv run python -m app.refund_agent.entities seed

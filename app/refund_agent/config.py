@@ -56,7 +56,8 @@ class Settings:
     # only carries the workspace UUID, so `make web` reads this to deep-link a trace.
     workspace: str = field(default_factory=lambda: _env("ORQ_WORKSPACE"))
     # Every entity key starts with this, so `entities reset` can find what the workshop created.
-    prefix: str = field(default_factory=lambda: _env("WS_PREFIX", "ws"))
+    # Lowercased: MCP server and smart router keys reject uppercase.
+    prefix: str = field(default_factory=lambda: _env("WS_PREFIX", "ws").lower())
     model: str = field(default_factory=lambda: _env("MODEL", "openai/gpt-6-luna"))
     judge_model: str = field(default_factory=lambda: _env("JUDGE_MODEL", "openai/gpt-6-luna"))
     embedding_model: str = field(

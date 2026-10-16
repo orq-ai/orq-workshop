@@ -68,7 +68,7 @@ $ orq traces search --from now-10m --to now --limit 3 -o json | jq -c '.data[] |
 {"trace_id":"e4119747783704db32ff153043c1fa9a","name":"responses.openai","status":"ok","cost":0.0002204}
 {"trace_id":"24db29ca280446773e74878862b7391d","name":"responses.openai","status":"ok","cost":0.0002044}
 {"trace_id":"b56aa7c55447d568b8a099e81ad7b313","name":"responses.openai","status":"ok","cost":0.00025865}
-$ orq traces thread 6d3815f83d19c502ea7bef614d67bc8a
+$ orq traces conversation 6d3815f83d19c502ea7bef614d67bc8a
 ```
 
 ```text
@@ -98,7 +98,7 @@ turn 1   : 5824e4d8a05994578ae60bc187cb42ac  tools lookup_order → get_policy �
 turn 2   : 8d56a5496ab66fa63a806ded661c989c  tools (none)
 search   : thread_id=ws-thread-21c5900e → 4 traces: 8d56a5496ab66fa63a806ded661c989c, 5824e4d8a05994578ae60bc187cb42ac, fa4160a67177e03c1dbe2367b5954aff, 9ff5f82d43e0d356539ef797775136d8
 fields   : name=refund-turn identity_id=customer-user_001 thread_id=ws-thread-21c5900e
-cli      : orq traces thread 8d56a5496ab66fa63a806ded661c989c
+cli      : orq traces conversation 8d56a5496ab66fa63a806ded661c989c
 next     : in https://my.orq.ai/traces filter on Thread ID ws-thread-21c5900e; every model call of the conversation lines up
 ```
 
@@ -170,11 +170,13 @@ answer   : Your refund of €89.00 for order ord_a2 has been issued to the origi
 steps    : human → ai → tool → ai → tool → ai → tool → ai
 next     : the trace is named refund_langgraph; step 5 searches it by that name
 ── Step 5 · Read the trace back ───────────────────────
-trace    : 01a0a736c57f7532a2fb8bc28e42652f
-spans    : 31
-kinds    : trace 1, span.agent 7, span.chain 16, span.chat_completion 4, span.tool 3
+trace    : 01a144e0cf267fb1a11632c55ea4491a
+spans    : 29
+kinds    : trace 1, span.agent 5, span.chain 16, span.chat_completion 4, span.tool 3
 next     : open https://my.orq.ai/traces and search the trace id; the graph panel shows agent → tools → agent
 ```
+
+The trace can take about 45 s to index, so `trace : not indexed yet` on the first try is expected: rerun the script after a few seconds.
 
 One `setup()` from `orq_ai_sdk.langchain` before the graph is built, and every node, tool and model call is a span; the Studio draws the graph next to the trace. Strands agents get the same treatment through OpenTelemetry: [docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands](https://docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands).
 
@@ -215,6 +217,6 @@ Every trace span now shows guardrail and evaluator indicators, the Traces view h
 
 ## Go further
 
-Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces thread` command accepts `--slice -1` to print only the last message, which is what `orq traces insights` summarises across a time range.
+Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarisess across a time range.
 
 Docs: [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Observability quickstart (OTLP)](https://docs.orq.ai/docs/ai-studio/observability/quickstart), [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes), [Request metadata](https://docs.orq.ai/docs/ai-gateway/request-metadata), [Thread management](https://docs.orq.ai/docs/ai-gateway/thread-management), [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities), [Annotations](https://docs.orq.ai/docs/ai-studio/observability/annotations), [LangGraph integration](https://docs.orq.ai/docs/ai-studio/integrations/frameworks/langgraph).

@@ -42,19 +42,19 @@ $ uv run python modules/14-observability-ops/run.py
 
 ```text
 ── Step 1 · The number: Reporting API ─────────────────
-window   : last hour, project orq-workshop
-cost     : $0.0875
-errors   : rate 0.054 (genai.error_rate)
+window   : last hour, project Bauke
+cost     : $1.0637
+errors   : rate 0.031 (genai.error_rate)
 top      : last 24 hours by model
-    gpt-5.6-luna                 requests=586  errors=18  cost=$0.1329
-    gpt-4o-mini                  requests=145  errors=3   cost=$0.0230
-    text-embedding-3-large       requests=52   errors=0   cost=$0.0001
-    gpt-5.6-terra                requests=7    errors=0   cost=$0.2208
-    gpt-4.1-mini                 requests=2    errors=0   cost=$0.0002
+    openai/gpt-6-luna            requests=469  errors=0   cost=$0.0566
+    openai/gpt-5.6-terra         requests=61   errors=0   cost=$0.9911
+    anthropic/claude-opus-5      requests=33   errors=2   cost=$4.2295
+    openai/gpt-5.6-sol           requests=11   errors=5   cost=$0.0155
+    agent/ws-refund-agent-hosted requests=10   errors=10  cost=$0.0000
 next     : Observability > Reporting in the Studio draws these same numbers
 ```
 
-The `errors=3` on `gpt-4o-mini` are failed provider spans inside successful traces (module 01's fallback chain). The 404s and 408s you can cause from the client are not in this table: no project.
+The `errors` column counts failed spans inside successful traces, such as module 01's fallback chain. The 404s and 408s you can cause from the client are not in this table: no project.
 
 ### Step 2 · The watcher: an alert on spend
 
@@ -62,28 +62,29 @@ The `errors=3` on `gpt-4o-mini` are failed provider spans inside successful trac
 
 ```text
 ── Step 2 · The watcher: an alert on spend ────────────
-alert    : ws-cost-alert alert_01m2k8y6ymy26x8vdnjrmh9asv
+alert    : wsvE-cost-alert <alert-id>
 rule     : genai.cost gt 0.002 over 5m, every 5m
 status   : ok, 1 notifier(s)
-burst    : 11 turns, $0.0041 in the window (threshold $0.002)
-trigger  : trigger_01m2kjyn3r7m5n04gy3evt7m5x resolved critical peak=$0.0789 opened=2026-09-15T22:28:12.003Z
-trigger  : trigger_01m2kg33dhtnbq9vbsdpa0pcvt resolved critical peak=$0.0053 opened=2026-09-15T21:38:12.004Z
-trigger  : trigger_01m2kdsvng4b4aj8rker1vx1ag resolved critical peak=$0.0119 opened=2026-09-15T20:58:12.004Z
-next     : orq alerts list-triggers alert_01m2k8y6ymy26x8vdnjrmh9asv; Observability > Alerts in the Studio shows the burst, the threshold line and the incident
+burst    : 15 turns, $0.0032 in the window (threshold $0.002)
+verdict  : no trigger yet (the alert checks every 5m, reporting lags a few minutes)
+next     : orq alerts list-triggers <alert-id>; Observability > Alerts in the Studio shows the burst, the threshold line and the incident
+warning  : WS_WEBHOOK_SECRET is empty, using a generated secret
+fix      : put the line below in .env and restart the receiver, or signatures will not verify
+secret   : WS_WEBHOOK_SECRET=<secret>
 ```
 
-The first run prints `no trigger yet`: the alert ticks on its own schedule and reporting lags. Re-run with `ALERT_WAIT=600` to poll, or check later:
+The first run prints `no trigger yet`: the alert ticks on its own schedule and reporting lags. Re-run with `ALERT_WAIT=600` to poll, or check later. Take `<alert-id>` from the `alert_id` field of `orq alerts list -o json`, because ids are per workspace and do not carry over from this page:
 
 ```bash
 $ orq alerts list -o json | jq '.data[] | {display_name, status, last_triggered_at}'
-$ orq alerts list-triggers alert_01m2jcjavbg4vwgr3zdrcfta0b -o json | jq '.data[] | {status, severity, peak_value, opened_at}'
+$ orq alerts list-triggers <alert-id> -o json | jq '.data[] | {status, severity, peak_value, opened_at}'
 ```
 
-Newest first. Above, every trigger is an earlier burst that a quiet window closed, and status is back to `ok`: this run's burst has not been evaluated yet. Rerun a few minutes later and it shows up on top as `open`. A trigger stays open until a full window passes under the threshold; the notifier is called twice per incident, open and resolve. Open **Observability > Alerts** in the Studio: the chart shows the burst, the threshold line, and the incident.
+Newest first. An empty list means this run's burst has not been evaluated yet: rerun a few minutes later and it shows up on top as `open`. Earlier bursts that a quiet window closed show as `resolved`, and the alert's status goes back to `ok`. A trigger stays open until a full window passes under the threshold; the notifier is called twice per incident, open and resolve. Open **Observability > Alerts** in the Studio: the chart shows the burst, the threshold line, and the incident.
 
 ### Step 3 · The hook: a webhook into your own system
 
-Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. `app/webhook_receiver.py` is that endpoint, forty lines: it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
+Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. `app/edge.py` serves that endpoint (`/<WS_PREFIX>`): it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
 
 Three terminals:
 
@@ -107,7 +108,7 @@ The receiver's terminal prints the same lines as they land, with orq.ai's source
 
 ```bash
 $ curl -s $WS_EDGE_URL/$WS_PREFIX/events | jq '.events[] | {type, id, signature_valid}'
-$ orq webhooks list -o json | jq '.items[] | {_id, url, events}'
+$ orq webhooks list -o json | jq '.items[] | {id, url, events}'
 ```
 
 Signature check, the lines that matter (`app/edge.py`):

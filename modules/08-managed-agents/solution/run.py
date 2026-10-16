@@ -69,8 +69,8 @@ try:
     orq.agents.update(agent_key=AGENT, settings=agent_settings)
 except Exception as exc:  # noqa: BLE001
     print(f"patch    : rejected, {type(exc).__name__}: {str(exc)[:70]}…")
-print("write    : settings.tools = [{'type': 'code', 'key': 'ws-lookup_order'}, ...]")
-print("next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 8")
+print(f"write    : settings.tools = [{{'type': 'code', 'key': '{settings.prefix}-lookup_order'}}, ...]")
+print(f"next     : open Agents > {settings.prefix}-refund-agent in the Studio; the Versions tab is used in step 8")
 
 # %% [markdown]
 # ## Step 2 · Invoke it
@@ -110,7 +110,7 @@ print(f"tools    : {' → '.join(out['tool_calls'])}")
 print(f"requests : 1 in {elapsed:.1f}s, cost ${out['usage']['total_cost']:.5f}")
 print(f"answer   : {out['text'][:100]}…")
 print(f"trace    : {out['traces'][0]}")
-print(f"next     : run `orq traces thread {out['traces'][0]}`; the spans show each tool call orq ran")
+print(f"next     : run `orq traces conversation {out['traces'][0]}`; the spans show each tool call orq ran")
 
 # %% [markdown]
 # One request, one trace, tool calls included. The model sometimes confirms the order first and
@@ -157,7 +157,7 @@ print("── Step 2b · Hybrid: function tools your code runs ────")
 print(f"tools    : {' → '.join(hybrid['tool_calls'])}  (executed by dispatch() in this process)")
 print(f"requests : {len(hybrid['traces'])}, one per round of the loop, one trace each")
 print(f"answer   : {hybrid['text'][:100]}…")
-print(f"next     : run `orq traces thread {hybrid['traces'][-1]}`; the last trace renders the whole conversation")
+print(f"next     : run `orq traces conversation {hybrid['traces'][-1]}`; the last trace renders the whole conversation")
 
 # %% [markdown]
 # ## Step 3 · Stream
@@ -372,7 +372,7 @@ for suffix in ("@1.0.0", f"@{agent_info['version']}", "@latest", "@production"):
     except Exception as exc:  # noqa: BLE001
         message = str(exc).split('"message":"')[-1].split('"')[0]  # the API error message, without the SDK wrapper
         print(f"call     : {model_ref:<34} {message[:60]}")
-print("next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves")
+print(f"next     : assign the production environment in Agents > {settings.prefix}-refund-agent > Versions, rerun, and @production resolves")
 
 # %% [markdown]
 # ## Step 9 · The same from the CLI

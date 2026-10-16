@@ -63,7 +63,7 @@ jobs:
           ORQ_API_KEY: ${{ secrets.ORQ_API_KEY }}
         run: |
           orq launch claude --no-mcp --model anthropic/claude-sonnet-5 -- \
-            -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours and write a short markdown report. Use the orq CLI (orq traces search --from 24h --to now --json, orq traces list-spans) to read traces. Print the report as your final answer, do not create files." \
+            -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours and write a short markdown report. Use the orq CLI (orq traces search --from 24h --to now -o json, orq traces list-spans) to read traces. Print the report as your final answer, do not create files." \
             --allowedTools "Bash(orq:*),Bash(jq:*),Read,Glob,Grep" \
             > analysis.md
           test -s analysis.md

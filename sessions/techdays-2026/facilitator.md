@@ -1,6 +1,6 @@
 # Facilitator guide: KickstartAI TechDays
 
-"Is Your Agent Behaving Like You Expect? Testing With Evals". Thursday 15 Oct, Circa Amsterdam. Two hours including Q&A, about 30 senior engineers. Deck: `slides/techdays.md`, rendered with `make slides DECK=techdays`.
+"Is Your Agent Behaving Like You Expect? Testing With Evals". Thursday 15 Oct, Circa Amsterdam. Two hours including Q&A, about 30 senior engineers. Deck: `slides/deck.md`, rendered with `make session S=techdays-2026`.
 
 The session follows one agent through four steps: build it, simulate customers against it, read the simulated traces with Insights, turn the failure Insights finds into an eval that gates CI. The principle: get to simulation fast, because evals without data are theory. v1 of the agent is `vulnerable_instructions.md`, so the simulation surfaces a real failure; the fix is `fixed_instructions.md`. Each step reuses a module's solution, so every command has an expected-output block in that module's README to fall back on.
 
@@ -34,7 +34,7 @@ Two facilitators. During onboarding and the hands-on parts of blocks 2 and 3, bo
 - [ ] `orq launch claude` works on the demo machine, and `npx skills add orq-ai/assistant-plugins` is installed for the `orq-recommend-evaluators` line on slide 20.
 - [ ] Concurrency dry run: `make seed`, module 11 step 1 and `make m18` from four laptops at once on the workshop workspace. Note where it breaks, and the cost of one full seat run (Home → usage per API key): `________`.
 - [ ] Put the real passcode on slide 4 in the local copy you present from. Never commit it.
-- [ ] `make slides DECK=techdays`, and the PDF on a USB stick for the venue. If the globally installed `marp` fails (it does on Node 26), run `make slides DECK=techdays MARP="npx -y @marp-team/marp-cli@latest"`.
+- [ ] `make session S=techdays-2026`, and keep `slides/deck.html` (self-contained) on a USB stick for the venue. If the globally installed `marp` fails (it does on Node 26), run `make session S=techdays-2026 MARP="npx -y @marp-team/marp-cli@latest"`.
 
 ### Participant access
 

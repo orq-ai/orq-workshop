@@ -109,22 +109,6 @@ def run_turn(messages, *, extra_body=None, ...) -> TurnResult:   # stateless red
 
 ---
 
-## What's new (4.10 to 4.14, CLI 8.x)
-
-- **MCP Portal + MCP Gateway** (4.14): one governed endpoint for many MCP servers, per-tool exposure, denied calls logged
-- **Smart Router** page, `route_pool`, quality / balanced / cost profiles (4.13)
-- **Advisor and Sidekick** tools on agents (4.13)
-- **System guardrails** PII + Secret detection, fail-closed, sampling (4.12, 4.13)
-- **Budgets** as an entity: identity, key, project, model scopes; RPM, cost, tokens (4.11)
-- **PII redaction plugin** with restore on the way back (4.11)
-- **Annotations** with queues and API; guardrail indicators on spans; Codex sessions as traces
-- **orq CLI 8**: `orq launch`, `orq connect --local`, `orq traces thread`, `orq doctor`, `orq orqi`
-- **evaluatorq**: agent simulation, OWASP red teaming, exit-code gates
-
-<!-- 0:22. One minute. Point at docs/whats-new.md for the module mapping. -->
-
----
-
 <!-- _class: vote -->
 
 ## What you asked for
@@ -160,7 +144,7 @@ Routing, model selection and monitoring: you said the docs cover those. They are
 
 **Keep your architecture. Rent the infrastructure.** The loop is yours, a framework's, or orq's. The gateway, the traces and the budgets are the same either way.
 
-![w:850](../docs/assets/diagrams/own-your-agent-loops.png)
+![w:850](../../../docs/assets/diagrams/own-your-agent-loops.png)
 
 <!-- One question, three shapes. The only difference is who runs the loop; routing and tracing do not care. -->
 
@@ -230,7 +214,7 @@ Function tools come back as `function_call` items. **Your code executes them** a
 
 ## 2 · One turn, in one picture
 
-![w:1000](../modules/08-managed-agents/assets/responses-tool-loop.png)
+![w:1000](../../../modules/08-managed-agents/assets/responses-tool-loop.png)
 
 <!-- Match on call_id, not id. A server tool (memory, advisor) also emits a function_call, then an orq:<tool> item with the result; that one is not yours to answer. -->
 
@@ -241,10 +225,10 @@ Function tools come back as `function_call` items. **Your code executes them** a
 ## 2 · Live demo
 
 ```bash
-$ orq agents get ws-refund-agent
+$ orq agents retrieve ws-refund-agent
 $ make m08        # invoke with tool dispatch, stream, memory recall, a version bump
 $ make m15        # advisor before a refusal, sidekick for the closing note, the cost split
-$ orq traces thread <trace_id>
+$ orq traces conversation <trace_id>
 ```
 
 Watch for: the `function_call` item and the continuation · a second turn answering from `previous_response_id` alone · memory recalling the customer's name on the second call · `@production` in the model reference · the advisor changing "refuse" into "human review".
@@ -296,7 +280,7 @@ Three places retrieval can happen:
 
 ## 3 · Three ways to match the same question
 
-![w:1060](../docs/assets/diagrams/rag-search-modes.png)
+![w:1060](../../../docs/assets/diagrams/rag-search-modes.png)
 
 <!-- The scores are not comparable across modes: keyword comes from a text match, vector from embedding distance. A keyword 1.000 next to a hybrid 0.654 says nothing. -->
 
@@ -306,7 +290,7 @@ Three places retrieval can happen:
 
 ## 3 · Internal and external: who does what
 
-![w:1060](../docs/assets/diagrams/rag-internal-external.png)
+![w:1060](../../../docs/assets/diagrams/rag-internal-external.png)
 
 <!-- The row that surprises people: go external and orq still cuts to top_k, applies the threshold and reranks what you return. You own retrieval; the platform still owns ranking. -->
 
@@ -369,7 +353,7 @@ The gateway is where "small, focused agents" becomes a setting: the refund agent
 
 ## 4 · The trust chain
 
-![w:1000](../modules/10-mcp-gateway/assets/mcp-trust-chain.png)
+![w:1000](../../../modules/10-mcp-gateway/assets/mcp-trust-chain.png)
 
 <!-- The upstream URL must be reachable from orq: loopback and private addresses are rejected. The hidden tool is not forbidden, it is absent; tools/list never returns it. -->
 
@@ -915,7 +899,7 @@ $ orq alerts list-triggers <alert_id>
 
 ```bash
 $ make m02                          # identity + thread, otel spans, one annotation
-$ orq traces thread <trace_id>      # readable transcript
+$ orq traces conversation <trace_id>      # readable transcript
 $ orqi /doctor
 $ orqi "why did trace <id> fail?"
 $ make m14                          # cost alert + burst, a signed webhook at your receiver

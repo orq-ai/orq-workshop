@@ -95,7 +95,7 @@ answered = [trace for trace in candidates if has_answer(trace)]
 items_now = len(queue_items())
 
 print("── Step 1 · Fill the queue by API ─────────────────────")
-print(f"queue    : ws-review-queue {QUEUE}")
+print(f"queue    : {settings.prefix}-review-queue {QUEUE}")
 print(f"before   : {len(queued)} items")
 print(f"traces   : {len(candidates)} candidates, {len(candidates) - len(answered)} are tool-loop hops without an answer")
 print(f"added    : {len(fresh)}")
@@ -128,7 +128,7 @@ for _ in range(AUTOMATION_POLLS):
         break
 else:
     print("verdict  : not in the queue after 30 s: no automation yet")
-    print(f"next     : create it in the Studio (Traces > Automations, agent is {AGENT}, add to ws-review-queue) and run this cell again")
+    print(f"next     : create it in the Studio (Traces > Automations, agent is {AGENT}, add to {settings.prefix}-review-queue) and run this cell again")
 
 # %% [markdown]
 # ## Step 3 · Review by API
@@ -183,7 +183,7 @@ if rating_definition:
 items_now = len(queue_items())
 print(f"reviewed : {len(reviewed)} now, {len(marked)} of {items_now} items carry a review")
 print(f"panel    : queue configured with annotation {rating_definition}")
-print("next     : open Observability > Annotation queues > ws-review-queue; each reviewed item shows its rating")
+print(f"next     : open Observability > Annotation queues > {settings.prefix}-review-queue; each reviewed item shows its rating")
 
 # %% [markdown]
 # ## Step 4 · Promote the bad ones to a dataset
@@ -217,7 +217,7 @@ count = len(
 items_now = len(queue_items())
 
 print("── Step 4 · Promote the bad ones to a dataset ─────────")
-print(f"dataset  : ws-review-dataset {DATASET}")
+print(f"dataset  : {settings.prefix}-review-dataset {DATASET}")
 print(f"rows     : +{len(bad_rows)} from this review, {count} total")
 print(f"queue    : {items_now} items left")
 print(f"cli      : orq datasets list-datapoints {DATASET} -o json | jq -c '.data[] | {{message: .inputs.message, expected_output}}'")

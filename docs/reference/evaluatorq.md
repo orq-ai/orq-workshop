@@ -53,7 +53,7 @@ $ uv add "evaluatorq[all]"                 # everything
 There are also framework extras (`langchain`, `langgraph`, `openai-agents`, `pydantic-ai`, `crewai`, `otel`) because the target can be any of those, a plain async function, or an orq.ai-hosted agent by key.
 
 !!! warning "`eq dashboard` needs its own extra"
-    Without `evaluatorq[dashboard]` the command refuses to start and only the older, deprecated `eq sim ui` / `eq redteam ui` Streamlit views work.
+    Without `evaluatorq[dashboard]` the command refuses to start.
 
 ## Local or on orq.ai
 
@@ -70,7 +70,7 @@ The same call does both. The credential is the switch:
 
 Two details that bite:
 
-- **The SDK does not auto-save; the CLI does.** `simulate()` and `red_team()` default to `save=False`, so a Python script uploads to Experiments and leaves nothing on disk, and `eq dashboard` then shows an empty section. Pass `save=True`. The `eq` CLI saves without being asked.
+- **`simulate()` does not auto-save; `red_team()` and the CLI do.** `simulate()` defaults to `save=False`, so a Python script uploads to Experiments and leaves nothing on disk, and `eq dashboard` then shows an empty section. Pass `save=True`. `red_team()` defaults to `save='final'`.
 - **An upload with no path lands in the Default project.** Pass `path=` (this repo uses `settings.path`) to pin the Experiment where the rest of your work lives.
 
 ## When to use which

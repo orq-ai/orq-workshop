@@ -233,7 +233,7 @@ Paste `agent_prompt.md`:
 
 ## New in orq.ai 4.14
 
-`orq orqi` is a first-class CLI command in 8.x: it installs orqi on first use and hands it the login session. The Studio's CLI onboarding path (4.14) is the same flow, so a new workspace can go from sign-up to `orqi "check workspace health"` without opening the API keys page.
+`orq orqi` is a first-class CLI command (since 8.x): it installs orqi on first use and hands it the login session. The Studio's CLI onboarding path (4.14) is the same flow, so a new workspace can go from sign-up to `orqi "check workspace health"` without opening the API keys page.
 
 ## Go further
 

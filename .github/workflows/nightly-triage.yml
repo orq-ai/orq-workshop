@@ -24,7 +24,7 @@ concurrency:
 env:
   ORQ_PROJECT: orq-workshop
   # orqi is alpha: pin the release tag so a nightly job does not break on a new build.
-  ORQI_VERSION: "0.1.0"
+  ORQI_VERSION: "0.20.0"
   # A non-empty CI suppresses orqi's daily update check (and the "new release" banner).
   CI: "1"
   # Leave unset to skip issue creation. Set to a token with issues:write to enable it.
@@ -56,7 +56,7 @@ jobs:
         run: |
           orq --version
           orqi --version
-          orq status --json | jq '{authenticated, active_workspace_key}'
+          orq status -o json | jq '{authenticated, active_workspace_key}'
 
       - name: Triage yesterday's errors
         # One-shot mode: orqi prints and exits. The prompt asks for stdout only because orqi

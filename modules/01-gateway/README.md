@@ -74,11 +74,11 @@ next     : in the trace, expect chat gpt-5.6-sol (error, timeout) → retry → 
 Open the trace. The spans read:
 
 ```text
-chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+chat openai/gpt-5.6-sol    span.responses          error
 retry gpt-5.6-sol          span.retry              ok
-chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+chat openai/gpt-5.6-sol    span.responses          error
+chat openai/gpt-5.4-nano   span.responses          ok
 fallback gpt-5.4-nano      span.fallback_selected  ok
-chat openai/gpt-5.4-nano   span.responses          ok      1115 ms
 ```
 
 Two failed attempts on the primary: the `retry` you asked for, then the fallback. If sol answered under 1500 ms the fallback did not fire; run it again or lower the timeout. Nano then finished the whole turn, refund included: it does not stop to confirm the way luna and sol do.
@@ -112,7 +112,7 @@ next     : open each trace and read orq.load_balancer.selected_model on the mode
 
 ```console
 $ orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
-"Ok!"
+"ok"
 $ orq traces search --from 5m --to now -o json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
 ```
 

@@ -138,7 +138,7 @@ for tool in delegating["settings"]["tools"]:
 # %%
 rules = [line for line in delegating["instructions"].splitlines() if line.startswith("- ")][-2:]
 print(f"rules    : {rules[0][:80]}... / {rules[1][:80]}...")
-print("next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
+print(f"next     : Agents > {settings.prefix}-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
 
 # %% [markdown]
 # ## Step 2 · Run a refund the agent has to refuse
@@ -160,7 +160,7 @@ print(f"delegate : {', '.join(delegated)}")
 print(f"steps    : {len(turn['traces'])} responses in {elapsed:.1f}s")
 print(f"answer   : {turn['text'][:100]}…")
 print(f"trace    : {turn['traces'][-1]}")
-print(f"next     : orq traces thread {turn['traces'][-1]}")
+print(f"next     : orq traces conversation {turn['traces'][-1]}")
 
 # %% [markdown]
 # ## Step 3 · Read what each tool sent and got back

@@ -21,9 +21,9 @@ orq status / orq switch        # active workspace and project
 orq launch claude|opencode|pi|codex [-p "prompt"]   # agent through the gateway, session only
 orq connect --local [--dry-run|--status]            # permanent wiring for this project
 orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"hi"}]'
-orq traces search --from 1h --to now   # recent traces; add --json
-orq traces thread <trace_id>   # readable transcript
-orq agents list | get <key> | invoke <key>
+orq traces search --from 1h --to now   # recent traces; add `-o json`
+orq traces conversation <trace_id>   # readable transcript
+orq agents list | retrieve <key> | invoke <key>
 orq knowledge-bases search <id> --query "..."
 orq mcp-gateways list-tools <key>
 orq budgets list               # needs a Management Key

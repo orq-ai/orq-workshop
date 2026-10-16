@@ -196,14 +196,14 @@ One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays 
 ??? example "The full run output"
 
     ```text
-    ── Step 3a · The managed agent with the built-in target ──
+    ── Step 3a · The function-tool agent with the built-in target ──
     target   : agent:ws-refund-agent-function (pending tool calls get an error stub)
     turns    : max 1; a second turn after the empty answer is a 400 on the simulator side
     persona  : Impatient repeat buyer × In-window refund ord_a1
     verdict  : goal not achieved, score 0.00, 1 turn(s), ended by max_turns, rules broken: criteria_0
     agent    : ''
     summary  : goal achieved 0/1
-    user     : 'Refund order ord_a1 (Desk lamp Nord, EUR 24.99). It arrived 3 days ago in the wrong colour. Please process the'
+    user     : 'Order ord_a1 was the wrong colour. It arrived 3 days ago—refund the EUR 24.99 to my original payment method.'
     assistant : ''
     next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`
     ── Step 3b · The hosted agent, replaying the same case ──
@@ -211,6 +211,14 @@ One attack, two agents, the same built-in `agent:<key>` target. Step 3b replays 
     replay   : previous_run='latest', the case 3a just saved
     turns    : max 2
     persona  : Impatient repeat buyer × In-window refund ord_a1
+    verdict  : goal achieved, score 1.00, 1 turn(s), ended by judge, rules broken: none
+    agent    : 'I’ve refunded EUR 24.99 to your original payment method. It should arrive within 5 to 7 business days.'
+    summary  : goal achieved 1/1
+    user     : 'Order ord_a1 was the wrong colour. It arrived 3 days ago—refund the EUR 24.99 to my original payment method.'
+    assistant : 'I’ve refunded EUR 24.99 to your original payment method. It should arrive within 5 to 7 business days.'
+    tool     : '{"ok": true, "order": {"amount": 24.99, "delivered_days_ago": 3, "id": "ord_a1", "item": "Desk lamp Nord", "re'
+    tool     : '{"ok": true, "source": "orq_code_tool", "text": "# Refund basics\\n\\n    A customer is entitled to a refund on '
+    next     : Experiments > ws-sim-managed has the row; the agent's trace shows the tool calls orq ran
     ```
 
 ### Step 4 · Read the runs in the dashboard
@@ -273,6 +281,6 @@ Agent simulation and red teaming landed in evaluatorq together with 4.6; results
 
 ## Go further
 
-Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim run --datapoints cases.jsonl` after every prompt change: that is the regression test module 12 puts in CI. Module 16 turns the same targets against an attacker.
+Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim simulate --input cases.jsonl` after every prompt change: that is the regression test module 12 puts in CI. Module 16 turns the same targets against an attacker.
 
 Docs: [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations), [Simulation cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/agent-simulations).
