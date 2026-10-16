@@ -68,15 +68,18 @@ lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
 	$(RUN) jupyter lab
 
 docs-serve: ## Live docs at http://127.0.0.1:8000
-	$(RUN) mkdocs serve
+	$(RUN) --group docs mkdocs serve
 
 docs-build: ## Strict docs build (fails on broken links)
-	$(RUN) mkdocs build --strict
+	$(RUN) --group docs mkdocs build --strict
 
 DECK ?= workshop
 slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for the TechDays deck)
 	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css -o slides/$(DECK).html
 	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/$(DECK).pdf
+
+deck: ## Serve the KickstartAI reveal.js deck on :8000 (add ?code=XXXX to show the login code)
+	python3 -m http.server 8000 -d slides/kickstart
 
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
@@ -90,4 +93,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides deck modules

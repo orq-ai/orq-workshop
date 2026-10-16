@@ -1,4 +1,4 @@
-# 05 · Budgets and keys
+# Budgets and keys
 
 !!! abstract "Spend is a request attribute, not a spreadsheet"
     Who is calling, on whose behalf, and how much they may spend are attributes of the request, enforced by the gateway. Not a spreadsheet you reconcile after the invoice.

@@ -1,4 +1,4 @@
-# 13 · Coding agents
+# Coding agents
 
 !!! abstract "Your workspace from a coding agent, and the wrap-up"
     The same gateway, MCP server and skills you used from Python all day are one command away from Claude Code, OpenCode, Pi and Codex. A coding-agent session is just another traced, budgeted client of your workspace.

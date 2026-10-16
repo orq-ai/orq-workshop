@@ -1,4 +1,4 @@
-# 15 · Advisor and sidekick
+# Advisor and sidekick
 
 !!! abstract "Hand one step to a second model"
     One agent on one model runs every step. The `advisor` and `sidekick` tools hand single steps to a second model configured at design time, each metered on its own span. Neither is a sub-agent: one call, no tools, no memory of its own.

@@ -1,4 +1,4 @@
-# 09 · Knowledge base and RAG
+# Knowledge base and RAG
 
 !!! abstract "Retrieval decides what the model sees"
     Retrieval decides what the model sees. Chunking decides what retrieval can find. Both are settings you own, and the cheapest RAG is the one that searches before the model call instead of asking the model to search.

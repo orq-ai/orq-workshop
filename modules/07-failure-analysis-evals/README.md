@@ -1,4 +1,4 @@
-# 07 · Failure analysis and evals
+# Failure analysis and evals
 
 !!! abstract "A prompt you own is a prompt you can measure"
     A prompt you own is a prompt you can measure. The traces say what the prompt does, a taxonomy says what to fix, an evaluator says whether the fix held. The tools already return short error strings (`outside_window`, `already_refunded`); a judge reads short answers the same way.

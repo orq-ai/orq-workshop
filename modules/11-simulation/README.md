@@ -1,4 +1,4 @@
-# 11 · Agent simulation
+# Agent simulation
 
 !!! abstract "Testing an agent is cheap when the agent is a function"
     `run_turn(messages) -> messages` has no hidden state, so a simulated customer can replay the transcript into it as often as it likes. Testing an agent is cheap when the agent is a function.
