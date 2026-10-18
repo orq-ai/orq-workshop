@@ -86,6 +86,9 @@ session-pdf: ## Optional PDF of sessions/$(S)/slides/deck.md (not part of `make 
 deck: ## Serve a reveal.js deck: make deck [D=kickstart|certe] [PORT=8000], then open http://localhost:8000/#/5 (add ?code=XXXX to show the login code)
 	python3 -m http.server $(or $(PORT),8000) -d slides/$(or $(D),kickstart)
 
+handout: ## Build slides/handout.html (QR codes, commands; A4, white) and open it to print
+	uvx --with segno python slides/handout.py && open slides/handout.html
+
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
 
@@ -98,4 +101,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build session session-pdf deck modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build session session-pdf deck handout modules
