@@ -255,7 +255,7 @@ def test_guardrails_switch_tags_the_request_and_a_block_is_reported(monkeypatch)
     _guarded_client(monkeypatch, gateway)
     history = [{"role": "user", "content": "earlier"}]
     res = TestClient(web.app).post(
-        "/api/chat", json={"message": "mail me at a@b.co", "history": history, "guardrails": True}
+        "/api/chat", json={"message": "mail me at a@b.co", "history": history, "guardrails": "both"}
     )
 
     assert res.status_code == 200
@@ -265,7 +265,7 @@ def test_guardrails_switch_tags_the_request_and_a_block_is_reported(monkeypatch)
     ]
     assert data["trace_url"] == "https://my.orq.ai/acme/traces/(trace:trace-block)"
     assert data["history"] == history  # the blocked turn is not kept
-    assert bodies[0]["metadata"] == {"channel": web.CHAT_GUARDED}  # what the rule matches on
+    assert bodies[0]["metadata"] == {"channel": web.CHAT_CHANNELS["both"]}  # what the rule matches on
 
 
 def test_switch_off_sends_no_tag_and_other_gateway_errors_stay_errors(monkeypatch):
@@ -339,3 +339,45 @@ def test_models_without_any_credentials_is_not_a_500(monkeypatch):
 
     assert res.status_code == 200
     assert res.json()["agents"] == []
+
+
+def test_each_guardrails_choice_sends_its_own_channel_and_unknown_ones_are_refused(monkeypatch):
+    bodies: list[dict] = []
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        return _response([{"type": "message", "role": "assistant", "status": "completed",
+                           "content": [{"type": "output_text", "text": "ok", "annotations": []}]}], len(bodies))
+
+    _guarded_client(monkeypatch, gateway)
+    client = TestClient(web.app)
+    for choice in ("pii", "refund", "both"):
+        assert client.post("/api/chat", json={"message": "hi", "guardrails": choice}).status_code == 200
+    assert [b["metadata"]["channel"] for b in bodies] == [web.CHAT_CHANNELS[c] for c in ("pii", "refund", "both")]
+    assert len({b["metadata"]["channel"] for b in bodies}) == 3
+
+    assert client.post("/api/chat", json={"message": "hi", "guardrails": "nope"}).status_code == 422
+    client.post("/api/chat", json={"message": "hi", "guardrails": ""})
+    assert "metadata" not in bodies[-1]
+
+
+def test_any_failed_turn_undoes_its_refunds_and_frees_the_conversation(monkeypatch):
+    n = 0
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        nonlocal n
+        n += 1
+        if n == 1:
+            call = {"type": "function_call", "call_id": "c1", "name": "issue_refund",
+                    "arguments": json.dumps({"order_id": "ord_a1", "reason": "changed mind"})}
+            return _response([call], 1)
+        return httpx.Response(500, json={"code": "boom", "message": "upstream"})
+
+    _guarded_client(monkeypatch, gateway)
+    web._stores.clear()
+    client = TestClient(web.app)
+    res = client.post("/api/chat", json={"message": "refund ord_a1", "conversation_id": "cid2"})
+
+    assert res.status_code == 502
+    assert web._stores["cid2"].orders["ord_a1"]["refunded"] is False
+    assert "cid2" not in web._busy

@@ -40,17 +40,18 @@ def _env(name: str, default: str = "") -> str:
 _renew_lock = threading.Lock()  # one `orq` renewal at a time; concurrent requests wait, then read the fresh file
 
 
-def _oauth_session(base_url: str) -> tuple[str, str]:
+def _oauth_session(base_url: str, margin: int = 300) -> tuple[str, str]:
     """(workspace token, workspace key) from the `orq auth login` session for this host, or ("", "").
 
     The token is the one the CLI keeps per workspace; it lasts about an hour and the CLI renews it.
+    "Fresh" means more than `margin` seconds left, so a turn does not run out halfway.
     """
     try:
         session = json.loads((Path.home() / ".orq" / "sessions" / f"{urlparse(base_url).hostname}.json").read_text())
         workspace = session["activeWorkspaceKey"]
         entry = session["workspaceTokens"][workspace]
         expires = datetime.fromisoformat(entry["expiresAt"].replace("Z", "+00:00"))
-        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=300)
+        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=margin)
         return (entry["token"] if fresh else ""), workspace
     except (OSError, ValueError, KeyError, TypeError):
         return "", ""
@@ -140,7 +141,7 @@ class Settings:
                         )
                     except (OSError, subprocess.SubprocessError):
                         pass  # no CLI: the error below says what to do
-                    token, _ = _oauth_session(self.base_url)
+                    token, _ = _oauth_session(self.base_url, margin=0)  # the CLI may keep a token that is still valid
         if not token:
             raise SystemExit(
                 "ORQ_API_KEY is empty and there is no usable `orq` login. "

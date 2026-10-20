@@ -3,7 +3,7 @@
 import json
 import subprocess
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -14,7 +14,7 @@ KEYLESS = replace(settings, api_key="", base_url=f"https://{HOST}", workspace=""
 
 
 def write_session(home, token, expires_in):
-    expires = (datetime.now(timezone.utc) + timedelta(seconds=expires_in)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    expires = (datetime.now(UTC) + timedelta(seconds=expires_in)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     path = home / ".orq" / "sessions" / f"{HOST}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"activeWorkspaceKey": "acme", "workspaceTokens": {"acme": {"token": token, "expiresAt": expires}}}))
