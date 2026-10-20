@@ -53,7 +53,7 @@ class Settings:
     )
     project: str = field(default_factory=lambda: _env("ORQ_PROJECT", "orq-workshop"))
     # Workspace key (the slug in Studio URLs, `active_workspace_key` in `orq doctor`). The API key
-    # only carries the workspace UUID, so `make web` reads this to deep-link a trace.
+    # only carries the workspace UUID, so `make chat` reads this to deep-link a trace.
     workspace: str = field(default_factory=lambda: _env("ORQ_WORKSPACE"))
     # Every entity key starts with this, so `entities reset` can find what the workshop created.
     # Lowercased: MCP server and smart router keys reject uppercase.

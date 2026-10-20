@@ -205,7 +205,7 @@ Read `app/refund_agent/agent.py`. It is 90 lines. It is the whole agent.
 ### Optional · Chat with it in a browser
 
 ```bash
-$ make web        # http://127.0.0.1:8002
+$ make chat        # http://127.0.0.1:8002
 ```
 
 `app/web.py` puts the same `chat()` behind `POST /api/chat`, and `web/index.html` is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Model** picker switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq.ai code tools, so orq.ai runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation.
