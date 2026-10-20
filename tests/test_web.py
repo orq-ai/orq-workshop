@@ -291,3 +291,51 @@ def test_tool_outcomes_pair_each_call_with_its_result_and_keep_this_turns_only()
     ]
     assert web._tool_outcomes(items, ["issue_refund"]) == [{"name": "issue_refund", "ok": False, "error": "outside_window"}]
     assert web._tool_outcomes(items, []) == []
+
+
+def test_tool_outcomes_ignore_history_outputs_that_are_not_json_objects():
+    items = [
+        {"type": "function_call", "call_id": "old", "name": "lookup_order", "arguments": "{}"},
+        {"type": "function_call_output", "call_id": "old", "output": "not json"},
+        {"type": "function_call_output", "call_id": "list", "output": "[1]"},
+        {"type": "function_call", "call_id": "c1", "name": "issue_refund", "arguments": "{}"},
+        {"type": "function_call_output", "call_id": "c1", "output": "[1]"},
+    ]
+    assert web._tool_outcomes(items, ["issue_refund"]) == [{"name": "issue_refund", "ok": None, "error": None}]
+
+
+def test_a_block_after_a_tool_ran_undoes_the_orders_it_changed(monkeypatch):
+    n = 0
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        nonlocal n
+        n += 1
+        if n == 1:
+            call = {"type": "function_call", "call_id": "c1", "name": "issue_refund",
+                    "arguments": json.dumps({"order_id": "ord_a1", "reason": "changed mind"})}
+            return _response([call], 1)
+        block = {"message": "blocked", "type": "guardrail_error", "code": "guardrail_error",
+                 "failures": [{"id": "orq_pii_detection", "stage": "input", "reason": "PII"}]}
+        return httpx.Response(400, json=block, headers={"x-orq-trace-id": "trace-block"})
+
+    _guarded_client(monkeypatch, gateway)
+    web._stores.clear()
+    res = TestClient(web.app).post(
+        "/api/chat", json={"message": "refund ord_a1", "history": [], "conversation_id": "cid", "guardrails": True}
+    )
+
+    assert "blocked" in res.json()
+    assert web._stores["cid"].orders["ord_a1"]["refunded"] is False  # the refund did not happen
+
+
+def test_models_without_any_credentials_is_not_a_500(monkeypatch):
+    def no_credentials():
+        raise SystemExit("no login")
+
+    monkeypatch.setattr(web.settings.__class__, "bearer", lambda self: no_credentials())
+    monkeypatch.setattr(web, "settings", dataclasses.replace(web.settings, api_key=""))
+
+    res = TestClient(web.app).get("/api/models")
+
+    assert res.status_code == 200
+    assert res.json()["agents"] == []
