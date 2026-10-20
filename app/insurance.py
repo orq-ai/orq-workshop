@@ -106,10 +106,11 @@ def ensure_agents(orq=None, evaluator_ids: dict[str, str] | None = None) -> list
         body = _agent_body(spec, evaluator_ids)
         try:
             orq.agents.retrieve(agent_key=body["key"])
-            continue
+            exists = True
         except Exception:  # noqa: BLE001  not found (or not readable): create it below
-            pass
-        orq.agents.create(**body)
+            exists = False
+        if not exists:
+            orq.agents.create(**body)
     return agent_keys()
 
 

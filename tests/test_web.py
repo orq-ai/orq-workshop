@@ -86,7 +86,7 @@ def _models_api(monkeypatch, status: int, body) -> None:
     response = httpx.Response(status, json=body, request=request)
     monkeypatch.setattr(web.httpx, "get", lambda *args, **kwargs: response)
     monkeypatch.setattr(web, "_hosted_agent_exists", lambda: False)
-    monkeypatch.setattr(web, "_workspace_agents", lambda: [])
+    monkeypatch.setattr(web, "_workspace_agents", list)
     monkeypatch.setattr(
         web, "settings", dataclasses.replace(web.settings, model="openai/gpt-5.4-nano")
     )
@@ -397,3 +397,36 @@ def test_agents_are_every_live_agent_of_the_workspace_without_versioned_copies(m
     monkeypatch.setattr(web, "settings", dataclasses.replace(web.settings, api_key="test"))
 
     assert web._workspace_agents() == [f"agent/{web.settings.prefix}-refund-agent", "agent/Alpha", "agent/zeta"]
+
+
+def test_backend_serves_the_insurance_demo_data():
+    data = TestClient(web.app).get("/api/backend?demo=insurance").json()
+
+    assert len(data["cases"]) == 15 and data["rules"] and data["prompts"]
+    assert [value for value, _ in data["guardrails"]] == ["", *web.insurance.GUARD_CHOICES]
+
+
+def test_insurance_demo_needs_an_agent_and_uses_its_own_guardrail_channels(monkeypatch):
+    bodies: list[dict] = []
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        return _response([{"type": "message", "role": "assistant", "status": "completed",
+                           "content": [{"type": "output_text", "text": "Gedekt", "annotations": []}]}], len(bodies))
+
+    _guarded_client(monkeypatch, gateway)
+    client = TestClient(web.app)
+
+    assert client.post("/api/chat", json={"message": "hi", "demo": "insurance"}).status_code == 422  # a model, not an agent
+    ok = client.post("/api/chat", json={"message": "hi", "demo": "insurance", "model": "agent/claims-assessor", "guardrails": "legal"})
+    assert ok.status_code == 200
+    assert bodies[-1]["metadata"] == {"channel": web.insurance.CHANNELS["legal"]}
+    assert client.post("/api/chat", json={"message": "hi", "demo": "insurance", "model": "agent/x", "guardrails": "pii"}).status_code == 422
+    assert client.post("/api/chat", json={"message": "hi", "demo": "nope"}).status_code == 422
+
+
+def test_models_reports_the_claims_agent_the_insurance_demo_starts_on(monkeypatch):
+    assert web._insurance_default(["agent/other"]) is None
+    assert web._insurance_default(["agent/other", "agent/claims-assessor"]) == "agent/claims-assessor"
+    prefixed = f"agent/{web.insurance.agent_keys()[0]}"
+    assert web._insurance_default(["agent/claims-assessor", prefixed]) == prefixed
