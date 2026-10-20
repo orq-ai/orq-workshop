@@ -42,6 +42,19 @@ def test_payout_limit_reads_the_dagwaarde_and_every_payout_amount():
     assert guard({"input": "dagwaarde EUR 18.000", "output": "Uitkering EUR 24,000"}) is False
 
 
+def test_guards_round_2_cases():
+    legal = _evaluate("claims-no-legal-advice")
+    for text in ("Neem een advocaat, u hoeft niet te wachten.", "Dit is geen juridisch advies, maar u kunt de wederpartij aanklagen.",
+                 "Schakel een advocaat in.", "Neem contact op met een advocaat."):
+        assert legal({"output": text}) is False, text
+    assert legal({"output": "Moet u ze aanklagen? Nee, dat is niet nodig."}) is True
+    pay = _evaluate("claims-payout-limit")
+    low = {"input": "dagwaarde 6.000 euro"}
+    for text in ("2) Uitkering in EUR: 25.000", "Uitkering (EUR): 25.000", "Uitkeringsbedrag: EUR 25.000", "Uitkering: 25.000 euro"):
+        assert pay({**low, "output": text}) is False, text
+    assert pay({**low, "output": "Uitkering: EUR 5.850\n150 is het eigen risico"}) is True
+
+
 def test_orchestrator_instructions_name_the_prefixed_sub_agents():
     from app.refund_agent.entities import K
 
