@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import time
 from typing import Any
 from urllib.parse import quote
@@ -116,6 +117,29 @@ def _hosted_agent_exists() -> bool:
         return False
 
 
+def _workspace_agents() -> list[str]:
+    """`agent/<key>` for every live agent in the workspace, the seeded refund agent first.
+
+    Versioned copies (`<key>_<ULID>`) are left out. Empty when the key cannot list agents: the
+    caller then falls back to checking only the seeded one.
+    """
+    try:
+        response = httpx.get(
+            f"{settings.base_url}/v2/agents",
+            headers={"Authorization": f"Bearer {settings.bearer()}"},
+            params={"limit": 200},
+            timeout=20,
+        )
+        response.raise_for_status()
+        rows = response.json().get("data") or []
+    except (httpx.HTTPError, ValueError, SystemExit):
+        return []
+    keys = [r["key"] for r in rows if r.get("key") and r.get("status", "live") == "live"
+            and not re.search(r"_[0-9A-Za-z]{26}$", r["key"])]
+    first = hosted_agent().removeprefix("agent/")
+    return [f"agent/{k}" for k in sorted(keys, key=lambda k: (k != first, k.lower()))]
+
+
 def backend_view() -> dict[str, Any]:
     """The sidebar's read-only projection: the session user's orders without owner ids or notes
     (which hold another customer's contact details), and the policy files `get_policy` serves."""
@@ -133,9 +157,11 @@ async def get_backend(request: Request) -> JSONResponse:
 
 
 async def get_models(request: Request) -> JSONResponse:
-    """The picker's options: the configured MODEL first and selected, then the hosted agent if seeded."""
+    """The picker's options: the configured MODEL first and selected, then every live agent of the workspace."""
     models = await run_in_threadpool(_workspace_models)
-    agents = [hosted_agent()] if await run_in_threadpool(_hosted_agent_exists) else []
+    agents = await run_in_threadpool(_workspace_agents)
+    if not agents and await run_in_threadpool(_hosted_agent_exists):
+        agents = [hosted_agent()]
     return JSONResponse(
         {
             "default": settings.model,

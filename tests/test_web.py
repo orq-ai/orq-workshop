@@ -86,6 +86,7 @@ def _models_api(monkeypatch, status: int, body) -> None:
     response = httpx.Response(status, json=body, request=request)
     monkeypatch.setattr(web.httpx, "get", lambda *args, **kwargs: response)
     monkeypatch.setattr(web, "_hosted_agent_exists", lambda: False)
+    monkeypatch.setattr(web, "_workspace_agents", lambda: [])
     monkeypatch.setattr(
         web, "settings", dataclasses.replace(web.settings, model="openai/gpt-5.4-nano")
     )
@@ -381,3 +382,18 @@ def test_any_failed_turn_undoes_its_refunds_and_frees_the_conversation(monkeypat
     assert res.status_code == 502
     assert web._stores["cid2"].orders["ord_a1"]["refunded"] is False
     assert "cid2" not in web._busy
+
+
+def test_agents_are_every_live_agent_of_the_workspace_without_versioned_copies(monkeypatch):
+    rows = [
+        {"key": "zeta", "status": "live"},
+        {"key": "zeta_01M5CNKB3ZVEK4BXR12FNFB0T4", "status": "live"},
+        {"key": "draft-one", "status": "draft"},
+        {"key": f"{web.settings.prefix}-refund-agent", "status": "live"},
+        {"key": "Alpha", "status": "live"},
+    ]
+    request = httpx.Request("GET", "https://my.orq.ai/v2/agents")
+    monkeypatch.setattr(web.httpx, "get", lambda *a, **k: httpx.Response(200, json={"data": rows}, request=request))
+    monkeypatch.setattr(web, "settings", dataclasses.replace(web.settings, api_key="test"))
+
+    assert web._workspace_agents() == [f"agent/{web.settings.prefix}-refund-agent", "agent/Alpha", "agent/zeta"]
