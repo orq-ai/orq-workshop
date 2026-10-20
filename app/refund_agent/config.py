@@ -10,9 +10,13 @@ Modules read `settings.<field>`; nothing else in `app/` touches `os.environ`.
 
 from __future__ import annotations
 
+import json
 import os
+import subprocess
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
@@ -30,6 +34,22 @@ load_dotenv(os.environ.get("ORQ_ENV_FILE", ROOT / ".env"), override=True)
 def _env(name: str, default: str = "") -> str:
     """One variable, stripped; the default (empty by default) when it is unset."""
     return os.environ.get(name, default).strip()
+
+
+def _oauth_session(base_url: str) -> tuple[str, str]:
+    """(workspace token, workspace key) from the `orq auth login` session for this host, or ("", "").
+
+    The token is the one the CLI keeps per workspace; it lasts about an hour and the CLI renews it.
+    """
+    try:
+        session = json.loads((Path.home() / ".orq" / "sessions" / f"{urlparse(base_url).hostname}.json").read_text())
+        workspace = session["activeWorkspaceKey"]
+        entry = session["workspaceTokens"][workspace]
+        expires = datetime.fromisoformat(entry["expiresAt"].replace("Z", "+00:00"))
+        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=60)
+        return (entry["token"] if fresh else ""), workspace
+    except (OSError, ValueError, KeyError, TypeError):
+        return "", ""
 
 
 def _default_webhook_url() -> str:
@@ -95,12 +115,39 @@ class Settings:
         """Entity storage path. Workspace keys need `<project>/<folder>`; project keys just `<folder>`."""
         return _env("ORQ_PATH", f"{self.project}/workshop")
 
+    def bearer(self) -> str:
+        """The credential to send: ORQ_API_KEY, else the OAuth token of the `orq auth login` session.
+
+        The session token is renewed by a cheap CLI call when it is missing or about to expire, so
+        call this per request instead of keeping the value. Never log it.
+        """
+        if self.api_key:
+            return self.api_key
+        token, _ = _oauth_session(self.base_url)
+        if not token:
+            env = {k: v for k, v in os.environ.items() if k not in ("ORQ_API_KEY", "ORQ_PROJECT", "ORQ_WORKSPACE")}
+            try:
+                subprocess.run(
+                    ["orq", "projects", "list", "--limit", "1", "--no-input", "-o", "json"],
+                    env=env, capture_output=True, timeout=30, check=False,
+                )
+            except (OSError, subprocess.SubprocessError):
+                pass  # no CLI: the error below says what to do
+            token, _ = _oauth_session(self.base_url)
+        if not token:
+            raise SystemExit(
+                "ORQ_API_KEY is empty and there is no usable `orq` login. "
+                "Copy .env.example to .env or run `orq auth login`."
+            )
+        return token
+
+    def studio_workspace(self) -> str:
+        """Workspace key for Studio links: ORQ_WORKSPACE, else the one the OAuth session has active."""
+        return self.workspace or (_oauth_session(self.base_url)[1] if not self.api_key else "")
+
     def require_key(self) -> Settings:
         """Fail early with a fix, instead of a 401 three calls later."""
-        if not self.api_key:
-            raise SystemExit(
-                "ORQ_API_KEY is empty. Copy .env.example to .env or run `orq setup --local`."
-            )
+        self.bearer()
         return self
 
 

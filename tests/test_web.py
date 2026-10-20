@@ -67,7 +67,7 @@ def test_chat_returns_answer_tool_calls_and_trace(monkeypatch):
     assert res.status_code == 200
     data = res.json()
     assert data["answer"] == "Refund approved."
-    assert data["tool_calls"] == ["lookup_order"]
+    assert data["tool_calls"] == [{"name": "lookup_order", "ok": True, "error": None}]
     assert data["trace_id"] == "trace-2"  # the last model call of the loop
     assert data["trace_url"] == "https://my.orq.ai/acme/traces/(trace:trace-2)"
     assert data["model"] == "openai/picked"
@@ -174,7 +174,7 @@ def test_hosted_agent_turn_is_one_call_and_orq_runs_the_tools(monkeypatch):
         {"role": "user", "content": "Refund ord_a1"},
     ]
     assert data["answer"] == "Refund issued."
-    assert data["tool_calls"] == ["ws-lookup_order"]
+    assert data["tool_calls"] == [{"name": "ws-lookup_order", "ok": None, "error": None}]
     assert data["trace_id"] == "trace-7"
     assert data["history"][-2:] == [
         {"role": "user", "content": "Refund ord_a1"},
@@ -225,3 +225,69 @@ def test_backend_shows_session_orders_without_private_fields():
     assert data["orders"]
     assert all(set(o) == set(web.ORDER_FIELDS) for o in data["orders"])
     assert {p["topic"] for p in data["policies"]} == set(web.tools.POLICY_TOPICS)
+
+
+def _guarded_client(monkeypatch, gateway):
+    fake = OpenAI(
+        api_key="test",
+        base_url="https://gateway.test/v3/router",
+        http_client=httpx.Client(transport=httpx.MockTransport(gateway)),
+    )
+    monkeypatch.setattr(web, "make_openai_client", lambda: fake)
+    monkeypatch.setattr(
+        web, "settings", dataclasses.replace(web.settings, api_key="test", base_url="https://my.orq.ai", workspace="acme")
+    )
+
+
+def test_guardrails_switch_tags_the_request_and_a_block_is_reported(monkeypatch):
+    bodies: list[dict] = []
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        block = {
+            "message": "guardrail check failed: orq_pii_detection",
+            "type": "guardrail_error",
+            "code": "guardrail_error",
+            "failures": [{"id": "orq_pii_detection", "stage": "input", "reason": "PII detected: email address"}],
+        }
+        return httpx.Response(400, json=block, headers={"x-orq-trace-id": "trace-block"})
+
+    _guarded_client(monkeypatch, gateway)
+    history = [{"role": "user", "content": "earlier"}]
+    res = TestClient(web.app).post(
+        "/api/chat", json={"message": "mail me at a@b.co", "history": history, "guardrails": True}
+    )
+
+    assert res.status_code == 200
+    data = res.json()
+    assert data["blocked"]["failures"] == [
+        {"id": "orq_pii_detection", "stage": "input", "reason": "PII detected: email address"}
+    ]
+    assert data["trace_url"] == "https://my.orq.ai/acme/traces/(trace:trace-block)"
+    assert data["history"] == history  # the blocked turn is not kept
+    assert bodies[0]["metadata"] == {"channel": web.CHAT_GUARDED}  # what the rule matches on
+
+
+def test_switch_off_sends_no_tag_and_other_gateway_errors_stay_errors(monkeypatch):
+    bodies: list[dict] = []
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        return httpx.Response(400, json={"code": "bad_request", "message": "nope"})
+
+    _guarded_client(monkeypatch, gateway)
+    res = TestClient(web.app).post("/api/chat", json={"message": "hi"})
+
+    assert res.status_code == 502
+    assert "metadata" not in bodies[0]
+
+
+def test_tool_outcomes_pair_each_call_with_its_result_and_keep_this_turns_only():
+    items = [
+        {"type": "function_call", "call_id": "old", "name": "lookup_order", "arguments": "{}"},
+        {"type": "function_call_output", "call_id": "old", "output": json.dumps({"ok": True})},
+        {"type": "function_call", "call_id": "c1", "name": "issue_refund", "arguments": "{}"},
+        {"type": "function_call_output", "call_id": "c1", "output": json.dumps({"ok": False, "error": "outside_window"})},
+    ]
+    assert web._tool_outcomes(items, ["issue_refund"]) == [{"name": "issue_refund", "ok": False, "error": "outside_window"}]
+    assert web._tool_outcomes(items, []) == []
