@@ -54,9 +54,9 @@
   .title-copy h1 { margin:0; font-size:1.3rem; line-height:1.1; font-weight:500; font-family:Kurrent,sans-serif; }
   .title-copy p { margin:.3rem 0 0; color:var(--gray); font:.75rem "Kurrent Mono",monospace; overflow-wrap:anywhere; }
   .controls { display:flex; align-items:flex-end; justify-content:flex-end; gap:.6rem; flex-wrap:wrap; }
-  .controls label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
-  input[list] { width:15rem; }
-  select, input[list] { font:inherit; min-height:40px; max-width:15rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
+  .controls label, .demo-label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
+  input[list] { width:18rem; }
+  select, input[list] { font:inherit; min-height:40px; max-width:18rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
     background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23141319' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center / .8rem .8rem; }
   @media (forced-colors:active) { select { appearance:auto; background-image:none; } }
   .control-button { min-height:40px; padding:.48rem .8rem; border:1px solid var(--rule); border-radius:4px; background:transparent; color:var(--ink); font-size:.86rem; font-weight:500; }
@@ -174,7 +174,7 @@
     <div class="controls">
       <button class="control-button" id="drawer-toggle" type="button" aria-controls="backend" aria-expanded="false">Reference data</button>
       <div>
-        <label for="demo-refund">Demo</label>
+        <span class="demo-label">Demo</span>
         <div class="kind" role="group" aria-label="Demo">
           <button type="button" id="demo-refund" aria-pressed="true">Refund</button>
           <button type="button" id="demo-insurance" aria-pressed="false" title="Checking which claims agents exist…" disabled>Insurance</button>
@@ -277,14 +277,18 @@
   renderPrompts(PROMPTS);
 
   // ── Backend (mock): static, read-only ──
-  async function loadBackend() {
+  let catalog = null, kind = "models", demo = "refund", insuranceView = null, insuranceDefault = null, backendLoad = 0;
+  let refundPick = { kind: "models", last: {} }, insuranceAgent = "";  // each demo remembers its own pick
+  async function loadBackend(which) {  // renders `which` demo's reference data; a newer call wins over a slower older one
+    const mine = ++backendLoad;
     const orders = $("orders"), policies = $("policies");
-    orders.replaceChildren();
-    policies.replaceChildren();
-    const response = await fetch("/api/backend" + (demo === "insurance" ? "?demo=insurance" : ""));
+    const response = await fetch("/api/backend" + (which === "insurance" ? "?demo=insurance" : ""));
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
-    if (demo === "insurance") return renderInsurance(data);
+    if (mine !== backendLoad) return;
+    orders.replaceChildren();
+    policies.replaceChildren();
+    if (which === "insurance") return renderInsurance(data);
     for (const o of data.orders) {
       const card = document.createElement("article");
       card.className = "order-card";
@@ -337,28 +341,30 @@
     $("policies").appendChild(rules);
     insuranceView = data;
   }
-  async function refreshBackend() {
+  async function refreshBackend(which = demo) {  // true when `which` demo's data is on screen
     const host = $("orders");
-    host.textContent = "Loading reference orders…";
-    try { await loadBackend(); }
+    host.textContent = which === "insurance" ? "Loading test cases…" : "Loading reference orders…";
+    $("policies").replaceChildren();
+    try { await loadBackend(which); return true; }
     catch {
       host.replaceChildren();
       const message = document.createElement("p");
       message.className = "caption";
-      message.textContent = "Reference orders could not be loaded.";
+      message.textContent = which === "insurance" ? "Test cases could not be loaded." : "Reference orders could not be loaded.";
       const retry = document.createElement("button");
       retry.className = "control-button";
       retry.type = "button";
       retry.textContent = "Try again";
-      retry.addEventListener("click", refreshBackend);
+      retry.addEventListener("click", () => refreshBackend(which));
       host.append(message, retry);
       const policyRetry = document.createElement("button");
       policyRetry.className = "control-button";
       policyRetry.type = "button";
       policyRetry.textContent = "Try again";
-      policyRetry.addEventListener("click", refreshBackend);
+      policyRetry.addEventListener("click", () => refreshBackend(which));
       const policyMessage = message.cloneNode(true);
       $("policies").replaceChildren(policyMessage, policyRetry);
+      return false;
     }
   }
   refreshBackend();
@@ -415,7 +421,6 @@
     group.append(...ids.map((id) => new Option(id, id, false, id === selected)));
     return group;
   }
-  let catalog = null, kind = "models", demo = "refund", insuranceView = null, insuranceDefault = null;
   function showKind(next) {  // the toggle picks which list the dropdown shows; each kind remembers its last pick
     if (catalog && kind !== next) catalog.last[kind] = modelSelect.value;
     kind = next;
@@ -446,6 +451,8 @@
   const REFUND_GUARDRAILS = [...$("guardrails").options].map((o) => [o.value, o.textContent]);
   const UI = {
     refund: {
+      guardDesc: "Gateway guardrails for this chat: personal data blocked on input, refund promises over 500 euro blocked on output.",
+      modelsTitle: "Our loop and our tools run in this app",
       title: "Refund agent", eyebrow: "YOUR WORKSHOP AGENT", heading: "Ask about an order.",
       text: "Try a message below. Watch the agent use its tools, then open the trace to see what happened.",
       note: "TEST CUSTOMER · MOCK ORDERS", placeholder: "Hi, I want a refund for order ord_a1, I changed my mind.", rail: "Workshop orders", badge: "MOCK · READ ONLY", tabs: ["Orders", "Policies"],
@@ -453,6 +460,8 @@
         "Policy documents the get_policy tool can return."],
     },
     insurance: {
+      guardDesc: "Gateway guardrails for this chat: IBAN, BSN and prompt injection blocked on input; IBAN, BSN, cents, legal advice and payouts above the car's value blocked on output.",
+      modelsTitle: "The insurance demo runs on orq agents",
       title: "Claims agent", eyebrow: "INSURANCE CLAIMS", heading: "Describe a claim.",
       text: "Pick a message or write your own, in Dutch or English. The agents run in orq.ai: open the trace to see the sub-agents.",
       note: "AUTO INSURANCE · DUTCH RULES", placeholder: "Allrisk, ik ben 35 en reed tegen een paal. Reparatie EUR 2.400, dagwaarde EUR 18.000.", rail: "Claims reference", badge: "COOKBOOK · READ ONLY", tabs: ["Test cases", "Rules"],
@@ -462,10 +471,19 @@
   };
   async function switchDemo(next) {
     if (next === demo || send.disabled) return;
-    const previous = demo;
+    setBusy(true);  // no sending, no second switch while the other demo's data loads
+    let loaded;
+    try { loaded = await refreshBackend(next); }
+    finally { setBusy(false); }
+    if (!loaded) {  // keep the current demo; say why the click did nothing
+      await refreshBackend(demo);
+      const note = document.createElement("p");
+      note.className = "caption";
+      note.textContent = `Could not switch to ${next}: its data did not load. Try again.`;
+      $("orders").prepend(note);
+      return;
+    }
     demo = next;
-    await refreshBackend();  // fetches this demo's data; Insurance leaves its prompts and guardrail choices in insuranceView
-    if (demo === "insurance" && !insuranceView) { demo = previous; await refreshBackend(); return; }
     const ui = UI[demo];
     for (const d of ["refund", "insurance"]) $("demo-" + d).setAttribute("aria-pressed", String(d === demo));
     document.title = `${ui.title} · orq.ai workshop`;
@@ -487,13 +505,19 @@
       for (const p of insuranceView.prompts) groups.set(p.group, [...(groups.get(p.group) || []), [p.label, p.text]]);
       renderPrompts([...groups]);
       $("guardrails").replaceChildren(...insuranceView.guardrails.map(([value, label]) => new Option(label, value)));
-      catalog.last.agents = insuranceDefault;
+      refundPick = { kind, last: { ...catalog.last, [kind]: modelSelect.value } };
+      catalog.last.agents = insuranceAgent || insuranceDefault;
       showKind("agents");
     } else {
       renderPrompts(PROMPTS);
       $("guardrails").replaceChildren(...REFUND_GUARDRAILS.map(([value, label]) => new Option(label, value)));
-      showKind("models");
+      if (kind === "agents") insuranceAgent = modelSelect.value;
+      catalog.last = { ...refundPick.last };
+      kind = refundPick.kind;  // showKind then does not store the claims agent as a refund pick
+      showKind(kind);
     }
+    $("guard-desc").textContent = ui.guardDesc;
+    $("kind-models").title = ui.modelsTitle;
     $("kind-models").disabled = demo === "insurance";  // the local loop only knows the refund tools
     newConversation();
   }

@@ -3,7 +3,8 @@
 What: `seed()` creates what the "insurance claims MCP cookbook" builds, with the workshop prefix
 (`ws-claims-assessor`, ...), from the files in `app/data/insurance/`: 2 scoring evaluators, 6
 guardrail or format evaluators, 5 agents (one single agent, an orchestrator and its three
-sub-agents) and the 15-case dataset. Safe to rerun: each entity is looked up by key first.
+sub-agents) and the 15-case dataset. Safe to rerun: each entity is looked up by key first. Existing agents and rules are left as
+they are (delete one to recreate it); a python evaluator whose code changed is updated.
 
     uv run python -m app.insurance        # or: make seed-insurance
 
@@ -15,6 +16,7 @@ and follow Dutch motor insurance rules (WA, WA+, Allrisk; own risk EUR 150 or 30
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from .refund_agent.client import make_orq
@@ -45,6 +47,28 @@ def load(name: str) -> Any:
     return json.loads((DIR / name).read_text())
 
 
+def _evaluator_code(evaluator_id: str) -> str | None:
+    import httpx
+
+    response = httpx.get(
+        f"{settings.base_url}/v2/evaluators/{evaluator_id}", headers={"Authorization": f"Bearer {settings.bearer()}"}, timeout=30
+    )
+    return response.json().get("code") if response.status_code < 300 else None
+
+
+def _update_code(evaluator_id: str, code: str) -> None:
+    import httpx
+
+    response = httpx.patch(
+        f"{settings.base_url}/v2/evaluators/{evaluator_id}",
+        json={"code": code},
+        headers={"Authorization": f"Bearer {settings.bearer()}"},
+        timeout=30,
+    )
+    if response.status_code >= 300:
+        raise RuntimeError(f"PATCH /v2/evaluators/{evaluator_id} -> {response.status_code}: {response.text[:300]}")
+
+
 def agent_keys() -> list[str]:
     """Prefixed keys of the five claims agents, the single agent first."""
     return [K(a["key"]) for a in load("agents.json")]
@@ -54,13 +78,16 @@ def ensure_evaluators(orq=None) -> dict[str, str]:
     """Create each evaluator of `evaluators.json`. Returns {unprefixed key: id}.
 
     Idempotency key: the evaluator `key`. REST, like the refund guardrail: the SDK cannot
-    serialize the python_eval union in 4.14.x.
+    serialize the python_eval union in 4.14.x. An existing python evaluator whose code differs
+    from the file is updated, so a fixed guardrail reaches a workspace seeded earlier.
     """
     orq = orq or make_orq()
     ids: dict[str, str] = {}
     for spec in load("evaluators.json"):
         key = K(spec["key"])
         found = _find_eval(orq, key)
+        if found and spec.get("code") and _evaluator_code(found) != spec["code"]:
+            _update_code(found, spec["code"])
         if not found:
             body = {"key": key, **{f: spec[f] for f in EVALUATOR_FIELDS if f in spec}}
             created = rest_post(orq, "/v2/evaluators", body)
@@ -72,6 +99,9 @@ def ensure_evaluators(orq=None) -> dict[str, str]:
 def _agent_body(spec: dict[str, Any], evaluator_ids: dict[str, str]) -> dict[str, Any]:
     """The `agents.create` body: keys prefixed, evaluator keys turned into ids, tools reduced to their type."""
     settings_ = dict(spec["settings"])
+    instructions = spec["instructions"]
+    for member in spec.get("team_of_agents") or []:  # the text names sub-agents by key: use the prefixed one
+        instructions = instructions.replace(member["key"], K(member["key"]))
     for field in ("evaluators", "guardrails"):
         if field in settings_:
             settings_[field] = [
@@ -84,10 +114,10 @@ def _agent_body(spec: dict[str, Any], evaluator_ids: dict[str, str]) -> dict[str
         "display_name": spec["display_name"],
         "role": spec["role"],
         "description": spec["description"],
-        "instructions": spec["instructions"],
+        "instructions": instructions,
         "model": spec["model"],
         "settings": settings_,
-        "path": getattr(settings, "path", None) or f"{settings.project}/workshop",  # the SDK requires it
+        "path": os.environ.get("ORQ_PATH") or f"{settings.project}/workshop",  # the SDK requires it
     }
     if spec.get("team_of_agents"):
         body["team_of_agents"] = [{"key": K(t["key"])} for t in spec["team_of_agents"]]
@@ -123,7 +153,15 @@ def ensure_chat_rules(orq=None, evaluator_ids: dict[str, str] | None = None) -> 
     """
     orq = orq or make_orq()
     evaluator_ids = evaluator_ids or ensure_evaluators(orq)
-    existing = {r["display_name"]: r for r in rules_api("GET", "/v2/guardrail-rules?limit=100").get("data") or []}
+    existing: dict[str, Any] = {}
+    after = ""
+    while True:  # every page: past one page of rules a rerun would create duplicates
+        page = rules_api("GET", "/v2/guardrail-rules?limit=100" + (f"&starting_after={after}" if after else ""))
+        rows = page.get("data") or []
+        existing.update({r["display_name"]: r for r in rows})
+        if not (page.get("has_more") and rows):
+            break
+        after = rows[-1].get("_id") or rows[-1].get("id")
     rule_ids: dict[str, str] = {}
     for choice, guards in GUARD_CHOICES.items():
         name = K(f"guardrail-rule-chat-ins-{choice}")

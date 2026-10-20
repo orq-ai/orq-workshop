@@ -299,6 +299,8 @@ async def post_chat(request: Request) -> JSONResponse:
         return _error(422, "demo must be refund or insurance")
     if demo == "insurance" and not model.startswith("agent/"):
         return _error(422, "the insurance demo chats with orq agents: pick an agent")
+    if demo == "insurance":
+        extra_body["name"] = "insurance-chat"
     channels = insurance.CHANNELS if demo == "insurance" else CHAT_CHANNELS
     choice = {True: "both", None: "", False: ""}.get(body.get("guardrails"), body.get("guardrails"))
     if choice and choice not in channels:
