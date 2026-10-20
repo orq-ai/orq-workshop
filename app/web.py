@@ -35,6 +35,7 @@ from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Route
 
+from app import insurance
 from app.refund_agent import tools
 from app.refund_agent.agent import IDENTITY_HEADER, TRACE_HEADER, chat
 from app.refund_agent.client import make_openai_client, make_orq
@@ -152,7 +153,34 @@ def backend_view() -> dict[str, Any]:
     }
 
 
+def insurance_view() -> dict[str, Any]:
+    """The Insurance demo's sidebar and prompts: test cases, rules, example messages, guardrail choices."""
+    return {
+        "cases": insurance.test_cases(),
+        "rules": insurance.rules(),
+        "prompts": insurance.prompts(),
+        "guardrails": [
+            ["", "Off"],
+            ["input", "IBAN/BSN, injection · input"],
+            ["output", "IBAN/BSN, cents · output"],
+            ["legal", "No legal advice · output"],
+            ["payout", "Payout limit · output"],
+            ["all", "All four"],
+        ],
+    }
+
+
+def _insurance_default(agents: list[str]) -> str | None:
+    """The claims agent the Insurance demo starts on: ours (`<prefix>-claims-assessor`), else the cookbook's."""
+    for key in (*insurance.agent_keys()[:1], "claims-assessor"):
+        if f"agent/{key}" in agents:
+            return f"agent/{key}"
+    return None
+
+
 async def get_backend(request: Request) -> JSONResponse:
+    if request.query_params.get("demo") == "insurance":
+        return JSONResponse(insurance_view())
     return JSONResponse(backend_view())
 
 
@@ -167,6 +195,7 @@ async def get_models(request: Request) -> JSONResponse:
             "default": settings.model,
             "models": [settings.model, *(m for m in models if m != settings.model)],
             "agents": agents,
+            "insurance_default": _insurance_default(agents),  # None until the claims agents exist
         }
     )
 
@@ -265,13 +294,20 @@ async def post_chat(request: Request) -> JSONResponse:
 
     store = OrderStore()
     extra_body: dict[str, Any] = {"name": "refund-chat"}
+    demo = body.get("demo") or "refund"
+    if demo not in ("refund", "insurance"):
+        return _error(422, "demo must be refund or insurance")
+    if demo == "insurance" and not model.startswith("agent/"):
+        return _error(422, "the insurance demo chats with orq agents: pick an agent")
+    channels = insurance.CHANNELS if demo == "insurance" else CHAT_CHANNELS
     choice = {True: "both", None: "", False: ""}.get(body.get("guardrails"), body.get("guardrails"))
-    if choice and choice not in CHAT_CHANNELS:
-        return _error(422, f"guardrails must be one of {sorted(CHAT_CHANNELS)} or empty")
+    if choice and choice not in channels:
+        return _error(422, f"guardrails must be one of {sorted(channels)} or empty")
     if choice:
         # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
-        # `make seed` creates the rules; rules are admin-only, so a workshop key cannot read them back.
-        extra_body["metadata"] = {"channel": CHAT_CHANNELS[choice]}
+        # `make seed` / `make seed-insurance` create the rules; they are admin-only, so a workshop
+        # key cannot read them back.
+        extra_body["metadata"] = {"channel": channels[choice]}
     snapshot = None
     if conversation_id:
         if conversation_id in _busy:

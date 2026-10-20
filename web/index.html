@@ -55,7 +55,8 @@
   .title-copy p { margin:.3rem 0 0; color:var(--gray); font:.75rem "Kurrent Mono",monospace; overflow-wrap:anywhere; }
   .controls { display:flex; align-items:flex-end; justify-content:flex-end; gap:.6rem; flex-wrap:wrap; }
   .controls label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
-  select, input[list] { font:inherit; min-height:40px; max-width:12rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
+  input[list] { width:15rem; }
+  select, input[list] { font:inherit; min-height:40px; max-width:15rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
     background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23141319' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center / .8rem .8rem; }
   @media (forced-colors:active) { select { appearance:auto; background-image:none; } }
   .control-button { min-height:40px; padding:.48rem .8rem; border:1px solid var(--rule); border-radius:4px; background:transparent; color:var(--ink); font-size:.86rem; font-weight:500; }
@@ -79,6 +80,7 @@
   .user::before { content:"YOU"; color:#ef9b7d; }
   .agent { align-self:flex-start; border:1px solid var(--rule); border-left:3px solid var(--orange); background:var(--white); }
   .agent::before { content:"REFUND AGENT"; color:#a93616; }
+  [data-demo="insurance"] .agent::before { content:"CLAIMS AGENT"; }
   .note { align-self:center; max-width:100%; color:var(--gray); font:.68rem "Kurrent Mono",monospace; text-align:center; }
   .error { border:1px solid var(--orange); color:#a93616; }
   select:disabled, .control-button:disabled { opacity:.55; cursor:progress; }
@@ -147,17 +149,17 @@
 <body>
 <aside id="backend" aria-labelledby="backend-title">
   <div class="rail-brand"><div class="brand-name">orq.ai<small>WORKSHOP</small></div></div>
-  <div class="rail-heading"><div><span class="eyebrow">REFERENCE DATA</span><h2 id="backend-title">Workshop orders</h2></div><span class="readonly">MOCK · READ ONLY</span><button id="drawer-close" type="button">Close</button></div>
+  <div class="rail-heading"><div><span class="eyebrow">REFERENCE DATA</span><h2 id="backend-title">Workshop orders</h2></div><span class="readonly" id="readonly">MOCK · READ ONLY</span><button id="drawer-close" type="button">Close</button></div>
   <div role="tablist" aria-label="Backend data">
     <button role="tab" id="tab-orders" aria-controls="panel-orders" aria-selected="true">Orders</button>
     <button role="tab" id="tab-policies" aria-controls="panel-policies" aria-selected="false" tabindex="-1">Policies</button>
   </div>
   <div role="tabpanel" id="panel-orders" aria-labelledby="tab-orders" tabindex="0">
-    <p class="caption">Orders available to the agent. This is the starting data: a refund in the chat is remembered for that conversation, not shown here.</p>
+    <p class="caption" id="cap-orders">Orders available to the agent. This is the starting data: a refund in the chat is remembered for that conversation, not shown here.</p>
   <div id="orders" class="orders" role="list" aria-label="Customer orders"></div>
   </div>
   <div role="tabpanel" id="panel-policies" aria-labelledby="tab-policies" tabindex="0" hidden>
-    <p class="caption">Policy documents the <code>get_policy</code> tool can return.</p>
+    <p class="caption" id="cap-policies">Policy documents the <code>get_policy</code> tool can return.</p>
     <div id="policies"></div>
   </div>
 </aside>
@@ -165,12 +167,19 @@
 <section class="chat" aria-label="Agent chat">
   <header class="chat-topbar">
     <div class="title-wrap"><span class="title-mark" aria-hidden="true"></span><div class="title-copy">
-      <h1>Refund agent</h1>
+      <h1 id="demo-title">Refund agent</h1>
       <p>orq.ai Gateway · each answer links to its trace</p>
     </div>
     </div>
     <div class="controls">
       <button class="control-button" id="drawer-toggle" type="button" aria-controls="backend" aria-expanded="false">Reference data</button>
+      <div>
+        <label for="demo-refund">Demo</label>
+        <div class="kind" role="group" aria-label="Demo">
+          <button type="button" id="demo-refund" aria-pressed="true">Refund</button>
+          <button type="button" id="demo-insurance" aria-pressed="false" title="Checking which claims agents exist…" disabled>Insurance</button>
+        </div>
+      </div>
       <div>
         <div class="kind" role="group" aria-label="Run on">
           <button type="button" id="kind-models" aria-pressed="true" title="Our loop and our tools run in this app">Models</button>
@@ -196,11 +205,11 @@
   <main>
     <div class="conversation">
       <section class="welcome" id="welcome" aria-labelledby="welcome-title">
-        <span class="eyebrow">YOUR WORKSHOP AGENT</span>
+        <span class="eyebrow" id="welcome-eyebrow">YOUR WORKSHOP AGENT</span>
         <h2 id="welcome-title">Ask about an order.</h2>
-        <p>Try a message below. Watch the agent use its tools, then open the trace to see what happened.</p>
+        <p id="welcome-text">Try a message below. Watch the agent use its tools, then open the trace to see what happened.</p>
         <div class="prompts" id="prompts" aria-label="Example messages"></div>
-        <div class="welcome-note"><span class="status-dot" aria-hidden="true"></span> TEST CUSTOMER · MOCK ORDERS</div>
+        <div class="welcome-note"><span class="status-dot" aria-hidden="true"></span> <span id="welcome-note">TEST CUSTOMER · MOCK ORDERS</span></div>
       </section>
       <ol id="log" role="log" aria-live="polite" aria-label="Conversation"></ol>
     </div>
@@ -249,28 +258,33 @@
       ["Actually, make it €50", "Actually, make it €50."],
     ]],
   ];
-  for (const [title, prompts] of PROMPTS) {
-    const heading = document.createElement("h3");
-    heading.textContent = title;
-    $("prompts").appendChild(heading);
-    for (const [label, text] of prompts) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = label;
-      button.title = text;
-      button.addEventListener("click", () => { input.value = text; form.requestSubmit(); });
-      $("prompts").appendChild(button);
+  function renderPrompts(groups) {
+    $("prompts").replaceChildren();
+    for (const [title, prompts] of groups) {
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+      $("prompts").appendChild(heading);
+      for (const [label, text] of prompts) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.title = text;
+        button.addEventListener("click", () => { input.value = text; form.requestSubmit(); });
+        $("prompts").appendChild(button);
+      }
     }
   }
+  renderPrompts(PROMPTS);
 
   // ── Backend (mock): static, read-only ──
   async function loadBackend() {
     const orders = $("orders"), policies = $("policies");
     orders.replaceChildren();
     policies.replaceChildren();
-    const response = await fetch("/api/backend");
+    const response = await fetch("/api/backend" + (demo === "insurance" ? "?demo=insurance" : ""));
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
+    if (demo === "insurance") return renderInsurance(data);
     for (const o of data.orders) {
       const card = document.createElement("article");
       card.className = "order-card";
@@ -306,6 +320,22 @@
       d.append(s, pre);
       policies.appendChild(d);
     }
+  }
+  function renderInsurance(data) {  // test cases and rules as folded entries, like the refund policies
+    for (const [i, c] of data.cases.entries()) {
+      const d = document.createElement("details");
+      d.className = "policy";
+      const s = document.createElement("summary");
+      s.textContent = `${i + 1}. ${c.input.length > 70 ? c.input.slice(0, 70) + "…" : c.input}`;
+      const pre = document.createElement("pre");
+      pre.textContent = `${c.input}\n\nExpected: ${c.expected}`;
+      d.append(s, pre);
+      $("orders").appendChild(d);
+    }
+    const rules = document.createElement("pre");
+    rules.textContent = data.rules.map((r) => "· " + r).join("\n\n");
+    $("policies").appendChild(rules);
+    insuranceView = data;
   }
   async function refreshBackend() {
     const host = $("orders");
@@ -385,7 +415,7 @@
     group.append(...ids.map((id) => new Option(id, id, false, id === selected)));
     return group;
   }
-  let catalog = null, kind = "models";
+  let catalog = null, kind = "models", demo = "refund", insuranceView = null, insuranceDefault = null;
   function showKind(next) {  // the toggle picks which list the dropdown shows; each kind remembers its last pick
     if (catalog && kind !== next) catalog.last[kind] = modelSelect.value;
     kind = next;
@@ -403,10 +433,71 @@
   for (const k of ["models", "agents"]) $("kind-" + k).addEventListener("click", () => catalog && showKind(k));
   fetch("/api/models").then((res) => res.json()).then((data) => {
     catalog = { models: data.models, agents: data.agents, last: { models: data.default, agents: data.agents[0] } };
+    insuranceDefault = data.insurance_default;
+    $("demo-insurance").disabled = !insuranceDefault;
+    $("demo-insurance").title = insuranceDefault ? "Chat with the claims agents from the insurance claims cookbook"
+      : "No claims agent in this workspace yet: run make seed-insurance to create them";
     $("kind-agents").disabled = !data.agents.length;
     if (!data.agents.length) $("kind-agents").title = "No agent in this workspace yet: run make seed to create it";
     showKind("models");
   }).catch(() => {});
+
+  // ── Demo: Refund or Insurance. One page, two sets of data, prompts, agents and guardrail choices. ──
+  const REFUND_GUARDRAILS = [...$("guardrails").options].map((o) => [o.value, o.textContent]);
+  const UI = {
+    refund: {
+      title: "Refund agent", eyebrow: "YOUR WORKSHOP AGENT", heading: "Ask about an order.",
+      text: "Try a message below. Watch the agent use its tools, then open the trace to see what happened.",
+      note: "TEST CUSTOMER · MOCK ORDERS", placeholder: "Hi, I want a refund for order ord_a1, I changed my mind.", rail: "Workshop orders", badge: "MOCK · READ ONLY", tabs: ["Orders", "Policies"],
+      captions: ["Orders available to the agent. This is the starting data: a refund in the chat is remembered for that conversation, not shown here.",
+        "Policy documents the get_policy tool can return."],
+    },
+    insurance: {
+      title: "Claims agent", eyebrow: "INSURANCE CLAIMS", heading: "Describe a claim.",
+      text: "Pick a message or write your own, in Dutch or English. The agents run in orq.ai: open the trace to see the sub-agents.",
+      note: "AUTO INSURANCE · DUTCH RULES", placeholder: "Allrisk, ik ben 35 en reed tegen een paal. Reparatie EUR 2.400, dagwaarde EUR 18.000.", rail: "Claims reference", badge: "COOKBOOK · READ ONLY", tabs: ["Test cases", "Rules"],
+      captions: ["The 15 test cases of the cookbook dataset, with the expected answer. Fold one open.",
+        "The Dutch motor insurance rules the claims agents work from."],
+    },
+  };
+  async function switchDemo(next) {
+    if (next === demo || send.disabled) return;
+    const previous = demo;
+    demo = next;
+    await refreshBackend();  // fetches this demo's data; Insurance leaves its prompts and guardrail choices in insuranceView
+    if (demo === "insurance" && !insuranceView) { demo = previous; await refreshBackend(); return; }
+    const ui = UI[demo];
+    for (const d of ["refund", "insurance"]) $("demo-" + d).setAttribute("aria-pressed", String(d === demo));
+    document.title = `${ui.title} · orq.ai workshop`;
+    document.documentElement.dataset.demo = demo;
+    $("demo-title").textContent = ui.title;
+    $("welcome-eyebrow").textContent = ui.eyebrow;
+    $("welcome-title").textContent = ui.heading;
+    $("welcome-text").textContent = ui.text;
+    $("welcome-note").textContent = ui.note;
+    input.placeholder = ui.placeholder;
+    $("backend-title").textContent = ui.rail;
+    $("readonly").textContent = ui.badge;
+    $("tab-orders").textContent = ui.tabs[0];
+    $("tab-policies").textContent = ui.tabs[1];
+    $("cap-orders").textContent = ui.captions[0];
+    $("cap-policies").textContent = ui.captions[1];
+    if (demo === "insurance") {
+      const groups = new Map();
+      for (const p of insuranceView.prompts) groups.set(p.group, [...(groups.get(p.group) || []), [p.label, p.text]]);
+      renderPrompts([...groups]);
+      $("guardrails").replaceChildren(...insuranceView.guardrails.map(([value, label]) => new Option(label, value)));
+      catalog.last.agents = insuranceDefault;
+      showKind("agents");
+    } else {
+      renderPrompts(PROMPTS);
+      $("guardrails").replaceChildren(...REFUND_GUARDRAILS.map(([value, label]) => new Option(label, value)));
+      showKind("models");
+    }
+    $("kind-models").disabled = demo === "insurance";  // the local loop only knows the refund tools
+    newConversation();
+  }
+  for (const d of ["refund", "insurance"]) $("demo-" + d).addEventListener("click", () => switchDemo(d));
 
   function add(kind, text) {  // textContent only: model output is never parsed as HTML
     const li = document.createElement("li");
@@ -447,9 +538,10 @@
   function setBusy(busy) {
     send.disabled = busy;
     $("reset").disabled = busy;
+    for (const d of ["refund", "insurance"]) $("demo-" + d).disabled = busy || (d === "insurance" && !insuranceDefault);
     modelSelect.disabled = busy;
     $("guardrails").disabled = busy;
-    for (const k of ["models", "agents"]) $("kind-" + k).disabled = busy || (k === "agents" && !(catalog && catalog.agents.length));
+    for (const k of ["models", "agents"]) $("kind-" + k).disabled = busy || (k === "agents" && !(catalog && catalog.agents.length)) || (k === "models" && demo === "insurance");
     for (const b of document.querySelectorAll(".prompts button")) b.disabled = busy;
   }
 
@@ -480,7 +572,7 @@
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, guardrails: $("guardrails").value }),
+        body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, demo, guardrails: $("guardrails").value }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(typeof (data.detail ?? res.statusText) === "string" ? (data.detail ?? res.statusText) : JSON.stringify(data.detail));
@@ -514,7 +606,7 @@
         pending.appendChild(list);
         addMeta(pending, { tool_calls: [], model: data.model, seconds: data.seconds, trace_url: data.trace_url, trace_id: data.blocked.trace_id });
       } else {
-        pending.textContent = data.answer || "(no answer)";
+        pending.textContent = (data.answer || "(no answer)").replaceAll("**", "");  // the page shows plain text, not markdown
         addMeta(pending, data);
       }
       if (followReply) pending.scrollIntoView({ block: "end" });
