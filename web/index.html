@@ -55,7 +55,7 @@
   .title-copy p { margin:.3rem 0 0; color:var(--gray); font:.75rem "Kurrent Mono",monospace; overflow-wrap:anywhere; }
   .controls { display:flex; align-items:flex-end; justify-content:flex-end; gap:.6rem; flex-wrap:wrap; }
   .controls label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
-  select { min-height:40px; max-width:12rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
+  select, input[list] { font:inherit; min-height:40px; max-width:12rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
     background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23141319' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center / .8rem .8rem; }
   @media (forced-colors:active) { select { appearance:auto; background-image:none; } }
   .control-button { min-height:40px; padding:.48rem .8rem; border:1px solid var(--rule); border-radius:4px; background:transparent; color:var(--ink); font-size:.86rem; font-weight:500; }
@@ -177,7 +177,8 @@
           <button type="button" id="kind-agents" aria-pressed="false" title="The agent and its tools live in orq.ai" disabled>Agents</button>
         </div>
         <label for="model" class="visually-hidden">Model or agent</label>
-        <select id="model"><option value="">Default model</option></select>
+        <input id="model" list="model-list" autocomplete="off" spellcheck="false" placeholder="Search…" title="Click and type to search; pick one from the list">
+        <datalist id="model-list"></datalist>
       </div>
       <div>
         <label for="guardrails">Guardrails</label>
@@ -389,8 +390,16 @@
     if (catalog && kind !== next) catalog.last[kind] = modelSelect.value;
     kind = next;
     for (const k of ["models", "agents"]) $("kind-" + k).setAttribute("aria-pressed", String(k === kind));
-    modelSelect.replaceChildren(...catalog[kind].map((id) => new Option(id, id, false, id === catalog.last[kind])));
+    $("model-list").replaceChildren(...catalog[kind].map((id) => new Option(id)));
+    modelSelect.value = catalog.last[kind] || "";
   }
+  // Search: a datalist filters by what is typed, so clear the box on focus to show the whole list,
+  // and put the previous pick back if what ends up in it is not an entry of the list.
+  let picked = "";
+  modelSelect.addEventListener("focus", () => { picked = modelSelect.value; modelSelect.value = ""; });
+  modelSelect.addEventListener("blur", () => {
+    if (!catalog || !catalog[kind].includes(modelSelect.value)) modelSelect.value = picked;
+  });
   for (const k of ["models", "agents"]) $("kind-" + k).addEventListener("click", () => catalog && showKind(k));
   fetch("/api/models").then((res) => res.json()).then((data) => {
     catalog = { models: data.models, agents: data.agents, last: { models: data.default, agents: data.agents[0] } };
