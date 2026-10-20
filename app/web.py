@@ -1,13 +1,14 @@
-"""make web: talk to the refund agent in a browser, one link to the trace per answer.
+"""make chat: talk to the refund agent in a browser, one link to the trace per answer.
 
-What: three routes. `GET /` serves `web/index.html`; `GET /api/models` lists the models the
-picker offers; `POST /api/chat` runs one turn and returns the answer, the tools called, the trace
-id and a Studio link to that trace. A plain model id runs the same local `chat()` every module
+What: four routes. `GET /` serves `web/index.html`; `GET /api/models` lists the models the
+picker offers; `GET /api/backend` is the read-only orders and policies for the sidebar;
+`POST /api/chat` runs one turn and returns the answer, the tools called, the trace id and a
+Studio link to that trace. A plain model id runs the same local `chat()` every module
 uses (our loop, our tools); `agent/<prefix>-refund-agent` is one call to the agent that
 `make seed` provisions in orq, where orq runs the loop and the tools as code tools.
 Why: a transcript in a browser is easier to read than a terminal, and the trace link closes the
 loop from "what did the agent say" to "what did it do".
-How: `make web` (or `uv run python -m app.web`), then open http://127.0.0.1:8002. Stateless like
+How: `make chat` (or `uv run python -m app.web`), then open http://127.0.0.1:8002. Stateless like
 the rest of the repo (Factor 12): the browser sends back the full `history` it got last time. The
 one thing kept server-side is an `OrderStore` per `conversation_id`, so a refund issued in turn 1
 is still refunded in turn 2; it lives in memory and resets when the server restarts.
@@ -34,10 +35,12 @@ from starlette.routing import Route
 from app.refund_agent.agent import IDENTITY_HEADER, TRACE_HEADER, chat
 from app.refund_agent.client import make_openai_client, make_orq
 from app.refund_agent.config import ROOT, settings
+from app.refund_agent import tools
 from app.refund_agent.tools import OrderStore
 
 INDEX_HTML = ROOT / "web" / "index.html"
 PORT = 8002
+ORDER_FIELDS = ("id", "item", "amount", "delivered_days_ago", "refunded")  # never owner_id or notes
 _stores: dict[str, OrderStore] = {}  # conversation_id -> its orders; in memory, per process
 # Shown when the key cannot list models (the workshop key gets 403 "Missing permission:
 # model.view"). Each answered through the gateway on 14 Oct 2026.
@@ -105,6 +108,22 @@ def _hosted_agent_exists() -> bool:
         return True
     except Exception:  # noqa: BLE001  not seeded yet, or not readable: leave it out of the picker
         return False
+
+
+def backend_view() -> dict[str, Any]:
+    """The sidebar's read-only projection: the session user's orders without owner ids or notes
+    (which hold another customer's contact details), and the policy files `get_policy` serves."""
+    owned = [o for o in tools._FIXTURE["orders"] if o["owner_id"] == tools._FIXTURE["session_user_id"]]
+    return {
+        "orders": [{field: order[field] for field in ORDER_FIELDS} for order in owned],
+        "policies": [
+            {"topic": topic, "text": (tools.KB_DIR / f"{topic}.md").read_text()} for topic in tools.POLICY_TOPICS
+        ],
+    }
+
+
+async def get_backend(request: Request) -> JSONResponse:
+    return JSONResponse(backend_view())
 
 
 async def get_models(request: Request) -> JSONResponse:
@@ -219,6 +238,7 @@ app = Starlette(
     routes=[
         Route("/", index),
         Route("/api/models", get_models),
+        Route("/api/backend", get_backend),
         Route("/api/chat", post_chat, methods=["POST"]),
     ]
 )

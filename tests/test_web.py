@@ -218,3 +218,10 @@ def test_hosted_tool_code_runs_the_same_rules_as_tools_py():
     namespace = {"params": {"topic": "refund_basics"}}
     exec(hosted_tool_code("get_policy"), namespace)  # noqa: S102
     assert namespace["result"]["text"] == tools.get_policy("refund_basics")["text"]
+
+
+def test_backend_shows_session_orders_without_private_fields():
+    data = TestClient(web.app).get("/api/backend").json()
+    assert data["orders"]
+    assert all(set(o) == set(web.ORDER_FIELDS) for o in data["orders"])
+    assert {p["topic"] for p in data["policies"]} == set(web.tools.POLICY_TOPICS)
