@@ -38,13 +38,14 @@ from app.refund_agent import tools
 from app.refund_agent.agent import IDENTITY_HEADER, TRACE_HEADER, chat
 from app.refund_agent.client import make_openai_client, make_orq
 from app.refund_agent.config import ROOT, settings
-from app.refund_agent.entities import CHAT_GUARDED
+from app.refund_agent.entities import CHAT_CHANNELS
 from app.refund_agent.tools import OrderStore
 
 INDEX_HTML = ROOT / "web" / "index.html"
 PORT = 8002
 FONTS = ROOT / "docs" / "stylesheets" / "fonts"  # the page uses the docs site's typeface
 ORDER_FIELDS = ("id", "item", "amount", "delivered_days_ago", "refunded")  # never owner_id or notes
+_busy: set[str] = set()  # conversations with a turn in flight: a second one would race on the same orders
 _stores: dict[str, OrderStore] = {}  # conversation_id -> its orders; in memory, per process
 # Shown when the key cannot list models (the workshop key gets 403 "Missing permission:
 # model.view"). Each answered through the gateway on 14 Oct 2026.
@@ -238,16 +239,23 @@ async def post_chat(request: Request) -> JSONResponse:
 
     store = OrderStore()
     extra_body: dict[str, Any] = {"name": "refund-chat"}
-    if body.get("guardrails") is True:
+    choice = {True: "both", None: "", False: ""}.get(body.get("guardrails"), body.get("guardrails"))
+    if choice and choice not in CHAT_CHANNELS:
+        return _error(422, f"guardrails must be one of {sorted(CHAT_CHANNELS)} or empty")
+    if choice:
         # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
-        # `make seed` creates the rule; rules are admin-only, so a workshop key cannot read it back.
-        extra_body["metadata"] = {"channel": CHAT_GUARDED}
+        # `make seed` creates the rules; rules are admin-only, so a workshop key cannot read them back.
+        extra_body["metadata"] = {"channel": CHAT_CHANNELS[choice]}
     snapshot = None
     if conversation_id:
+        if conversation_id in _busy:
+            return _error(409, "this conversation is still answering the previous message")
+        _busy.add(conversation_id)
         store = _stores.setdefault(conversation_id, store)
         snapshot = copy.deepcopy(store)  # a blocked turn did not happen: its refunds are undone too
         extra_body["thread"] = {"id": f"{settings.prefix}-chat-{conversation_id[:8]}"}
     started = time.perf_counter()
+    done = False
     try:
         if model.startswith("agent/"):
             answer, names, trace_id, history = await run_in_threadpool(
@@ -267,13 +275,12 @@ async def post_chat(request: Request) -> JSONResponse:
             )
             answer, trace_id, history = result.text, result.trace_id, result.messages
             tool_calls = _tool_outcomes(result.messages, result.tool_calls)
+        done = True
     except APIStatusError as exc:
         blocked = _blocked(exc)
         if blocked is None:
             return _error(502, f"gateway error: {exc}")
-        # The turn did not happen: history stays as the browser sent it, and so do the orders.
-        if snapshot is not None:
-            _stores[conversation_id] = snapshot
+        # The turn did not happen: history stays as the browser sent it (the orders are restored below).
         return JSONResponse(
             {
                 "blocked": blocked,
@@ -285,6 +292,11 @@ async def post_chat(request: Request) -> JSONResponse:
         )
     except OpenAIError as exc:
         return _error(502, f"gateway error: {exc}")
+    finally:
+        if conversation_id:
+            _busy.discard(conversation_id)
+            if not done and snapshot is not None:  # any failed turn did not happen: undo its refunds too
+                _stores[conversation_id] = snapshot
     return JSONResponse(
         {
             "answer": answer,

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Refund agent · orq.ai workshop</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <style>
   @font-face { font-family: Kurrent; src: url("/fonts/kurrent.woff2") format("woff2"); font-weight: 400; font-display:swap; }
   @font-face { font-family: Kurrent; src: url("/fonts/kurrent-medium.woff2") format("woff2"); font-weight: 500; font-display:swap; }
@@ -54,8 +54,8 @@
   .title-copy h1 { margin:0; font-size:1.3rem; line-height:1.1; font-weight:500; font-family:Kurrent,sans-serif; }
   .title-copy p { margin:.3rem 0 0; color:var(--gray); font:.75rem "Kurrent Mono",monospace; overflow-wrap:anywhere; }
   .controls { display:flex; align-items:flex-end; justify-content:flex-end; gap:.6rem; flex-wrap:wrap; }
-  .controls label:not(.switch) { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
-  select { min-height:40px; max-width:13rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
+  .controls label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
+  select { min-height:40px; max-width:12rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
     background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23141319' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center / .8rem .8rem; }
   @media (forced-colors:active) { select { appearance:auto; background-image:none; } }
   .control-button { min-height:40px; padding:.48rem .8rem; border:1px solid var(--rule); border-radius:4px; background:transparent; color:var(--ink); font-size:.86rem; font-weight:500; }
@@ -80,16 +80,18 @@
   .agent { align-self:flex-start; border:1px solid var(--rule); border-left:3px solid var(--orange); background:var(--white); }
   .agent::before { content:"REFUND AGENT"; color:#a93616; }
   .note { align-self:center; max-width:100%; color:var(--gray); font:.68rem "Kurrent Mono",monospace; text-align:center; }
-  .error { border-color:var(--orange); color:#a93616; }
+  .error { border:1px solid var(--orange); color:#a93616; }
+  select:disabled, .control-button:disabled { opacity:.55; cursor:progress; }
   .blocked { align-self:flex-start; border:1px solid var(--orange); border-left:3px solid var(--orange); background:#fff8ed; color:#8c3217; }
   .blocked::before { content:"BLOCKED BY GUARDRAIL"; color:#a93616; }
   .blocked ul { margin:.2rem 0 0; padding-left:1.1rem; }
   .blocked code { font-family:"Kurrent Mono",ui-monospace,monospace; font-size:.82rem; }
-  .switch { display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; user-select:none; }
-  .msg.not-sent { opacity:.6; }
+  .msg.not-sent { outline:1px dashed var(--gray); outline-offset:3px; }
+  .kind { display:flex; width:max-content; margin:0 0 .15rem; border:1px solid var(--rule); border-radius:4px; overflow:hidden; }
+  .kind button { padding:.15rem .6rem; border:0; background:transparent; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
+  .kind button[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
+  .kind button:disabled { opacity:.45; }
   .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-  .switch input { width:1rem; height:1rem; margin:0; accent-color:var(--orange); }
-  .switch:has(input:checked) { border-color:var(--orange); }
   .meta { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; color:var(--gray); font-size:.78rem; white-space:normal; }
   .chip { padding:.25rem .5rem; border:1px solid var(--rule); border-radius:3px; background:var(--paper); color:var(--ink); }
   .chip.failed { border-color:var(--orange); color:#a93616; }
@@ -170,13 +172,23 @@
     <div class="controls">
       <button class="control-button" id="drawer-toggle" type="button" aria-controls="backend" aria-expanded="false">Reference data</button>
       <div>
-        <label for="model">Model</label>
+        <div class="kind" role="group" aria-label="Run on">
+          <button type="button" id="kind-models" aria-pressed="true" title="Our loop and our tools run in this app">Models</button>
+          <button type="button" id="kind-agents" aria-pressed="false" title="The agent and its tools live in orq.ai" disabled>Agents</button>
+        </div>
+        <label for="model" class="visually-hidden">Model or agent</label>
         <select id="model"><option value="">Default model</option></select>
       </div>
-      <label class="control-button switch" title="Block PII on input and refund promises over EUR 500 on output, through a gateway guardrail rule">
-        <input type="checkbox" id="guardrails" aria-describedby="guard-desc"> Guardrails
-        <span class="visually-hidden" id="guard-desc">Blocks personal data on input and refund promises over 500 euro on output, through a gateway guardrail rule.</span>
-      </label>
+      <div>
+        <label for="guardrails">Guardrails</label>
+        <select id="guardrails" aria-describedby="guard-desc">
+          <option value="">Off</option>
+          <option value="pii">PII · input</option>
+          <option value="refund">Refund limit · output</option>
+          <option value="both">Both</option>
+        </select>
+        <span class="visually-hidden" id="guard-desc">Gateway guardrails for this chat: personal data blocked on input, refund promises over 500 euro blocked on output.</span>
+      </div>
       <button class="control-button" id="reset" type="button">New chat</button>
     </div>
   </header>
@@ -372,10 +384,18 @@
     group.append(...ids.map((id) => new Option(id, id, false, id === selected)));
     return group;
   }
+  let catalog = null, kind = "models";
+  function showKind(next) {  // the toggle picks which list the dropdown shows; each kind remembers its last pick
+    if (catalog && kind !== next) catalog.last[kind] = modelSelect.value;
+    kind = next;
+    for (const k of ["models", "agents"]) $("kind-" + k).setAttribute("aria-pressed", String(k === kind));
+    modelSelect.replaceChildren(...catalog[kind].map((id) => new Option(id, id, false, id === catalog.last[kind])));
+  }
+  for (const k of ["models", "agents"]) $("kind-" + k).addEventListener("click", () => catalog && showKind(k));
   fetch("/api/models").then((res) => res.json()).then((data) => {
-    const groups = [optgroup("Model · our loop, our tools", data.models, data.default)];
-    if (data.agents.length) groups.push(optgroup("Agent · loop and tools in orq.ai", data.agents));
-    modelSelect.replaceChildren(...groups);
+    catalog = { models: data.models, agents: data.agents, last: { models: data.default, agents: data.agents[0] } };
+    $("kind-agents").disabled = !data.agents.length;
+    showKind("models");
   }).catch(() => {});
 
   function add(kind, text) {  // textContent only: model output is never parsed as HTML
@@ -419,6 +439,7 @@
     $("reset").disabled = busy;
     modelSelect.disabled = busy;
     $("guardrails").disabled = busy;
+    for (const k of ["models", "agents"]) $("kind-" + k).disabled = busy || (k === "agents" && !(catalog && catalog.agents.length));
     for (const b of document.querySelectorAll(".prompts button")) b.disabled = busy;
   }
 
@@ -449,7 +470,7 @@
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, guardrails: $("guardrails").checked }),
+        body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, guardrails: $("guardrails").value }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(typeof (data.detail ?? res.statusText) === "string" ? (data.detail ?? res.statusText) : JSON.stringify(data.detail));
@@ -458,11 +479,22 @@
       history = data.history;
       if (data.blocked) {  // the gateway stopped the turn: show which guardrail and why
         pending.className = "msg blocked";
-        userMsg.classList.add("not-sent");
-        if (!input.value) input.value = message;  // retry without the offending part
-        pending.textContent = "The gateway stopped this turn; your message was not sent to the agent and is back in the composer.";
+        const failures = data.blocked.failures || [];
+        if (failures.some((f) => f.stage === "input")) {  // the agent never saw it: let the user retry
+          userMsg.classList.add("not-sent");
+          const hasDraft = input.value.length > 0;
+          if (!hasDraft) {
+            input.value = message;
+            input.dispatchEvent(new Event("input"));
+          }
+          pending.textContent = "The gateway stopped this turn before the agent saw it. " + (hasDraft
+            ? "Your next message was kept in the composer."
+            : "Your message is back in the composer so you can edit it.");
+        } else {
+          pending.textContent = "The agent's reply was stopped by the gateway. Nothing was refunded.";
+        }
         const list = document.createElement("ul");
-        for (const f of data.blocked.failures || []) {
+        for (const f of failures) {
           const item = document.createElement("li");
           const id = document.createElement("code");
           id.textContent = f.id;
@@ -477,7 +509,8 @@
       }
       if (followReply) pending.scrollIntoView({ block: "end" });
     } catch (err) {
-      pending.className = "msg error";
+      const nearBottom = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
+      pending.className = "msg agent error";
       const hasDraft = input.value.length > 0;
       pending.textContent = "This turn did not complete. " + (hasDraft
         ? "Your next message has been kept in the composer."
@@ -486,7 +519,7 @@
         input.value = message;
         input.dispatchEvent(new Event("input"));
       }
-      if (mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96) pending.scrollIntoView({ block: "end" });
+      if (nearBottom) pending.scrollIntoView({ block: "end" });
     } finally {
       setBusy(false);
     }

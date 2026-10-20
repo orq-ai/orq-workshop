@@ -172,36 +172,48 @@ def ensure_python_guardrail(orq=None, name: str = "refund-limit-guard") -> str:
     return created.get("id") or created.get("_id") or _find_eval(orq, key)
 
 
-CHAT_GUARDED = K("chat-guarded")  # metadata.channel value that switches the chat's guardrails on
+# The chat's Guardrails dropdown: choice -> (metadata.channel the chat sends, guardrails the rule applies).
+# The python guardrail id is looked up when the rule is created, so it is named here by a marker.
+CHAT_CHANNELS = {
+    "pii": K("chat-pii"),
+    "refund": K("chat-refund"),
+    "both": K("chat-guarded"),
+}
+CHAT_GUARDED = CHAT_CHANNELS["both"]
+_CHAT_RULE_GUARDRAILS = {
+    "pii": ["pii"],
+    "refund": ["refund"],
+    "both": ["pii", "refund"],
+}
 
 
-def ensure_chat_guardrail_rule(orq=None, name: str = "guardrail-rule-chat") -> str:
-    """The rule behind the chat's Guardrails switch. Returns the rule id.
+def ensure_chat_guardrail_rule(orq=None, choice: str = "both") -> str:
+    """The rule behind one option of the chat's Guardrails dropdown. Returns the rule id.
 
     Request-level `guardrails` are ignored on `/v3/router/responses`; rules apply to both
-    endpoints. This one matches `metadata["channel"] == CHAT_GUARDED` (the chat sends it only when
-    the switch is on): PII blocked on input, the refund-limit guardrail on output.
-    Idempotency key: the rule's display name.
+    endpoints. Each rule matches `metadata["channel"] == CHAT_CHANNELS[choice]`, which the chat
+    sends only for that option: PII blocked on input (`pii`), the refund-limit guardrail on
+    output (`refund`), or both. Idempotency key: the rule's display name.
     """
     orq = orq or make_orq()
-    rule_name = K(name)
-    scope = project_id(orq)
-    path = "/v2/guardrail-rules?limit=100" + (f"&project_id={scope}" if scope else "")
-    for rule in rules_api("GET", path).get("data") or []:
+    channel = CHAT_CHANNELS[choice]
+    rule_name = K("guardrail-rule-chat" if choice == "both" else f"guardrail-rule-chat-{choice}")
+    # Workspace-wide on purpose: a project-scoped rule only matches calls that carry a project, and
+    # a workspace key carries none. The `metadata.channel` test keeps other traffic out of it.
+    for rule in rules_api("GET", "/v2/guardrail-rules?limit=100").get("data") or []:
         if rule["display_name"] == rule_name:
             return rule.get("_id") or rule.get("id")
+    guardrails = {
+        "pii": lambda: {"id": "orq_pii_detection", "execute_on": "input"},
+        "refund": lambda: {"id": ensure_python_guardrail(orq), "execute_on": "output"},
+    }
     body: dict[str, Any] = {
         "display_name": rule_name,
-        "description": f"Chat Guardrails switch: calls tagged channel={CHAT_GUARDED}",
+        "description": f"Chat Guardrails dropdown ({choice}): calls tagged channel={channel}",
         "enabled": True,
-        "expression": {"cel": f'metadata["channel"] == "{CHAT_GUARDED}"'},
-        "guardrails": [
-            {"id": "orq_pii_detection", "execute_on": "input"},
-            {"id": ensure_python_guardrail(orq), "execute_on": "output"},
-        ],
+        "expression": {"cel": f'metadata["channel"] == "{channel}"'},
+        "guardrails": [guardrails[g]() for g in _CHAT_RULE_GUARDRAILS[choice]],
     }
-    if scope:
-        body["project_id"] = scope
     created = rules_api("POST", "/v2/guardrail-rules", body)
     created = created.get("guardrail_rule", created)
     return created.get("_id") or created.get("id")
@@ -946,7 +958,11 @@ def seed(orq=None) -> None:
     print(f"dataset  : {ensure_dataset(orq)} ({K('refund-eval')})")
     print(f"kb       : {ensure_knowledge_base(orq)} ({K('refund-policy')})")
     print(f"guard    : {ensure_python_guardrail(orq)} ({K('refund-limit-guard')})")
-    print(f"chat rule: {ensure_chat_guardrail_rule(orq)} ({K('guardrail-rule-chat')}, the chat's Guardrails switch)")
+    for choice in CHAT_CHANNELS:
+        try:
+            print(f"chat rule: {ensure_chat_guardrail_rule(orq, choice)} ({choice}, the chat's Guardrails dropdown)")
+        except RuntimeError as exc:  # rules need an admin key: the rest of the seed must not stop here
+            print(f"chat rule: skipped {choice}: {str(exc)[:100]}")
     print(f"judge    : {ensure_llm_judge(orq)} ({K('refund-policy-judge')})")
     knowledge_base_id = ensure_knowledge_base(orq)  # already exists: returns the id without work
     tool_keys = ensure_code_tools(orq)
