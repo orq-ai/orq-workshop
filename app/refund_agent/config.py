@@ -137,7 +137,7 @@ class Settings:
                     try:
                         subprocess.run(
                             ["orq", "projects", "list", "--limit", "1", "--no-input", "-o", "json"],
-                            env=env, capture_output=True, timeout=30, check=False,
+                            env=env, capture_output=True, timeout=30, check=False, stdin=subprocess.DEVNULL,  # a CLI waiting on stdin would hang
                         )
                     except (OSError, subprocess.SubprocessError):
                         pass  # no CLI: the error below says what to do
