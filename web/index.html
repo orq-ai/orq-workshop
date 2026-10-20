@@ -54,7 +54,7 @@
   .title-copy h1 { margin:0; font-size:1.3rem; line-height:1.1; font-weight:500; font-family:Kurrent,sans-serif; }
   .title-copy p { margin:.3rem 0 0; color:var(--gray); font:.75rem "Kurrent Mono",monospace; overflow-wrap:anywhere; }
   .controls { display:flex; align-items:flex-end; justify-content:flex-end; gap:.6rem; flex-wrap:wrap; }
-  .controls label { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
+  .controls label:not(.switch) { display:block; margin:0 0 .15rem .05rem; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
   select { min-height:40px; max-width:13rem; padding:.45rem 2.4rem .45rem .65rem; border:1px solid var(--rule); border-radius:4px; appearance:none;
     background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23141319' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center / .8rem .8rem; }
   @media (forced-colors:active) { select { appearance:auto; background-image:none; } }
@@ -86,6 +86,8 @@
   .blocked ul { margin:.2rem 0 0; padding-left:1.1rem; }
   .blocked code { font-family:"Kurrent Mono",ui-monospace,monospace; font-size:.82rem; }
   .switch { display:inline-flex; align-items:center; gap:.45rem; cursor:pointer; user-select:none; }
+  .msg.not-sent { opacity:.6; }
+  .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .switch input { width:1rem; height:1rem; margin:0; accent-color:var(--orange); }
   .switch:has(input:checked) { border-color:var(--orange); }
   .meta { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; color:var(--gray); font-size:.78rem; white-space:normal; }
@@ -172,7 +174,8 @@
         <select id="model"><option value="">Default model</option></select>
       </div>
       <label class="control-button switch" title="Block PII on input and refund promises over EUR 500 on output, through a gateway guardrail rule">
-        <input type="checkbox" id="guardrails"> Guardrails
+        <input type="checkbox" id="guardrails" aria-describedby="guard-desc"> Guardrails
+        <span class="visually-hidden" id="guard-desc">Blocks personal data on input and refund promises over 500 euro on output, through a gateway guardrail rule.</span>
       </label>
       <button class="control-button" id="reset" type="button">New chat</button>
     </div>
@@ -392,7 +395,7 @@
       chip.className = "chip" + (call.ok === false ? " failed" : "");
       const outcome = call.ok !== false ? "" : ["not_found", "unknown_topic"].includes(call.error) ? " · NOT FOUND" : " · DECLINED";
       chip.textContent = call.name + outcome;
-      chip.title = call.ok === false ? "tool result: " + (call.error || "declined") : "tool completed";
+      chip.title = call.ok === false ? "tool result: " + (call.error || "declined") : call.ok === null ? "ran inside orq: the result is in the trace" : "tool completed";
       meta.appendChild(chip);
     }
     const used = document.createElement("span");
@@ -414,6 +417,8 @@
   function setBusy(busy) {
     send.disabled = busy;
     $("reset").disabled = busy;
+    modelSelect.disabled = busy;
+    $("guardrails").disabled = busy;
     for (const b of document.querySelectorAll(".prompts button")) b.disabled = busy;
   }
 
@@ -433,7 +438,7 @@
     const message = input.value.trim();
     if (!message || send.disabled) return;
     const wasNearBottom = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
-    add("user", message);
+    const userMsg = add("user", message);
     input.value = "";
     input.style.height = "";
     setBusy(true);
@@ -447,18 +452,21 @@
         body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, guardrails: $("guardrails").checked }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(JSON.stringify(data.detail ?? res.statusText));
+      if (!res.ok) throw new Error(typeof (data.detail ?? res.statusText) === "string" ? (data.detail ?? res.statusText) : JSON.stringify(data.detail));
       const followReply = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
+      if (!Array.isArray(data.history)) throw new Error("malformed response from the server");
       history = data.history;
       if (data.blocked) {  // the gateway stopped the turn: show which guardrail and why
         pending.className = "msg blocked";
-        pending.textContent = "The gateway stopped this turn.";
+        userMsg.classList.add("not-sent");
+        if (!input.value) input.value = message;  // retry without the offending part
+        pending.textContent = "The gateway stopped this turn; your message was not sent to the agent and is back in the composer.";
         const list = document.createElement("ul");
-        for (const f of data.blocked.failures) {
+        for (const f of data.blocked.failures || []) {
           const item = document.createElement("li");
           const id = document.createElement("code");
           id.textContent = f.id;
-          item.append(id, ` · ${f.stage}: ${f.reason}`);
+          item.append(id, ` · ${f.stage ?? "?"}: ${f.reason ?? "no reason given"}`);
           list.appendChild(item);
         }
         pending.appendChild(list);
