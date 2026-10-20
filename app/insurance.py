@@ -53,7 +53,10 @@ def _evaluator_code(evaluator_id: str) -> str | None:
     response = httpx.get(
         f"{settings.base_url}/v2/evaluators/{evaluator_id}", headers={"Authorization": f"Bearer {settings.bearer()}"}, timeout=30
     )
-    return response.json().get("code") if response.status_code < 300 else None
+    if response.status_code >= 300:
+        return None
+    body = response.json()
+    return body.get("document", body).get("code")
 
 
 def _update_code(evaluator_id: str, code: str) -> None:
@@ -86,8 +89,12 @@ def ensure_evaluators(orq=None) -> dict[str, str]:
     for spec in load("evaluators.json"):
         key = K(spec["key"])
         found = _find_eval(orq, key)
-        if found and spec.get("code") and _evaluator_code(found) != spec["code"]:
-            _update_code(found, spec["code"])
+        live = _evaluator_code(found) if found and spec.get("code") else None
+        if isinstance(live, str) and live != spec["code"]:  # unreadable or not python: leave it
+            try:
+                _update_code(found, spec["code"])
+            except RuntimeError as exc:  # a read-only key must not stop the seed
+                print(f"evaluator: {key} code not updated: {str(exc)[:100]}")
         if not found:
             body = {"key": key, **{f: spec[f] for f in EVALUATOR_FIELDS if f in spec}}
             created = rest_post(orq, "/v2/evaluators", body)
@@ -161,7 +168,10 @@ def ensure_chat_rules(orq=None, evaluator_ids: dict[str, str] | None = None) -> 
         existing.update({r["display_name"]: r for r in rows})
         if not (page.get("has_more") and rows):
             break
-        after = rows[-1].get("_id") or rows[-1].get("id")
+        new_after = rows[-1].get("_id") or rows[-1].get("id")
+        if new_after == after:  # the cursor was ignored: do not loop on the same page
+            break
+        after = new_after
     rule_ids: dict[str, str] = {}
     for choice, guards in GUARD_CHOICES.items():
         name = K(f"guardrail-rule-chat-ins-{choice}")
