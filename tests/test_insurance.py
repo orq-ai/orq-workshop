@@ -23,6 +23,35 @@ def test_no_legal_advice_blocks_sue_and_lawyer_but_not_the_disclaimer():
     assert guard({"output": "Dit is geen juridisch advies. Uw uitkering is EUR 2.250."}) is True
 
 
+def test_no_legal_advice_lets_ordinary_claims_wording_through_and_catches_split_verbs():
+    guard = _evaluate("claims-no-legal-advice")
+    assert guard({"output": "U kunt de tegenpartij aansprakelijk stellen."}) is True
+    assert guard({"output": "Een advocaat is niet nodig. U kunt ons altijd bellen op 050-1234567."}) is True
+    assert guard({"output": "U hoeft geen juridische stappen te zetten."}) is True
+    assert guard({"output": "Ik raad u aan een advocaat in te schakelen."}) is False
+    assert guard({"output": "Ga naar de rechter en eis een schadevergoeding."}) is False
+
+
+def test_payout_limit_reads_the_dagwaarde_and_every_payout_amount():
+    guard = _evaluate("claims-payout-limit")
+    ok = {"input": "Restwaarde EUR 800, dagwaarde EUR 6.000, reparatie EUR 5.000", "output": "Uitkering: EUR 5.850"}
+    assert guard(ok) is True
+    assert guard({"input": "dagwaarde van mijn 3 jaar oude auto: EUR 18.000", "output": "Uitkering EUR 2.250"}) is True
+    assert guard({"input": "Nieuwwaarde EUR 30.000, dagwaarde EUR 18.000", "output": "Uitkering EUR 29.850"}) is False
+    assert guard({"input": "dagwaarde EUR 18.000", "output": "Binnen 5 werkdagen betaald. Uitkering: EUR 24.000"}) is False
+    assert guard({"input": "dagwaarde EUR 18.000", "output": "Uitkering EUR 24,000"}) is False
+
+
+def test_orchestrator_instructions_name_the_prefixed_sub_agents():
+    from app.refund_agent.entities import K
+
+    spec = next(a for a in insurance.load("agents.json") if a["key"] == "claims-orchestrator")
+    ids = {key: f"id-{key}" for key in (e["key"] for e in insurance.load("evaluators.json"))}
+    body = insurance._agent_body(spec, ids)
+    assert K("claims-faq-assistant") in body["instructions"]
+    assert " claims-faq-assistant" not in body["instructions"].replace(K("claims-faq-assistant"), "")
+
+
 def test_payout_limit_blocks_a_payout_above_the_value_in_the_message():
     guard = _evaluate("claims-payout-limit")
     assert guard({"input": "dagwaarde EUR 18.000", "output": "Uitkering EUR 20.000"}) is False
