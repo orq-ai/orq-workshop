@@ -1,0 +1,100 @@
+[
+  {
+    "key": "claim-accuracy",
+    "type": "llm_eval",
+    "description": "Beoordeelt of besluit en uitkering overeenkomen met de referentie",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "alert_on_failure": false,
+      "enabled": true,
+      "type": "boolean",
+      "value": true
+    },
+    "prompt": "Je beoordeelt het antwoord van een schade-assistent voor een Nederlandse autoverzekering tegen een referentie.\n\n[SCHADEMELDING]\n{{input.user_query}}\n\n[REFERENTIE]\n{{input.expected_output}}\n\n[ANTWOORD]\n{{output.response}}\n\nGeef True alleen als het antwoord in alle opzichten overeenkomt met de referentie: dekking (gedekt / niet gedekt), eigen risico (bedrag of vervalt), total loss, afschrijving en het uitkeringsbedrag in euro. Bij een referentie met onvoldoende gegevens is True alleen goed als het antwoord de ontbrekende gegevens opvraagt en geen definitief bedrag noemt. Anders False.\nAntwoord met alleen True of False.",
+    "model": "openai/eu.gpt-5.6-luna",
+    "mode": "single"
+  },
+  {
+    "key": "format-compliance",
+    "type": "python_eval",
+    "description": "Controleert besluit, bedrag in euro, eigen risico en vervolgstappen",
+    "output_type": "boolean",
+    "code": "import re\n\ndef evaluate(log):\n    out = (log.get(\"output\") or \"\").lower()\n    if not out:\n        return False\n    asks_info = any(w in out for w in [\"ontbre\", \"kunt u\", \"kun je\", \"graag\", \"welke\", \"?\"])\n    has_decision = any(w in out for w in [\"gedekt\", \"niet gedekt\", \"vergoed\", \"afgewezen\", \"besluit\"])\n    has_amount = bool(re.search(r\"(eur|€)\\s?\\d\", out))\n    has_deductible = \"eigen risico\" in out\n    has_next = any(w in out for w in [\"volgende stap\", \"volgende stappen\", \"wat kunt u\", \"u kunt\", \"wij zullen\", \"neem contact\", \"stuur\"])\n    if asks_info and not has_amount:\n        return True\n    return has_decision and has_amount and has_deductible and has_next"
+  },
+  {
+    "key": "claims-output-guard",
+    "type": "python_eval",
+    "description": "Guardrail: blokkeer antwoorden met een IBAN of BSN, of een uitkering met centen.",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "alert_on_failure": false,
+      "enabled": true,
+      "type": "boolean",
+      "value": true
+    },
+    "code": "# Output guardrail for the claims agent. Return True to pass, False to block.\n# Blocks an answer that (1) repeats an IBAN or a BSN, or (2) quotes a payout with cents:\n# the rules say the payout is a whole amount in euros. Standard library only.\nimport re\n\nIBAN = re.compile(r\"\\b[A-Z]{2}\\d{2}\\s?[A-Z0-9]{4}(?:\\s?\\d{4}){2}(?:\\s?\\d{1,4})?\\b\")\nBSN = re.compile(r\"\\bBSN\\D{0,15}\\d{8,9}\\b\", re.IGNORECASE)\nCENTS = re.compile(r\"(?:EUR|€)\\s?\\d[\\d.]*,\\d{2}\\b|(?:EUR|€)\\s?\\d+\\.\\d{2}\\b\")\n\n\ndef evaluate(log):\n    text = log.get(\"output\") or \"\"\n    if IBAN.search(text) or BSN.search(text):\n        return False\n    if CENTS.search(text):\n        return False\n    return True\n"
+  },
+  {
+    "key": "claims-answer-format",
+    "type": "python_eval",
+    "description": "Heeft het eindantwoord de vijf onderdelen: besluit, uitkering, eigen risico, onderbouwing, volgende stappen.",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "enabled": false,
+      "type": "boolean",
+      "value": true
+    },
+    "code": "# Scores whether the final claims answer has the five required parts, in Dutch.\n# Return True when all parts are present. Standard library only.\nimport re\n\nPARTS = {\n    \"besluit\": r\"\\bbesluit\\b\",\n    \"uitkering\": r\"\\buitkering\\b\",\n    \"eigen risico\": r\"\\beigen risico\\b\",\n    \"onderbouwing\": r\"\\bonderbouwing\\b|\\bomdat\\b|\\bvanwege\\b\",\n    \"volgende stappen\": r\"\\bvolgende stappen?\\b\",\n}\nDECISION = re.compile(r\"\\b(niet gedekt|gedeeltelijk gedekt|gedekt)\\b\", re.IGNORECASE)\n\n\ndef evaluate(log):\n    text = (log.get(\"output\") or \"\").lower()\n    if not DECISION.search(text):\n        return False\n    return all(re.search(p, text) for p in PARTS.values())\n"
+  },
+  {
+    "key": "claims-decision-judge",
+    "type": "llm_eval",
+    "description": "Judge: komen besluit, uitkering en eigen risico overeen met de referentie.",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "enabled": false,
+      "type": "boolean",
+      "value": true
+    },
+    "prompt": "Je beoordeelt het antwoord van een schade-agent van een Nederlandse autoverzekeraar.\n\nKlantbericht:\n{{log.input}}\n\nAntwoord van de agent:\n{{log.output}}\n\nReferentie (juiste uitkomst):\n{{log.reference}}\n\nGeef true alleen als ALLE drie kloppen:\n1. Het besluit (gedekt / niet gedekt / gedeeltelijk gedekt) is gelijk aan de referentie.\n2. De uitkering in EUR is gelijk aan de referentie.\n3. Het eigen risico (bedrag of 'vervalt') is gelijk aan de referentie.\nAls de referentie zegt dat gegevens ontbreken, is alleen een antwoord dat om de ontbrekende gegevens vraagt en geen bedrag noemt correct.\nGeef anders false.",
+    "model": "openai/eu.gpt-5.6-luna",
+    "mode": "single"
+  },
+  {
+    "key": "claims-input-guard",
+    "type": "python_eval",
+    "description": "Guardrail: blokkeer een klantbericht met een IBAN of BSN, of een poging de instructies te overschrijven.",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "alert_on_failure": false,
+      "enabled": true,
+      "type": "boolean",
+      "value": true
+    },
+    "code": "# Input guardrail for the claims agent. Return True to pass, False to block.\n# Blocks a customer message that (1) contains an IBAN or a BSN, which a claim never needs,\n# or (2) tries to override the agent's instructions. Standard library only.\nimport re\n\nIBAN = re.compile(r\"\\b[A-Z]{2}\\d{2}\\s?[A-Z0-9]{4}(?:\\s?\\d{4}){2}(?:\\s?\\d{1,4})?\\b\")\nBSN = re.compile(r\"\\b(?:BSN|burgerservicenummer)\\D{0,15}\\d{8,9}\\b\", re.IGNORECASE)\nINJECTION = re.compile(\n    r\"(negeer|vergeet)\\s+(alle\\s+|je\\s+|de\\s+)?(vorige\\s+)?(instructies|regels)\"\n    r\"|ignore\\s+(all\\s+|your\\s+|the\\s+)?(previous\\s+)?(instructions|rules)\"\n    r\"|(system|systeem)\\s*prompt\",\n    re.IGNORECASE,\n)\n\n\ndef evaluate(log):\n    text = log.get(\"input\") or \"\"\n    if IBAN.search(text) or BSN.search(text):\n        return False\n    if INJECTION.search(text):\n        return False\n    return True\n"
+  },
+  {
+    "key": "claims-no-legal-advice",
+    "description": "Guardrail: block specific legal advice (sue, hire a lawyer).",
+    "type": "python_eval",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "enabled": true,
+      "type": "boolean",
+      "value": true
+    },
+    "code": "# Output guardrail for the FAQ side of the claims agents. Return True to pass, False to block.\n# Blocks specific legal advice: telling the customer to sue, to hire a lawyer, or what their\n# legal rights are. Pointing to the insurer's own complaints procedure is fine. A phrase list:\n# it catches the plain cases, not every paraphrase. Standard library only.\nimport re\n\nLEGAL = re.compile(\n    r\"(juridisch(e)?\\s+(advies|stappen))\"\n    r\"|(neem\\s+(een|de)\\s+)?(advocaat|jurist)\\b.*\\b(inschakelen|nemen|raadplegen|bellen)\"\n    r\"|\\b(aanklagen|dagvaarden|rechtszaak|aansprakelijk\\s+stellen)\\b\"\n    r\"|you\\s+should\\s+(sue|hire\\s+a\\s+lawyer)|legal\\s+advice\",\n    re.IGNORECASE,\n)\nDISCLAIMER = re.compile(r\"geen\\s+(specifiek\\s+)?juridisch\\s+advies|no\\s+legal\\s+advice\", re.IGNORECASE)\n\n\ndef evaluate(log):\n    text = log.get(\"output\") or \"\"\n    if DISCLAIMER.search(text):\n        text = DISCLAIMER.sub(\"\", text)\n    return not LEGAL.search(text)\n"
+  },
+  {
+    "key": "claims-payout-limit",
+    "description": "Guardrail: block a payout above the car's value named in the message.",
+    "type": "python_eval",
+    "output_type": "boolean",
+    "guardrail_config": {
+      "enabled": true,
+      "type": "boolean",
+      "value": true
+    },
+    "code": "# Output guardrail for the claims agents. Return True to pass, False to block.\n# Blocks a payout above the car's value: the customer's message names a \"dagwaarde\" or \"waarde\",\n# and the answer's \"Uitkering\" is larger. No value in the message, or no payout in the answer: pass.\n# Amounts are written the Dutch way (EUR 18.000). Standard library only.\nimport re\n\nVALUE = re.compile(r\"(?:dagwaarde|waarde)\\D{0,20}?(\\d[\\d.]*)\", re.IGNORECASE)\nPAYOUT = re.compile(r\"uitkering\\D{0,30}?(\\d[\\d.]*)\", re.IGNORECASE)\n\n\ndef euros(text):\n    return int(text.replace(\".\", \"\")) if text and text.replace(\".\", \"\").isdigit() else None\n\n\ndef evaluate(log):\n    value = VALUE.search(log.get(\"input\") or \"\")\n    payout = PAYOUT.search(log.get(\"output\") or \"\")\n    if not value or not payout:\n        return True\n    limit, amount = euros(value.group(1)), euros(payout.group(1))\n    return limit is None or amount is None or amount <= limit\n"
+  }
+]
