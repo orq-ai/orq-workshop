@@ -37,7 +37,7 @@ def setup_otel(service_name: str = "refund-agent", force: bool = False) -> bool:
 
     exporter = OTLPSpanExporter(
         endpoint=f"{settings.otel_url}/v1/traces",
-        headers={"Authorization": f"Bearer {settings.api_key}"},
+        headers={"Authorization": f"Bearer {settings.bearer()}"},
     )
     _provider = TracerProvider(resource=Resource.create({"service.name": service_name}))
     _provider.add_span_processor(BatchSpanProcessor(exporter))

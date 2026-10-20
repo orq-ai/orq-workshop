@@ -169,6 +169,41 @@ def ensure_python_guardrail(orq=None, name: str = "refund-limit-guard") -> str:
             "guardrail_config": {"enabled": True, "type": "boolean", "value": True},
         },
     )
+CHAT_GUARDED = K("chat-guarded")  # metadata.channel value that switches the chat's guardrails on
+
+
+def ensure_chat_guardrail_rule(orq=None, name: str = "guardrail-rule-chat") -> str:
+    """The rule behind the chat's Guardrails switch. Returns the rule id.
+
+    Request-level `guardrails` are ignored on `/v3/router/responses`; rules apply to both
+    endpoints. This one matches `metadata["channel"] == CHAT_GUARDED` (the chat sends it only when
+    the switch is on): PII blocked on input, the refund-limit guardrail on output.
+    Idempotency key: the rule's display name.
+    """
+    orq = orq or make_orq()
+    rule_name = K(name)
+    scope = project_id(orq)
+    path = "/v2/guardrail-rules?limit=100" + (f"&project_id={scope}" if scope else "")
+    for rule in rules_api("GET", path).get("data") or []:
+        if rule["display_name"] == rule_name:
+            return rule.get("_id") or rule.get("id")
+    body: dict[str, Any] = {
+        "display_name": rule_name,
+        "description": f"Chat Guardrails switch: calls tagged channel={CHAT_GUARDED}",
+        "enabled": True,
+        "expression": {"cel": f'metadata["channel"] == "{CHAT_GUARDED}"'},
+        "guardrails": [
+            {"id": "orq_pii_detection", "execute_on": "input"},
+            {"id": ensure_python_guardrail(orq), "execute_on": "output"},
+        ],
+    }
+    if scope:
+        body["project_id"] = scope
+    created = rules_api("POST", "/v2/guardrail-rules", body)
+    created = created.get("guardrail_rule", created)
+    return created.get("_id") or created.get("id")
+
+
     return created.get("id") or created.get("_id") or _find_eval(orq, key)
 
 
@@ -210,7 +245,7 @@ def rest_post(orq, path: str, body: dict[str, Any]) -> dict[str, Any]:
     response = httpx.post(
         f"{settings.base_url}{path}",
         json=body,
-        headers={"Authorization": f"Bearer {settings.api_key}"},
+        headers={"Authorization": f"Bearer {settings.bearer()}"},
         timeout=60,
     )
     if response.status_code >= 300:
@@ -648,7 +683,7 @@ def rest_get(path: str) -> list[dict[str, Any]]:
 
     response = httpx.get(
         f"{settings.base_url}{path}",
-        headers={"Authorization": f"Bearer {settings.api_key}"},
+        headers={"Authorization": f"Bearer {settings.bearer()}"},
         timeout=60,
     )
     response.raise_for_status()
@@ -684,7 +719,7 @@ def rules_api(method: str, path: str, body: dict[str, Any] | None = None) -> dic
         method,
         f"{settings.base_url}{path}",
         json=body,
-        headers={"Authorization": f"Bearer {settings.api_key}"},
+        headers={"Authorization": f"Bearer {settings.bearer()}"},
         timeout=60,
     )
     if response.status_code != 403:
@@ -904,6 +939,7 @@ def seed(orq=None) -> None:
     """Create every entity the modules expect, for a learner who joins late. Safe to rerun.
 
     Prints one id or key per entity as it goes, so a failure shows which one broke.
+    print(f"chat rule: {ensure_chat_guardrail_rule(orq)} ({K('guardrail-rule-chat')}, the chat's Guardrails switch)")
     """
     orq = orq or make_orq()
     started = time.time()

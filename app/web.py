@@ -19,23 +19,25 @@ Response: {"answer", "tool_calls", "trace_id", "trace_url", "history", "model", 
 
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 from urllib.parse import quote
 
 import httpx
 import uvicorn
-from openai import OpenAIError
+from openai import APIStatusError, OpenAIError
 from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Route
 
+from app.refund_agent import tools
 from app.refund_agent.agent import IDENTITY_HEADER, TRACE_HEADER, chat
 from app.refund_agent.client import make_openai_client, make_orq
 from app.refund_agent.config import ROOT, settings
-from app.refund_agent import tools
+from app.refund_agent.entities import CHAT_GUARDED
 from app.refund_agent.tools import OrderStore
 
 INDEX_HTML = ROOT / "web" / "index.html"
@@ -60,10 +62,11 @@ def trace_url(trace_id: str | None) -> str | None:
     """Studio deep link to one trace; the Traces page when ORQ_WORKSPACE is not set."""
     if not trace_id:
         return None
-    if not settings.workspace:
+    workspace = settings.studio_workspace()
+    if not workspace:
         return f"{settings.base_url}/traces"
     # Studio route: /traces/(trace:<id>), optionally //span:<id>; we only have the trace id
-    return f"{settings.base_url}/{quote(settings.workspace, safe='')}/traces/(trace:{quote(trace_id, safe='')})"
+    return f"{settings.base_url}/{quote(workspace, safe='')}/traces/(trace:{quote(trace_id, safe='')})"
 
 
 def _error(status: int, detail: str) -> JSONResponse:
@@ -83,12 +86,12 @@ def _workspace_models() -> list[str]:
     try:
         response = httpx.get(
             f"{settings.base_url}/v2/models",
-            headers={"Authorization": f"Bearer {settings.api_key}"},
+            headers={"Authorization": f"Bearer {settings.bearer()}"},
             timeout=20,
         )
         response.raise_for_status()
         rows = response.json()
-    except (httpx.HTTPError, ValueError):
+    except (httpx.HTTPError, ValueError, SystemExit):
         return FALLBACK_MODELS
     ids = [
         f"{m['provider']}/{m['model_id']}"
@@ -140,6 +143,35 @@ async def get_models(request: Request) -> JSONResponse:
     )
 
 
+def _tool_outcomes(messages: list[dict[str, Any]], names: list[str]) -> list[dict[str, Any]]:
+    """The tools this turn called, each with what it returned: `ok` and the short `error`.
+
+    Pairs `function_call` items with their `function_call_output` by call_id. The last
+    `len(names)` calls are this turn's; earlier ones belong to the history.
+    """
+    results = {m["call_id"]: json.loads(m["output"]) for m in messages if m.get("type") == "function_call_output"}
+    calls = [m for m in messages if m.get("type") == "function_call"][len(names) * -1 :] if names else []
+    return [
+        {"name": c["name"], "ok": r.get("ok"), "error": r.get("error")}
+        for c in calls
+        for r in [results.get(c["call_id"], {})]
+    ]
+
+
+def _blocked(exc: APIStatusError) -> dict[str, Any] | None:
+    """What the gateway's guardrail said, or None when this error is not a guardrail block."""
+    body = exc.body if isinstance(exc.body, dict) else {}
+    if body.get("code") != "guardrail_error":
+        return None
+    return {
+        "failures": [
+            {"id": f.get("id"), "stage": f.get("stage"), "reason": f.get("reason")}
+            for f in body.get("failures") or []
+        ],
+        "trace_id": exc.response.headers.get(TRACE_HEADER),
+    }
+
+
 def _hosted_turn(
     model: str, message: str, history: list[dict[str, Any]], extra_body: dict[str, Any]
 ) -> tuple[str, list[str], str | None, list[dict[str, Any]]]:
@@ -172,8 +204,10 @@ async def post_chat(request: Request) -> JSONResponse:
 
     `chat()` blocks on the model calls, so it runs in a worker thread and other requests go on.
     """
-    if not settings.api_key:
-        return _error(500, "ORQ_API_KEY is empty. Copy .env.example to .env and fill it.")
+    try:
+        await run_in_threadpool(settings.bearer)  # API key, else the `orq auth login` session
+    except SystemExit as exc:
+        return _error(500, str(exc))
     try:
         body = await request.json()
     except ValueError:
@@ -194,15 +228,20 @@ async def post_chat(request: Request) -> JSONResponse:
 
     store = OrderStore()
     extra_body: dict[str, Any] = {"name": "refund-chat"}
+    if body.get("guardrails") is True:
+        # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
+        # `make seed` creates the rule; rules are admin-only, so a workshop key cannot read it back.
+        extra_body["metadata"] = {"channel": CHAT_GUARDED}
     if conversation_id:
         store = _stores.setdefault(conversation_id, store)
         extra_body["thread"] = {"id": f"{settings.prefix}-chat-{conversation_id[:8]}"}
     started = time.perf_counter()
     try:
         if model.startswith("agent/"):
-            answer, tool_calls, trace_id, history = await run_in_threadpool(
+            answer, names, trace_id, history = await run_in_threadpool(
                 _hosted_turn, model, message, history, extra_body
             )
+            tool_calls = [{"name": n, "ok": None, "error": None} for n in names]  # orq ran them: no results here
         else:
             result = await run_in_threadpool(
                 chat,
@@ -214,12 +253,22 @@ async def post_chat(request: Request) -> JSONResponse:
                 identity=settings.identity_id,
                 extra_body=extra_body,
             )
-            answer, tool_calls, trace_id, history = (
-                result.text,
-                result.tool_calls,
-                result.trace_id,
-                result.messages,
-            )
+            answer, trace_id, history = result.text, result.trace_id, result.messages
+            tool_calls = _tool_outcomes(result.messages, result.tool_calls)
+    except APIStatusError as exc:
+        blocked = _blocked(exc)
+        if blocked is None:
+            return _error(502, f"gateway error: {exc}")
+        # The turn did not happen: history stays as the browser sent it.
+        return JSONResponse(
+            {
+                "blocked": blocked,
+                "trace_url": trace_url(blocked["trace_id"]),
+                "history": history,
+                "model": model,
+                "seconds": round(time.perf_counter() - started, 1),
+            }
+        )
     except OpenAIError as exc:
         return _error(502, f"gateway error: {exc}")
     return JSONResponse(
