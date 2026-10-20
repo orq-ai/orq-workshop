@@ -40,6 +40,7 @@ from app.refund_agent.tools import OrderStore
 
 INDEX_HTML = ROOT / "web" / "index.html"
 PORT = 8002
+FONTS = ROOT / "docs" / "stylesheets" / "fonts"  # the page uses the docs site's typeface
 ORDER_FIELDS = ("id", "item", "amount", "delivered_days_ago", "refunded")  # never owner_id or notes
 _stores: dict[str, OrderStore] = {}  # conversation_id -> its orders; in memory, per process
 # Shown when the key cannot list models (the workshop key gets 403 "Missing permission:
@@ -234,8 +235,17 @@ async def post_chat(request: Request) -> JSONResponse:
     )
 
 
+def _static(path):
+    return lambda request: FileResponse(path)
+
+
 app = Starlette(
     routes=[
+        Route("/favicon.svg", _static(ROOT / "docs" / "assets" / "orq-favicon.svg")),
+        Route("/fonts/kurrent.woff2", _static(FONTS / "ESKlarheitKurrent-Rg.woff2")),
+        Route("/fonts/kurrent-medium.woff2", _static(FONTS / "ESKlarheitKurrent-Md.woff2")),
+        Route("/fonts/kurrent-semibold.woff2", _static(FONTS / "ESKlarheitKurrent-Smbd.woff2")),
+        Route("/fonts/kurrent-mono.woff2", _static(FONTS / "ESKlarheitKurrentMono-Md.woff2")),
         Route("/", index),
         Route("/api/models", get_models),
         Route("/api/backend", get_backend),
