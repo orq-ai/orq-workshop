@@ -241,7 +241,7 @@ def _static(path):
 
 app = Starlette(
     routes=[
-        Route("/favicon.svg", _static(ROOT / "docs" / "assets" / "orq-favicon.svg")),
+        Route("/favicon.svg", _static(ROOT / "web" / "favicon.svg")),
         Route("/fonts/kurrent.woff2", _static(FONTS / "ESKlarheitKurrent-Rg.woff2")),
         Route("/fonts/kurrent-medium.woff2", _static(FONTS / "ESKlarheitKurrent-Md.woff2")),
         Route("/fonts/kurrent-semibold.woff2", _static(FONTS / "ESKlarheitKurrent-Smbd.woff2")),
