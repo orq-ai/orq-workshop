@@ -90,7 +90,7 @@
   .kind { display:flex; width:max-content; margin:0 0 .15rem; border:1px solid var(--rule); border-radius:4px; overflow:hidden; }
   .kind button { padding:.15rem .6rem; border:0; background:transparent; color:var(--gray); font:.7rem "Kurrent Mono",monospace; text-transform:uppercase; letter-spacing:.08em; }
   .kind button[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
-  .kind button:disabled { opacity:.45; }
+  .kind button:disabled { opacity:.45; cursor:not-allowed; }
   .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .meta { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; margin-top:.75rem; color:var(--gray); font-size:.78rem; white-space:normal; }
   .chip { padding:.25rem .5rem; border:1px solid var(--rule); border-radius:3px; background:var(--paper); color:var(--ink); }
@@ -395,6 +395,7 @@
   fetch("/api/models").then((res) => res.json()).then((data) => {
     catalog = { models: data.models, agents: data.agents, last: { models: data.default, agents: data.agents[0] } };
     $("kind-agents").disabled = !data.agents.length;
+    if (!data.agents.length) $("kind-agents").title = "No agent in this workspace yet: run make seed to create it";
     showKind("models");
   }).catch(() => {});
 
