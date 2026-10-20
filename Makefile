@@ -25,6 +25,9 @@ test: ## Unit tests for the tools
 seed: ## Create every workshop entity in orq (idempotent, prefixed with WS_PREFIX)
 	$(RUN) python -m app.refund_agent.entities seed
 
+seed-insurance: ## Create the insurance claims demo (agents, evaluators, 15 test cases) for the chat's Insurance demo
+	$(RUN) python -m app.insurance
+
 traffic: ## Generate 20 mixed good/bad conversations so traces exist for failure analysis
 	$(RUN) python -m app.traffic
 
@@ -101,4 +104,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+.PHONY: help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules
