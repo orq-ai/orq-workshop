@@ -19,6 +19,7 @@ Response: {"answer", "tool_calls", "trace_id", "trace_url", "history", "model", 
 
 from __future__ import annotations
 
+import copy
 import json
 import time
 from typing import Any
@@ -110,7 +111,7 @@ def _hosted_agent_exists() -> bool:
     try:
         make_orq().agents.retrieve(agent_key=hosted_agent().removeprefix("agent/"))
         return True
-    except Exception:  # noqa: BLE001  not seeded yet, or not readable: leave it out of the picker
+    except (Exception, SystemExit):  # noqa: BLE001  not seeded, not readable or no credentials: leave it out
         return False
 
 
@@ -149,8 +150,17 @@ def _tool_outcomes(messages: list[dict[str, Any]], names: list[str]) -> list[dic
     Pairs `function_call` items with their `function_call_output` by call_id. The last
     `len(names)` calls are this turn's; earlier ones belong to the history.
     """
-    results = {m["call_id"]: json.loads(m["output"]) for m in messages if m.get("type") == "function_call_output"}
     calls = [m for m in messages if m.get("type") == "function_call"][len(names) * -1 :] if names else []
+    wanted = {c["call_id"] for c in calls}
+    results = {}
+    for m in messages:  # the history comes from the browser: ignore outputs that are not JSON objects
+        if m.get("type") == "function_call_output" and m.get("call_id") in wanted:
+            try:
+                parsed = json.loads(m["output"])
+            except (TypeError, ValueError):
+                continue
+            if isinstance(parsed, dict):
+                results[m["call_id"]] = parsed
     return [
         {"name": c["name"], "ok": r.get("ok"), "error": r.get("error")}
         for c in calls
@@ -232,8 +242,10 @@ async def post_chat(request: Request) -> JSONResponse:
         # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
         # `make seed` creates the rule; rules are admin-only, so a workshop key cannot read it back.
         extra_body["metadata"] = {"channel": CHAT_GUARDED}
+    snapshot = None
     if conversation_id:
         store = _stores.setdefault(conversation_id, store)
+        snapshot = copy.deepcopy(store)  # a blocked turn did not happen: its refunds are undone too
         extra_body["thread"] = {"id": f"{settings.prefix}-chat-{conversation_id[:8]}"}
     started = time.perf_counter()
     try:
@@ -259,7 +271,9 @@ async def post_chat(request: Request) -> JSONResponse:
         blocked = _blocked(exc)
         if blocked is None:
             return _error(502, f"gateway error: {exc}")
-        # The turn did not happen: history stays as the browser sent it.
+        # The turn did not happen: history stays as the browser sent it, and so do the orders.
+        if snapshot is not None:
+            _stores[conversation_id] = snapshot
         return JSONResponse(
             {
                 "blocked": blocked,

@@ -169,6 +169,9 @@ def ensure_python_guardrail(orq=None, name: str = "refund-limit-guard") -> str:
             "guardrail_config": {"enabled": True, "type": "boolean", "value": True},
         },
     )
+    return created.get("id") or created.get("_id") or _find_eval(orq, key)
+
+
 CHAT_GUARDED = K("chat-guarded")  # metadata.channel value that switches the chat's guardrails on
 
 
@@ -202,9 +205,6 @@ def ensure_chat_guardrail_rule(orq=None, name: str = "guardrail-rule-chat") -> s
     created = rules_api("POST", "/v2/guardrail-rules", body)
     created = created.get("guardrail_rule", created)
     return created.get("_id") or created.get("id")
-
-
-    return created.get("id") or created.get("_id") or _find_eval(orq, key)
 
 
 def ensure_llm_judge(orq=None, name: str = "refund-policy-judge") -> str:
@@ -939,7 +939,6 @@ def seed(orq=None) -> None:
     """Create every entity the modules expect, for a learner who joins late. Safe to rerun.
 
     Prints one id or key per entity as it goes, so a failure shows which one broke.
-    print(f"chat rule: {ensure_chat_guardrail_rule(orq)} ({K('guardrail-rule-chat')}, the chat's Guardrails switch)")
     """
     orq = orq or make_orq()
     started = time.time()
@@ -947,6 +946,7 @@ def seed(orq=None) -> None:
     print(f"dataset  : {ensure_dataset(orq)} ({K('refund-eval')})")
     print(f"kb       : {ensure_knowledge_base(orq)} ({K('refund-policy')})")
     print(f"guard    : {ensure_python_guardrail(orq)} ({K('refund-limit-guard')})")
+    print(f"chat rule: {ensure_chat_guardrail_rule(orq)} ({K('guardrail-rule-chat')}, the chat's Guardrails switch)")
     print(f"judge    : {ensure_llm_judge(orq)} ({K('refund-policy-judge')})")
     knowledge_base_id = ensure_knowledge_base(orq)  # already exists: returns the id without work
     tool_keys = ensure_code_tools(orq)

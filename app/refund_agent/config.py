@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -36,6 +37,9 @@ def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
+_renew_lock = threading.Lock()  # one `orq` renewal at a time; concurrent requests wait, then read the fresh file
+
+
 def _oauth_session(base_url: str) -> tuple[str, str]:
     """(workspace token, workspace key) from the `orq auth login` session for this host, or ("", "").
 
@@ -46,7 +50,7 @@ def _oauth_session(base_url: str) -> tuple[str, str]:
         workspace = session["activeWorkspaceKey"]
         entry = session["workspaceTokens"][workspace]
         expires = datetime.fromisoformat(entry["expiresAt"].replace("Z", "+00:00"))
-        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=60)
+        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=300)
         return (entry["token"] if fresh else ""), workspace
     except (OSError, ValueError, KeyError, TypeError):
         return "", ""
@@ -125,15 +129,18 @@ class Settings:
             return self.api_key
         token, _ = _oauth_session(self.base_url)
         if not token:
-            env = {k: v for k, v in os.environ.items() if k not in ("ORQ_API_KEY", "ORQ_PROJECT", "ORQ_WORKSPACE")}
-            try:
-                subprocess.run(
-                    ["orq", "projects", "list", "--limit", "1", "--no-input", "-o", "json"],
-                    env=env, capture_output=True, timeout=30, check=False,
-                )
-            except (OSError, subprocess.SubprocessError):
-                pass  # no CLI: the error below says what to do
-            token, _ = _oauth_session(self.base_url)
+            with _renew_lock:
+                token, _ = _oauth_session(self.base_url)  # another thread may have renewed it meanwhile
+                if not token:
+                    env = {k: v for k, v in os.environ.items() if k not in ("ORQ_API_KEY", "ORQ_PROJECT", "ORQ_WORKSPACE")}
+                    try:
+                        subprocess.run(
+                            ["orq", "projects", "list", "--limit", "1", "--no-input", "-o", "json"],
+                            env=env, capture_output=True, timeout=30, check=False,
+                        )
+                    except (OSError, subprocess.SubprocessError):
+                        pass  # no CLI: the error below says what to do
+                    token, _ = _oauth_session(self.base_url)
         if not token:
             raise SystemExit(
                 "ORQ_API_KEY is empty and there is no usable `orq` login. "
@@ -142,8 +149,9 @@ class Settings:
         return token
 
     def studio_workspace(self) -> str:
-        """Workspace key for Studio links: ORQ_WORKSPACE, else the one the OAuth session has active."""
-        return self.workspace or (_oauth_session(self.base_url)[1] if not self.api_key else "")
+        """Workspace key for Studio links: the OAuth session's active one when there is no API key
+        (that is where the calls go), else ORQ_WORKSPACE."""
+        return (_oauth_session(self.base_url)[1] if not self.api_key else "") or self.workspace
 
     def require_key(self) -> Settings:
         """Fail early with a fix, instead of a 401 three calls later."""

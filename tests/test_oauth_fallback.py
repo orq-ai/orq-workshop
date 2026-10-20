@@ -55,3 +55,12 @@ def test_unusable_session_exits_with_a_fix(home, monkeypatch):
     monkeypatch.setattr(subprocess, "run", lambda cmd, **kw: subprocess.CompletedProcess(cmd, 1))
     with pytest.raises(SystemExit, match="orq auth login"):
         KEYLESS.bearer()
+
+
+def test_trace_links_follow_the_oauth_workspace_when_there_is_no_key(monkeypatch):
+    from app.refund_agent import config
+
+    monkeypatch.setattr(config, "_oauth_session", lambda base_url: ("tok", "logged-in"))
+    cfg = replace(settings, api_key="", workspace="stale-env")
+    assert cfg.studio_workspace() == "logged-in"
+    assert replace(cfg, api_key="k").studio_workspace() == "stale-env"
