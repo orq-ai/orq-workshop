@@ -279,8 +279,7 @@
   // ── Backend (mock): static, read-only ──
   let catalog = null, kind = "models", demo = "refund", insuranceView = null, insuranceDefault = null, backendLoad = 0;
   let refundPick = { kind: "models", last: {} }, insuranceAgent = "";  // each demo remembers its own pick
-  async function loadBackend(which) {  // renders `which` demo's reference data; a newer call wins over a slower older one
-    const mine = ++backendLoad;
+  async function loadBackend(which, mine) {  // renders `which` demo's reference data; a newer call wins over a slower older one
     const orders = $("orders"), policies = $("policies");
     const response = await fetch("/api/backend" + (which === "insurance" ? "?demo=insurance" : ""));
     if (!response.ok) throw new Error("HTTP " + response.status);
@@ -341,12 +340,14 @@
     $("policies").appendChild(rules);
     insuranceView = data;
   }
-  async function refreshBackend(which = demo) {  // true when `which` demo's data is on screen
+  async function refreshBackend(which = demo) {  // true when `which` demo's data is on screen; an older call never draws over a newer one
+    const mine = ++backendLoad;
     const host = $("orders");
     host.textContent = which === "insurance" ? "Loading test cases…" : "Loading reference orders…";
     $("policies").replaceChildren();
-    try { await loadBackend(which); return true; }
+    try { await loadBackend(which, mine); return mine === backendLoad; }
     catch {
+      if (mine !== backendLoad) return false;
       host.replaceChildren();
       const message = document.createElement("p");
       message.className = "caption";
@@ -473,14 +474,13 @@
     if (next === demo || send.disabled) return;
     setBusy(true);  // no sending, no second switch while the other demo's data loads
     let loaded;
-    try { loaded = await refreshBackend(next); }
-    finally { setBusy(false); }
-    if (!loaded) {  // keep the current demo; say why the click did nothing
-      await refreshBackend(demo);
-      const note = document.createElement("p");
-      note.className = "caption";
-      note.textContent = `Could not switch to ${next}: its data did not load. Try again.`;
-      $("orders").prepend(note);
+    try {
+      loaded = await refreshBackend(next);
+      if (!loaded) await refreshBackend(demo);  // keep the current demo's sidebar
+    } finally { setBusy(false); }
+    if (!loaded) {  // say why the click did nothing, where it is visible and announced
+      $("welcome").hidden = true;
+      add("note", `Could not switch to ${next}: its data did not load. Try again.`);
       return;
     }
     demo = next;
@@ -519,7 +519,7 @@
     $("guard-desc").textContent = ui.guardDesc;
     $("kind-models").title = ui.modelsTitle;
     $("kind-models").disabled = demo === "insurance";  // the local loop only knows the refund tools
-    newConversation();
+    newConversation(undefined, true);  // a half-typed message survives the switch
   }
   for (const d of ["refund", "insurance"]) $("demo-" + d).addEventListener("click", () => switchDemo(d));
 
@@ -569,14 +569,16 @@
     for (const b of document.querySelectorAll(".prompts button")) b.disabled = busy;
   }
 
-  function newConversation(note) {
+  function newConversation(note, keepDraft = false) {
     history = [];
     conversationId = crypto.randomUUID();
     log.replaceChildren();
     if (note) add("note", note);
     $("welcome").hidden = Boolean(note);
-    input.value = "";
-    input.style.height = "";
+    if (!keepDraft) {
+      input.value = "";
+      input.style.height = "";
+    }
     input.focus();
   }
 
