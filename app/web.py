@@ -30,9 +30,9 @@ import httpx
 import uvicorn
 from openai import APIStatusError, OpenAIError
 from starlette.applications import Starlette
-from starlette.concurrency import run_in_threadpool
+from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 from starlette.requests import Request
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from starlette.routing import Route
 
 from app import insurance
@@ -238,46 +238,160 @@ def _blocked(exc: APIStatusError) -> dict[str, Any] | None:
     }
 
 
+def _transcript(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The user and assistant text of the conversation: an orq agent has its own instructions and tools."""
+    return [
+        {"role": m["role"], "content": m["content"]}
+        for m in history
+        if m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str)
+    ]
+
+
+def _sub_agent(arguments: Any) -> str | None:
+    """The agent key in the arguments of an orchestrator's `call_sub_agent` call."""
+    try:
+        key = json.loads(arguments).get("agent_key")
+    except (TypeError, ValueError, AttributeError):
+        return None
+    return key if isinstance(key, str) else None
+
+
 def _hosted_turn(
     model: str, message: str, history: list[dict[str, Any]], extra_body: dict[str, Any]
-) -> tuple[str, list[str], str | None, list[dict[str, Any]]]:
+) -> tuple[str, list[str], str | None, list[dict[str, Any]], list[str]]:
     """One turn on an agent that lives in orq: one Responses call, orq runs the loop and the tools.
 
     The agent has its own instructions and tools, so it gets only the text of the conversation
     (user and assistant messages), not our system prompt or our tool items. The history we return
     is the browser's plus this exchange, so the conversation can switch back to a plain model.
+    The last item is the sub-agents the agent called, in order, for the minimap to replay.
     """
-    transcript = [
-        {"role": m["role"], "content": m["content"]}
-        for m in history
-        if m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str)
-    ]
     raw = make_openai_client().responses.with_raw_response.create(
         model=model,
-        input=[*transcript, {"role": "user", "content": message}],
+        input=[*_transcript(history), {"role": "user", "content": message}],
         extra_body=extra_body,
         extra_headers={IDENTITY_HEADER: settings.identity_id},
     )
     response = raw.parse()
     answer = response.output_text
     tool_calls = [item.name for item in response.output if item.type == "function_call"]
+    steps = [
+        key for item in response.output
+        if item.type == "function_call" and item.name == "call_sub_agent" and (key := _sub_agent(item.arguments))
+    ]
     turn = [{"role": "user", "content": message}, {"role": "assistant", "content": answer}]
-    return answer, tool_calls, raw.headers.get(TRACE_HEADER), [*history, *turn]
+    return answer, tool_calls, raw.headers.get(TRACE_HEADER), [*history, *turn], steps
 
 
-async def post_chat(request: Request) -> JSONResponse:
-    """One customer message on top of the history the browser sent back.
+def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_body: dict[str, Any]):
+    """The same turn as `_hosted_turn`, as UI events while orq generates it (a sync generator).
 
-    `chat()` blocks on the model calls, so it runs in a worker thread and other requests go on.
+    `node`: an agent starts or finishes (`working` / `done`; the agent itself is `root`).
+    `delta`: a piece of the answer. `done`: the finished turn, shaped like the /api/chat reply.
+    Raises APIStatusError before the first event when the gateway rejects the request.
+    """
+    raw = make_openai_client().responses.with_raw_response.create(
+        model=model,
+        input=[*_transcript(history), {"role": "user", "content": message}],
+        extra_body=extra_body,
+        extra_headers={IDENTITY_HEADER: settings.identity_id},
+        stream=True,
+    )
+    trace_id = raw.headers.get(TRACE_HEADER)
+    agent_of_call: dict[str, str] = {}  # call_id -> the sub-agent the orchestrator asked for
+    answer, names, steps = "", [], []
+    yield {"type": "start", "trace_id": trace_id}
+    for event in raw.parse():
+        kind, item = event.type, getattr(event, "item", None)
+        if kind == "response.created":
+            yield {"type": "node", "agent": "root", "state": "working"}
+        elif kind == "response.output_item.done" and item.type == "function_call":
+            names.append(item.name)
+            if item.name == "call_sub_agent" and (key := _sub_agent(item.arguments)):
+                agent_of_call[item.call_id] = key
+                steps.append(key)
+        elif kind == "response.output_item.added" and item.type == "orq:call_sub_agent":
+            key = agent_of_call.get(item.call_id) or _sub_agent(item.arguments)
+            if key:
+                yield {"type": "node", "agent": key, "state": "working"}
+        elif kind == "response.output_item.done" and item.type == "orq:call_sub_agent":
+            if key := agent_of_call.get(item.call_id):
+                yield {"type": "node", "agent": key, "state": "done"}
+        elif kind == "response.output_text.delta":
+            answer += event.delta
+            yield {"type": "delta", "text": event.delta}
+        elif kind == "response.completed":
+            answer = event.response.output_text or answer
+    yield {"type": "node", "agent": "root", "state": "done"}
+    turn = [{"role": "user", "content": message}, {"role": "assistant", "content": answer}]
+    yield {
+        "type": "done", "answer": answer, "tool_calls": [{"name": n, "ok": None, "error": None} for n in names],
+        "trace_id": trace_id, "trace_url": trace_url(trace_id), "history": [*history, *turn], "steps": steps,
+    }
+
+
+_graphs: dict[str, dict[str, Any]] = {}  # agent key -> its sub-agent graph; agents rarely change while the chat runs
+
+
+def _agent_graph(key: str) -> dict[str, Any]:
+    """Nodes and edges of an agent and the sub-agents it can call, three levels deep.
+
+    {"root": key, "nodes": [{"id", "label"}], "edges": [[parent, child]]}. A single agent has one
+    node and no edges: the minimap stays hidden for it.
+    """
+    if key in _graphs:
+        return _graphs[key]
+    orq, seen, edges, queue = make_orq(), {key}, [], [(key, 0)]
+    while queue:
+        current, depth = queue.pop(0)
+        if depth >= 3:
+            continue
+        try:
+            team = orq.agents.retrieve(agent_key=current).model_dump().get("team_of_agents") or []
+        except Exception:  # noqa: BLE001  a member that cannot be read is a leaf in the map
+            team = []
+        for member in team:
+            child = member.get("key")
+            if not child:
+                continue
+            edges.append([current, child])
+            if child not in seen:
+                seen.add(child)
+                queue.append((child, depth + 1))
+    prefix = f"{settings.prefix}-"
+    graph = {
+        "root": key,
+        "nodes": [{"id": k, "label": k.removeprefix(prefix)} for k in sorted(seen, key=lambda k: k != key)],
+        "edges": edges,
+    }
+    if len(seen) > 1:  # a lookup that failed must not stick
+        _graphs[key] = graph
+    return graph
+
+
+async def get_agent_graph(request: Request) -> JSONResponse:
+    model = request.query_params.get("model", "")
+    if not model.startswith("agent/"):
+        return JSONResponse({"root": None, "nodes": [], "edges": []})
+    try:
+        return JSONResponse(await run_in_threadpool(_agent_graph, model.removeprefix("agent/")))
+    except (OpenAIError, SystemExit) as exc:
+        return _error(502, f"could not read the agent: {exc}")
+
+
+async def _chat_context(request: Request) -> tuple[dict[str, Any] | None, JSONResponse | None]:
+    """Validate a chat request and reserve its conversation: (context, None) or (None, error reply).
+
+    The caller must `_release` the context when the turn ends, however it ends.
     """
     try:
         await run_in_threadpool(settings.bearer)  # API key, else the `orq auth login` session
     except SystemExit as exc:
-        return _error(500, str(exc))
+        return None, _error(500, str(exc))
     try:
         body = await request.json()
     except ValueError:
-        return _error(400, "body must be JSON")
+        return None, _error(400, "body must be JSON")
     if not isinstance(body, dict):
         body = {}
     message = body.get("message")
@@ -290,21 +404,21 @@ async def post_chat(request: Request) -> JSONResponse:
         or not isinstance(history, list)
         or not isinstance(model, str)
     ):
-        return _error(422, "expected {message: non-empty string, history: list, model: string}")
+        return None, _error(422, "expected {message: non-empty string, history: list, model: string}")
 
     store = OrderStore()
     extra_body: dict[str, Any] = {"name": "refund-chat"}
     demo = body.get("demo") or "refund"
     if demo not in ("refund", "insurance"):
-        return _error(422, "demo must be refund or insurance")
+        return None, _error(422, "demo must be refund or insurance")
     if demo == "insurance" and not model.startswith("agent/"):
-        return _error(422, "the insurance demo chats with orq agents: pick an agent")
+        return None, _error(422, "the insurance demo chats with orq agents: pick an agent")
     if demo == "insurance":
         extra_body["name"] = "insurance-chat"
     channels = insurance.CHANNELS if demo == "insurance" else CHAT_CHANNELS
     choice = {True: "both", None: "", False: ""}.get(body.get("guardrails"), body.get("guardrails"))
     if choice and choice not in channels:
-        return _error(422, f"guardrails must be one of {sorted(channels)} or empty")
+        return None, _error(422, f"guardrails must be one of {sorted(channels)} or empty")
     if choice:
         # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
         # `make seed` / `make seed-insurance` create the rules; they are admin-only, so a workshop
@@ -313,17 +427,57 @@ async def post_chat(request: Request) -> JSONResponse:
     snapshot = None
     if conversation_id:
         if conversation_id in _busy:
-            return _error(409, "this conversation is still answering the previous message")
+            return None, _error(409, "this conversation is still answering the previous message")
         _busy.add(conversation_id)
         store = _stores.setdefault(conversation_id, store)
         snapshot = copy.deepcopy(store)  # a blocked turn did not happen: its refunds are undone too
         extra_body["thread"] = {"id": f"{settings.prefix}-chat-{conversation_id[:8]}"}
-    started = time.perf_counter()
+    context = {
+        "message": message, "history": history, "conversation_id": conversation_id, "model": model,
+        "extra_body": extra_body, "store": store, "snapshot": snapshot, "guarded": bool(choice),
+        "started": time.perf_counter(),
+    }
+    return context, None
+
+
+def _release(context: dict[str, Any], done: bool) -> None:
+    """End of a turn: free the conversation and, when the turn failed, undo its refunds."""
+    conversation_id = context["conversation_id"]
+    if conversation_id:
+        _busy.discard(conversation_id)
+        if not done and context["snapshot"] is not None:  # any failed turn did not happen
+            _stores[conversation_id] = context["snapshot"]
+
+
+def _blocked_reply(exc: APIStatusError, context: dict[str, Any]) -> dict[str, Any] | None:
+    blocked = _blocked(exc)
+    if blocked is None:
+        return None
+    # The turn did not happen: history stays as the browser sent it (the orders are restored by _release).
+    return {
+        "blocked": blocked,
+        "trace_url": trace_url(blocked["trace_id"]),
+        "history": context["history"],
+        "model": context["model"],
+        "seconds": round(time.perf_counter() - context["started"], 1),
+    }
+
+
+async def post_chat(request: Request) -> JSONResponse:
+    """One customer message on top of the history the browser sent back.
+
+    `chat()` blocks on the model calls, so it runs in a worker thread and other requests go on.
+    """
+    context, error = await _chat_context(request)
+    if error is not None:
+        return error
+    model, message, history = context["model"], context["message"], context["history"]
+    steps: list[str] = []
     done = False
     try:
         if model.startswith("agent/"):
-            answer, names, trace_id, history = await run_in_threadpool(
-                _hosted_turn, model, message, history, extra_body
+            answer, names, trace_id, history, steps = await run_in_threadpool(
+                _hosted_turn, model, message, history, context["extra_body"]
             )
             tool_calls = [{"name": n, "ok": None, "error": None} for n in names]  # orq ran them: no results here
         else:
@@ -331,36 +485,24 @@ async def post_chat(request: Request) -> JSONResponse:
                 chat,
                 message,
                 history=history,
-                store=store,
+                store=context["store"],
                 client=make_openai_client(),
                 model=model,
                 identity=settings.identity_id,
-                extra_body=extra_body,
+                extra_body=context["extra_body"],
             )
             answer, trace_id, history = result.text, result.trace_id, result.messages
             tool_calls = _tool_outcomes(result.messages, result.tool_calls)
         done = True
     except APIStatusError as exc:
-        blocked = _blocked(exc)
-        if blocked is None:
+        reply = _blocked_reply(exc, context)
+        if reply is None:
             return _error(502, f"gateway error: {exc}")
-        # The turn did not happen: history stays as the browser sent it (the orders are restored below).
-        return JSONResponse(
-            {
-                "blocked": blocked,
-                "trace_url": trace_url(blocked["trace_id"]),
-                "history": history,
-                "model": model,
-                "seconds": round(time.perf_counter() - started, 1),
-            }
-        )
+        return JSONResponse(reply)
     except OpenAIError as exc:
         return _error(502, f"gateway error: {exc}")
     finally:
-        if conversation_id:
-            _busy.discard(conversation_id)
-            if not done and snapshot is not None:  # any failed turn did not happen: undo its refunds too
-                _stores[conversation_id] = snapshot
+        _release(context, done)
     return JSONResponse(
         {
             "answer": answer,
@@ -368,10 +510,63 @@ async def post_chat(request: Request) -> JSONResponse:
             "trace_id": trace_id,
             "trace_url": trace_url(trace_id),
             "history": history,
+            "steps": steps,
             "model": model,
-            "seconds": round(time.perf_counter() - started, 1),
+            "seconds": round(time.perf_counter() - context["started"], 1),
         }
     )
+
+
+def _sse(event: dict[str, Any]) -> bytes:
+    return f"data: {json.dumps(event)}\n\n".encode()
+
+
+async def post_chat_stream(request: Request) -> Response:
+    """Like /api/chat for a hosted agent, as server-sent events: node, delta and a final done event.
+
+    Errors before the first event keep the status codes of /api/chat. Errors after it are an
+    `error` event. The gateway does not run output guardrails on a stream: the page does not offer
+    streaming while a Guardrails choice is on, and a request that asks for both is refused.
+    """
+    context, error = await _chat_context(request)
+    if error is not None:
+        return error
+    if not context["model"].startswith("agent/"):
+        _release(context, False)
+        return _error(422, "streaming is for hosted agents: pick an agent")
+    if context["guarded"]:
+        _release(context, False)
+        return _error(422, "output guardrails do not run on a stream: set Guardrails to Off or turn streaming off")
+    events = iterate_in_threadpool(
+        _stream_turn(context["model"], context["message"], context["history"], context["extra_body"])
+    )
+    try:  # the first event proves the gateway accepted the request; a block or a bad key is still a plain reply
+        first = await anext(events)
+    except APIStatusError as exc:
+        _release(context, False)
+        reply = _blocked_reply(exc, context)
+        return JSONResponse(reply) if reply else _error(502, f"gateway error: {exc}")
+    except (OpenAIError, StopAsyncIteration) as exc:
+        _release(context, False)
+        return _error(502, f"gateway error: {exc}")
+
+    async def body():
+        done = False
+        try:
+            yield _sse(first)
+            async for event in events:
+                if event["type"] == "done":
+                    event["seconds"] = round(time.perf_counter() - context["started"], 1)
+                    event["model"] = context["model"]
+                    done = True
+                yield _sse(event)
+        except (OpenAIError, httpx.HTTPError) as exc:
+            yield _sse({"type": "error", "message": f"gateway error: {exc}"})
+        finally:
+            _release(context, done)
+
+    headers = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    return StreamingResponse(body(), media_type="text/event-stream", headers=headers)
 
 
 def _static(path):
@@ -389,6 +584,8 @@ app = Starlette(
         Route("/api/models", get_models),
         Route("/api/backend", get_backend),
         Route("/api/chat", post_chat, methods=["POST"]),
+        Route("/api/chat/stream", post_chat_stream, methods=["POST"]),
+        Route("/api/agent-graph", get_agent_graph),
     ]
 )
 
