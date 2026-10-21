@@ -102,12 +102,37 @@
   form { padding:1rem 1.5rem calc(1rem + env(safe-area-inset-bottom)); border-top:1px solid var(--rule); background:var(--paper); }
   .composer { width:min(100%,52rem); margin:0 auto; }
   .composer-label { display:block; margin:0 0 .35rem .1rem; color:var(--gray); font:.72rem "Kurrent Mono",monospace; letter-spacing:.06em; text-transform:uppercase; }
-  .row { display:flex; align-items:flex-end; gap:.55rem; max-width:none; margin:0; }
-  .grow { min-width:0; flex:1; }
-  textarea { display:block; width:100%; min-height:48px; max-height:9rem; resize:vertical; padding:.75rem .85rem; border:1px solid #aaa39c; border-radius:4px; background:var(--white); line-height:1.45; }
+  .box { border:1px solid #aaa39c; border-radius:10px; background:var(--white); }
+  .box:focus-within { border-color:var(--ink); }
+  .bar { display:flex; align-items:center; flex-wrap:wrap; gap:.45rem; padding:.35rem .5rem .5rem; }
+  .bar .kind { margin:0; }
+  .bar input[list] { width:21rem; max-width:100%; min-height:36px; padding-block:.3rem; font-size:.84rem; }
+  .bar #send { margin-left:auto; }
+  textarea { display:block; width:100%; min-height:48px; max-height:9rem; resize:vertical; padding:.75rem .85rem .35rem; border:0; border-radius:10px 10px 0 0; background:transparent; line-height:1.45; }
+  textarea:focus-visible { outline:none; }
   textarea::placeholder { color:#77716e; }
-  #send { min-height:48px; padding:.7rem 1.15rem; border:0; border-radius:4px; background:var(--orange); color:var(--ink); font-weight:600; }
+  #send { min-height:40px; padding:.5rem 1.15rem; border:0; border-radius:6px; background:var(--orange); color:var(--ink); font-weight:600; }
   #send:hover:not(:disabled) { background:#f0915f; }
+  .minimap-slot { position:sticky; top:0; z-index:3; height:0; display:flex; justify-content:flex-end; pointer-events:none; }
+  #minimap { pointer-events:auto; margin:-1.2rem -.6rem 0 0; text-align:right; }
+  #minimap[hidden] { display:none; }
+  #minimap-chip { min-height:34px; padding:.25rem .65rem; background:var(--paper); font:.72rem "Kurrent Mono",monospace; }
+  #minimap-card { display:none; margin-top:.35rem; padding:.45rem .6rem .5rem; border:1px solid var(--rule); border-radius:6px; background:color-mix(in srgb,var(--paper) 94%,transparent); text-align:left; box-shadow:0 2px 10px rgb(20 19 25 / .08); }
+  #minimap.open #minimap-card { display:block; }
+  .mm-title { margin:0 0 .2rem; color:var(--gray); font:.64rem "Kurrent Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+  #minimap-svg { display:block; }
+  #minimap-svg text { font:11px "Kurrent Mono",monospace; fill:var(--gray); }
+  #minimap-svg .edge { fill:none; stroke:var(--rule); stroke-width:1.2; }
+  #minimap-svg circle { fill:var(--paper); stroke:var(--gray); stroke-width:1.4; }
+  #minimap-svg .working circle { fill:var(--orange); stroke:var(--orange); animation:mm-pulse 1s ease-in-out infinite; }
+  #minimap-svg .working text,#minimap-svg .done text { fill:var(--ink); }
+  #minimap-svg .working text { font-weight:700; }
+  #minimap-svg .done circle { fill:var(--ink); stroke:var(--ink); }
+  #minimap-svg .error circle { fill:#a93616; stroke:#a93616; }
+  #minimap-svg .error text { fill:#a93616; }
+  @keyframes mm-pulse { 50% { transform:scale(1.5); } }
+  #minimap-svg circle { transform-box:fill-box; transform-origin:center; }
+  @media (min-width:1280px) { main.has-map { padding-right:17rem; } main.has-map #minimap-card { display:block; } main.has-map #minimap-chip { display:none; } main.has-map #minimap { margin-right:-15.2rem; } }
   .composer-hint { margin:.4rem .1rem 0; color:var(--gray); font-size:.76rem; }
   @keyframes arrive { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
   @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
@@ -181,15 +206,6 @@
         </div>
       </div>
       <div>
-        <div class="kind" role="group" aria-label="Run on">
-          <button type="button" id="kind-models" aria-pressed="true" title="Our loop and our tools run in this app">Models</button>
-          <button type="button" id="kind-agents" aria-pressed="false" title="The agent and its tools live in orq.ai" disabled>Agents</button>
-        </div>
-        <label for="model" class="visually-hidden">Model or agent</label>
-        <input id="model" list="model-list" autocomplete="off" spellcheck="false" placeholder="Search…" title="Click and type to search; pick one from the list">
-        <datalist id="model-list"></datalist>
-      </div>
-      <div>
         <label for="guardrails">Guardrails</label>
         <select id="guardrails" aria-describedby="guard-desc">
           <option value="">Off</option>
@@ -202,7 +218,17 @@
       <button class="control-button" id="reset" type="button">New chat</button>
     </div>
   </header>
-  <main>
+  <main id="chat-main">
+    <div class="minimap-slot">
+      <div id="minimap" hidden>
+        <button type="button" id="minimap-chip" class="control-button" aria-expanded="false" aria-controls="minimap-card"></button>
+        <div id="minimap-card">
+          <div class="mm-title">Agents</div>
+          <svg id="minimap-svg" role="img" aria-label="Agents this agent can call"></svg>
+        </div>
+        <span class="visually-hidden" role="status" id="minimap-status"></span>
+      </div>
+    </div>
     <div class="conversation">
       <section class="welcome" id="welcome" aria-labelledby="welcome-title">
         <span class="eyebrow" id="welcome-eyebrow">YOUR WORKSHOP AGENT</span>
@@ -217,12 +243,23 @@
   <form id="form">
     <div class="composer">
       <label class="composer-label" for="message">Your message</label>
-      <div class="row">
-      <div class="grow">
+      <div class="box">
         <textarea id="message" name="message" rows="1" autocomplete="off" required
                aria-describedby="message-hint" placeholder="Hi, I want a refund for order ord_a1, I changed my mind."></textarea>
-      </div>
-      <button id="send" type="submit">Send</button>
+        <div class="bar">
+          <div class="kind" role="group" aria-label="Run on">
+            <button type="button" id="kind-models" aria-pressed="true" title="Our loop and our tools run in this app">Models</button>
+            <button type="button" id="kind-agents" aria-pressed="false" title="The agent and its tools live in orq.ai" disabled>Agents</button>
+          </div>
+          <label for="model" class="visually-hidden">Model or agent</label>
+          <input id="model" list="model-list" autocomplete="off" spellcheck="false" placeholder="Search…" title="Click and type to search; pick one from the list">
+          <datalist id="model-list"></datalist>
+          <div class="kind" role="group" aria-label="Response">
+            <button type="button" id="stream-on" aria-pressed="false" disabled>Stream</button>
+            <button type="button" id="stream-off" aria-pressed="true" disabled>Full</button>
+          </div>
+          <button id="send" type="submit">Send</button>
+        </div>
       </div>
       <p class="composer-hint" id="message-hint">Press Enter to send · Shift + Enter for a new line</p>
     </div>
@@ -428,6 +465,7 @@
     for (const k of ["models", "agents"]) $("kind-" + k).setAttribute("aria-pressed", String(k === kind));
     $("model-list").replaceChildren(...catalog[kind].map((id) => new Option(id)));
     modelSelect.value = catalog.last[kind] || "";
+    syncAgentUi();
   }
   // Search: a datalist filters by what is typed, so clear the box on focus to show the whole list,
   // and put the previous pick back if what ends up in it is not an entry of the list.
@@ -436,6 +474,9 @@
   modelSelect.addEventListener("blur", () => {
     if (!catalog || !catalog[kind].includes(modelSelect.value)) modelSelect.value = picked;
   });
+  modelSelect.addEventListener("blur", () => syncAgentUi());
+  modelSelect.addEventListener("change", () => syncAgentUi());
+  $("guardrails").addEventListener("change", () => syncAgentUi());
   for (const k of ["models", "agents"]) $("kind-" + k).addEventListener("click", () => catalog && showKind(k));
   fetch("/api/models").then((res) => res.json()).then((data) => {
     catalog = { models: data.models, agents: data.agents, last: { models: data.default, agents: data.agents[0] } };
@@ -567,6 +608,7 @@
     $("guardrails").disabled = busy;
     for (const k of ["models", "agents"]) $("kind-" + k).disabled = busy || (k === "agents" && !(catalog && catalog.agents.length)) || (k === "models" && demo === "insurance");
     for (const b of document.querySelectorAll(".prompts button")) b.disabled = busy;
+    syncAgentUi();
   }
 
   function newConversation(note, keepDraft = false) {
@@ -582,6 +624,154 @@
     input.focus();
   }
 
+  // ── Stream or full answer; the minimap of the agent's sub-agents ──
+  let streamPref = true, graph = null, graphFor = "", graphToken = 0, mmTurn = 0, nodeState = {};
+  const graphs = new Map();
+  const streamAvailable = () => modelSelect.value.startsWith("agent/") && $("guardrails").value === "";
+  const streaming = () => streamPref && streamAvailable();
+  function syncAgentUi() {  // the Stream toggle follows the model and the guardrails; the minimap follows the agent
+    const ok = streamAvailable(), on = streamPref && ok;
+    for (const [id, value] of [["stream-on", true], ["stream-off", false]]) {
+      const b = $(id);
+      b.setAttribute("aria-pressed", String(value === on));
+      b.disabled = send.disabled || !ok;
+      b.title = ok ? (value ? "Show the answer and the working agents as they happen" : "Wait for the whole answer")
+        : modelSelect.value.startsWith("agent/") ? "Output guardrails do not run on a stream: set Guardrails to Off to stream"
+        : "Streaming is for agents: pick one with the Agents toggle";
+    }
+    loadGraph();
+  }
+  for (const [id, value] of [["stream-on", true], ["stream-off", false]]) $(id).addEventListener("click", () => { streamPref = value; syncAgentUi(); });
+  async function loadGraph() {
+    const model = modelSelect.value;
+    if (!model || model === graphFor) return;
+    graphFor = model;
+    const mine = ++graphToken;
+    let found = graphs.get(model) || null;
+    if (!found && model.startsWith("agent/")) {
+      try {
+        const res = await fetch("/api/agent-graph?model=" + encodeURIComponent(model));
+        const data = res.ok ? await res.json() : null;
+        if (data && data.nodes.length > 1) graphs.set(model, found = data);
+      } catch { /* no map: the chat works without it */ }
+    }
+    if (mine === graphToken) showGraph(found);
+  }
+  const SVG = "http://www.w3.org/2000/svg";
+  function svgEl(name, attrs, text) {
+    const el = document.createElementNS(SVG, name);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    if (text) el.textContent = text;
+    return el;
+  }
+  function showGraph(next) {  // a tree, one row per agent, indented by depth: it fits a narrow corner
+    graph = next;
+    nodeState = {};
+    $("minimap").hidden = !next;
+    $("chat-main").classList.toggle("has-map", Boolean(next));
+    const svg = $("minimap-svg");
+    svg.replaceChildren();
+    if (!next) return;
+    const children = {};
+    for (const [from, to] of next.edges) (children[from] ||= []).push(to);
+    const rows = [];
+    (function walk(id, depth, parent) {
+      if (rows.some((r) => r.id === id)) return;
+      rows.push({ id, depth, parent });
+      for (const child of children[id] || []) walk(child, depth + 1, id);
+    })(next.root, 0, null);
+    const label = Object.fromEntries(next.nodes.map((n) => [n.id, n.label]));
+    const y = (i) => 12 + i * 22;
+    const x = (depth) => 8 + depth * 16;
+    for (const [i, row] of rows.entries()) {
+      if (row.parent === null) continue;
+      const from = rows.findIndex((r) => r.id === row.parent);
+      svg.append(svgEl("path", { class: "edge", d: `M${x(row.depth - 1)} ${y(from) + 5}V${y(i)}H${x(row.depth) - 5}` }));
+    }
+    for (const [i, row] of rows.entries()) {
+      const g = svgEl("g", { "data-id": row.id, class: "idle" });
+      g.append(svgEl("circle", { cx: x(row.depth), cy: y(i), r: 4 }), svgEl("text", { x: x(row.depth) + 10, y: y(i) + 4 }, label[row.id] || row.id));
+      svg.append(g);
+    }
+    const width = Math.max(...rows.map((r, i) => x(r.depth) + 14 + (label[r.id] || r.id).length * 7.4));
+    svg.setAttribute("viewBox", `0 0 ${width} ${y(rows.length - 1) + 10}`);
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", y(rows.length - 1) + 10);
+    describeGraph();
+  }
+  function describeGraph() {  // the chip and the screen-reader line say what the picture shows
+    if (!graph) return;
+    const subs = graph.nodes.filter((n) => n.id !== graph.root);
+    const working = graph.nodes.filter((n) => nodeState[n.id] === "working");
+    const done = subs.filter((n) => nodeState[n.id] === "done").length;
+    const text = working.length ? `${working.map((n) => n.label).join(", ")} working` : nodeState[graph.root] === "error" ? "stopped" : done ? "done" : "idle";
+    $("minimap-chip").textContent = `${working.length ? "● " : ""}${text} · ${done}/${subs.length}`;
+    $("minimap-status").textContent = text;
+  }
+  function setNode(id, state) {
+    if (!graph) return;
+    id = id === "root" ? graph.root : id;
+    nodeState[id] = state;
+    for (const g of $("minimap-svg").children) if (g.dataset && g.dataset.id === id) g.setAttribute("class", state);
+    describeGraph();
+  }
+  function resetNodes() {  // a new turn: every agent idle again; returns the turn number so late replays can tell they are stale
+    nodeState = {};
+    for (const g of $("minimap-svg").children) if (g.dataset && g.dataset.id) g.setAttribute("class", "idle");
+    describeGraph();
+    return ++mmTurn;
+  }
+  async function replaySteps(steps, turn) {  // without a stream we only learn the calls at the end: show them in order
+    for (const key of steps) {
+      if (turn !== mmTurn) return;
+      setNode(key, "working");
+      await new Promise((r) => setTimeout(r, 450));
+      if (turn !== mmTurn) return;
+      setNode(key, "done");
+    }
+    if (turn === mmTurn) setNode("root", "done");
+  }
+  $("minimap-chip").addEventListener("click", () => {
+    const open = $("minimap").classList.toggle("open");
+    $("minimap-chip").setAttribute("aria-expanded", String(open));
+  });
+  async function postChat(body, pending) {  // {res, data}: a stream ends with the same data a full answer has
+    const options = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+    if (!streaming()) {
+      const res = await fetch("/api/chat", options);
+      return { res, data: await res.json().catch(() => ({})) };
+    }
+    const res = await fetch("/api/chat/stream", options);
+    if (!res.ok || !(res.headers.get("content-type") || "").includes("text/event-stream")) {  // a block or an error is a plain reply
+      return { res, data: await res.json().catch(() => ({})) };
+    }
+    const reader = res.body.getReader(), decoder = new TextDecoder();
+    let buffer = "", text = "", data = null;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let cut;
+      while ((cut = buffer.indexOf("\n\n")) >= 0) {
+        const chunk = buffer.slice(0, cut);
+        buffer = buffer.slice(cut + 2);
+        if (!chunk.startsWith("data: ")) continue;
+        let event;
+        try { event = JSON.parse(chunk.slice(6)); } catch { continue; }
+        if (event.type === "node") setNode(event.agent, event.state);
+        else if (event.type === "delta") {
+          const follow = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
+          text += event.text;
+          pending.textContent = text.replaceAll("**", "");
+          if (follow) pending.scrollIntoView({ block: "end" });
+        } else if (event.type === "done") data = { ...event, streamed: true };
+        else if (event.type === "error") throw new Error(event.message);
+      }
+    }
+    if (!data) throw new Error("the stream ended before the answer was complete");
+    return { res, data };
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const message = input.value.trim();
@@ -593,19 +783,17 @@
     setBusy(true);
     input.focus();
     const pending = add("agent", "Thinking…");
+    const turn = resetNodes();
+    setNode("root", "working");
     if (wasNearBottom) pending.scrollIntoView({ block: "end" });
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, conversation_id: conversationId, model: modelSelect.value, demo, guardrails: $("guardrails").value }),
-      });
-      const data = await res.json().catch(() => ({}));
+      const { res, data } = await postChat({ message, history, conversation_id: conversationId, model: modelSelect.value, demo, guardrails: $("guardrails").value }, pending);
       if (!res.ok) throw new Error(typeof (data.detail ?? res.statusText) === "string" ? (data.detail ?? res.statusText) : JSON.stringify(data.detail));
       const followReply = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
       if (!Array.isArray(data.history)) throw new Error("malformed response from the server");
       history = data.history;
       if (data.blocked) {  // the gateway stopped the turn: show which guardrail and why
+        setNode("root", "error");
         pending.className = "msg blocked";
         const failures = data.blocked.failures || [];
         if (failures.some((f) => f.stage === "input")) {  // the agent never saw it: let the user retry
@@ -634,11 +822,14 @@
       } else {
         pending.textContent = (data.answer || "(no answer)").replaceAll("**", "");  // the page shows plain text, not markdown
         addMeta(pending, data);
+        if (data.streamed) setNode("root", "done");
+        else replaySteps(data.steps || [], turn);  // not streamed: replay the sub-agent calls once the answer is in
       }
       if (followReply) pending.scrollIntoView({ block: "end" });
     } catch (err) {
       const nearBottom = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
       pending.className = "msg agent error";
+      setNode("root", "error");
       const hasDraft = input.value.length > 0;
       pending.textContent = "This turn did not complete. " + (hasDraft
         ? "Your next message has been kept in the composer."
