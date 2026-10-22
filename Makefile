@@ -83,7 +83,7 @@ session: ## Build sessions/$(S): run-of-show.md, docs page and slides/deck.html 
 session-pdf: ## Optional PDF of sessions/$(S)/slides/deck.md (not part of `make session`; gives up after 60 s)
 	$(MARP) sessions/$(S)/slides/deck.md --theme slides/orq-theme.css --pdf --allow-local-files --browser-timeout 60 -o sessions/$(S)/slides/deck.pdf
 
-deck: ## Serve a reveal.js deck: make deck [D=kickstart|certe] [PORT=8000], then open http://localhost:8000/#/5 (add ?code=XXXX to show the login code)
+deck: ## Serve a reveal.js deck: make deck [D=kickstart|october-insurance] [PORT=8000], then open http://localhost:8000/#/5 (add ?code=XXXX to show the login code)
 	python3 -m http.server $(or $(PORT),8000) -d slides/$(or $(D),kickstart)
 
 handout: ## Build slides/handout.html (QR codes, commands; A4, white) and open it to print

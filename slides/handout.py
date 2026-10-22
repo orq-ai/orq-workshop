@@ -5,7 +5,7 @@ from pathlib import Path
 import segno
 
 LINKS = [
-    ("Sign up", "https://workshop.orq.ai/", "Get onboarded to the workshop"),
+    ("Get your API key", "https://workshop.orq.ai", "Your October Insurance workshop API key and onboarding"),
     ("Workshop docs", "https://orq-ai.github.io/orq-workshop", "Every module, step by step"),
     ("Repo", "https://github.com/orq-ai/orq-workshop", "Code, modules, slides"),
     ("orq.ai Studio", "https://my.orq.ai", "Log in with your workshop account"),
@@ -20,7 +20,7 @@ def qr(url: str) -> str:
 cards = "".join(
     f'<div class="card">{qr(u)}<h2>{t}</h2><a>{u.removeprefix("https://")}</a><p>{d}</p></div>' for t, u, d in LINKS
 )
-HTML = f"""<!doctype html><meta charset="utf-8"><title>orq.ai workshop for Certe: quick reference</title>
+HTML = f"""<!doctype html><meta charset="utf-8"><title>orq.ai workshop for October Insurance: quick reference</title>
 <style>
 @page {{ size: A4; margin: 14mm }}
 body {{ font: 11pt/1.4 system-ui, sans-serif; color: #000; background: #fff; margin: 0 auto; width: 182mm }}
@@ -33,7 +33,7 @@ h3 {{ font-size: 12pt; margin: 6mm 0 2mm; border-bottom: 1px solid #000 }}
 pre {{ font: 8.5pt/1.45 ui-monospace, monospace; margin: 0; white-space: pre-wrap }}
 .cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 6mm }}
 </style>
-<h1>orq.ai workshop for Certe: quick reference</h1>
+<h1>orq.ai workshop for October Insurance: quick reference</h1>
 <div class="grid">{cards}</div>
 <div class="cols"><div>
 <h3>Set up (once)</h3><pre>npm install -g @orq-ai/cli
@@ -49,7 +49,7 @@ make traffic    generate traces to analyse
 make eval       quality regression gate
 make reset      delete what you created
 orq doctor      CLI self-check</pre></div><div>
-<h3>Slides</h3><pre>make deck D=certe
+<h3>Slides</h3><pre>make deck D=october-insurance
 open http://localhost:8000</pre>
 <h3>Stuck?</h3><pre>401 from the router: check .env, it
   beats your shell's ORQ_API_KEY.

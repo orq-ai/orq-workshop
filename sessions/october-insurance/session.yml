@@ -1,8 +1,8 @@
-title: Certe · Building agents with orq.ai
+title: October Insurance · Building agents with orq.ai
 public: false
-# Mon 19 to Thu 22 Oct 2026, venue Coevorden. Days 1-2 technical track, days 3-4 mixed (5 technical + 5 business, paired).
-# Sources (local, gitignored): .context/certe-prep-notes.md (call 14 Oct), certe-sow.md (SOW 001), certe-plan.md (generic
-# 2-day plan, ids D1-x / D2-x below), certe-deck.md (Workshop Master Deck 05, slide numbers in facilitator.md).
+# Mon 19 to Thu 22 Oct 2026, on site. Days 1-2 technical track, days 3-4 mixed (5 technical + 5 business, paired).
+# Sources (local, gitignored): .context/october-insurance-prep-notes.md (call 14 Oct), october-insurance-sow.md (SOW 001), october-insurance-plan.md (generic
+# 2-day plan, ids D1-x / D2-x below), october-insurance-deck.md (Workshop Master Deck 05, slide numbers in facilitator.md).
 # Every day ends 16:00 or later.
 days:
   - name: Day 1 · Platform, agent basics and IT controls (technical)
@@ -13,7 +13,7 @@ days:
       - {title: "Platform overview: Studio, CLI and evaluatorq, and the components the Studio is built from", minutes: 35, leave_with: "a map of how Studio, CLI, evaluatorq and the gateway relate, and where each lives in the Orqflow"}
       - {module: 00-setup, minutes: 30, title: "Set up: workspace, API key, CLI (orq setup), make seed under your own prefix"}
       - {title: Break, minutes: 15}
-      - {title: "Platform options: SaaS, VPC or on-prem (Helm), what runs where, who operates what", minutes: 15, leave_with: "which deployment Certe runs, and what the IT team operates versus orq.ai"}
+      - {title: "Platform options: SaaS, VPC or on-prem (Helm), what runs where, who operates what", minutes: 15, leave_with: "which deployment October Insurance runs, and what the IT team operates versus orq.ai"}
       - {title: "Agent basics: LLM vs agent, tools, the agent loop, MCP, model parameters", minutes: 35, leave_with: "the difference between an LLM call, a workflow and an agent, and what temperature, top-p and max tokens change"}
       - {title: "Model access: Model Garden, EU and ZDR filters, restrict models per project, playground (D1-2)", minutes: 30, leave_with: "the test project limited to the agreed EU/ZDR model pool, and a denied call to a model outside it"}
       - {title: Lunch, minutes: 60}
@@ -24,7 +24,7 @@ days:
       - {module: 05-budgets-keys, minutes: 20, title: "IT controls 2: budgets and keys, instructor demo (D1-7)", leave_with: "seen: a restricted CI key, an identity budget refusing the third call, and the threshold alert reaching the notifier"}
       - {module: 14-observability-ops, minutes: 30, title: "IT controls 3: start the traffic burst first, then spend per key and the cost alert (D1-7, D1-9)", leave_with: "spend per key from the Reporting API, and a cost alert whose trigger you open in the Studio at the wrap"}
       - {module: 04-guardrails, minutes: 35, title: "IT controls 4: guardrails and PII redaction (D1-5). Dutch BSN shown in the Studio"}
-      - {title: "IT controls checklist: open the guardrail block, the pii.redact span, spend per key and the alert that fired; what we proved denied today (key, model, budget, PII); what Certe still configures on-prem", minutes: 15}
+      - {title: "IT controls checklist: open the guardrail block, the pii.redact span, spend per key and the alert that fired; what we proved denied today (key, model, budget, PII); what October Insurance still configures on-prem", minutes: 15}
   - name: Day 2 · Learn the pieces, then build (technical, hackathon)
     date: 2026-10-20
     start: "09:00"
@@ -37,12 +37,12 @@ days:
       - {module: 13-coding-agents, minutes: 15, title: "Build from your assistant: orq CLI, Skills and coding agents through the gateway (D2-1, D2-4)"}
       - {title: "Demo: orq in Claude Desktop (custom connector, ZIP plugin), CLI preferred over MCP for technical users", minutes: 10}
       - {title: Lunch, minutes: 60}
-      - {title: "Hackathon kickoff: Certe's nominated use cases (claims plus one of advice or compliance), teams, success criteria", minutes: 15}
-      - {title: "Build 1: the engineers build the Certe agents (5-min stand-up first)", minutes: 80, leave_with: "a working first version of each Certe use case, with traces"}
+      - {title: "Hackathon kickoff: October Insurance's nominated use cases (claims plus one of advice or compliance), teams, success criteria", minutes: 15}
+      - {title: "Build 1: the engineers build the October Insurance agents (5-min stand-up first)", minutes: 80, leave_with: "a working first version of each October Insurance use case, with traces"}
       - {title: Break, minutes: 15}
       - {module: 07-failure-analysis-evals, minutes: 30, title: "Evals: Python evals and an LLM-as-judge intro (D2-5)"}
-      - {title: "Build 2: add an evaluator and a 5-row dataset to each Certe agent, iterate", minutes: 50, leave_with: "two Certe agents with an evaluator, and the design principles behind them"}
-      - {title: "Demos, review incl. the denied MCP tool call, backlog owned by Certe, best practices (right vs wrong, and why)", minutes: 35}
+      - {title: "Build 2: add an evaluator and a 5-row dataset to each October Insurance agent, iterate", minutes: 50, leave_with: "two October Insurance agents with an evaluator, and the design principles behind them"}
+      - {title: "Demos, review incl. the denied MCP tool call, backlog owned by October Insurance, best practices (right vs wrong, and why)", minutes: 35}
   - name: Day 3 · Concepts, prompts and the Studio (mixed)
     date: 2026-10-21
     start: "09:00"
@@ -50,7 +50,7 @@ days:
       - {title: "Welcome, pairs (technical + business), shared Studio accounts", minutes: 20}
       - {title: "Concepts in plain words: the Orqflow, what the Studio is made of, LLM vs agent, tools, model parameters (playground: same prompt at temperature 0 and 1). Technical partners teach back", minutes: 60}
       - {title: Break, minutes: 15}
-      - {title: "Plan: requirements map for a Certe use case, risks and owners. Each pair picks the use case it owns, building on Tuesday's agents", minutes: 40}
+      - {title: "Plan: requirements map for a October Insurance use case, risks and owners. Each pair picks the use case it owns, building on Tuesday's agents", minutes: 40}
       - {title: "Build: prompt engineering in the Studio, versions and environments", minutes: 60, leave_with: "a versioned prompt that a non-technical owner can change and publish"}
       - {title: Lunch, minutes: 60}
       - {title: "Agent fundamentals: build an agent in the Studio for your pair's use case, with one tool and one knowledge source, publish to Chat", minutes: 50, leave_with: "an agent for your pair's use case, tried in the full Chat"}

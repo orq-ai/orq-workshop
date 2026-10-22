@@ -263,7 +263,7 @@ body::before{background:linear-gradient(to top,rgba(223,83,37,.14),transparent)!
 .slide.full0 .stack-claim{margin:0;font-size:34px;line-height:1.2;color:var(--ink);font-weight:600}
 .prompt-output{margin-top:14px}.prompt-output pre{background:#fff;border:1.5px solid var(--rule);color:var(--ink)}
 .prompt-output pre{font-size:16px!important;line-height:1.35!important;padding:14px 20px!important;max-height:none}
-/* KickstartAI additions: same tokens, new components. */
+/* Additions: same tokens, new components. */
 :root{--sand:#EBE6E0;--ink:#141319;--gray:#666167;--rule:#CBC4BD;--orange:#DF5325;--card:#F7F3EF;--q4-art:url(assets/q4-bars.png)}
 @font-face{font-family:Kurrent;src:url(assets/ESKlarheitKurrent-Rg.woff2) format('woff2');font-weight:400}
 @font-face{font-family:Kurrent;src:url(assets/ESKlarheitKurrent-Md.woff2) format('woff2');font-weight:500}
