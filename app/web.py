@@ -19,6 +19,7 @@ Response: {"answer", "tool_calls", "trace_id", "trace_url", "history", "model", 
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import json
 import re
@@ -256,9 +257,30 @@ def _sub_agent(arguments: Any) -> str | None:
     return key if isinstance(key, str) else None
 
 
+def _clip(text: Any, limit: int = 600) -> str | None:
+    """A string cut to `limit` characters, for the sidebar; None when there is nothing to show."""
+    if not isinstance(text, str) or not text:
+        return None
+    return text if len(text) <= limit else text[:limit] + "…"
+
+
+def _call(name: str, arguments: Any, result: Any = None) -> dict[str, Any]:
+    """One tool call of an orq agent for the UI. A sub-agent call shows its `input` text and the agent's `result`."""
+    try:
+        parsed = json.loads(arguments)
+    except (TypeError, ValueError):
+        parsed = None
+    parsed = parsed if isinstance(parsed, dict) else {}
+    sub = name == "call_sub_agent"
+    return {
+        "name": name, "ok": None, "error": None, "agent": _sub_agent(arguments) if sub else None,
+        "input": _clip(parsed.get("input") if sub else arguments), "result": _clip(result),
+    }
+
+
 def _hosted_turn(
     model: str, message: str, history: list[dict[str, Any]], extra_body: dict[str, Any]
-) -> tuple[str, list[str], str | None, list[dict[str, Any]], list[str]]:
+) -> tuple[str, list[dict[str, Any]], str | None, list[dict[str, Any]], list[str]]:
     """One turn on an agent that lives in orq: one Responses call, orq runs the loop and the tools.
 
     The agent has its own instructions and tools, so it gets only the text of the conversation
@@ -274,7 +296,11 @@ def _hosted_turn(
     )
     response = raw.parse()
     answer = response.output_text
-    tool_calls = [item.name for item in response.output if item.type == "function_call"]
+    results = {  # orq runs a sub-agent in an `orq:call_sub_agent` item next to the call: its text is the result
+        item.call_id: (item.model_extra or {}).get("result")
+        for item in response.output if item.type == "orq:call_sub_agent"
+    }
+    tool_calls = [_call(item.name, item.arguments, results.get(item.call_id)) for item in response.output if item.type == "function_call"]
     steps = [
         key for item in response.output
         if item.type == "function_call" and item.name == "call_sub_agent" and (key := _sub_agent(item.arguments))
@@ -283,10 +309,19 @@ def _hosted_turn(
     return answer, tool_calls, raw.headers.get(TRACE_HEADER), [*history, *turn], steps
 
 
+def _step(call_id: str, call: dict[str, Any], state: str) -> dict[str, Any]:
+    """A `step` event: one tool call of the agent (a sub-agent call has `agent`), `running` or `done`."""
+    return {
+        "type": "step", "id": call_id, "tool": call["name"], "agent": call["agent"], "state": state,
+        "input": call["input"], "result": call["result"],
+    }
+
+
 def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_body: dict[str, Any]):
     """The same turn as `_hosted_turn`, as UI events while orq generates it (a sync generator).
 
     `node`: an agent starts or finishes (`working` / `done`; the agent itself is `root`).
+    `step`: a tool call starts or finishes, keyed by its call id (the run sidebar's chain).
     `delta`: a piece of the answer. `done`: the finished turn, shaped like the /api/chat reply.
     Raises APIStatusError before the first event when the gateway rejects the request.
     """
@@ -299,17 +334,20 @@ def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_
     )
     trace_id = raw.headers.get(TRACE_HEADER)
     agent_of_call: dict[str, str] = {}  # call_id -> the sub-agent the orchestrator asked for
-    answer, names, steps = "", [], []
+    answer, calls, steps = "", {}, []
     yield {"type": "start", "trace_id": trace_id}
     for event in raw.parse():
         kind, item = event.type, getattr(event, "item", None)
         if kind == "response.created":
             yield {"type": "node", "agent": "root", "state": "working"}
+        elif kind == "response.output_item.added" and item.type == "function_call":
+            yield _step(item.call_id, _call(item.name, None), "running")
         elif kind == "response.output_item.done" and item.type == "function_call":
-            names.append(item.name)
-            if item.name == "call_sub_agent" and (key := _sub_agent(item.arguments)):
+            call = calls[item.call_id] = _call(item.name, item.arguments)
+            if key := call["agent"]:
                 agent_of_call[item.call_id] = key
                 steps.append(key)
+            yield _step(item.call_id, call, "running" if key else "done")  # a sub-agent runs on until its orq item is done
         elif kind == "response.output_item.added" and item.type == "orq:call_sub_agent":
             key = agent_of_call.get(item.call_id) or _sub_agent(item.arguments)
             if key:
@@ -317,6 +355,9 @@ def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_
         elif kind == "response.output_item.done" and item.type == "orq:call_sub_agent":
             if key := agent_of_call.get(item.call_id):
                 yield {"type": "node", "agent": key, "state": "done"}
+                call = calls[item.call_id]
+                call["result"] = _clip((item.model_extra or {}).get("result"))
+                yield _step(item.call_id, call, "done")
         elif kind == "response.output_text.delta":
             answer += event.delta
             yield {"type": "delta", "text": event.delta}
@@ -325,29 +366,55 @@ def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_
     yield {"type": "node", "agent": "root", "state": "done"}
     turn = [{"role": "user", "content": message}, {"role": "assistant", "content": answer}]
     yield {
-        "type": "done", "answer": answer, "tool_calls": [{"name": n, "ok": None, "error": None} for n in names],
+        "type": "done", "answer": answer, "tool_calls": list(calls.values()),
         "trace_id": trace_id, "trace_url": trace_url(trace_id), "history": [*history, *turn], "steps": steps,
     }
 
 
 _graphs: dict[str, dict[str, Any]] = {}  # agent key -> its sub-agent graph; agents rarely change while the chat runs
+_eval_names: dict[str, str] = {}  # evaluator id -> key without the workshop prefix
+
+
+def _evaluator_names(orq) -> dict[str, str]:
+    """Evaluator id -> readable key, read once: an agent lists its evaluators and guardrails by id only."""
+    if not _eval_names:
+        with contextlib.suppress(Exception):  # names are a nicety: the sidebar falls back to the id
+            for ev in orq.evals.all(limit=50).data or []:
+                if getattr(ev, "id", None) and getattr(ev, "key", None):
+                    _eval_names[ev.id] = ev.key.removeprefix(f"{settings.prefix}-")
+    return _eval_names
+
+
+def _agent_parts(settings_: dict[str, Any], names: dict[str, str]) -> tuple[list[str], list[dict[str, Any]]]:
+    """(tool names, checks) of an agent's settings. A check is an evaluator (scores) or a guardrail (blocks)."""
+    tools = [t.get("display_name") or t.get("action_type") or t.get("key") or "tool" for t in settings_.get("tools") or []]
+    checks = [
+        {"name": names.get(c.get("id"), str(c.get("id"))[-6:]), "kind": kind, "stage": c.get("execute_on"), "rate": c.get("sample_rate")}
+        for kind in ("guardrail", "evaluator")
+        for c in settings_.get(kind + "s") or []
+    ]
+    return tools, checks
 
 
 def _agent_graph(key: str) -> dict[str, Any]:
     """Nodes and edges of an agent and the sub-agents it can call, three levels deep.
 
-    {"root": key, "nodes": [{"id", "label"}], "edges": [[parent, child]]}. A single agent has one
-    node and no edges: the minimap stays hidden for it.
+    {"root": key, "nodes": [{"id", "label", "tools", "checks"}], "edges": [[parent, child]]}. A
+    single agent has one node and no edges: the minimap stays hidden for it, the sidebar still lists
+    its tools and checks.
     """
     if key in _graphs:
         return _graphs[key]
-    orq, seen, edges, queue = make_orq(), {key}, [], [(key, 0)]
+    orq, seen, edges, queue = make_orq(), {key: None}, [], [(key, 0)]  # seen: insertion-ordered
+    parts: dict[str, tuple[list[str], list[dict[str, Any]]]] = {}
     while queue:
         current, depth = queue.pop(0)
         if depth >= 3:
             continue
         try:
-            team = orq.agents.retrieve(agent_key=current).model_dump().get("team_of_agents") or []
+            agent = orq.agents.retrieve(agent_key=current).model_dump()
+            team = agent.get("team_of_agents") or []
+            parts[current] = _agent_parts(agent.get("settings") or {}, _evaluator_names(orq))
         except Exception:  # noqa: BLE001  a member that cannot be read is a leaf in the map
             team = []
         for member in team:
@@ -356,15 +423,18 @@ def _agent_graph(key: str) -> dict[str, Any]:
                 continue
             edges.append([current, child])
             if child not in seen:
-                seen.add(child)
+                seen[child] = None
                 queue.append((child, depth + 1))
     prefix = f"{settings.prefix}-"
     graph = {
         "root": key,
-        "nodes": [{"id": k, "label": k.removeprefix(prefix)} for k in sorted(seen, key=lambda k: k != key)],
+        "nodes": [
+            {"id": k, "label": k.removeprefix(prefix), "tools": parts.get(k, ([], []))[0], "checks": parts.get(k, ([], []))[1]}
+            for k in sorted(seen, key=lambda k: k != key)
+        ],
         "edges": edges,
     }
-    if len(seen) > 1:  # a lookup that failed must not stick
+    if key in parts:  # a lookup that failed must not stick
         _graphs[key] = graph
     return graph
 
@@ -479,7 +549,7 @@ async def post_chat(request: Request) -> JSONResponse:
             answer, names, trace_id, history, steps = await run_in_threadpool(
                 _hosted_turn, model, message, history, context["extra_body"]
             )
-            tool_calls = [{"name": n, "ok": None, "error": None} for n in names]  # orq ran them: no results here
+            tool_calls = names  # orq ran them: the sub-agents' texts are in each call, other results are in the trace
         else:
             result = await run_in_threadpool(
                 chat,

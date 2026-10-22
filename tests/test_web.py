@@ -175,7 +175,7 @@ def test_hosted_agent_turn_is_one_call_and_orq_runs_the_tools(monkeypatch):
         {"role": "user", "content": "Refund ord_a1"},
     ]
     assert data["answer"] == "Refund issued."
-    assert data["tool_calls"] == [{"name": "ws-lookup_order", "ok": None, "error": None}]
+    assert [(c["name"], c["input"]) for c in data["tool_calls"]] == [("ws-lookup_order", '{"order_id": "ord_a1"}')]
     assert data["trace_id"] == "trace-7"
     assert data["history"][-2:] == [
         {"role": "user", "content": "Refund ord_a1"},
