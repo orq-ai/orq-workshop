@@ -1,7 +1,7 @@
 # Troubleshooting with orqi
 
 !!! abstract "Ask your workspace questions in plain language"
-    The workspace you have been filling with traces, guardrail blocks and timeouts can be questioned from a terminal in plain language. orqi is the orq helper agent: it operates the platform, it does not build your app.
+    The workspace you have been filling with traces, guardrail blocks and timeouts can be questioned from a terminal in plain language. orqi is the orq.ai helper agent: it operates the platform, it does not build your app.
 
 | | |
 |---|---|
@@ -197,7 +197,7 @@ $ orq launch claude -- -p "run orq doctor and summarise in three lines" --allowe
 16/16 checks pass, auth good (workspace orq-research, key expires 85d). 5/5 coding agents wired, MCP present. Endpoints all reachable, gateway key healthy.
 ```
 
-Nineteen seconds, four `messages.anthropic` traces under one session id, $0.30. Module 13 takes that session apart. The rule: orqi operates the platform (traces, analytics, evaluators, docs) and needs no repo; `orq launch <agent>` builds your app with orq wired in, and its own model calls become traces you pay for.
+Nineteen seconds, four `messages.anthropic` traces under one session id, $0.30. Module 13 takes that session apart. The rule: orqi operates the platform (traces, analytics, evaluators, docs) and needs no repo; `orq launch <agent>` builds your app with orq.ai wired in, and its own model calls become traces you pay for.
 
 ## With your coding agent
 
@@ -231,12 +231,12 @@ Paste `agent_prompt.md`:
 - The shell export from `orq setup` may belong to another workspace. `orq launch` prints `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is expected here: the repo key decides where traces land.
 - `.env` overrides the shell by design, which is why Step 2 breaks the client in code rather than through a temp env file.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
-`orq orqi` is a first-class CLI command in 8.x: it installs orqi on first use and hands it the login session. The Studio's CLI onboarding path (4.14) is the same flow, so a new workspace can go from sign-up to `orqi "check workspace health"` without opening the API keys page.
+`orq orqi` is a first-class CLI command (since 8.x): it installs orqi on first use and hands it the login session. The Studio's CLI onboarding path (4.14) is the same flow, so a new workspace can go from sign-up to `orqi "check workspace health"` without opening the API keys page.
 
 ## Go further
 
 `orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
 
-Docs: [orq CLI reference](https://docs.orq.ai/reference/cli), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).
+Docs: [orq.ai CLI reference](https://docs.orq.ai/reference/cli), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).

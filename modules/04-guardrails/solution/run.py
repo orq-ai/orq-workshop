@@ -86,7 +86,9 @@ def redact_report(trace_id: str) -> str:
     if not attrs:
         return "pii      : pii.redact span not found yet"
     pii = attrs.get("orq", {}).get("pii", {})
-    output = json.loads(attrs.get("gen_ai", {}).get("output") or "{}")
+    output = attrs.get("gen_ai", {}).get("output") or {}
+    if isinstance(output, str):  # older platform versions store the report as a JSON string
+        output = json.loads(output)
     return "\n".join([
         f"pii      : outcome {pii.get('outcome')}, entity types requested {pii.get('entities_requested')}",
         f"entities : {output.get('entities', {})}",

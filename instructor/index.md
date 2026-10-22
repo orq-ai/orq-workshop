@@ -10,9 +10,8 @@
 - [ ] `make traffic` twice so failure analysis has 40 traces.
 - [ ] Module 14: `WS_WEBHOOK_SECRET` (`orq webhooks generate-secret`) in `.env`, `make edge` running behind a public URL (`WS_EDGE_URL`), or the shared instance up (`make edge-docker` on the host) and exposed (`cloudflared tunnel --url http://localhost:8001`, or `npx localtunnel --port 8001`), the public URL in `WS_WEBHOOK_URL`. The alert ticks every 5 minutes on data that ingests minutes late: run `make m14` at least 15 minutes before the module so a trigger exists. A new tunnel URL is fine, `make m14` re-points the notifier and the webhook.
 - [ ] Module 17: the trace automation created in the Studio (**Traces > Automations**: agent is `ws-refund-agent`, sampling 100%, add to `ws-review-queue`); automations act on future traces only.
-- [ ] `orqi` installed and pinned (`ORQI_VERSION`), `orq` on 8.x, `claude` or `opencode` on the demo machine.
-- [ ] Render `make slides`; open `slides/facilitator.md`.
-- [ ] Refresh `docs/whats-new.md` against the changelog.
+- [ ] `orqi` installed and pinned (`ORQI_VERSION`), `orq` on 11.x, `claude` or `opencode` on the demo machine.
+- [ ] Render `make session S=workshop`; open `sessions/workshop/facilitator.md`.
 
 ## Rhythm per module
 

@@ -66,7 +66,7 @@
 <header>
   <div>
     <h1>Lumen Goods support</h1>
-    <p>The workshop refund agent, through the orq AI Gateway. Each answer links to its trace.</p>
+    <p>The workshop refund agent, through the orq.ai Gateway. Each answer links to its trace.</p>
   </div>
   <div class="tools">
     <div>
@@ -163,7 +163,7 @@
   }
   fetch("/api/models").then((res) => res.json()).then((data) => {
     const groups = [optgroup("Model · our loop, our tools", data.models, data.default)];
-    if (data.agents.length) groups.push(optgroup("Agent · loop and tools in orq", data.agents));
+    if (data.agents.length) groups.push(optgroup("Agent · loop and tools in orq.ai", data.agents));
     modelSelect.replaceChildren(...groups);
   }).catch(() => {});
 

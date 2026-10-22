@@ -70,7 +70,7 @@ def ensure_approval_agent() -> str:
     except Exception:  # noqa: BLE001  (not found: create it below)
         pass
     kb = next(knowledge.id for knowledge in orq.knowledge.list(limit=100).data if knowledge.key == settings.key("refund-policy"))
-    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=[])
+    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=[], tool_kind="function")
     payload["key"] = AGENT
     payload["display_name"] = "Refund agent (approval + escalation)"
     payload["instructions"] += (

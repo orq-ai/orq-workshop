@@ -435,7 +435,7 @@ wheels = [
 
 [[package]]
 name = "evaluatorq"
-version = "1.70.1"
+version = "1.73.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -446,9 +446,9 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/36/d2/831ee81eaaa07a1bc3d2a71e93afa1496ec7b5d669e20ee7df4fb369c274/evaluatorq-1.70.1.tar.gz", hash = "sha256:4f54305c0db53f684cde636d79c50a5382a77f584c66f328c59dc3cf09ebe5aa", size = 23195592, upload-time = "2026-10-13T12:15:30.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/f6/7a8d12fa78b52a1229c71e21a5e8d915c74092d06ac65c83fcb985616aae/evaluatorq-1.73.2.tar.gz", hash = "sha256:10b418ed00c1e3ed6086deb4bdfea880f1bbbc19fa6a16dd6a07486f4044b8dc", size = 26023367, upload-time = "2026-10-15T08:06:15.527Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/96/7c4e250e8f2d8c55bd8059016a3974fd45fc200aaf7ea51f3a867db141f1/evaluatorq-1.70.1-py3-none-any.whl", hash = "sha256:f00115a1f8fbc0d08629b09eea144dd312e145e59401d1974c62c54bb2515b61", size = 3822353, upload-time = "2026-10-13T12:15:28.431Z" },
+    { url = "https://files.pythonhosted.org/packages/83/8b/b1d578c925a65e2441495943a56b05c4276c03745daaa3c86323057db6ef/evaluatorq-1.73.2-py3-none-any.whl", hash = "sha256:e51cebc6c0c9e864fcac7d56e2b1ba9f832c350d1f478544f85a36d1e03fd7c1", size = 3873686, upload-time = "2026-10-15T08:06:13.111Z" },
 ]
 
 [package.optional-dependencies]
@@ -1950,7 +1950,7 @@ wheels = [
 
 [[package]]
 name = "orq-ai-sdk"
-version = "4.16.7"
+version = "4.16.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpcore" },
@@ -1958,9 +1958,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/65/73/eb27025927330eab40f83e5c7b330d81609d9618ab36eaf214b9efd78619/orq_ai_sdk-4.16.7.tar.gz", hash = "sha256:584eedf59f725fdd8f0b9df5b311464b262c9b8ab06dd7bf43f45e96edbd6a72", size = 1002583, upload-time = "2026-10-14T10:29:17.992Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/f9/12b85d6b7ddd75db3af4ba3994aadd4a78505c08d9618ab27f26c6af2e22/orq_ai_sdk-4.16.10.tar.gz", hash = "sha256:959743af876b538522c5e88a4d81bb148cd8679bdbcd8fa13ccaf6d8cb9132cf", size = 1014642, upload-time = "2026-10-16T08:38:53.741Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/52/ef486f794916fda937b148e73b96537024e389542bed58d392df32aa32d8/orq_ai_sdk-4.16.7-py3-none-any.whl", hash = "sha256:6d6d46ad7edb672109680fb4ab8e2644c4007d70e1e0e3594bedf4e9bb6898e8", size = 1609701, upload-time = "2026-10-14T10:29:16.429Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/98/6e0144963e94ef3a509ec5b4619e68276b7c4ba0b6eac417d5492b1c17a8/orq_ai_sdk-4.16.10-py3-none-any.whl", hash = "sha256:45c876ea2c3ce37b806c3887ea273b888e3b78ed7ff6596608e367402d9c461a", size = 1624440, upload-time = "2026-10-16T08:38:51.729Z" },
 ]
 
 [[package]]
@@ -2006,7 +2006,7 @@ notebooks = [
 
 [package.metadata]
 requires-dist = [
-    { name = "evaluatorq", extras = ["redteam", "dashboard", "insights"], specifier = ">=1.70.1" },
+    { name = "evaluatorq", extras = ["redteam", "dashboard", "insights"], specifier = ">=1.73.2" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "langchain-core", marker = "extra == 'langgraph'", specifier = ">=0.3" },
     { name = "langchain-openai", marker = "extra == 'langgraph'", specifier = ">=0.3" },
@@ -3012,15 +3012,15 @@ wheels = [
 
 [[package]]
 name = "starlette"
-version = "1.6.0"
+version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b5/b4/205b0d5241d934e8add0c38aa924c4f9fb7330834ff11e5444db964ec3f9/starlette-1.6.0.tar.gz", hash = "sha256:d4e3ac5e546444960c710297a3c9fc3f7ebae1b7e963f3d36173b49da535be9b", size = 2716969, upload-time = "2026-08-08T18:27:57.512Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/0c/6efb252d091ecccd7d62048ae11f0ea35cd75a4fbaeea5e30f9c3bf91d10/starlette-1.8.0.tar.gz", hash = "sha256:1565dc0b35d5737a271ed1e0e04e949f4e81198799f216d2667b0a0fb9cf9522", size = 2730457, upload-time = "2026-10-13T07:54:39.53Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/cb/6a6a47d5b464bd08695d254f3da6e7986cc70c9fa5d778eda57538edfe56/starlette-1.6.0-py3-none-any.whl", hash = "sha256:a86dd39d14bb45f85a3d18525215a9ef0cfd1f192ac793220e72598c90335f0c", size = 75969, upload-time = "2026-08-08T18:27:56.196Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/b0/5742e4ac7af5eb58ec3470a537a49d7aa507e5539413e504b3a65ef50ba8/starlette-1.8.0-py3-none-any.whl", hash = "sha256:dfdd6b29c26483288088d990eee59631dedadd66ce20d203402a7ca8e3c4656f", size = 79612, upload-time = "2026-10-13T07:54:38.019Z" },
 ]
 
 [[package]]
@@ -3161,7 +3161,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.27.2"
+version = "0.27.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -3169,9 +3169,9 @@ dependencies = [
     { name = "rich" },
     { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/f7/57713ba479fd405eb76de31404b2c744c289e336b2d999511ebf51e496f7/typer-0.27.2.tar.gz", hash = "sha256:269b7eb9d3c202ca84b4bc9618cb04ebb43d3d4d1e567e4c768607232c05f945", size = 204045, upload-time = "2026-08-28T10:26:55.046Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/03/51/d33db42cc72ffd8c30777547b42d01f0cbf9d95a770457698d0174b3ed71/typer-0.27.3.tar.gz", hash = "sha256:d0396f770a560ab1b0a8504e13b5f254b728cedb05c61cf0359e944e50ce8901", size = 205303, upload-time = "2026-10-06T17:24:16.61Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/bf/205d0004930ede8f542fb58f601526fccf4ae7626075ca1e6c4de5d3d652/typer-0.27.2-py3-none-any.whl", hash = "sha256:b3a5fc4342d5fc8fda8fc3010b1cf117e9249aab7fae800c2eff62fd3842d97d", size = 123130, upload-time = "2026-08-28T10:26:53.752Z" },
+    { url = "https://files.pythonhosted.org/packages/07/ea/2e31b67051e91a133189e9c000c222502ddc6969856416de0d095de4c0b0/typer-0.27.3-py3-none-any.whl", hash = "sha256:e50022f28b82a86313e54501317a1db64bf8f8d036ff8cfe5ca7e47675454aff", size = 123312, upload-time = "2026-10-06T17:24:15.054Z" },
 ]
 
 [[package]]

@@ -46,7 +46,8 @@ def run_agent(
             for o in response["output"]
             if o["type"] == "function_call" and o["call_id"] not in done_by_server
         ]
-        if not pending:
+        # code tools run in orq: a turn that ended in a message has nothing left for us
+        if not pending or any(o["type"] == "message" for o in response["output"]):
             break
         outputs = []
         for call in pending:
@@ -86,7 +87,7 @@ def step_1_inspect() -> None:
     for tool in delegating["settings"]["tools"]:
         if tool["action_type"] in ("advisor", "sidekick"):
             print(f"{tool['action_type']:<8} : configuration={tool.get('configuration')}")
-    print("next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools")
+    print(f"next     : Agents > {settings.prefix}-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three code tools")
 
 
 def step_2_run() -> dict[str, Any]:
@@ -101,7 +102,7 @@ def step_2_run() -> dict[str, Any]:
     print(f"steps    : {len(turn['traces'])} responses")
     print(f"answer   : {turn['text'][:100]}…")
     print(f"trace    : {turn['traces'][-1]}")
-    print(f"next     : orq traces thread {turn['traces'][-1]}")
+    print(f"next     : orq traces conversation {turn['traces'][-1]}")
     return turn
 
 

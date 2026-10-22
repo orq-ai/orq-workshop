@@ -1,0 +1,14 @@
+title: Building with orq.ai
+date: 2026-10-01
+start: "09:00"
+public: false
+blocks:
+  - {title: Opening, minutes: 12}
+  - {title: "The map: picture, refund agent", minutes: 15}
+  - {title: What you asked for, minutes: 3}
+  - {title: "Block 1 · Own your agent", minutes: 30, command: "uv run python examples/own-your-agent.py", leave_with: your own framework with orq as the infrastructure layer}
+  - {module: 08-managed-agents, minutes: 30, title: "Block 2 · Managed agents"}
+  - {title: Checkpoint and break, minutes: 12}
+  - {module: 09-knowledge-base-rag, minutes: 35, title: "Block 3 · Knowledge base and RAG"}
+  - {module: 10-mcp-gateway, minutes: 25, title: "Block 4 · MCP servers and the MCP Gateway"}
+  - {title: Wrap-up, minutes: 18}

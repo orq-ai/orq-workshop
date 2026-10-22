@@ -1,10 +1,10 @@
 """Module 08 starter: the refund agent as a managed orq Agent.
 
-The agent ws-refund-agent already exists (`make seed`). It never runs your Python: when it wants a
-tool, the response comes back with a `function_call` item and stops. Your job is the client side:
-invoke it through the Responses API, execute the function_call items it returns, continue with
-previous_response_id, then the rest of the Run Agents surface: variables and metadata, a second
-user turn, tool_choice, memory, versions.
+The agent ws-refund-agent already exists (`make seed`). Its tools are code tools, so orq runs the
+loop and the tools: one Responses call per customer turn. Your job is the client side: invoke it
+through the Responses API and read the tool calls from the output items, then the rest of the Run
+Agents surface: variables and metadata, a second user turn, tool_choice, memory, versions. The
+solution adds step 2b, the hybrid alternative with function tools that your own code runs.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
 Run it with `uv run python modules/08-managed-agents/run.py`. The solution is in solution/run.py.
@@ -12,12 +12,10 @@ Run it with `uv run python modules/08-managed-agents/run.py`. The solution is in
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from app.refund_agent.client import make_orq
 from app.refund_agent.config import settings
-from app.refund_agent.tools import OrderStore, dispatch
 
 AGENT = settings.key("refund-agent")   # ws-refund-agent
 QUESTION = "Refund ord_a2 please, the dock does not fit."
@@ -26,7 +24,7 @@ orq = make_orq()
 
 # ── Step 1 · Inspect the agent ──
 # A GET returns tools as {action_type, id, key, requires_approval}; a create or update wants
-# {"type": "function", "key": ...}. Read the shape before you write anything back.
+# {"type": "code", "key": ...}. Read the shape before you write anything back.
 def step_1_inspect() -> None:
     """Print the agent's model, limits and tools as the API returns them."""
     agent_info = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
@@ -37,29 +35,15 @@ def step_1_inspect() -> None:
     print(f"model    : {agent_info['model']['id']}")
     print(f"limits   : max_iterations {agent_settings['max_iterations']}")
     print(f"tools    : {[(tool['action_type'], tool.get('key', tool['display_name'])) for tool in agent_settings['tools']]}  (the READ shape)")
-    # Writes use a different shape: [{"type": "function", "key": "ws-lookup-order"}, ...]. Never PATCH the GET body back.
+    # Writes use a different shape: [{"type": "code", "key": "ws-lookup_order"}, ...]. Never PATCH the GET body back.
 
 
-def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_steps: int = 8, **kw: Any) -> dict[str, Any]:
-    """One customer turn: execute every function_call locally, continue until the agent answers with a message."""
-    store = store or OrderStore()
-    response = orq.responses.create(model=f"agent/{agent}", input=text, **kw).model_dump(by_alias=True)
-    traces = [response["telemetry"]["trace_id"]]
-    called = []
-    for _ in range(max_steps):
-        calls = [item for item in response["output"] if item["type"] == "function_call"]
-        if not calls:
-            break
-        outputs = []
-        for call in calls:
-            result = dispatch(store, call["name"], json.loads(call["arguments"] or "{}"))
-            called.append(call["name"])
-            # TODO: build the function_call_output input item (keyed on call_id, output as a JSON string)
-            outputs.append({})
-        # TODO: continue the same response chain with previous_response_id=response["id"] and input=outputs
-        response = response
-        traces.append(response["telemetry"]["trace_id"])
-        break
+def run_agent(agent: str, text: str, **kw: Any) -> dict[str, Any]:
+    """One customer turn: one Responses call, orq runs the loop and the tools."""
+    # TODO: response = orq.responses.create(model=f"agent/{agent}", input=text, **kw).model_dump(by_alias=True)
+    #       then collect the name of every item in response["output"] whose type is "function_call"
+    response: dict[str, Any] = {"output": [], "id": "", "telemetry": {"trace_id": ""}}
+    called: list[str] = []
     text_out = " ".join(
         content["text"]
         for item in response["output"]
@@ -67,25 +51,23 @@ def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_ste
         for content in item["content"]
         if content["type"] == "output_text"
     )
-    return {"text": text_out, "tool_calls": called, "traces": traces}
+    return {"text": text_out, "tool_calls": called, "traces": [response["telemetry"]["trace_id"]], "response_id": response["id"]}
 
 
-# ── Step 2 · Invoke it and execute the tool calls ──
-# One customer turn through run_agent. Each Responses call is its own trace; the last one renders
-# the whole conversation because state is server-side.
+# ── Step 2 · Invoke it ──
+# One customer turn through run_agent. orq runs the tools, so the response already holds the
+# function_call items and the final message; the trace shows each tool call.
 def step_2_invoke() -> None:
     """Run one refund turn and print the tools the agent asked for."""
     out = run_agent(AGENT, QUESTION)
 
-    print("── Step 2 · Invoke it and execute the tool calls ──────")
-    if len(out["traces"]) > 1 and out["traces"][-1] == out["traces"][-2]:
-        # the unfilled loop appends the same response twice and stops
-        print("TODO     : fill in the function_call_output item and the previous_response_id call in run_agent, then rerun")
+    print("── Step 2 · Invoke it ─────────────────────────────────")
+    if not out["response_id"]:
+        print("TODO     : fill in the Responses call in run_agent, then rerun")
     print(f"question : {QUESTION}")
     print(f"tools    : {' → '.join(out['tool_calls'])}")
-    print(f"requests : {len(out['traces'])}")
     print(f"answer   : {out['text'][:80]!r}")
-    print(f"next     : run `orq traces thread {out['traces'][-1]}`")
+    print(f"next     : run `orq traces conversation {out['traces'][-1]}`")
 
 
 # ── Step 3 · Stream ──
@@ -118,12 +100,12 @@ def step_5_continue() -> None:
     first = run_agent(AGENT, QUESTION)
     # TODO: orq.responses.create(model=f"agent/{AGENT}", previous_response_id=first["response_id"], input="Thanks. What was the refund amount, digits only?")
     #       then orq.responses.get(response_id=<that id>) and compare the text
-    print(f"turn 1   : {first['text'][:80]!r}" if first["text"] else "turn 1   : (empty until the run_agent TODOs in step 2 are filled in)")
+    print(f"turn 1   : {first['text'][:80]!r}" if first["text"] else "turn 1   : (empty until the run_agent TODO in step 2 is filled in)")
     print("TODO     : fill in the follow-up turn with previous_response_id and the responses.get call, then rerun")
 
 
 # ── Step 6 · Control tool calls ──
-# tool_choice: "none", "required", or {"type": "function", "name": "get_policy"}. A tools array in
+# tool_choice: "none", "required", or {"type": "function", "name": "ws-get_policy"} (the tool key). A tools array in
 # the request is ignored on agent/ calls.
 def step_6_tool_choice() -> None:
     """Three calls with three tool_choice values; print the output item types of each."""

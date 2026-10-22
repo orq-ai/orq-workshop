@@ -24,22 +24,22 @@
 
 **Trace automation.** A Studio rule over future traces: a filter, a sampling rate, and an action, add to a dataset or to an **annotation queue**. Studio-only; the queue itself has an API. [Docs](https://docs.orq.ai/docs/ai-studio/observability/automations)
 
-**Managed agent.** An agent hosted by orq: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions and environments. Invoked through the Responses API as `model="agent/<key>"`. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents)
+**Managed agent.** An agent hosted by orq.ai: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions and environments. Invoked through the Responses API as `model="agent/<key>"`. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents)
 
 **Advisor / Sidekick.** Built-in agent tools. Advisor: ask a second model for guidance on the conversation so far. Sidekick: delegate a discrete task with its own instructions and get only the result. On the gateway's server tools these are `orq:advisor` and `orq:subagent`. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
 
 **Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [How retrieval works](rag.md) · [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
 
-**Orq MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp)
+**orq.ai MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp)
 
 **MCP Portal.** The area of the AI Gateway where upstream **MCP Servers** are registered (URL, auth, discovered tools) and **MCP Gateways** bundle them. [Docs](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers)
 
 **MCP Gateway.** One client-facing MCP endpoint at `/v3/mcp/<key>` fronting several MCP Servers, with per-server tool exposure, read-only filters, naming rules and an audit log of every call. Consumed by coding agents and managed agents alike. [Docs](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways)
 
-**orq CLI.** `orq`. Signs in, mints keys, manages every entity, and wires coding agents: `orq setup`, `orq connect`, `orq launch`, `orq doctor`. [Docs](https://docs.orq.ai/reference/cli)
+**orq.ai CLI.** `orq`. Signs in, mints keys, manages every entity, and wires coding agents: `orq setup`, `orq connect`, `orq launch`, `orq doctor`. [Docs](https://docs.orq.ai/reference/cli)
 
-**Orq Skills.** Agent-skills-standard workflows (`build-agent`, `analyze-trace-failures`, `build-evaluator`, `run-experiment`, `red-team`, `simulate-agent`, ...) shipped inside the CLI binary, sourced from `orq-ai/assistant-plugins`. Not the same as **Skills** the platform entity (reusable prompt snippets referenced as `{{skill.key}}`). [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills)
+**orq.ai skills.** Agent-skills-standard workflows (`build-agent`, `analyze-trace-failures`, `build-evaluator`, `run-experiment`, `red-team`, `simulate-agent`, ...) shipped inside the CLI binary, sourced from `orq-ai/assistant-plugins`. Not the same as **Skills** the platform entity (reusable prompt snippets referenced as `{{skill.key}}`). [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills)
 
-**orqi.** The orq terminal helper agent. Embeds the pi coding agent, routes through the gateway, ships the orq MCP tools, the orq skills and seven troubleshooting skills of its own. Alpha.
+**orqi.** The orq.ai terminal helper agent. Embeds the pi coding agent, routes through the gateway, ships the orq.ai MCP tools, the orq.ai skills and seven troubleshooting skills of its own. Alpha.
 
-**evaluatorq.** Python and TypeScript evaluation framework from orq. Runs jobs over datasets with evaluators, exits non-zero on failure, uploads results as Experiment runs. Also does agent simulation and red teaming. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)
+**evaluatorq.** Python and TypeScript evaluation framework from orq.ai. Runs jobs over datasets with evaluators, exits non-zero on failure, uploads results as Experiment runs. Also does agent simulation and red teaming. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)

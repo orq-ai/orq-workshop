@@ -18,6 +18,7 @@
 # %%
 from __future__ import annotations
 
+import json
 import time
 from datetime import UTC, datetime, timedelta
 
@@ -57,14 +58,13 @@ def queue_items() -> list[dict]:
 def has_answer(trace: dict) -> bool:
     """A tool loop is several traces with the same name; only the last one ends in a message.
 
-    `gen_ai.output` on the root span is a JSON string of output items: `output_text` means an answer,
-    `function_call` alone means a hop the caller answered with a tool result. Read over REST: the
-    SDK's `get_span` drops `output` in 4.14.
+    `gen_ai.output` on the root span holds the output items (a JSON string, or `{"_value": [...]}` for
+    an agent whose tools run in orq): `output_text` means an answer, `function_call` alone means a hop
+    the caller answered with a tool result. Read over REST: the SDK's `get_span` drops `output` in 4.14.
     """
     span = rest_get(f"/v3/traces/{trace['trace_id']}/spans/{trace['root_span_id']}").get("span", {})
-    return '"output_text"' in str(
-        ((span.get("attributes") or {}).get("gen_ai") or {}).get("output", "")
-    )
+    output = ((span.get("attributes") or {}).get("gen_ai") or {}).get("output", "")
+    return '"output_text"' in (output if isinstance(output, str) else json.dumps(output))
 
 
 # %% [markdown]
@@ -78,12 +78,16 @@ def has_answer(trace: dict) -> bool:
 # %%
 now = datetime.now(UTC)
 queued = {item["trace_id"] for item in queue_items()}
-recent = orq.traces.search(
-    from_=iso(now - timedelta(days=1)),
-    to=iso(now),
-    limit=30,
-    filters=[{"field": "name", "op": "eq", "values": [AGENT]}],
-).model_dump(by_alias=True)["data"]
+recent = [  # the filter takes one name; make traffic names its traces refund-traffic
+    trace
+    for name in (AGENT, "refund-traffic")
+    for trace in orq.traces.search(
+        from_=iso(now - timedelta(days=1)),
+        to=iso(now),
+        limit=30,
+        filters=[{"field": "name", "op": "eq", "values": [name]}],
+    ).model_dump(by_alias=True)["data"]
+]
 candidates = [trace for trace in recent if trace["status"] == "ok" and trace["trace_id"] not in queued]
 fresh = [trace for trace in candidates if has_answer(trace)][:5]
 if fresh:
@@ -95,7 +99,7 @@ answered = [trace for trace in candidates if has_answer(trace)]
 items_now = len(queue_items())
 
 print("── Step 1 · Fill the queue by API ─────────────────────")
-print(f"queue    : ws-review-queue {QUEUE}")
+print(f"queue    : {settings.prefix}-review-queue {QUEUE}")
 print(f"before   : {len(queued)} items")
 print(f"traces   : {len(candidates)} candidates, {len(candidates) - len(answered)} are tool-loop hops without an answer")
 print(f"added    : {len(fresh)}")
@@ -128,7 +132,7 @@ for _ in range(AUTOMATION_POLLS):
         break
 else:
     print("verdict  : not in the queue after 30 s: no automation yet")
-    print(f"next     : create it in the Studio (Traces > Automations, agent is {AGENT}, add to ws-review-queue) and run this cell again")
+    print(f"next     : create it in the Studio (Traces > Automations, agent is {AGENT}, add to {settings.prefix}-review-queue) and run this cell again")
 
 # %% [markdown]
 # ## Step 3 · Review by API
@@ -152,11 +156,11 @@ for item in queue_items():
     if item["used_human_review_ids"]:
         rating_definition = rating_definition or item["used_human_review_ids"][0]
         continue  # already reviewed
-    span = orq.annotation_queues.retrieve_item(
-        annotation_queue_id=QUEUE, item_id=item["_id"]
-    ).model_dump(by_alias=True)
-    user = (span.get("input") or {}).get("messages", [{}])[0].get("content", "") or ""
-    answer = ((span.get("output") or {}).get("messages") or [{}])[-1].get("content", "") or ""
+    gen_ai = rest_get(f"/v3/traces/{item['trace_id']}/spans/{item['span_id']}")["span"]["attributes"]["gen_ai"]
+    user = ((gen_ai.get("input") or {}).get("messages") or [{}])[0].get("parts", [{}])[0].get("content", "")
+    output = gen_ai.get("output") or []
+    output = output["_value"] if isinstance(output, dict) else json.loads(output)
+    answer = next((part["text"] for entry in reversed(output) if entry["type"] == "message" for part in entry["content"]), "")
     if not answer.strip():
         # The agent stopped at a function_call nobody executed: nothing to rate; step 4 removes it from the queue with the reviewed ones
         print(f"skipped  : {item['trace_id'][-8:]} empty answer (a function_call the caller never answered), user {user[:52]!r}")
@@ -183,7 +187,7 @@ if rating_definition:
 items_now = len(queue_items())
 print(f"reviewed : {len(reviewed)} now, {len(marked)} of {items_now} items carry a review")
 print(f"panel    : queue configured with annotation {rating_definition}")
-print("next     : open Observability > Annotation queues > ws-review-queue; each reviewed item shows its rating")
+print(f"next     : open Observability > Annotation queues > {settings.prefix}-review-queue; each reviewed item shows its rating")
 
 # %% [markdown]
 # ## Step 4 · Promote the bad ones to a dataset
@@ -217,7 +221,7 @@ count = len(
 items_now = len(queue_items())
 
 print("── Step 4 · Promote the bad ones to a dataset ─────────")
-print(f"dataset  : ws-review-dataset {DATASET}")
+print(f"dataset  : {settings.prefix}-review-dataset {DATASET}")
 print(f"rows     : +{len(bad_rows)} from this review, {count} total")
 print(f"queue    : {items_now} items left")
 print(f"cli      : orq datasets list-datapoints {DATASET} -o json | jq -c '.data[] | {{message: .inputs.message, expected_output}}'")

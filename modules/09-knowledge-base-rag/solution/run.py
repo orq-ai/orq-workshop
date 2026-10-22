@@ -117,7 +117,7 @@ reranked = search(
 print("rerank   : " + " | ".join(f"{m['scores']} {first_line(m, 20)}" for m in reranked))
 has_rerank_score = any("rerank_score" in m["scores"] for m in reranked)
 print(f"verdict  : {'rerank_score present' if has_rerank_score else 'no rerank_score: no rerank model is enabled in this workspace, so the gateway skipped reranking'}")
-print("next     : the same search from the CLI: orq knowledge-bases search ws-refund-policy --query '...' --search-type keyword_search")
+print(f"next     : the same search from the CLI: orq knowledge-bases search {KB_KEY} --query '...' --search-type keyword_search")
 
 # %% [markdown]
 # `metadata.topic` is the field the seed attached to every chunk; `filter_by={"topic": {"eq":
@@ -254,7 +254,7 @@ for item in output_items:
         print(f"search   : {json.loads(item['arguments'])['query']!r} → {top_hit['file_name']} score={top_hit['score']:.3f}")
 print(f"answer   : {answer_text[:160]!r}")
 print(f"trace    : {response['telemetry']['trace_id']}")
-print("next     : the orq:query_knowledge_base item is the retrieval; open the trace to see it as a span")
+print("next     : the orq:* output items are the tools the agent used; open the trace to see each as a span")
 
 # %% [markdown]
 # ## Step 6 · Agentic RAG

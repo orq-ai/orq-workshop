@@ -34,8 +34,9 @@ reset: ## Delete every entity this repo created (by WS_PREFIX)
 eval: ## Quality regression gate (exit 1 on regression). Used by CI.
 	$(RUN) python -m evals.regression
 
-eval-vulnerable: ## Same gate against the vulnerable instructions. Must exit 1.
-	$(RUN) python -m evals.regression --instructions app/data/vulnerable_instructions.md --out evals/results/vulnerable.json
+eval-vulnerable: ## Same gate against the vulnerable instructions. The gate must exit 1; this target succeeds when it does.
+	@$(RUN) python -m evals.regression --instructions app/data/vulnerable_instructions.md --out evals/results/vulnerable.json; ec=$$?; \
+	  echo "gate exit code: $$ec (expected 1)"; test $$ec -eq 1
 
 redteam-gate: ## Security regression gate with evaluatorq static red team. Used by CI.
 	$(RUN) python -m evals.redteam_gate
@@ -73,13 +74,20 @@ docs-serve: ## Live docs at http://127.0.0.1:8000
 docs-build: ## Strict docs build (fails on broken links)
 	$(RUN) --group docs mkdocs build --strict
 
-DECK ?= workshop
-slides: ## Render slides/$(DECK).md to HTML and PDF with Marp (DECK=techdays for the TechDays deck)
-	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css -o slides/$(DECK).html
-	$(MARP) slides/$(DECK).md --theme slides/orq-theme.css --pdf --allow-local-files -o slides/$(DECK).pdf
+S ?= workshop
+session: ## Build sessions/$(S): run-of-show.md, docs page and slides/deck.html (marp). Commit the output.
+	$(RUN) python scripts/build_session.py $(S)
+	$(MARP) sessions/$(S)/slides/deck.md --theme slides/orq-theme.css --allow-local-files -o sessions/$(S)/slides/deck.html
+	$(RUN) python scripts/build_session.py $(S) --inline
 
-deck: ## Serve the KickstartAI reveal.js deck on :8000 (add ?code=XXXX to show the login code)
-	python3 -m http.server 8000 -d slides/kickstart
+session-pdf: ## Optional PDF of sessions/$(S)/slides/deck.md (not part of `make session`; gives up after 60 s)
+	$(MARP) sessions/$(S)/slides/deck.md --theme slides/orq-theme.css --pdf --allow-local-files --browser-timeout 60 -o sessions/$(S)/slides/deck.pdf
+
+deck: ## Serve a reveal.js deck: make deck [D=kickstart|october-insurance] [PORT=8000], then open http://localhost:8000/#/5 (add ?code=XXXX to show the login code)
+	python3 -m http.server $(or $(PORT),8000) -d slides/$(or $(D),kickstart)
+
+handout: ## Build slides/handout.html (QR codes, commands; A4, white) and open it to print
+	uvx --with segno python slides/handout.py && open slides/handout.html
 
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
@@ -93,4 +101,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build slides deck modules
+.PHONY: help setup doctor smoke test seed traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker web og-card diagrams docs-serve docs-build session session-pdf deck handout modules

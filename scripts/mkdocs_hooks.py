@@ -15,6 +15,7 @@ Two things break when a page is assembled that way, and this hook fixes both:
 from pathlib import Path
 
 import termynal.markdown
+import yaml
 from mkdocs.structure.files import File
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,4 +29,9 @@ def on_files(files, config):
     """Add every module diagram PNG to the build as `modules/assets/<name>` (MkDocs `on_files` event)."""
     for png in sorted(ROOT.glob("modules/*/assets/*.png")):
         files.append(File.generated(config, f"modules/assets/{png.name}", abs_src_path=str(png)))
+    # public sessions: serve the compiled deck next to the generated page docs/sessions/<name>.md
+    for cfg in sorted(ROOT.glob("sessions/*/session.yml")):
+        if yaml.safe_load(cfg.read_text()).get("public"):
+            src = cfg.parent / "slides" / "deck.html"
+            files.append(File.generated(config, f"sessions/{cfg.parent.name}/slides/deck.html", abs_src_path=str(src)))
     return files

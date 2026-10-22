@@ -275,7 +275,7 @@ def step_4_evaluators() -> None:
         verdict = invoke(guard_id, output=text)
         passed = verdict.get("passed")
         print(f"guard    : {text!r} → {'passed' if passed is True else 'failed' if passed is False else 'no verdict'}")
-    print("next     : Evaluators > ws-refund-policy-judge in the Studio lists both invokes in its history")
+    print(f"next     : Evaluators > {settings.prefix}-refund-policy-judge in the Studio lists both invokes in its history")
 
 
 # ── Step 5 · Datasets ──
@@ -286,7 +286,7 @@ def step_5_dataset() -> str:
     print("── Step 5 · Datasets ──────────────────────────────────")
     dataset_id = ensure_dataset()
     points = make_orq().datasets.list_datapoints(dataset_id=dataset_id, limit=3).data or []
-    print(f"dataset  : ws-refund-eval {dataset_id}")
+    print(f"dataset  : {settings.prefix}-refund-eval {dataset_id}")
     for point in points:
         print(f"row      : {point.inputs['expected_decision']:12} {point.inputs['message'][:60]!r}")
     print(f"next     : orq datasets list-datapoints {dataset_id} lists all 20 rows")

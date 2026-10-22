@@ -9,6 +9,8 @@
 | **Prerequisites** | module 08, `make seed` |
 | **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace. |
 
+Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
+
 ## Why
 
 Size the agent's model for the hardest step and every routine step pays for it. Size it for the routine steps and it fails exactly where quality matters. The refund agent has both kinds of step: reading an order and a policy is mechanical; deciding whether a refusal is consistent with the policy is a judgement; writing the closing note is formatting. Delegation lets each step run on the model it deserves, and the trace shows what that cost.
@@ -45,24 +47,24 @@ Open `modules/15-advisor-sidekick/run.py`. Steps 3, 4 and 5 are `TODO`s. The sol
 
 ```bash
 $ orq agents retrieve ws-refund-agent-delegating -o json | jq '.settings.tools[] | select(.action_type == "advisor" or .action_type == "sidekick") | {action_type, configuration}'
-$ uv run python modules/15-advisor-sidekick/run.py
+$ uv run python modules/15-advisor-sidekick/solution/run.py
 ```
 
 Expected output:
 
 ```text
 ── Step 1 · Inspect the delegating agent ──────────────
-agent    : ws-refund-agent-delegating v1.0.6 model=openai/gpt-5.6-luna
-base     : ws-refund-agent model=openai/gpt-5.6-luna
+agent    : wsvE-refund-agent-delegating v1.0.1 model=openai/gpt-6-luna
+base     : wsvE-refund-agent model=openai/gpt-6-luna
 advisor  : model=openai/gpt-5.6-sol max_uses=2 max_transcript_tokens=4000
 sidekick : model=openai/gpt-5.4-nano max_uses=2 output_format='Two sentences.'
 rules    : - Before refusing a post-window or above-limit request, ask the advisor whether ... / - After any refund decision, delegate writing the two-sentence customer-facing c...
-next     : Agents > ws-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools
+next     : Agents > wsvE-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools
 ```
 
 The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
 
-`make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three function tools, each with its model.
+`make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
 
 ### Step 2 · Run a refund the agent has to refuse
 
@@ -71,12 +73,12 @@ The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touche
 ```text
 ── Step 2 · Run a refund the agent has to refuse ──────
 question : Refund ord_a6 please, the frame arrived scratched.
-tools    : lookup_order → get_policy
+tools    : 
 delegate : advisor, sidekick
-steps    : 3 responses in 14.8s
-answer   : Hi! Thanks for sharing—because your order amount is EUR 620, which is above our EUR 500 threshold, i…
-trace    : 42c275433f70ab0f3cd46a2a6908a0a0
-next     : orq traces thread 42c275433f70ab0f3cd46a2a6908a0a0
+steps    : 1 responses in 11.3s
+answer   : Thanks for reaching out to us, and I’m sorry to hear your frame arrived scratched. Since your order …
+trace    : <trace-id>
+next     : orq traces conversation <trace-id>
 ```
 
 No `issue_refund` in the list: luna reads the EUR 620 off `lookup_order`, knows the limit from `get_policy`, and goes to the advisor before ever trying the tool. On gpt-4o-mini the same agent tried the refund first and let the tool's limit error send it to the advisor; a stronger base model moves the judgement earlier.
@@ -88,11 +90,11 @@ Both tools show up twice in the output items: a `function_call` with the argumen
 ```text
 ── Step 3 · Read what each tool sent and got back ─────
 tool     : orq:advisor
-sent     : 'Confirm whether refusing this refund and routing it to human review is consistent with the fetched p'
-got      : '1. Yes—routing the request to human review is consistent because EUR 620 exceeds the EUR 500 single-'
+sent     : 'Is refusing this above-limit refund and routing to human review consistent with the policy text fetc'
+got      : '1. Yes. Since €620 exceeds the €500 automated-refund limit, routing it to human review is consistent'
 tool     : orq:sidekick
-sent     : 'Write a concise, customer-facing closing note in exactly two sentences. Mention the order amount thr'
-got      : 'Hi! Thanks for sharing—because your order amount is EUR 620, which is above our EUR 500 threshold, i'
+sent     : 'Write a concise two-sentence customer-facing closing note for this decision. Do not mention internal'
+got      : 'Thanks for reaching out to us, and I’m sorry to hear your frame arrived scratched. Since your order '
 next     : the advisor got the transcript too; the sidekick got only the task line above
 ```
 
@@ -100,39 +102,40 @@ Read the advice again: the agent asked whether refusing and routing to human rev
 
 ### Step 4 · Read the cost split in the trace
 
-Each secondary call goes through the AI Gateway on its own, so it appears as a nested span with its own cost: `advisor` (`span.tool`) > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`. Sum the agent's own `chat openai/gpt-5.6-luna` spans and compare.
+Each secondary call goes through the AI Gateway on its own, so it appears as a nested span with its own cost: `advisor` (`span.tool`) > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`. Sum the agent's own `chat openai/gpt-6-luna` spans and compare.
 
 ```text
 ── Step 4 · Read the cost split in the trace ──────────
-total    : $0.00530 over 3 traces
-    agent     gpt-5.6-luna   calls=5  $0.00092   17.3%
-    advisor   gpt-5.6-sol    calls=1  $0.00428   80.7%
-    sidekick  gpt-5.4-nano   calls=1  $0.00011    2.0%
-next     : orq traces get-span 42c275433f70ab0f3cd46a2a6908a0a0 <span_id> for any row above, or open the trace in the Studio
+total    : $0.00282 over 1 traces
+    agent     gpt-6-luna     calls=6  $0.00075   26.8%
+    advisor   gpt-5.6-sol    calls=1  $0.00197   69.9%
+    sidekick  gpt-5.4-nano   calls=1  $0.00009    3.3%
+next     : orq traces get-span <trace-id> <span_id> for any row above, or open the trace in the Studio
 ```
 
-One advisor call cost more than four times the agent's five calls together, four fifths of the turn. That is the number to argue about: is a correct escalation decision worth quintupling the turn? Here, yes. For a question like "what is the refund window", no, and the instructions make sure the advisor is not asked.
+One advisor call cost more than twice the agent's six calls together, about 70% of the turn. That is the number to argue about: is a correct escalation decision worth paying 2.6 times the agent's own cost? Here, yes. For a question like "what is the refund window", no, and the instructions make sure the advisor is not asked.
 
 ```bash
-$ orq traces thread 42c275433f70ab0f3cd46a2a6908a0a0
+$ orq traces conversation 42c275433f70ab0f3cd46a2a6908a0a0
 ```
 
 Open the trace in the Studio: the `advisor` and `sidekick` spans sit under `agent.response`, with the `chat gpt-5.6-sol` and `chat gpt-5.4-nano` spans under them, each with its own cost.
 
 ### Step 5 · When the secondary model fails
 
-A copy of the agent points its advisor at a model that does not exist. The turn does not fail: the `orq:advisor` item carries the error text, the advisor span stays `ok` with no chat span underneath, and the agent answers from its own model.
+A copy of the agent points its advisor at a model that does not exist. The turn does not fail: the `orq:advisor` item carries the error text, the advisor span is marked `error` with no chat span underneath, and the agent answers from its own model.
 
 ```text
 ── Step 5 · When the secondary model fails ────────────
-created  : ws-refund-agent-delegating-broken
-agent    : ws-refund-agent-delegating-broken (advisor on openai/gpt-does-not-exist)
-tools    : lookup_order → get_policy
+created  : wsvE-refund-agent-delegating-broken
+agent    : wsvE-refund-agent-delegating-broken (advisor on openai/gpt-does-not-exist)
+tools    : 
 answered : yes
-advisor  : "advisor: secondary model request failed: Model 'openai/gpt-does-not-exist' not found or is not avail"
-trace    : 61a6083e9f1989c97acdedccbdf52907: 1 advisor span(s), status=ok cost=$0.00000, no chat span underneath
+advisor  : '{\'error\': "advisor: secondary model request failed: Model \'openai/gpt-does-not-exist\' not found or i'
+trace    : <trace-id>: 1 advisor span(s), status=error cost=$0.00000, no chat span underneath
 verdict  : the turn did not fail; the failure is in the orq:advisor item, not in the HTTP status
 next     : watch for it in the trace, not in genai.error_rate
+open https://my.orq.ai/traces and search <trace-id>: the advisor and sidekick spans sit under agent.response with their own cost
 ```
 
 So a broken advisor degrades quality silently: the agent read "secondary model request failed" as advice and carried on. Watch for it in the trace, not in the HTTP status.
@@ -166,9 +169,9 @@ Paste `agent_prompt.md`:
 - Nested tool spans arrive a few seconds after the response. `list_spans` straight after the call can miss the sidekick; the solution sleeps five seconds.
 - The root span of type `trace` repeats the agent's own model cost. Skip it when summing, or the agent's share doubles.
 - `max_uses` is per turn. With `max_uses: 2` the agent may ask the advisor twice; the broken agent did.
-- A secondary model that fails does not fail the turn and does not error the span. Alerting on `genai.error_rate` will not see it (module 14); reading the `orq:advisor` result will.
+- A secondary model that fails does not fail the turn. Its advisor span is marked `error`, yet alerting on `genai.error_rate` will not see it (module 14); reading the `orq:advisor` result will.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 Advisor and Sidekick tools on Agents, metered separately with their own spans. 4.12 added a configurable timeout per agent tool, which applies to these too.
 

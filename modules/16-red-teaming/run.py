@@ -7,7 +7,7 @@ fixed local agent, then the same red team from the CLI.
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
 The solution is in solution/run.py; the attack file is solution/static_attacks.json; the
-AgentTarget adapters come from modules/11-simulation/solution/refund_target.py.
+The AgentTarget comes from modules/11-simulation/solution/refund_target.py.
 Run it with `uv run python modules/16-red-teaming/run.py`.
 """
 

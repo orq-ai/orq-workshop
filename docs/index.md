@@ -8,7 +8,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 [Start with Setup](modules/00.md){ .md-button .md-button--primary }
 [See the agenda](agenda.md){ .md-button }
-[TechDays, 15 Oct](techdays.md){ .md-button }
+[TechDays, 15 Oct](sessions/techdays-2026.md){ .md-button }
 
 <div class="grid cards" markdown>
 
@@ -59,14 +59,6 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
     evaluatorq and orq-arena, failure analysis to evaluators to experiments, agent simulation, red teaming, and the whole thing gated in CI.
 
     [:octicons-arrow-right-24: evaluatorq](reference/evaluatorq.md)
-
--   :material-new-box:{ .lg .middle } **What's new**
-
-    ---
-
-    Features from orq 4.10 to 4.14 and orq-cli 8.x, and the module where each one shows up.
-
-    [:octicons-arrow-right-24: What's new](whats-new.md)
 
 -   :material-book-open-variant:{ .lg .middle } **Reference**
 

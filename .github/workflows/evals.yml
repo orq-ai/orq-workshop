@@ -78,7 +78,7 @@ jobs:
       - name: Install
         run: uv sync --frozen
       - name: Red-team gate
-        # Static mode only: replays every attack in evals/redteam_static.json against ws-refund-agent.
+        # Static mode only: replays every attack in evals/redteam_static.json against ws-refund-agent (make seed creates it).
         # Any error or unevaluated attack fails the job. Dynamic (LLM-generated) attacks cost more
         # and are not deterministic; keep them in module 16.
         env:

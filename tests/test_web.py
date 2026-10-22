@@ -161,13 +161,13 @@ def test_hosted_agent_turn_is_one_call_and_orq_runs_the_tools(monkeypatch):
         json={
             "message": "Refund ord_a1",
             "history": history,
-            "model": "agent/ws-refund-agent-hosted",
+            "model": "agent/ws-refund-agent",
         },
     )
 
     data = res.json()
     assert len(requests) == 1  # orq ran the loop: no tool round trips from our side
-    assert requests[0]["model"] == "agent/ws-refund-agent-hosted"
+    assert requests[0]["model"] == "agent/ws-refund-agent"
     assert requests[0]["input"] == [
         {"role": "user", "content": "Hi"},
         {"role": "assistant", "content": "Hello!"},

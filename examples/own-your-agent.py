@@ -31,7 +31,7 @@ from app.refund_agent.tools import OrderStore, dispatch
 
 # The same sentence for every leg. Without that, the comparison is not one.
 QUESTION = "Refund ord_a2 please, the dock does not fit my laptop."
-AGENT_KEY = settings.key("refund-agent")  # ws-refund-agent, created by `make seed`
+AGENT_KEY = settings.key("refund-agent-function")  # function tools your code runs, created by `make seed`
 GRAPH_TRACE_NAME = "own_your_agent_langgraph"  # the run name LangGraph reports, so leg 2 can find its trace
 MAX_STEPS = 8
 TRACE_INDEX_WAIT = 10  # the gateway indexes a trace a few seconds after the last span arrives

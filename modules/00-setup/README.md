@@ -15,7 +15,7 @@ This workshop drives orq.ai from the terminal. The `orq` CLI is how we do it: it
 
 ## The one concept to understand first
 
-`orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq MCP server and the orq skills. Every entity in the workspace is a subcommand you can script. Learn it once, use it in every module.
+`orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq.ai MCP server and the orq.ai skills. Every entity in the workspace is a subcommand you can script. Learn it once, use it in every module.
 
 It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is catalogued in the [CLI reference](https://docs.orq.ai/reference/cli).
 
@@ -38,7 +38,6 @@ Expected output (abridged):
 authenticated: true
 active_workspace_key: <your-workspace>
 active_project_name: <your-project>
-cli: 8.0.x
 ```
 
 Two other doors, and one command worth knowing:
@@ -68,7 +67,7 @@ $ cp -n .env.example .env.tmp && cat .env.tmp >> .env && rm .env.tmp   # append 
 
 ### Step 3 · Install the dependencies and run the four health checks
 
-Four commands, in this order. Each one proves one layer works before the next one relies on it: the Python environment, the orq CLI and your login, the sample app's own logic, and finally one real model call through the gateway. When something breaks later in the workshop, this is the ladder you climb back down.
+Four commands, in this order. Each one proves one layer works before the next one relies on it: the Python environment, the orq.ai CLI and your login, the sample app's own logic, and finally one real model call through the gateway. When something breaks later in the workshop, this is the ladder you climb back down.
 
 #### 3a · `make setup`: the Python environment
 
@@ -76,7 +75,7 @@ Four commands, in this order. Each one proves one layer works before the next on
 $ make setup
 ```
 
-Runs `uv sync --all-groups --extra langgraph`, which creates `.venv/` and installs the pinned dependencies from `uv.lock`: the orq SDK, the OpenAI client, evaluatorq, OpenTelemetry, the LangGraph extra for module 02, plus the test, docs and notebook tool groups. Then it copies `.env.example` to `.env` if you do not have one yet. Nothing talks to orq.
+Runs `uv sync --all-groups --extra langgraph`, which creates `.venv/` and installs the pinned dependencies from `uv.lock`: the orq.ai SDK, the OpenAI client, evaluatorq, OpenTelemetry, the LangGraph extra for module 02, plus the test, docs and notebook tool groups. Then it copies `.env.example` to `.env` if you do not have one yet. Nothing talks to orq.ai.
 
 ```text
 uv sync --all-groups --extra langgraph
@@ -92,7 +91,7 @@ The first run downloads packages and takes a minute; every later run is the two 
 $ make doctor
 ```
 
-Runs `orq doctor`, the CLI's self-check. It does not touch this repo: it reads your `orq` session, calls the orq API and inspects the coding agents installed on the machine. The output is YAML: `auth` (who you are, which workspace), `binary` (CLI and API versions), `checks[N]` (one entry per check, each with a `status` of `pass`, `warn`, `info` or `fail` and a message), then `config`, `output` and `runtime`.
+Runs `orq doctor`, the CLI's self-check. It does not touch this repo: it reads your `orq` session, calls the orq.ai API and inspects the coding agents installed on the machine. The output is YAML: `auth` (who you are, which workspace), `binary` (CLI and API versions), `checks[N]` (one entry per check, each with a `status` of `pass`, `warn`, `info` or `fail` and a message), then `config`, `output` and `runtime`.
 
 ```text
 orq doctor
@@ -102,9 +101,9 @@ auth:
   status: authenticated
   user_email: you@example.com
 binary:
-  api_version: 4.14.19
+  api_version: 4.17.0-rc.24
   name: orq
-  version: 8.6.7
+  version: 11.6.0-rc.2
 checks[16]:
   -
     id: session_file
@@ -113,7 +112,7 @@ checks[16]:
   ...
 ```
 
-The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 8.6.7` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `skills`, `mcp`, `gateway_key_exported`, `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
+The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 11.6.0-rc.2` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `mcp` (when an agent is wired), `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
 
 ```bash
 $ orq doctor | grep -c "status: fail"     # 0 on a healthy machine
@@ -128,12 +127,12 @@ $ orq doctor | grep -B3 "status: fail"    # the message of every failing check
 $ make test
 ```
 
-Runs `pytest -q` over `tests/test_tools.py`: five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq: this is the business logic every later module leans on, and the reason a refund "outside policy" in module 16 is a prompt problem, not a tool problem.
+Runs `pytest -q` over `tests/`: the session and build tests plus five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq.ai: this is the business logic every later module leans on, and the reason a refund "outside policy" in module 16 is a prompt problem, not a tool problem.
 
 ```text
 uv run pytest -q
 .....                                                                    [100%]
-5 passed in 0.03s
+24 passed in 0.9s
 ```
 
 #### 3d · `make smoke`: one real turn through the gateway
@@ -142,13 +141,13 @@ uv run pytest -q
 $ make smoke
 ```
 
-Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq AI Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
+Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq.ai Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq.ai, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
 
 ```text
 ── Step 1 · One refund turn through the gateway ───────
-model    : openai/gpt-5.6-luna
+model    : openai/gpt-6-luna
 question : Hi, I want a refund for order ord_a1, I changed my mind.
-answer   : Your refund of **€24.99** for order **ord_a1** has been issued to the original payment method. It sh…
+answer   : Your refund of €24.99 has been issued to the original payment method. It should arrive within 5–7 bu…
 tools    : lookup_order → get_policy → issue_refund
 trace    : 2e3d6942bbbbd4d48e95f8bcf600b4ad
 verdict  : OK, the call went through orq and the model called lookup_order
@@ -162,7 +161,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 | `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API keys** |
 | `401` from the router | wrong or stale key in `.env` | `.env` beats your shell: check that file, not `echo $ORQ_API_KEY` |
 | `404 Model ... not found` | `MODEL` in `.env` is not enabled in the workspace | enable it under **Models**, or set `MODEL=openai/gpt-6-luna` |
-| `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
+| `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
 | `400 ... reasoning_effort` on a tools call | a GPT-5.x model on `/chat/completions` | the app uses `/responses`; on chat completions set `reasoning_effort: "none"` |
 
 #### 3e · `make seed`: every entity the modules expect
@@ -171,7 +170,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 $ make seed
 ```
 
-Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with the `ws-` prefix (`WS_PREFIX`). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix.
+Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix, and refuses the bare shared `ws`.
 
 ```text
 uv run python -m app.refund_agent.entities seed
@@ -180,7 +179,7 @@ dataset  : 01M2... (ws-refund-eval)
 kb       : 01M2... (ws-refund-policy)
 guard    : 01M2... (ws-refund-limit-guard)
 judge    : 01M2... (ws-refund-policy-judge)
-tools    : ws-lookup-order, ws-get-policy, ws-issue-refund
+tools    : ws-lookup_order, ws-issue_refund, ws-get_policy (code tools: orq runs them)
 agent    : ws-refund-agent
 ...
 ```
@@ -209,7 +208,7 @@ Read `app/refund_agent/agent.py`. It is 90 lines. It is the whole agent.
 $ make web        # http://127.0.0.1:8002
 ```
 
-`app/web.py` puts the same `chat()` behind `POST /api/chat`, and `web/index.html` is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Model** picker switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq code tools, so orq runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation.
+`app/web.py` puts the same `chat()` behind `POST /api/chat`, and `web/index.html` is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Model** picker switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq.ai code tools, so orq.ai runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation.
 
 ## With your coding agent
 
@@ -233,14 +232,14 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 
 ## Gotchas
 
-- Model ids are `provider/model`. `gpt-5.6-luna` alone returns `400 invalid model format`.
+- Model ids are `provider/model`. `gpt-6-luna` alone returns `400 invalid model format`.
 - The repo `.env` overrides a stale `ORQ_API_KEY` exported in your shell. If `make smoke` says "API key is not valid for this workspace", the key belongs to another workspace.
 - `orq launch` without `ORQ_API_KEY` mints a one-hour token that cannot refresh mid-session. `source .env` first for long sessions.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 The Studio onboarding now offers a CLI path. `orq setup` is the same flow the product shows to new users.
 
 ## Go further
 
-Docs: [orq CLI reference](https://docs.orq.ai/reference/cli), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).
+Docs: [orq.ai CLI reference](https://docs.orq.ai/reference/cli), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).

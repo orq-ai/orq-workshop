@@ -23,7 +23,7 @@ Three controls travel on the same request, and they differ in what they are allo
 | `guardrails: [{"id": ..., "execute_on": ...}]` | Judges content with an evaluator. Pass or block, never rewrite. | Always blocks. On the router the block is HTTP `400 guardrail_error`; on agents and deployments it is `422`. |
 | Guardrail rule (Studio or API) | Same as `guardrails`, attached by a CEL match on `model`, `metadata`, `identity`, `project` or `headers`. | Same. The request body carries nothing. |
 
-![Diagram: the guarded request path. The refund app sends a Responses call with extra_body; inside the orq AI Gateway the PII redaction plugin rewrites the input, input guardrails judge it, the provider sees only placeholders, and the output guardrail either lets PII restore return the answer or blocks with HTTP 400 and the app hands the case to a human.](assets/guarded-request.png)
+![Diagram: the guarded request path. The refund app sends a Responses call with extra_body; inside the orq.ai Gateway the PII redaction plugin rewrites the input, input guardrails judge it, the provider sees only placeholders, and the output guardrail either lets PII restore return the answer or blocks with HTTP 400 and the app hands the case to a human.](assets/guarded-request.png)
 
 ```python
 client.responses.create(
@@ -77,7 +77,7 @@ $ orq pii redact --text "contact me at jane.doe@example.com or +31 6 1234 5678" 
 }
 ```
 
-Detection runs on orq's own model, on orq infrastructure. Nothing is sent to a third party to find PII.
+Detection runs on orq.ai's own model, on orq.ai infrastructure. Nothing is sent to a third party to find PII.
 
 ### Step 2 · The redaction plugin, per request
 
@@ -214,7 +214,7 @@ Read the two `tagged` lines. A project rule matches requests that belong to the 
 ── Step 5 · Read the indicators on the span ───────────
 trace    : 32cf0ca40c878009ebcb1a5f3fdd0308
     chat.openai                trace                  error     1880 ms
-    chat gpt-5.6-luna          span.chat_completion   ok        1581 ms
+    chat gpt-6-luna          span.chat_completion   ok        1581 ms
     ws-refund-limit-guard      span.evaluator         ok         291 ms  passed=False outcome=condition_failed stage=output action=block
 next     : open https://my.orq.ai/traces, filter the last 5 minutes, look for the shield icon on the spans
 ```
@@ -229,7 +229,7 @@ $ orq launch claude
 
 Paste the prompt from `agent_prompt.md` in this module directory:
 
-> Using the orq MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
+> Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
 
 ## Proof
 
@@ -253,9 +253,9 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 - `orq.guardrail_rules.list()` in SDK 4.14 fails on the `_id` field the API returns. The solution uses `GET /v2/guardrail-rules`. Project rules only appear when you pass `project_id`.
 - Output guardrails do not run on streaming responses. Keep the refund agent non-streaming where enforcement matters.
 - Request-level `guardrails` are ignored on `/v3/router/responses` (accepted, not enforced, no error) as of 4.14.17. Step 3 uses `api="chat"` for that reason; rules apply to both endpoints.
-- Since orq API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+- Since orq.ai API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
-## New in orq 4.14
+## New in orq.ai 4.14
 
 Every trace now shows which guardrails and evaluators ran on a span (the shield icon and the `orq.guardrail.*` attributes above). 4.13 added sampling and a monitor-only mode for system guardrails, and 4.12 made `orq_pii_detection` and `orq_secret_detection` available in every workspace without setup.
 

@@ -11,7 +11,7 @@
 
 ## Why
 
-Most teams start with orq as a proxy: point the OpenAI SDK at `https://my.orq.ai/v3/router` and every call is traced. This module shows that the same request body also carries resilience and cost controls. The app stays a plain OpenAI client; the request grows.
+Most teams start with orq.ai as a proxy: point the OpenAI SDK at `https://my.orq.ai/v3/router` and every call is traced. This module shows that the same request body also carries resilience and cost controls. The app stays a plain OpenAI client; the request grows.
 
 ## The one concept to understand first
 
@@ -64,7 +64,7 @@ Fill in `step_2_fallback`: primary `openai/gpt-5.6-sol`, `timeout.call_timeout` 
 
 ```text
 ── Step 2 · Force a fallback ──────────────────────────
-primary  : openai/gpt-5.6-sol, call_timeout 1500 ms, then gpt-5.4-nano, then openai/gpt-5.6-luna
+primary  : openai/gpt-5.6-sol, call_timeout 1500 ms, then gpt-5.4-nano, then openai/gpt-6-luna
 answer   : Your refund of €89 has been issued to the original payment method. It should arrive within 5–7 busin…
 tools    : lookup_order → get_policy → issue_refund
 trace    : c3340b63763b85dad14bb82b470e26b8
@@ -74,11 +74,11 @@ next     : in the trace, expect chat gpt-5.6-sol (error, timeout) → retry → 
 Open the trace. The spans read:
 
 ```text
-chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+chat openai/gpt-5.6-sol    span.responses          error
 retry gpt-5.6-sol          span.retry              ok
-chat openai/gpt-5.6-sol    span.responses          error   1502 ms
+chat openai/gpt-5.6-sol    span.responses          error
+chat openai/gpt-5.4-nano   span.responses          ok
 fallback gpt-5.4-nano      span.fallback_selected  ok
-chat openai/gpt-5.4-nano   span.responses          ok      1115 ms
 ```
 
 Two failed attempts on the primary: the `retry` you asked for, then the fallback. If sol answered under 1500 ms the fallback did not fire; run it again or lower the timeout. Nano then finished the whole turn, refund included: it does not stop to confirm the way luna and sol do.
@@ -90,8 +90,8 @@ Two failed attempts on the primary: the `retry` you asked for, then the fallback
 question : What is your refund window?
 first    : 2.95s  trace ca1e8094619bf349048dd21fc324dfd2
 second   : 1.62s  trace a707450029628fa2abe716673a0b2fd8
-verdict  : second call served from cache
-next     : open the second trace; the cached span reports zero provider cost
+verdict  : timing is noisy; the proof is span.cache_retrieval in each trace: cache-miss on the first, cache-hit on the second
+next     : `orq traces list-spans <second-trace-id> -o json` (indexing takes up to a minute); the cache-hit trace reports zero provider cost
 ```
 
 `exact_match` caches on the full request body, so the second run of the same question with the same tools and system prompt is served from cache. Look at the second trace: the cached span reports zero provider cost. The maximum `ttl` is 259200 seconds.
@@ -102,7 +102,7 @@ next     : open the second trace; the cached span reports zero provider cost
 
 ```text
 ── Step 4 · Split traffic between two models ──────────
-models   : openai/gpt-5.6-luna (0.5), openai/gpt-5.6-terra (0.5)
+models   : openai/gpt-6-luna (0.5), openai/gpt-5.6-terra (0.5)
 calls    : 4
 traces   : eb220618454f4093bbb3c6044d8a330b, 8d2bb7afd83f7009652ba27f74e5c562, 06e33d1d9e65f9727b701549165959c7, 7bd4463b4b0f897caa13ed9c4131b6a8
 next     : open each trace and read orq.load_balancer.selected_model on the model span
@@ -111,8 +111,8 @@ next     : open each trace and read orq.load_balancer.selected_model on the mode
 ### Step 5 · The same thing from the CLI
 
 ```console
-$ orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
-"Ok!"
+$ orq chat create --model openai/gpt-6-luna --messages '[{"role":"user","content":"say ok"}]' -o json | jq .choices[0].message.content
+"ok"
 $ orq traces search --from 5m --to now -o json | jq '.data[] | {trace_id, name, model, cost: .cost.total}' | head -20
 ```
 
@@ -124,7 +124,7 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
 
 ## Done when
 
@@ -140,7 +140,7 @@ Paste `agent_prompt.md`:
 - `cache` keys on the exact request. A different `thread` or `metadata` value is a different cache key.
 - The load balancer picks per request. With two models and four calls you may see the same model four times.
 
-## New in orq 4.13
+## New in orq.ai 4.13
 
 Router error envelopes are consistent across providers, so the OpenAI SDK parses every error, and rate-limited requests return `Retry-After`. Incremental streaming (4.11) lowers time to first token on the same endpoint.
 

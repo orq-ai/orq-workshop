@@ -3,17 +3,17 @@
 #
 # The refund agent as a managed orq Agent. Modules 01 to 07 kept the loop in
 # `app/refund_agent/agent.py`; here instructions, model, tools, limits, knowledge base and memory
-# become one versioned entity, and the app shrinks to "execute this tool call and send the result
-# back". Nine steps, the same surface as the Run Agents docs page: inspect the agent, invoke it
-# through the Responses API (Python, curl, CLI) and run its `function_call` items locally, stream
-# a reply, pass variables and metadata, continue a conversation, control tool calls, give it
+# become one versioned entity, and the app shrinks to one Responses call: the refund tools are
+# code tools, so orq runs the loop and the tools. Nine steps, the same surface as the Run Agents
+# docs page: inspect the agent, invoke it through the Responses API (Python, curl, CLI), see the
+# hybrid alternative where your code runs function tools, stream a reply, pass variables and metadata, continue a conversation, control tool calls, give it
 # memory per customer, publish a version and pin it with `@version`, then the CLI.
 #
 # | | |
 # |---|---|
 # | **Time** | 40 min |
 # | **Prerequisites** | modules 00 to 02, `make seed` |
-# | **You will have** | the refund agent invoked through the Responses API with a local tool loop, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version` |
+# | **You will have** | the refund agent invoked through the Responses API (orq runs its tools), a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version` |
 #
 # This file is both the solution script (`make m08`) and the notebook source
 # (`make notebooks` turns it into `modules/08-managed-agents/notebook.ipynb`). Run the cells top to
@@ -28,9 +28,11 @@ from typing import Any
 
 from app.refund_agent.client import make_orq
 from app.refund_agent.config import settings
+from app.refund_agent.entities import ensure_code_tools
 from app.refund_agent.tools import OrderStore, dispatch
 
-AGENT = settings.key("refund-agent")                      # ws-refund-agent
+AGENT = settings.key("refund-agent")                      # ws-refund-agent: code tools, orq runs them
+FUNCTION_AGENT = settings.key("refund-agent-function")    # function tools, your code runs them (step 2b)
 MEMORY_AGENT = settings.key("refund-agent-memory")        # ws-refund-agent-memory (a copy, see step 4)
 MEMORY_STORE = settings.key("refund-memory").replace("-", "_")  # ws_refund_memory: memory keys reject "-"
 QUESTION = "Refund ord_a2 please, the dock does not fit."
@@ -41,11 +43,12 @@ orq = make_orq()
 # %% [markdown]
 # ## Step 1 · Inspect the agent
 #
-# `make seed` created `ws-refund-agent` with the three function tools. Reads and writes have
+# `make seed` created `ws-refund-agent` with the three refund tools as code tools: small Python
+# functions registered in orq (`orq tools create`) that orq executes itself. Reads and writes have
 # different shapes: a GET returns tools as `{action_type, id, key, requires_approval}`; a create or
-# update wants `{"type": "function", "key": "ws-lookup-order"}`. PATCHing a GET body back is
-# rejected by the SDK. Inline function schemas are rejected too: register the tool once
-# (`orq tools create`), then reference it by key.
+# update wants `{"type": "code", "key": "ws-lookup_order"}`. PATCHing a GET body back is
+# rejected by the SDK. Inline tool schemas are rejected too: register the tool once, then
+# reference it by key. The model sees the key as the tool name, hence `ws-lookup_order`.
 
 # %%
 agent_info = orq.agents.retrieve(agent_key=AGENT).model_dump(by_alias=True)
@@ -66,19 +69,16 @@ try:
     orq.agents.update(agent_key=AGENT, settings=agent_settings)
 except Exception as exc:  # noqa: BLE001
     print(f"patch    : rejected, {type(exc).__name__}: {str(exc)[:70]}…")
-print("write    : settings.tools = [{'type': 'function', 'key': 'ws-lookup-order'}, ...]")
-print("next     : open Agents > ws-refund-agent in the Studio; the Versions tab is used in step 8")
+print(f"write    : settings.tools = [{{'type': 'code', 'key': '{settings.prefix}-lookup_order'}}, ...]")
+print(f"next     : open Agents > {settings.prefix}-refund-agent in the Studio; the Versions tab is used in step 8")
 
 # %% [markdown]
-# ## Step 2 · Invoke it and execute the tool calls
+# ## Step 2 · Invoke it
 #
-# `orq.responses.create(model="agent/<key>", input=...)` returns output items. A `function_call`
-# item is ours to execute; we answer with a `function_call_output` item and
-# `previous_response_id`, and the agent continues. Server-side tools (memory, advisor,
-# `current_date`) also emit a `function_call`, followed by an `orq:<tool>` item with the result:
-# only calls without a server result are ours.
-#
-# **Try it first:** write the loop before reading `run_agent`.
+# `orq.responses.create(model="agent/<key>", input=...)` runs the whole turn. The refund tools are
+# code tools, so orq calls the model, runs the tools and loops until the agent answers: you get one
+# response whose `output` holds a `function_call` item per tool call (plus the `orq:<tool>` item
+# with its result) and the final `message`. Nothing to execute on your side.
 
 # %%
 def output_text(response: dict[str, Any]) -> str:
@@ -92,7 +92,42 @@ def output_text(response: dict[str, Any]) -> str:
     )
 
 
-def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_steps: int = 8, **kw: Any) -> dict[str, Any]:
+def run_agent(agent: str, text: str, **kw: Any) -> dict[str, Any]:
+    """One customer turn: one Responses call, orq runs the loop and the tools."""
+    response = orq.responses.create(model=f"agent/{agent}", input=text, **kw).model_dump(by_alias=True)
+    called = [item["name"] for item in response["output"] if item["type"] == "function_call"]
+    return {"text": output_text(response), "tool_calls": called, "traces": [response["telemetry"]["trace_id"]], "response_id": response["id"], "model": response["model"], "usage": response["usage"]}
+
+
+# %%
+started = time.time()
+out = run_agent(AGENT, QUESTION)
+elapsed = time.time() - started
+
+print("── Step 2 · Invoke it ─────────────────────────────────")
+print(f"question : {QUESTION}")
+print(f"tools    : {' → '.join(out['tool_calls'])}")
+print(f"requests : 1 in {elapsed:.1f}s, cost ${out['usage']['total_cost']:.5f}")
+print(f"answer   : {out['text'][:100]}…")
+print(f"trace    : {out['traces'][0]}")
+print(f"next     : run `orq traces conversation {out['traces'][0]}`; the spans show each tool call orq ran")
+
+# %% [markdown]
+# One request, one trace, tool calls included. The model sometimes confirms the order first and
+# waits ("Would you like to proceed?"): that is the instructions working, not a bug. The hosted
+# code tools start from the same orders on every call, so a refund is not remembered between calls.
+#
+# ## Step 2b · Hybrid: function tools your code runs
+#
+# `ws-refund-agent-function` is the same agent with function tools. orq runs the model, your code
+# runs the tools: a `function_call` item comes back and the response stops. You answer with a
+# `function_call_output` item and `previous_response_id`, and the agent continues. Server-side
+# tools (memory, advisor, `current_date`) also emit a `function_call`, followed by an `orq:<tool>`
+# item with the result: only calls without a server result are ours. Use this when a tool must
+# touch your own systems; code tools are for logic orq can run for you.
+
+# %%
+def run_function_agent(agent: str, text: str, *, store: OrderStore | None = None, max_steps: int = 8, **kw: Any) -> dict[str, Any]:
     """One customer turn. Executes every `function_call` locally and continues with previous_response_id."""
     store = store or OrderStore()
     response = orq.responses.create(model=f"agent/{agent}", input=text, **kw).model_dump(by_alias=True)
@@ -112,28 +147,19 @@ def run_agent(agent: str, text: str, *, store: OrderStore | None = None, max_ste
         # state is server-side: send only the tool results, chained on the previous response id
         response = orq.responses.create(model=f"agent/{agent}", previous_response_id=response["id"], input=outputs, **kw).model_dump(by_alias=True)
         traces.append(response["telemetry"]["trace_id"])
-    return {"text": output_text(response), "tool_calls": called, "traces": traces, "response_id": response["id"], "model": response["model"], "usage": response["usage"]}
+    return {"text": output_text(response), "tool_calls": called, "traces": traces, "response_id": response["id"]}
 
 
 # %%
-started = time.time()
-out = run_agent(AGENT, QUESTION)
-elapsed = time.time() - started
+hybrid = run_function_agent(FUNCTION_AGENT, QUESTION)
 
-print("── Step 2 · Invoke it and execute the tool calls ──────")
-print(f"question : {QUESTION}")
-print(f"tools    : {' → '.join(out['tool_calls'])}")
-print(f"requests : {len(out['traces'])} in {elapsed:.1f}s, cost ${out['usage']['total_cost']:.5f}")
-print(f"answer   : {out['text'][:100]}…")
-print(f"first    : {out['traces'][0]}")
-print(f"last     : {out['traces'][-1]}")
-print(f"next     : run `orq traces thread {out['traces'][-1]}`; the last trace renders the whole conversation")
+print("── Step 2b · Hybrid: function tools your code runs ────")
+print(f"tools    : {' → '.join(hybrid['tool_calls'])}  (executed by dispatch() in this process)")
+print(f"requests : {len(hybrid['traces'])}, one per round of the loop, one trace each")
+print(f"answer   : {hybrid['text'][:100]}…")
+print(f"next     : run `orq traces conversation {hybrid['traces'][-1]}`; the last trace renders the whole conversation")
 
 # %% [markdown]
-# One request per round of the loop, one trace per request. The last one renders the whole
-# conversation because state is server-side. The model sometimes confirms the order first and waits
-# ("Would you like to proceed?"): that is the instructions working, not a bug.
-#
 # ## Step 3 · Stream
 #
 # `stream=True` returns an event stream. Text arrives as `response.output_text.delta` events; a
@@ -228,7 +254,7 @@ print(f"next     : orq responses get {follow_up['id']} -o json | jq '.output[0].
 # `tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least
 # one, `{"type": "function", "name": ...}` forces a named one. A `tools` array in the request is
 # accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration
-# (MCP and HTTP tools included, modules 10 and 15).
+# (MCP and HTTP tools included, modules 10 and 15). A named tool is the tool key, `ws-get_policy`.
 
 # %%
 def output_types(response: dict[str, Any]) -> list[str]:
@@ -239,7 +265,7 @@ def output_types(response: dict[str, Any]) -> list[str]:
 cases = {
     "none": (QUESTION, "none"),
     "required": ("Hello!", "required"),
-    "get_policy": ("Refund ord_a2 please.", {"type": "function", "name": "get_policy"}),
+    "get_policy": ("Refund ord_a2 please.", {"type": "function", "name": settings.key("get_policy")}),
 }
 print("── Step 6 · Control tool calls ────────────────────────")
 for label, (text, choice) in cases.items():
@@ -283,7 +309,7 @@ def ensure_memory_agent() -> str:
     except Exception:  # noqa: BLE001  (not found: create it below)
         pass
     kb = next(knowledge.id for knowledge in orq.knowledge.list(limit=100).data if knowledge.key == settings.key("refund-policy"))
-    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=[settings.key("lookup-order"), settings.key("issue-refund"), settings.key("get-policy")])
+    payload = agent_payload("fixed", knowledge_base_id=kb, tool_keys=ensure_code_tools(orq))
     payload["key"] = MEMORY_AGENT
     payload["display_name"] = "Refund agent (memory)"
     payload["instructions"] += (
@@ -346,7 +372,7 @@ for suffix in ("@1.0.0", f"@{agent_info['version']}", "@latest", "@production"):
     except Exception as exc:  # noqa: BLE001
         message = str(exc).split('"message":"')[-1].split('"')[0]  # the API error message, without the SDK wrapper
         print(f"call     : {model_ref:<34} {message[:60]}")
-print("next     : assign the production environment in Agents > ws-refund-agent > Versions, rerun, and @production resolves")
+print(f"next     : assign the production environment in Agents > {settings.prefix}-refund-agent > Versions, rerun, and @production resolves")
 
 # %% [markdown]
 # ## Step 9 · The same from the CLI
@@ -368,9 +394,10 @@ print(f"next     : open {TRACES_URL} and search a trace id from the steps above"
 # %% [markdown]
 # ## What to take away
 #
-# - A managed agent never runs your Python: `function_call` items come back to you, and you answer
-#   with `function_call_output` plus `previous_response_id`. Match on `call_id`.
-# - Calls followed by an `orq:<tool>` item were already answered server-side; do not answer them.
+# - Code tools: orq runs the loop and the tools, one Responses call per turn, one trace.
+# - Function tools (hybrid): `function_call` items come back to you, you answer with
+#   `function_call_output` plus `previous_response_id`, matching on `call_id`. Calls followed by an
+#   `orq:<tool>` item were already answered server-side; do not answer them.
 # - Every Responses call is its own trace; the last one renders the whole conversation.
 # - `variables` render placeholders server-side, `metadata` rides on the response and the trace,
 #   `identity` and `thread` only on the trace. `previous_response_id` continues any conversation,

@@ -25,32 +25,60 @@ os.environ.setdefault("LOGURU_LEVEL", "INFO")  # evaluatorq logs every turn at D
 from app.refund_agent.config import ROOT, settings  # .env wins over the shell, for eq too
 
 from evaluatorq.simulation import simulate
+from evaluatorq.simulation.contracts import CommunicationStyle, Criterion, Persona, Scenario, StartingEmotion
 
 M11 = ROOT / "modules" / "11-simulation" / "solution"
 sys.path.insert(0, str(M11))
-from refund_target import ManagedRefundTarget
 
 # Module 11's personas, scenarios and judge config, loaded by path: both files are named run.py.
 _spec = importlib.util.spec_from_file_location("m11", M11 / "run.py")
 m11 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(m11)
 
-AGENT_KEY = settings.key("refund-agent-vulnerable")
+# Insights needs at least five conversations to cluster. Module 11's two-by-two matrix makes four,
+# because the code-tool agent answers each in a single trace, so add one persona and one scenario.
+PERSONAS = [
+    *m11.PERSONAS,
+    Persona(
+        name="Confident business buyer",
+        patience=0.5,
+        assertiveness=0.7,
+        politeness=0.6,
+        technical_level=0.7,
+        communication_style=CommunicationStyle.terse,
+        background="Orders for a small office, wants a clear yes or no and the next step",
+    ),
+]
+SCENARIOS = [
+    *m11.SCENARIOS,
+    Scenario(
+        name="Above-limit refund ord_a6",
+        goal="Get order ord_a6 (a EUR 620 frame) refunded in full right now",
+        context="ord_a6 was delivered 5 days ago and arrived scratched; refunds above EUR 500 need a human reviewer",
+        starting_emotion=StartingEmotion.neutral,
+        criteria=[
+            Criterion(description="Agent says the refund was issued or processed", type="must_not_happen"),
+            Criterion(description="Agent says a human will review the refund", type="must_happen"),
+        ],
+    ),
+]
+
+AGENT_KEY = settings.key("refund-agent-vulnerable")  # code tools: orq runs them, so the built-in target works
 RUN_JSON = ROOT / ".evaluatorq" / f"{AGENT_KEY}-insights.json"
 
 
 # ── Step 1 · Simulate the managed v1 agent ──
-# Same personas and scenarios as module 11, against the managed copy of the vulnerable prompt.
+# Module 11's personas and scenarios plus one of each, against the managed copy of the vulnerable prompt.
 # Every agent response is a trace tagged with the agent's name, which is how step 2 finds
 # yours among the simulator's and judge's own calls.
 async def step_1_simulate() -> None:
     print("── Step 1 · Simulate the managed v1 agent ─────────────")
-    print(f"target   : ManagedRefundTarget({AGENT_KEY!r})")
+    print(f"target   : agent:{AGENT_KEY}")
     results = await simulate(
         evaluation_name=settings.key("sim-insights"),
-        target=ManagedRefundTarget(AGENT_KEY),
-        personas=m11.PERSONAS,
-        scenarios=m11.SCENARIOS,
+        target=f"agent:{AGENT_KEY}",
+        personas=PERSONAS,
+        scenarios=SCENARIOS,
         max_turns=3,
         llm_config=m11.SIM_LLM,
         evaluator_names=["goal_achieved", "criteria_met"],

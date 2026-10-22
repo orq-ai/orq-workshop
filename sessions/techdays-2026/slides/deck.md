@@ -168,7 +168,7 @@ Watch for: the trace in the Studio, its tool calls, its cost, the agent version 
 
 ## 2 · A user simulator, your agent, a judge
 
-![w:1000](../modules/11-simulation/assets/simulation-loop.png)
+![w:1000](../../../modules/11-simulation/assets/simulation-loop.png)
 
 <!-- Hand-written test transcripts go stale the day the prompt changes. A simulator writes new ones every run. -->
 
@@ -355,7 +355,7 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ## 4 · Swap to `fixed_instructions.md`, re-run
 
-![w:1000](../modules/11-simulation/assets/11-step1-persona-matrix.png)
+![w:1000](../../../modules/11-simulation/assets/11-step1-persona-matrix.png)
 
 <!-- 1:46. In module 11, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the module 11 README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
 
@@ -422,7 +422,7 @@ Building evals from traces, testing the judge, red teaming
 
 ## Read traces before you write evals
 
-![h:520](../modules/07-failure-analysis-evals/assets/error-analysis-loop.png)
+![h:520](../../../modules/07-failure-analysis-evals/assets/error-analysis-loop.png)
 
 <!-- Evaluators written before reading traces measure the failures you imagined, not the ones you have. -->
 
