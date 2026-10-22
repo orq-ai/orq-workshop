@@ -111,6 +111,20 @@
   .pick { display:flex; align-items:center; gap:.4rem; }
   .pick input[list] { width:15rem; min-width:0; }
   .controls #reset { align-self:flex-end; white-space:nowrap; }
+  @media (min-width:1280px) {  /* a thin top bar: one row, smaller controls, no subtitle */
+    .chat-topbar { padding:.45rem 1.2rem; }
+    .title-mark { margin-bottom:.3rem; }
+    .title-copy h1 { font-size:1.1rem; }
+    .title-copy p { display:none; }
+    .controls { flex-wrap:nowrap; align-items:flex-end; gap:.5rem; }
+    .controls label,.controls .demo-label { margin:0 0 .1rem .05rem; font-size:.6rem; }
+    .controls .kind { height:34px; }
+    .controls .kind button { padding-block:0; font-size:.64rem; }
+    .controls select,.controls input[list] { min-height:34px; padding-block:.2rem; font-size:.82rem; }
+    .controls .control-button { min-height:34px; padding-block:.2rem; }
+    .pick input[list] { width:12rem; }
+    .controls select { max-width:8.5rem; }
+  }
   @media (max-width:430px) { .pick { flex-wrap:wrap; } .pick input[list] { width:100%; max-width:100%; } }
   .bar #send { margin-left:auto; }
   textarea { display:block; width:100%; min-height:48px; max-height:9rem; resize:vertical; padding:.75rem .85rem .35rem; border:0; border-radius:10px 10px 0 0; background:transparent; line-height:1.45; }
