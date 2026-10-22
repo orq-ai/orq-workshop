@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<title>October Insurance · Building agents with orq.ai</title>
+<link rel="stylesheet" href="assets/reveal/reveal.css">
+<link rel="stylesheet" href="deck.css">
+<link rel="stylesheet" href="october-insurance.css">
+</head>
+<body>
+<div class="reveal"><div class="slides">
+<!-- 00-opening.html -->
+
+<section class="slide full title a-title">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<span class="eyebrow">OCTOBER INSURANCE · 19-22 OCT 2026</span>
+<h1>Building agents with orq.ai</h1>
+<p class="subtitle">Four days on site. Platform first, then agents, evals and your own use cases.</p>
+<p class="hosts">Bauke Brenninkmeijer · orq.ai</p>
+<div class="a-hero"><strong>4</strong><span>DAYS · ON SITE</span></div>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Bauke Brenninkmeijer</h1>
+<p class="subtitle">Your trainer for the technical days, from orq.ai.</p>
+<div class="c-me"><img src="assets/bauke.jpg" alt="Portrait of Bauke Brenninkmeijer"><div class="cards3 a-runs">
+<div class="card pick"><span class="eyebrow">HOW WE WORK</span><h3>Hands-on</h3><p>Short explanations, then you do it in Studio, the CLI or code.</p><p>Questions any time, and 5 minutes after every practical.</p></div>
+</div></div>
+<aside class="notes" style="display:none">Add a personal background line (role at orq.ai, what you build, a photo) before presenting.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full c-out">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Today and tomorrow</h1>
+<p class="subtitle">Day 1 is the platform. Day 2 is agents, then a hackathon on your use cases.</p>
+<div class="out-grid">
+<div class="out-day"><h3><b>DAY 1</b> Mon 19 Oct · Platform and IT controls</h3>
+<span class="out-part">MORNING · 09:00</span><ul><li>Platform overview and set-up</li><li>Platform options and agent basics</li><li class=ex>Model access: Europe and ZDR<i>EXERCISE</i></li></ul>
+<div class="out-break">12:00 · LUNCH</div>
+<span class="out-part">AFTERNOON</span><ul><li>Gateway resilience and tracing</li><li class=ex>Keys, roles and audit logs<i>EXERCISE</i></li><li>Budgets and spend</li><li class=ex>Guardrails and PII<i>EXERCISE</i></li></ul></div>
+<div class="out-day"><h3><b>DAY 2</b> Tue 20 Oct · Agents, then build</h3>
+<span class="out-part">MORNING · 09:00</span><ul><li>Build a generic agent</li><li class=ex>Knowledge bases and retrieval<i>EXERCISE</i></li><li class=ex>MCP gateway: expose and hide tools<i>EXERCISE</i></li><li>Build from your coding assistant</li></ul>
+<div class="out-break">12:00 · LUNCH</div>
+<span class="out-part hack">AFTERNOON · HACKATHON</span><ul class="hack"><li>Kickoff: your use cases</li><li>Build: your first agents</li><li>Evals and LLM-as-judge</li><li>Demos and review</li></ul></div>
+</div>
+<p class="note">Each exercise is 10-15 minutes, followed by 5 minutes for questions.</p>
+<aside class="notes" style="display:none">Source: sessions/october-insurance-2026/run-of-show-day1.md and day2.md. Lunch is shown at 12:00 on both days; the run-of-show has it at 11:50 (day 1) and 11:30 (day 2), so adjust that file or the slide to match. Tracing and gateway resilience are module work (make m01, m02).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full a-agenda">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Day 1: the platform</h1>
+<p class="subtitle">Only what the master deck does not already cover.</p>
+<ol class="concepts">
+  <li><b>The platform map</b><span>How Studio, CLI and evaluatorq relate, and where orq.ai runs.</span></li>
+  <li><b>Tools, loops and MCP in orq.ai</b><span>Who runs a tool, who owns the loop, and why MCP goes through a gateway.</span></li>
+  <li><b>Models and the gateway</b><span>Model Garden, EU and ZDR filters, routing, fallbacks.</span></li>
+  <li><b>IT controls</b><span>Roles, SSO, keys, audit logs, budgets, usage, guardrails, traces.</span></li>
+  <li><b>MCP, knowledge, agents and CLI</b><span>The pieces Day 2 builds on.</span></li>
+</ol>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full a-master">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Already in the master deck</h1>
+<p class="subtitle">Not repeated here. Open the master deck for these.</p>
+<table class="map">
+<thead><tr><th>Topic</th><th>Master deck slides</th></tr></thead>
+<tbody>
+<tr><td>LLM basics, automation vs workflow vs agent</td><td>10-11</td></tr>
+<tr><td>Tools</td><td>12-14</td></tr>
+<tr><td>Model parameters</td><td>15-27</td></tr>
+<tr><td>Orqflow, Smart Router, observability, governance</td><td>29-37</td></tr>
+<tr><td>Guardrails and PII redaction</td><td>68-75</td></tr>
+<tr><td>Evaluators, experiments, annotation</td><td>76-85, 102</td></tr>
+<tr><td>Agents and sub-agents</td><td>95-101</td></tr>
+</tbody></table>
+<aside class="notes" style="display:none">Say aloud: a model can also use context supplied in a request; output-token limits and context windows are different. Source: .context/october-insurance-deck.md, slides 10 and 19 (the master-deck map points learners to these basics).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Platform map: how the pieces connect</h1>
+<p class="subtitle">Your code and your coding agent both call the same gateway.</p>
+<svg class="a-map" viewBox="0 0 1776 580" role="img" aria-label="Diagram: your agent and a coding agent send calls to the orq.ai AI Gateway, which routes to model providers, runs a managed agent and sends traces to the Studio and CLI; the coding agent also uses the orq MCP server.">
+  <defs>
+    <marker id="a-ao" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#DF5325"/></marker>
+    <marker id="a-ai" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#025558"/></marker>
+  </defs>
+  <rect class="zone" x="1" y="10" width="378" height="569" rx="10"/><text class="zl" x="22" y="40">YOUR MACHINE</text>
+  <rect class="zone" x="431" y="10" width="868" height="569" rx="10"/><text class="zl" x="452" y="40">ORQ.AI</text>
+  <rect class="zone" x="1361" y="10" width="414" height="569" rx="10"/><text class="zl" x="1382" y="40">PROVIDERS</text>
+  <!-- arrows -->
+  <path class="ao" d="M360 105 H478" marker-end="url(#a-ao)"/>
+  <path class="ao" d="M360 460 H405 V150 H478" marker-end="url(#a-ao)"/>
+  <path class="ai" d="M940 120 H1398" marker-end="url(#a-ai)"/>
+  <path class="ai" d="M560 180 V258" marker-end="url(#a-ai)"/>
+  <path class="ai dash" d="M860 180 V215 Q860 225 870 225 H1130 Q1140 225 1140 235 V258" marker-end="url(#a-ai)"/>
+  <path class="ai dash" d="M478 335 H190 V182" marker-end="url(#a-ai)"/>
+  <path class="ai" d="M360 510 H478" marker-end="url(#a-ai)"/>
+  <!-- labels -->
+  <text class="ll o" x="420" y="88" text-anchor="middle">ROUTER</text>
+  <text class="ll" x="1169" y="102" text-anchor="middle">PROVIDER CALL</text>
+  <text class="ll" x="578" y="228">RESPONSES</text>
+  <text class="ll" x="1000" y="208" text-anchor="middle">TRACES</text>
+  <text class="ll" x="275" y="322" text-anchor="middle">FUNCTION_CALL</text>
+  <text class="ll o" transform="translate(392 228) rotate(-90)" text-anchor="middle">MESSAGES API</text>
+  <text class="ll" x="419" y="498" text-anchor="middle">MCP</text>
+  <!-- nodes -->
+  <g class="node"><rect x="20" y="60" width="340" height="120" rx="8"/><text class="nt" x="190" y="104" text-anchor="middle">Your agent</text><text class="nm" x="190" y="134" text-anchor="middle">your app code</text><text class="nm" x="190" y="160" text-anchor="middle">calls the gateway</text></g>
+  <g class="node gw"><rect x="480" y="60" width="460" height="120" rx="8"/><text class="nt" x="710" y="104" text-anchor="middle">AI Gateway</text><text class="nm" x="710" y="134" text-anchor="middle">/v3/router · /v3/anthropic</text><text class="nm" x="710" y="160" text-anchor="middle">routing · guardrails · budgets</text></g>
+  <g class="node ext"><rect x="1400" y="70" width="336" height="100" rx="8"/><text class="nt" x="1568" y="110" text-anchor="middle">Model providers</text><text class="nm" x="1568" y="142" text-anchor="middle">openai · anthropic · …</text></g>
+  <g class="node ent"><rect x="480" y="260" width="460" height="110" rx="8"/><text class="nt" x="710" y="304" text-anchor="middle">Managed agent</text><text class="nm" x="710" y="338" text-anchor="middle">built and run in orq.ai</text></g>
+  <g class="node ent"><rect x="980" y="260" width="310" height="110" rx="8"/><text class="nt" x="1135" y="304" text-anchor="middle">Studio + CLI</text><text class="nm" x="1135" y="338" text-anchor="middle">traces · experiments</text></g>
+  <g class="node ext"><rect x="20" y="430" width="340" height="110" rx="8"/><text class="nt" x="190" y="474" text-anchor="middle">Coding agent</text><text class="nm" x="190" y="508" text-anchor="middle">orq launch claude</text></g>
+  <g class="node ent"><rect x="480" y="430" width="460" height="110" rx="8"/><text class="nt" x="710" y="474" text-anchor="middle">orq MCP server</text><text class="nm" x="710" y="508" text-anchor="middle">/v2/mcp · tools + skills</text></g>
+</svg>
+<p class="a-legend">orange = call into the AI Gateway · solid = internal call · dashed = return or passive</p>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Platform map: who uses which tool</h1>
+<p class="subtitle">One workspace and shared traces; Studio login and API keys serve different jobs.</p>
+<svg class="e-flowmap l-map" viewBox="0 0 1776 690" role="img" aria-label="Diagram: business users, engineers and quality engineers reach Studio by browser login and the orq CLI and evaluatorq by project API key; all three write traces into one workspace holding AI Gateway, projects and keys, budgets, traces and experiments">
+<defs><marker id="m-ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker><marker id="m-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker></defs>
+<g class="node ent"><rect x="50" y="10" width="500" height="100" rx="12"/><text class="nt" x="300" y="58" text-anchor="middle">Everyone</text><text class="nm" x="300" y="92" text-anchor="middle">business, IT, engineers</text></g>
+<path class="ai" d="M300 110V228" marker-end="url(#m-ai)"/><text class="ll" x="316" y="178">BROWSER LOGIN</text>
+<g class="node hot"><rect x="50" y="230" width="500" height="150" rx="12"/><rect class="chip" x="66" y="244" width="68" height="28" rx="5"/><text class="tg" x="76" y="264">STU</text><text class="nt" x="300" y="318" text-anchor="middle">Studio</text><text class="nm" x="300" y="350" text-anchor="middle">Web app: configure, review.</text></g>
+<path class="ao" d="M300 380V498" marker-end="url(#m-ao)"/><text class="ll o" x="316" y="446">TRACES</text>
+<g class="node ent"><rect x="638" y="10" width="500" height="100" rx="12"/><text class="nt" x="888" y="58" text-anchor="middle">Engineers</text><text class="nm" x="888" y="92" text-anchor="middle">and coding agents</text></g>
+<path class="ai" d="M888 110V228" marker-end="url(#m-ai)"/><text class="ll" x="904" y="178">PROJECT API KEY</text>
+<g class="node hot"><rect x="638" y="230" width="500" height="150" rx="12"/><rect class="chip" x="654" y="244" width="68" height="28" rx="5"/><text class="tg" x="664" y="264">CLI</text><text class="nt" x="888" y="318" text-anchor="middle">orq CLI</text><text class="nm" x="888" y="350" text-anchor="middle">orq setup, orq launch, traces.</text></g>
+<path class="ao" d="M888 380V498" marker-end="url(#m-ao)"/><text class="ll o" x="904" y="446">TRACES</text>
+<g class="node ent"><rect x="1226" y="10" width="500" height="100" rx="12"/><text class="nt" x="1476" y="58" text-anchor="middle">Engineers</text><text class="nm" x="1476" y="92" text-anchor="middle">who test quality</text></g>
+<path class="ai" d="M1476 110V228" marker-end="url(#m-ai)"/><text class="ll" x="1492" y="178">PROJECT API KEY</text>
+<g class="node hot"><rect x="1226" y="230" width="500" height="150" rx="12"/><rect class="chip" x="1242" y="244" width="68" height="28" rx="5"/><text class="tg" x="1252" y="264">EVQ</text><text class="nt" x="1476" y="318" text-anchor="middle">evaluatorq</text><text class="nm" x="1476" y="350" text-anchor="middle">Python + TypeScript eval runs.</text></g>
+<path class="ao" d="M1476 380V498" marker-end="url(#m-ao)"/><text class="ll o" x="1492" y="446">TRACES</text>
+<rect class="zone" x="20" y="500" width="1736" height="180" rx="16"/><text class="zl" x="44" y="534">ONE WORKSPACE</text>
+<g class="node"><rect x="58" y="556" width="300" height="104" rx="12"/><text class="nt" x="208" y="602" text-anchor="middle">AI Gateway</text><text class="nm" x="208" y="634" text-anchor="middle">model calls</text></g>
+<g class="node"><rect x="398" y="556" width="300" height="104" rx="12"/><text class="nt" x="548" y="602" text-anchor="middle">Projects and keys</text><text class="nm" x="548" y="634" text-anchor="middle">scope API access</text></g>
+<g class="node"><rect x="738" y="556" width="300" height="104" rx="12"/><text class="nt" x="888" y="602" text-anchor="middle">Budgets</text><text class="nm" x="888" y="634" text-anchor="middle">spend limits</text></g>
+<g class="node hot"><rect x="1078" y="556" width="300" height="104" rx="12"/><text class="nt" x="1228" y="602" text-anchor="middle">Traces</text><text class="nm" x="1228" y="634" text-anchor="middle">shared by all three</text></g>
+<g class="node"><rect x="1418" y="556" width="300" height="104" rx="12"/><text class="nt" x="1568" y="602" text-anchor="middle">Experiments</text><text class="nm" x="1568" y="634" text-anchor="middle">evaluatorq runs</text></g>
+</svg>
+<aside class="notes" style="display:none">Sources: modules/00-setup/README.md (browser login in Step 1; project-scoped API key in Step 2); https://docs.orq.ai/reference/cli (Authentication and Coding agents); https://docs.orq.ai/docs/api-keys.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>The Studio sidebar</h1>
+<p class="subtitle">Five folders. Closed on the left, opened on the right.</p>
+<div class="sbs2 a-sbs">
+  <figure><img src="assets/shots/studio-sidebar-collapsed.png" alt="Studio sidebar with all folders closed"><figcaption>STUDIO · FOLDERS CLOSED</figcaption></figure>
+  <figure><img src="assets/shots/studio-sidebar-expanded-1.png" alt="Studio sidebar, AI Gateway folder open"><figcaption>OPENED · AI GATEWAY</figcaption></figure>
+  <figure><img src="assets/shots/studio-sidebar-expanded-2.png" alt="Studio sidebar, Observability folder open"><figcaption>OPENED · OBSERVABILITY</figcaption></figure>
+  <figure><img src="assets/shots/studio-sidebar-expanded-3.png" alt="Studio sidebar, Managed Agents folder open"><figcaption>OPENED · MANAGED AGENTS</figcaption></figure>
+  <figure><img src="assets/shots/studio-sidebar-expanded-4.png" alt="Studio sidebar, Optimizations and Prompt Management folder open"><figcaption>OPENED · LAST TWO</figcaption></figure>
+</div>
+<aside class="notes" style="display:none">Source: screenshots of the Studio sidebar, 18 Oct 2026, captured in Chrome at 2x.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Four capability areas</h1>
+<p class="subtitle">A mental map of what the platform does; menu labels may differ.</p>
+<div class="k-map">
+  <div class="k-row">
+    <div class="q-node k-agents"><small>MANAGED AGENTS</small><b>Build</b><div class="chips"><span>Tools</span><span>Skills</span><span>Memory</span><span>Prompts</span><span>Knowledge bases</span></div></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node q-check k-gw"><small>AI GATEWAY</small><b>Route every call</b><div class="chips"><span>Models</span><span>Smart Router</span><span>Routing Rules</span><span>BYOK</span><span>Budgets</span></div></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node"><small>PROVIDERS</small><b>Model call</b></div>
+  </div>
+  <div class="k-up"><span>&uarr; traces</span><span>&uarr; traces</span></div>
+  <div class="k-band k-obs"><b>AI OBSERVABILITY</b><div class="chips"><span>Traces</span><span>Threads</span><span>Monitors</span><span>Alerts</span><span>Insights</span><span>Automations</span><span>Datasets</span><span>Evaluators</span><span>Experiments</span></div></div>
+  <div class="k-band"><b>GOVERNANCE</b><div class="chips"><span>Guardrail Rules</span><span>Identities</span><span>MCP Portal</span><span>API keys + SSO</span></div></div>
+</div>
+<aside class="notes" style="display:none">Source: .context/october-insurance-deck.md, slides 29-37 and 506-515. Governance is presented as an operating layer; this is a conceptual grouping, not a literal sidebar capture.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Where orq.ai runs</h1>
+<p class="subtitle">Choose where the platform runs, then choose approved model routes.</p>
+<div class="cards3 a-runs">
+<div class="card"><span class="eyebrow">OPTION 1</span><h3>EU SaaS</h3><p>orq.ai hosts the platform in the EU.</p><p>Fastest start. Nothing to install.</p></div>
+<div class="card"><span class="eyebrow">OPTION 2</span><h3>Your VPC</h3><p>Runs inside your own AWS or Azure account.</p><p>Model data follows the provider route you select.</p></div>
+<div class="card pick"><span class="eyebrow">OPTION 3 · OCTOBER INSURANCE</span><h3>On-premise</h3><p>Runs on customer infrastructure.</p><p>Installed with supplier-provided Helm charts and guidance.</p></div>
+</div>
+<p class="note">The platform Order Form covers the licence and managed service.</p>
+<aside class="notes" style="display:none">Sources: .context/october-insurance-prep-notes.md (14 Oct 2026, on-prem URL pending and SaaS fallback; confirm current status before presenting); .context/october-insurance-sow.md (customer installation with supplier Helm charts; licence and managed service in platform Order Form).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Tools" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Tools: who runs them</h1>
+<p class="subtitle">Code tools run in orq.ai. Function tools run in your process. MCP tools run on a server you register.</p>
+<div class="pair b-pair b-trio">
+  <div class="box"><span class="eyebrow"><img class="b-ico" src="assets/tool-code.svg" alt="">CODE TOOL · RUNS IN ORQ.AI</span>
+    <p>Python registered in orq.ai. One request runs the whole loop.</p>
+    <p class="small"><span class="b-when">USE IT WHEN</span>The logic can live in orq.ai.</p></div>
+  <div class="box"><span class="eyebrow"><img class="b-ico" src="assets/tool-function.svg" alt="">FUNCTION TOOL · RUNS IN YOUR PROCESS</span>
+    <p>Your code runs it and sends the result back to the model.</p>
+    <p class="small"><span class="b-when">USE IT WHEN</span>The tool must reach your own database or private API, or needs your own approval step.</p></div>
+  <div class="box"><span class="eyebrow"><img class="b-ico" src="assets/tool-mcp.svg" alt="">MCP · RUNS ON AN MCP SERVER</span>
+    <p>Register the server in orq.ai. Agents get its tools through the MCP Gateway.</p>
+    <p class="small"><span class="b-when">USE IT WHEN</span>The tools already exist as an MCP server, yours or a vendor's.</p></div>
+</div>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Agents" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>The Responses tool loop</h1>
+<p class="subtitle">The model asks, your app runs the tool, and the result goes back until no tool call is left.</p>
+<svg class="e-flowmap l-loop" viewBox="0 -10 1776 640" role="img" aria-label="State diagram: the model call returns output items; if there is a tool call the app runs the tool and sends the result back to the model, otherwise the model gives the final answer">
+<defs>
+<marker id="l-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker>
+<marker id="l-ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker>
+</defs>
+<circle cx="40" cy="300" r="14" fill="#141319"/>
+<text class="ll" x="52" y="344" text-anchor="middle">REQUEST</text>
+<g class="node hot"><rect x="130" y="235" width="330" height="130" rx="12"/><rect class="chip" x="146" y="249" width="68" height="28" rx="5"/><text class="tg" x="156" y="269">MDL</text><text class="nt" x="295" text-anchor="middle" y="317">Model call</text><text class="nm" x="295" text-anchor="middle" y="345">returns output items</text></g>
+<g class="node"><path class="dia" d="M720 300L840 220L960 300L840 380z"/><text class="nt" x="840" y="310" text-anchor="middle">tool call?</text></g>
+<g class="node"><rect x="1060" y="35" width="420" height="160" rx="12"/><rect class="chip" x="1076" y="49" width="68" height="28" rx="5"/><text class="tg" x="1086" y="69">APP</text><text class="nt" x="1270" text-anchor="middle" y="117">App runs tool</text><text class="nm" x="1270" text-anchor="middle" y="145">runs the function call</text></g>
+<g class="node hot"><rect x="1060" y="435" width="420" height="130" rx="12"/><rect class="chip" x="1076" y="449" width="68" height="28" rx="5"/><text class="tg" x="1086" y="469">MDL</text><text class="nt" x="1270" text-anchor="middle" y="517">Final answer</text><text class="nm" x="1270" text-anchor="middle" y="545">no tool call left</text></g>
+<path class="ai" d="M54 300H128" marker-end="url(#l-ai)"/>
+<path class="ai" d="M460 300H718" marker-end="url(#l-ai)"/><text class="ll" x="590" y="282" text-anchor="middle">OUTPUT ITEMS</text>
+<path class="ai" d="M840 220V115H1058" marker-end="url(#l-ai)"/><text class="ll" x="860" y="180">YES</text>
+<path class="ao" d="M1270 35V8H295V233" marker-end="url(#l-ao)"/><text class="ll o" x="330" y="50">TOOL RESULT GOES BACK, MODEL IS CALLED AGAIN</text>
+<path class="ai" d="M840 380V500H1058" marker-end="url(#l-ai)"/><text class="ll" x="860" y="450">NO</text>
+<path class="ai" d="M1480 500H1630" marker-end="url(#l-ai)"/>
+<circle cx="1660" cy="500" r="26" fill="none" stroke="#141319" stroke-width="2.5"/><circle cx="1660" cy="500" r="14" fill="#141319"/>
+</svg>
+<p class="note b-note b-plain">Local app owns the loop and resends all items with <code>store: false</code>.</p>
+<aside class="notes" style="display:none">Module 08's managed-agent path keeps the loop in orq.ai. Sources: app/refund_agent/agent.py (local full-item Responses loop, store=False, tools lookup_order/get_policy/issue_refund); app/refund_agent/tools.py; modules/08-managed-agents/README.md (managed code-tool loop and function-tool alternative).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Agents" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Who owns the loop</h1>
+<p class="subtitle">Same tools on every path. What changes is who runs the loop and holds state.</p>
+<div class="q-lane"><small>APP CODE</small>
+  <div class="q-chain"><div class="q-node"><small>YOUR APP</small><b>Calls the model</b></div><div class="q-arr">&rarr;</div><div class="q-node"><small>YOUR APP</small><b>Runs the tool</b></div><div class="q-arr">&rarr;</div><div class="q-node q-state"><small>STATE</small><b>Resend full items</b><span><code>store: false</code></span></div></div></div>
+<div class="q-lane"><small>LANGGRAPH</small>
+  <div class="q-chain"><div class="q-node"><small>GRAPH</small><b>Calls the model</b></div><div class="q-arr">&rarr;</div><div class="q-node"><small>YOUR CODE</small><b>Supplies the tools</b></div><div class="q-arr">&rarr;</div><div class="q-node q-state"><small>STATE</small><b>Graph carries it</b><span>between steps</span></div></div></div>
+<div class="q-lane k-hot"><small>MANAGED AGENT</small>
+  <div class="q-chain"><div class="q-node q-check"><small>ORQ</small><b>Runs the model</b></div><div class="q-arr">&rarr;</div><div class="q-node"><small>YOUR APP</small><b>Runs function tools</b></div><div class="q-arr">&rarr;</div><div class="q-node q-state"><small>STATE</small><b>Stays with orq</b><span><code>previous_response_id</code></span></div></div></div>
+<p class="note b-owners-note">All three use the workshop model from <code>.env</code>. Gateway routing and tracing apply; request controls such as cache apply when configured.</p>
+<aside class="notes" style="display:none">Sources: .env.example (MODEL provider/model); app/refund_agent/agent.py (full-list stateless Responses calls); modules/02-tracing/solution/stretch_langgraph.py (LangGraph with settings.model through router); modules/08-managed-agents/README.md (managed function tools and previous_response_id); modules/01-gateway/README.md (gateway controls supplied per request in extra_body).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full m-vs">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>MCP vs MCP Gateway</h1>
+<p class="subtitle">MCP is the tool protocol. The gateway controls access to it.</p>
+<div class="q-lane"><small>MCP SERVER · DIRECT</small>
+  <div class="q-chain">
+    <div class="q-node"><small>CLIENT</small><b>Calls the server</b><span>Server-side credentials</span></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node"><small>MCP SERVER</small><b>Every tool exposed</b><span>No guaranteed logs</span></div>
+  </div>
+</div>
+<h2 class="q-split">With the MCP Gateway</h2>
+<div class="q-lane k-hot"><small>MCP GATEWAY · ONE GOVERNED URL</small>
+  <div class="q-chain">
+    <div class="q-node"><small>CLIENTS</small><b>One bearer key each</b><span>Named caller</span></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node q-check"><small>GATEWAY</small><b>Allow-list per server</b><span>Every call logged, denied too</span></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node"><small>MCP SERVER</small><b>Only chosen tools</b><span>Rest stay hidden</span></div>
+  </div>
+</div>
+
+<aside class="notes" style="display:none">Sources: modules/10-mcp-gateway/README.md (why: tools leak, allow-list per server, every call logged incl. denied; three entities MCP Server, MCP Gateway, key).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1><img class="t-ico" src="assets/tool-mcp.svg" alt="">MCP: the trust chain</h1>
+<p class="subtitle">The client calls the gateway, which calls the registered MCP server.</p>
+<svg class="b-chain" viewBox="0 0 1776 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: an MCP client calls the MCP Gateway with a bearer key; the gateway exposes two tools from the MCP Server, which connects over HTTPS to the upstream server; a managed agent attaches to the MCP Server directly.">
+  <defs>
+    <marker id="b-ar-o" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#DF5325"/></marker>
+    <marker id="b-ar-t" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#025558"/></marker>
+    <marker id="b-ar-l" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#299d8f"/></marker>
+  </defs>
+  <style>
+    .b-chain .t{font-family:'Kurrent Mono',monospace;font-weight:500}
+    .b-chain .h{font-family:Kurrent,sans-serif;font-weight:600;font-size:30px;fill:#141319;text-anchor:middle}
+    .b-chain .m{font-size:22px;fill:#025558;text-anchor:middle}
+    .b-chain .z{font-size:20px;letter-spacing:.14em;fill:#6b6975}
+    .b-chain .a{font-size:20px;letter-spacing:.06em}
+    .b-chain .c{font-size:18px;letter-spacing:.08em;text-anchor:middle}
+  </style>
+  <rect x="430" y="30" width="930" height="460" rx="10" fill="rgba(20,19,25,.03)" stroke="rgba(20,19,25,.18)"/>
+  <rect x="1450" y="30" width="326" height="230" rx="10" fill="rgba(20,19,25,.03)" stroke="rgba(20,19,25,.18)"/>
+  <rect x="452" y="18" width="104" height="26" fill="#EBE6E0"/><text class="t z" x="504" y="38" text-anchor="middle">ORQ.AI</text>
+  <rect x="1525" y="18" width="176" height="26" fill="#EBE6E0"/><text class="t z" x="1613" y="38" text-anchor="middle">YOUR SERVER</text>
+
+  <line x1="280" y1="155" x2="450" y2="155" stroke="#DF5325" stroke-width="2.5" marker-end="url(#b-ar-o)"/>
+  <text class="t a" x="365" y="132" fill="#DF5325" text-anchor="middle">BEARER KEY</text>
+  <line x1="850" y1="155" x2="1000" y2="155" stroke="#025558" stroke-width="2.5" marker-end="url(#b-ar-t)"/>
+  <text class="t a" x="925" y="132" fill="#025558" text-anchor="middle">TOOL_IDS</text>
+  <line x1="1340" y1="155" x2="1462" y2="155" stroke="#025558" stroke-width="2.5" marker-end="url(#b-ar-t)"/>
+  <text class="t a" x="1400" y="132" fill="#025558" text-anchor="middle">HTTPS</text>
+  <line x1="1170" y1="350" x2="1170" y2="244" stroke="#025558" stroke-width="2.5" marker-end="url(#b-ar-t)"/>
+  <text class="t a" x="1190" y="304" fill="#025558">TYPE: MCP</text>
+
+  <rect x="0" y="70" width="280" height="170" rx="8" fill="rgba(20,19,25,.04)" stroke="#6b6975" stroke-width="1.5"/>
+  <rect x="14" y="84" width="64" height="28" rx="4" fill="none" stroke="rgba(107,105,117,.6)"/><text class="t c" x="46" y="104" fill="#6b6975">EXT</text>
+  <text class="h" x="140" y="156">MCP client</text><text class="t m" x="140" y="192">coding agent · mcp</text>
+
+  <rect x="450" y="70" width="400" height="170" rx="8" fill="rgba(223,83,37,.09)" stroke="#DF5325" stroke-width="2.5"/>
+  <rect x="464" y="84" width="64" height="28" rx="4" fill="none" stroke="rgba(223,83,37,.6)"/><text class="t c" x="496" y="104" fill="#DF5325">GW</text>
+  <text class="h" x="650" y="140">MCP Gateway</text><text class="t m" x="650" y="176">one URL per gateway</text><text class="t m" x="650" y="208">only the tools you expose</text>
+
+  <rect x="1000" y="70" width="340" height="170" rx="8" fill="rgba(20,19,25,.04)" stroke="#025558" stroke-width="1.5"/>
+  <rect x="1014" y="84" width="64" height="28" rx="4" fill="none" stroke="rgba(2,85,88,.6)"/><text class="t c" x="1046" y="104" fill="#025558">REG</text>
+  <text class="h" x="1170" y="140">MCP Server</text><text class="t m" x="1170" y="176">registered · synced</text><text class="t m" x="1170" y="208">tools discovered</text>
+
+  <rect x="1466" y="70" width="294" height="170" rx="8" fill="rgba(20,19,25,.04)" stroke="#6b6975" stroke-width="1.5"/>
+  <rect x="1480" y="84" width="64" height="28" rx="4" fill="none" stroke="rgba(107,105,117,.6)"/><text class="t c" x="1512" y="104" fill="#6b6975">SRV</text>
+  <text class="h" x="1613" y="140">Upstream server</text><text class="t m" x="1613" y="176">any MCP server</text><text class="t m" x="1613" y="208">owns the real tools</text>
+
+  <rect x="1000" y="350" width="340" height="120" rx="8" fill="rgba(20,19,25,.04)" stroke="#025558" stroke-width="1.5"/>
+  <rect x="1014" y="364" width="64" height="28" rx="4" fill="none" stroke="rgba(2,85,88,.6)"/><text class="t c" x="1046" y="384" fill="#025558">AGT</text>
+  <text class="h" x="1170" y="428">Managed agent</text><text class="t m" x="1170" y="460">attaches by tool id</text>
+
+  <path d="M 470,240 V 296" fill="none" stroke="rgba(20,19,25,.5)" stroke-width="2" stroke-dasharray="6,5"/>
+  <circle cx="470" cy="240" r="4" fill="#141319"/>
+  <text class="t" x="470" y="336" fill="#141319" font-size="24"><tspan fill="#DF5325" font-weight="700">A hidden tool</tspan> is not forbidden,</text>
+  <text class="t" x="470" y="368" fill="#141319" font-size="24">it is absent from tools/list.</text>
+</svg>
+<aside class="notes" style="display:none">Sources: modules/10-mcp-gateway/README.md, MCP_SERVER_URL fallback and refund server tool names (steps 1-3); same README, managed agents attach to the MCP Server directly and external clients use the Gateway (steps 4-5).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full b-gw">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Why a gateway sits in front</h1>
+<p class="subtitle">External MCP clients use the Gateway; managed agents attach to the registered Server directly.</p>
+<p class="lede b-lede">Gateway clients see only exposed tools. Hidden tools are absent from <code>tools/list</code>; a direct call returns <code>not found</code>.</p>
+<div class="term b-term"><div class="term-bar"><i></i><i></i><i></i><span>zsh</span></div><pre><code><span class="p">❯</span> orq mcp-gateways list-tools &lt;gateway-id&gt; -o json
+<span class="c">exposed name ← server_key/upstream_tool_name</span>
+<span class="s">tool_a</span> ← my-server/tool_a
+<span class="s">tool_b</span> ← my-server/tool_b
+
+<span class="c"># call a hidden tool through the gateway</span>
+<span class="bad">MCPError: tool "hidden_tool" not found</span></code></pre></div>
+<aside class="notes" style="display:none">Source: modules/10-mcp-gateway/README.md, steps 3-5 and sections on exposed tool filtering and direct managed-agent server attachment. The public DeepWiki stand-in uses different tool names.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Models" class="slide full c-choose">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Choose the model before anyone builds</h1>
+<p class="subtitle">Catalog filters help you compare. Enforcement and project access decide who can call a model.</p>
+<div class="m-steps">
+<div class="m-step"><i>1</i><small>FILTER</small><b>Narrow the list</b><span>Location, provider, price, intelligence.</span></div>
+<div class="m-step"><i>2</i><small>COMPARE</small><b>Europe + ZDR</b><span>Check the route and its access policy.</span></div>
+<div class="m-step"><i>3</i><small>ENABLE</small><b>Approved models</b><span>Workspace-wide; default All projects.</span></div>
+<div class="m-step m-hot"><i>4</i><small>ENFORCE + SHARE</small><b>The real boundary</b><span>Enforce enabled models; Custom access, October Insurance test project only.</span></div>
+</div>
+<p class="note">Provider ZDR and orq.ai trace retention are separate controls.</p>
+<aside class="notes" style="display:none">Sources: https://docs.orq.ai/ai-gateway/using-the-router#filters (catalog filters, model enablement and project access); https://docs.orq.ai/ai-studio/organization/workspace-settings (Enforce enabled models, default off); https://docs.orq.ai/enterprise/sovereign-ai (provider ZDR); https://docs.orq.ai/ai-studio/organization/data-retention (orq trace retention is separate). Enablement is workspace-wide; enforcement rejects unenabled models. Enabled models default to All projects. To limit sharing, set Access control to Custom and select only the October Insurance test project. Do not present filter selection as enforcement or the staging setting as already enabled. Repo context: sessions/october-insurance-2026/session.yml:18; .context/october-insurance-plan.md:36-39.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Models" class="slide full c-fullshot">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Model Garden: the full catalogue</h1>
+<p class="subtitle">Filters on the left, one row per model, with price, intelligence index, capabilities and location.</p>
+<figure class="shot"><img src="assets/shots/c-model-garden-full.png" alt="Studio Models page: filter panel on the left and the model catalogue table with status, access, price, intelligence, capabilities, context window and location columns."><figcaption>STUDIO · AI GATEWAY · MODELS · DEMO WORKSPACE</figcaption></figure>
+<aside class="notes" style="display:none">Browser capture of the Models page in the orquesta-demos workspace, 18 Oct 2026. The next slide applies the Europe and ZDR filters.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Models" class="slide full capture c-garden">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Model Garden: Europe and ZDR</h1>
+<p class="subtitle">These filters narrow the catalogue. They do not restrict model calls.</p>
+<figure class="shot"><div class="c-mark"><img src="assets/shots/c-model-garden-filters.png" alt="Staging Models catalogue with Europe checked and Zero Data Retention on. Several listed models are disabled."><span style="left:1.2%;top:19.4%;width:26.8%;height:10.2%"></span><span style="left:1.2%;top:78.1%;width:26.8%;height:9.7%"></span></div><figcaption>STAGING · MODELS · EUROPE + ZDR · 17 OCT 2026</figcaption></figure>
+</div>
+<aside class="notes">Browser capture: https://my.staging.orq.ai/bauke-staging/router/models?filters=metadata.region:europe;metadata.supports_zdr:true . Filters narrow the list, not access; the enabled row’s All Projects badge shows sharing is separate. Sources: https://docs.orq.ai/ai-gateway/using-the-router#filters; https://docs.orq.ai/ai-studio/organization/workspace-settings.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Prompt Management › Playground" class="slide full capture c-play">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Playground: compare configurations</h1>
+<p class="subtitle">The same question on two models. Check prompts and settings before comparing answers.</p>
+<div class="c-pair"><figure class="shot"><img src="assets/shots/c-playground-left-answer.png" alt="Playground answer from GPT-6 Luna in Dutch to a synthetic question: human review is required."><figcaption>A · GPT-6 LUNA · <span class="c-diff">SYSTEM PROMPT SET</span> · STAGING · SYNTHETIC DEMO</figcaption></figure>
+<figure class="shot"><img src="assets/shots/c-playground-right-answer.png" alt="Playground answer from gpt-5.4-nano in Dutch to the same question: human review is required."><figcaption>B · GPT-5.4-NANO · <span class="c-diff">SYSTEM BLOCK EMPTY</span> · STAGING · SYNTHETIC DEMO</figcaption></figure></div>
+</div>
+<aside class="notes">Browser capture and two actual generations in project 412: https://my.staging.orq.ai/bauke-staging/playgrounds/b7bd6242-46a3-4754-a84e-f1d90d78955a . Created entity wst1-october-insurance-model-comparison. Same user text and no tools or knowledge attached. The left System block contains synthetic refund instructions; the right optional System block is empty. Reasoning settings also differ by model; this is a UI demonstration, not a controlled benchmark or evidence that one model is better. Both responses are actual, unedited UI output.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Models" class="slide full c-boundary">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Prove the model access boundary</h1>
+<p class="subtitle">Test workspace enforcement and project sharing independently.</p>
+<table>
+<colgroup><col style="width:20%"><col style="width:46%"><col style="width:34%"></colgroup>
+<thead><tr><th>Check</th><th>Action</th><th>Evidence to capture</th></tr></thead>
+<tbody>
+<tr><th>Approved route</th><td>Call an enabled model from the test project.</td><td><span class="tag c-allow">ALLOW</span>Successful response and its trace.</td></tr>
+<tr><th>Unenabled model</th><td>With workspace enforcement on, call a model not enabled for the workspace.</td><td><span class="tag">DENY</span>HTTP error; trace if recorded.</td></tr>
+<tr><th>Project access</th><td>Call an enabled model from a project excluded by its Custom access control.</td><td><span class="tag">DENY</span>HTTP error; trace if recorded.</td></tr>
+<tr><th>Configuration</th><td>Read back workspace enablement, enforcement, and Custom project sharing.</td><td>Settings views showing each control.</td></tr>
+</tbody></table>
+<p class="note">A catalogue filter or Playground comparison does not prove access enforcement.</p>
+<aside class="notes" style="display:none">Sources: https://docs.orq.ai/ai-gateway/using-the-router (workspace enablement, default All projects and Custom access control); https://docs.orq.ai/ai-studio/organization/workspace-settings (workspace enforcement); https://docs.orq.ai/ai-gateway/traces (traces for routed requests). Workshop requirement: sessions/october-insurance-2026/session.yml:18 asks for a restricted test project and denied out-of-pool call. Keep the two denial probes separate: the unenabled-model probe tests workspace enforcement; the enabled-but-unshared model probe tests project access. Rejection may occur before trace creation; record the HTTP error and include a trace only if one exists. This slide states evidence to collect, not results already observed.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Models" class="slide full c-ex">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Exercise: limit the test project to Europe and ZDR</h1>
+<p class="subtitle">Apply the filters, restrict the pool, then try to step outside it.</p>
+<div class="ex-meta"><span class="ex-time">&#9201; 15 min practical</span><span class="ex-q">+ 5 min questions</span></div>
+<div class="ex-grid">
+<ol class="ex-steps"><li><span>Open <b>AI Gateway › Models</b> and switch on the <b>Europe</b> location and <b>Zero Data Retention</b> filters.</span></li><li><span>Note which models remain in the pool.</span></li><li><span>Restrict the test project to that pool.</span></li><li><span>Call a model outside the pool from the Playground or the API.</span></li></ol>
+<div class="ex-side"><div class="ex-done"><b>Done when</b>The call is denied and you can name the model it asked for.</div></div>
+</div>
+<aside class="notes" style="display:none">Run-of-show D1 11:20 (15 min practical + 5 min questions inside the 30 min block). Filters only narrow the catalogue; the denial comes from workspace enablement and project access, see the previous slide. Dry-run first. Plan: D1-2.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway" class="slide full c-gateway">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>AI Gateway: key concepts</h1>
+<p class="subtitle">Four gateway controls and the span that records them.</p>
+<div class="shot-concepts">
+  <div class="c-chain">
+    <div class="c-node r-node"><i class="r-ico">A</i><div class="r-txt"><small>MODEL A</small><b>Primary</b><span>Call configured primary model.</span></div><em class="r-ok">&#10003; response</em></div>
+    <div class="c-arrow">configured error</div>
+    <div class="c-node r-node"><i class="r-ico">&#8635;</i><div class="r-txt"><small>SAME MODEL</small><b>Retry &times; 1</b><span>Retry that same model once.</span></div><em class="r-ok">&#10003; response</em></div>
+    <div class="c-arrow">still failing</div>
+    <div class="c-node c-hot r-node"><i class="r-ico">B</i><div class="r-txt"><small>MODEL B</small><b>Fallback</b><span>Call configured fallback model.</span></div><em class="r-ok">&#10003; response</em></div>
+  </div>
+  <ol class="concepts">
+    <li><b>Cache</b><span>An exact repeat is served from cache, avoiding provider cost.</span></li>
+    <li><b>Load balancing</b><span>Weights like 50/50 set proportions; short runs may not split evenly.</span></li>
+    <li><b>Span</b><span>One step in a trace, such as a model call or a fallback decision.</span></li>
+  </ol>
+</div>
+<aside class="notes" style="display:none">Sources: https://docs.orq.ai/ai-gateway/features/retries; https://docs.orq.ai/ai-gateway/features/cache (exact-match request and provider cost); https://docs.orq.ai/ai-gateway/features/load-balancing. Repo: modules/01-gateway/README.md:93-108,138-141. Cache avoids provider cost; it does not mean zero platform cost.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Routing Rules" class="slide full c-routing">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Routing rules: key concepts</h1>
+<p class="subtitle">The first matching active rule takes precedence over the requested model.</p>
+<div class="cfg">
+<figure class="shot"><div class="c-mark"><img src="assets/shots/c-routing-rule-config.png" alt="Studio Edit Routing Rule form with General, Load Balancer, Cache, Plugins and Conditions sections."></div><figcaption>STUDIO · EDIT ROUTING RULE · DEMO WORKSPACE</figcaption></figure>
+<ul class="flags">
+  <li><b>Priority</b>Lower numbers are evaluated first.</li>
+  <li><b>Enable rule</b>Disabled rules are saved, never evaluated.</li>
+  <li><b>Load balancing strategy</b>Fallback, latency, weight or round-robin.</li>
+  <li><b>Cache</b>Reuse exact-match responses.</li>
+  <li><b>Plugins</b>Extra actions on matching requests.</li>
+  <li><b>Conditions</b>Headers, identity, metadata, model or project, as a CEL expression.</li>
+</ul>
+</div>
+<p class="note">Live check: match an active rule; inspect the chosen target in its trace.</p>
+<aside class="notes" style="display:none">Source: https://docs.orq.ai/ai-gateway/configuration/routing-rules (priority and active rules). Repo context: .context/october-insurance-plan.md:46-49. The screenshot (orquesta-demos workspace, one enabled rule) is the rule configuration form, not route-decision evidence. A matching rule replaces the request's model, balancing and fallbacks. The matching-request and chosen-target trace example is a live check to perform, not an observed result.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › Workspace" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body g-gov">
+<h1>Workspace governance: key concepts</h1>
+<p class="subtitle">Review the workspace, project and Enterprise controls with your admin.</p>
+<div class="g-ws">
+  <div class="g-bar"><b>WORKSPACE</b><span>Set once by admins · applies to every project</span></div>
+  <div class="g-wbody">
+    <div class="g-row"><small>SECURITY</small>
+      <div class="chips"><span class="o">SSO · OIDC / SAML<svg class="g-ent" viewBox="0 0 24 24" aria-label="Enterprise"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.7 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg></span><span class="o">Domain verification<svg class="g-ent" viewBox="0 0 24 24" aria-label="Enterprise"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.7 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg></span><span class="o">IP allowlist<svg class="g-ent" viewBox="0 0 24 24" aria-label="Enterprise"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.7 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg></span></div>
+    </div>
+    <div class="g-row"><small>MEMBERS AND ROLES</small>
+      <div class="chips"><span>Admin</span><span>Developer</span><span>Researcher</span></div>
+    </div>
+    <div class="g-proj">
+      <div class="g-bar o"><b>PROJECTS</b><span>Work and API keys are scoped here</span></div>
+      <div class="g-projects">
+        <div class="c-node"><small>PROJECT A</small><b>Agents and resources</b><i class="g-key">API key · this project only</i></div>
+        <div class="c-node"><small>PROJECT B</small><b>Agents and resources</b><i class="g-key">API key · this project only</i></div>
+        <div class="c-node c-hot"><small>PROJECT C</small><b>Agents and resources</b><i class="g-key">API key · this project only</i></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="g-legend"><svg class="g-ent" viewBox="0 0 24 24" aria-label="Enterprise"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.7 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg> Enterprise plan or add-on</p>
+<aside class="notes" style="display:none">Sources: https://docs.orq.ai/ai-studio/organization/members-teams (role availability); https://docs.orq.ai/ai-studio/organization/sso (OIDC/SAML support; docs label Enterprise); https://docs.orq.ai/ai-studio/organization/workspace-security (domain verification and backend API IP allowlist). On 17 Oct 2026, authenticated staging labeled SSO as Authentication Add-on, so confirm October Insurance's plan/add-on entitlement before stating availability. Staging labels Audit Logs and Security Enterprise; Domains and IP allowlist controls were unconfigured. Repo context: .context/october-insurance-plan.md.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › Members" class="slide full roles-overview">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Roles: what you can and cannot do</h1>
+<p class="subtitle">Developer is the workshop role: build, test and deploy within the projects you can access.</p>
+<table class="cv-table">
+<thead><tr><th>Capability</th><th>Researcher</th><th>Developer</th><th>Admin</th></tr></thead>
+<tbody>
+<tr><th>Playgrounds and Experiments</th><td>Full access</td><td>Full access</td><td>Full access</td></tr>
+<tr><th>Knowledge bases: create, edit, delete</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><th>Agents: create, edit, delete</th><td>No · view only</td><td>Yes</td><td>Yes</td></tr>
+<tr><th>View traces / review and annotate logs</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><th>Modify Deployments / deploy changes</th><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><th>Manage models</th><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><th>Manage members and roles</th><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><th>Manage billing / workspace settings</th><td>No</td><td>No</td><td>Yes</td></tr>
+</tbody>
+</table>
+<p class="note">Role sets what you may do. Teams and project permissions set where you may work. Researchers can manage knowledge bases and inspect traces; Agents are view-only and Deployments cannot be modified.</p>
+<aside class="notes">Source checked 20 October 2026: https://docs.orq.ai/ai-studio/organization/members-teams . Researcher has full Playgrounds and Experiments access and limited Agents/Deployments access; may review and annotate logs but cannot modify Deployments or deploy changes. Developer has technical access and can deploy; model management, user management and billing remain Admin-only. Admin has full workspace control. Team/project restrictions still apply. Developer/Researcher roles and team management require the Team add-on or Enterprise. Knowledge and Agent details cross-checked against libs/models/permissions/src/constants/{researcher,developer,admin}-permissions.ts in the orquesta-web checkout on 20 October 2026: Researcher has Knowledge CRUD/data-source/chunk/retrieval permissions, and only Agent LIST/VIEW. Traces/logs row means inspect and annotate, not arbitrary trace mutation or deletion. The live RolesService catalog was not exposed (404); these fine-grained entries are source-backed rather than a role-impersonation test. This is a teaching summary, not an exhaustive endpoint-level permission matrix.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › API Keys" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-keys">
+<h1>API keys: modes and service keys</h1>
+<p class="subtitle">A standard API key belongs to one project; choose its permission mode within that project.</p>
+<table>
+<thead><tr><th>Credential / mode</th><th>Scope</th><th>Use</th></tr></thead>
+<tbody>
+<tr><th>ALL</th><td>Selected project</td><td>All supported resources and actions in that project.</td></tr>
+<tr><th>READ_ONLY</th><td>Selected project</td><td>Read access in that project; no writes.</td></tr>
+<tr class="d-rec"><th>RESTRICTED</th><td>Selected project</td><td>Per-resource permissions for only the access an app needs.</td></tr>
+<tr><th class="d-txt">Management Key</th><td>Workspace</td><td>Separately permissioned workspace administration; cannot invoke models.</td></tr>
+</tbody></table>
+<p class="note">Service account keys are created by admins for jobs that should outlive an individual user. User keys are revoked when that user is removed.</p>
+<aside class="notes" style="display:none">Sources: https://docs.orq.ai/ai-studio/organization/api-keys (standard keys, project selection, modes, user/service lifecycle); https://docs.orq.ai/ai-studio/organization/management-keys (workspace scope and admin permissions). Repo: modules/05-budgets-keys/README.md:47-76,203-206. The removed 05-key-scopes.png represents an older API anomaly; current UI/docs define each new standard key as project-scoped. A September 2026 API path stored one requested restricted/single key as all/all; this was a dated observation, not the normal current flow.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › API Keys" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>API keys: two credentials, two jobs</h1>
+<p class="subtitle">One calls models, one administers the workspace.</p>
+<svg class="e-flowmap l-keys" viewBox="0 0 1776 520" role="img" aria-label="Diagram: a standard API key calls models in its selected project. A management key administers permitted workspace resources and cannot invoke models.">
+<defs>
+<marker id="k-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker>
+<marker id="k-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker>
+</defs>
+<rect class="zone" x="590" y="10" width="520" height="190" rx="10"/><text class="zl" x="612" y="38">SELECTED PROJECT</text>
+<rect class="zone" x="590" y="290" width="520" height="190" rx="10"/><text class="zl" x="612" y="318">YOUR WORKSPACE</text>
+<g class="node hot"><rect x="0" y="45" width="400" height="140" rx="12"/><rect class="chip" x="16" y="59" width="68" height="28" rx="5"/><text class="tg" x="26" y="79">KEY</text><text class="nt" x="200" y="127" text-anchor="middle">Standard API key</text><text class="nm" x="200" y="157" text-anchor="middle">one project · calls models</text></g>
+<g class="node"><rect x="630" y="55" width="460" height="130" rx="12"/><rect class="chip" x="646" y="69" width="68" height="28" rx="5"/><text class="tg" x="656" y="89">MDL</text><text class="nt" x="860" y="137" text-anchor="middle">Models</text><text class="nm" x="860" y="167" text-anchor="middle">invoked through the gateway</text></g>
+<g class="node"><rect x="0" y="325" width="400" height="140" rx="12"/><rect class="chip" x="16" y="339" width="68" height="28" rx="5"/><text class="tg" x="26" y="359">MGT</text><text class="nt" x="200" y="407" text-anchor="middle">Management key</text><text class="nm" x="200" y="437" text-anchor="middle">administers the workspace</text></g>
+<g class="node"><rect x="630" y="335" width="460" height="130" rx="12"/><rect class="chip" x="646" y="349" width="68" height="28" rx="5"/><text class="tg" x="656" y="369">WSP</text><text class="nt" x="860" y="417" text-anchor="middle">Permitted resources</text><text class="nm" x="860" y="447" text-anchor="middle">what the key may manage</text></g>
+<g class="node dsh"><rect x="1340" y="335" width="436" height="130" rx="12"/><rect class="chip" x="1356" y="349" width="68" height="28" rx="5"/><text class="tg" x="1366" y="369">MDL</text><text class="nt" x="1558" y="417" text-anchor="middle">Models</text><text class="nm" x="1558" y="447" text-anchor="middle">not available to this key</text></g>
+<path class="ao" d="M400 115H628" marker-end="url(#k-o)"/><text class="ll o" x="514" y="98" text-anchor="middle">CALLS</text>
+<path class="ai" d="M400 395H628" marker-end="url(#k-t)"/><text class="ll" x="514" y="378" text-anchor="middle">ADMINISTERS</text>
+<path class="ag dash" d="M1090 400H1338" marker-end="url(#k-t)"/><text class="ll" x="1214" y="383" text-anchor="middle">NO INVOKE</text>
+</svg>
+<aside class="notes" style="display:none">Source: https://docs.orq.ai/ai-studio/organization/management-keys. Repo: modules/05-budgets-keys/README.md:18,29. The subject refused on admin endpoints is the standard API key; Management Keys administer workspace resources and cannot invoke models.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › API Keys" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-dd">
+<h1>API keys: do and do not</h1>
+<p class="subtitle">Agree on these defaults with IT before keys are handed out.</p>
+<div class="dd">
+<div class="col"><h3>DO</h3><ul>
+<li>Prefer restricted keys<small>Grant only what the app needs.</small></li>
+<li>Use one key per app and project<small>A leak then has a smaller blast radius.</small></li>
+<li>Use service account keys for CI<small>They outlive any one person.</small></li>
+<li>Set a budget where appropriate<small>A budget is a spend control, separate from permissions.</small></li></ul></div>
+<div class="col bad"><h3>DO NOT</h3><ul>
+<li>Share one broad key across teams<small>Use separate keys so access and usage can be managed.</small></li>
+<li>Put keys in code or chat<small>Use the secret store.</small></li>
+<li>Use a personal key for a shared job<small>It stops when that person leaves.</small></li>
+<li>Assume the selected grant was stored<small>Read back the key's project and permissions.</small></li></ul></div>
+</div>
+<aside class="notes" style="display:none">Source: https://docs.orq.ai/ai-studio/organization/api-keys. Repo: modules/05-budgets-keys/README.md:203-206 records a September 2026 API-creation anomaly: one path stored a requested restricted/single key as all/all. Treat as dated evidence, not a current general API behavior. Budget advice is policy guidance; the module also describes a legacy workspace JWT exception if that older key is used.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › Audit Logs" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-audit">
+<h1>Audit logs: who changed what</h1>
+<p class="subtitle">Audit Logs record changes to the workspace. Traces record what happened to requests.</p>
+<svg class="e-flowmap l-audit" viewBox="0 0 1776 450" role="img" aria-label="Diagram: a change to a workspace entity is recorded in Audit Logs and answers who changed what. A request through the gateway is recorded in Traces and answers what happened to that call.">
+<defs>
+<marker id="u-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker>
+<marker id="u-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker>
+</defs>
+<rect class="zone" x="0" y="10" width="1776" height="200" rx="10"/><text class="zl" x="22" y="38">CONFIGURATION · ENTERPRISE FEATURE</text>
+<rect class="zone" x="0" y="240" width="1776" height="200" rx="10"/><text class="zl" x="22" y="268">TRAFFIC</text>
+<g class="node"><rect x="30" y="58" width="440" height="130" rx="12"/><rect class="chip" x="46" y="72" width="68" height="28" rx="5"/><text class="tg" x="56" y="92">CHG</text><text class="nt" x="250" y="140" text-anchor="middle">A change</text><text class="nm" x="250" y="170" text-anchor="middle">created, edited, deleted</text></g>
+<g class="node hot"><rect x="660" y="58" width="460" height="130" rx="12"/><rect class="chip" x="676" y="72" width="68" height="28" rx="5"/><text class="tg" x="686" y="92">AUD</text><text class="nt" x="890" y="140" text-anchor="middle">Audit Logs</text><text class="nm" x="890" y="170" text-anchor="middle">entity · action · source</text></g>
+<g class="node"><rect x="1310" y="58" width="436" height="130" rx="12"/><rect class="chip" x="1326" y="72" width="68" height="28" rx="5"/><text class="tg" x="1336" y="92">ANS</text><text class="nt" x="1528" y="140" text-anchor="middle">Who changed what?</text><text class="nm" x="1528" y="170" text-anchor="middle">and when, and from where</text></g>
+<g class="node"><rect x="30" y="288" width="440" height="130" rx="12"/><rect class="chip" x="46" y="302" width="68" height="28" rx="5"/><text class="tg" x="56" y="322">REQ</text><text class="nt" x="250" y="370" text-anchor="middle">A request</text><text class="nm" x="250" y="400" text-anchor="middle">sent through the gateway</text></g>
+<g class="node"><rect x="660" y="288" width="460" height="130" rx="12"/><rect class="chip" x="676" y="302" width="68" height="28" rx="5"/><text class="tg" x="686" y="322">TRC</text><text class="nt" x="890" y="370" text-anchor="middle">Traces</text><text class="nm" x="890" y="400" text-anchor="middle">spans, errors, cost</text></g>
+<g class="node"><rect x="1310" y="288" width="436" height="130" rx="12"/><rect class="chip" x="1326" y="302" width="68" height="28" rx="5"/><text class="tg" x="1336" y="322">ANS</text><text class="nt" x="1528" y="370" text-anchor="middle">What happened here?</text><text class="nm" x="1528" y="400" text-anchor="middle">to this one call</text></g>
+<path class="ao" d="M470 123H658" marker-end="url(#u-o)"/><text class="ll o" x="564" y="106" text-anchor="middle">RECORDED</text>
+<path class="ao" d="M1120 123H1308" marker-end="url(#u-o)"/><text class="ll o" x="1214" y="106" text-anchor="middle">ANSWERS</text>
+<path class="ai" d="M470 353H658" marker-end="url(#u-t)"/><text class="ll" x="564" y="336" text-anchor="middle">RECORDED</text>
+<path class="ai" d="M1120 353H1308" marker-end="url(#u-t)"/><text class="ll" x="1214" y="336" text-anchor="middle">ANSWERS</text>
+</svg>
+<p class="note">Retention follows the workspace retention. A rejected request is not an audit event: look for it in Traces.</p>
+<aside class="notes" style="display:none">Slide is a principle explainer, not a checklist. Sources: https://docs.orq.ai/ai-studio/organization/audit-logs (Enterprise feature, tracked entities/actions/sources, retention follows workspace retention); https://docs.orq.ai/ai-gateway/traces (gateway request traces). Repo: modules/02-tracing/README.md:14-31. A gateway trace covers a routed call; app/tool spans require instrumentation and propagation. Published actions include no `denied` action. Do not imply a denied-inference audit event exists; ask whether rejected inference appears in any audit event and use Traces for the known gateway error path.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Settings › API Keys" class="slide full c-ex">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Exercise: restricted key and audit log</h1>
+<p class="subtitle">Create a restricted key, prove its limits, then find the record of who made it.</p>
+<div class="ex-meta"><span class="ex-time">&#9201; 15 min practical</span><span class="ex-q">+ 5 min questions</span></div>
+<div class="ex-grid">
+<ol class="ex-steps"><li><span>Create a <b>restricted</b> project key with only the permissions the test needs.</span></li><li><span>Use it for one allowed read.</span></li><li><span>Attempt a write it is not allowed to make.</span></li><li><span>Open <b>Audit Logs</b> and find the entry left by creating the key.</span></li></ol>
+<div class="ex-side"><div class="ex-done"><b>Done when</b>The write is refused and the audit entry shows who created the key and when.</div></div>
+</div>
+<aside class="notes" style="display:none">Run-of-show D1 13:50 (15 min practical + 5 min questions inside the 30 min block). Dry-run the refused write first. Plan: D1-1. Audit Logs is an enterprise feature.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-budget">
+<h1>Budgets and alerts</h1>
+<p class="subtitle">A budget caps spend. The gateway checks it before the provider is called.</p>
+<div class="q-lane"><small>BEFORE THE PROVIDER</small>
+  <div class="q-chain">
+    <div class="q-node"><small>REQUEST</small><b>New call</b></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node q-check"><small>BUDGET CHECK</small><b>Every matching budget, independently</b>
+      <div class="chips"><span>Workspace</span><span>Project</span><span>Identity</span><span>API key</span><span>Provider</span><span>Model</span></div></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node"><small>PROVIDER</small><b>Model call</b></div>
+  </div>
+  <div class="q-block"><span>BLOCKED</span>Any exhausted limit, or the requests-per-minute cap, stops a new request here.</div>
+</div>
+<div class="q-lane"><small>AFTER THE CALL FINISHES</small>
+  <div class="q-chain">
+    <div class="q-node"><small>IN FLIGHT</small><b>May complete</b></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node"><small>ACCOUNTING</small><b>Usage recorded</b></div>
+    <div class="q-arr">&rarr;</div>
+    <div class="q-node q-hot"><small>COST ALERT</small><b>Notifier fires</b></div>
+  </div>
+  <div class="q-block q-soft">The requests-per-minute cap blocks requests; it does not trigger the cost alert.</div>
+</div>
+<aside class="notes">Sources: [Orq Budgets](https://docs.orq.ai/ai-gateway/budgets); [module 05, rolling request-cap example](../../modules/05-budgets-keys/README.md). The table replaces the prior budget-scope diagram's “most restrictive one wins” shorthand.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Observability" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-usage">
+<h1>Usage reporting: key concepts</h1>
+<p class="subtitle">The numbers behind the Studio views, and a cost alert on top.</p>
+<div class="shot-concepts">
+  <figure class="shot"><img src="assets/shots/d-activity-cost-chart-crop.png" alt="Staging Activity Explore chart, Cost (total) by Model over 14 days, daily stacked bars."><figcaption>STAGING · ACTIVITY · COST BY MODEL (OPUS 5.5, SONNET 5.5)</figcaption></figure>
+  <ol class="concepts">
+    <li><b>Reporting</b><span><code>genai.usage</code> groups requests, failed spans and cost by model or key.</span></li>
+    <li><b>Error rate</b><span>Query <code>genai.error_rate</code> separately; counts are failed spans.</span></li>
+    <li><b>Cost alert</b><span>Checked on its interval; a notifier sends the trigger.</span></li>
+    <li><b>Check interval</b><span>Intervals: 5 min, 15 min, hourly, daily.</span></li>
+    <li><b>Lag</b><span>Reporting can lag; check again after a spike.</span></li>
+  </ol>
+</div>
+<aside class="notes">Chart detail: staging Activity, Cost (total) by Model over 14 days; top models claude-opus-5-5 and claude-sonnet-5-5. Sources: [module 14, Reporting API and alert exercise](../../modules/14-observability-ops/README.md); [solution queries](../../modules/14-observability-ops/solution/run.py); [Orq Alerts](https://docs.orq.ai/ai-studio/observability/alerts).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Observability › Alerts" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-alerts">
+<h1>Usage reporting: what alerts see</h1>
+<p class="subtitle">Alerts only see traces that reached a project.</p>
+<div class="pair">
+  <div class="box"><span class="eyebrow">PROJECT SIGNALS</span><p>Alerts can watch attributed project traces, including error and error-rate signals.</p></div>
+  <div class="box dark"><span class="eyebrow">CHECK THE DENY PATH</span><p>Some requests rejected before project attribution may be absent from project alerts.</p><p class="small">Verify the specific rejected request in Traces; do not assume every timeout or guardrail block is invisible.</p></div>
+</div>
+<aside class="notes">Sources: [Orq Alerts](https://docs.orq.ai/ai-studio/observability/alerts); [module 14, tested rejected requests and failed spans](../../modules/14-observability-ops/README.md).</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Guardrail Rules" class="slide full e-guard">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Guardrails and PII: the request path</h1>
+<p class="subtitle">PII is replaced before the provider call and restored in the reply.</p>
+<svg class="e-flowmap" viewBox="0 0 1776 640" role="img" aria-label="Diagram: PII redaction, input and output guardrails and the human hand-off around one model call">
+<defs>
+<marker id="e-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker>
+<marker id="e-ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker>
+<marker id="e-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#6b6570;stroke:none"/></marker>
+</defs>
+<rect class="zone" x="360" y="0" width="910" height="440" rx="14"/>
+<text class="zl" x="384" y="30">ORQ AI GATEWAY</text>
+<g class="node"><rect x="0" y="44" width="270" height="150" rx="12"/><rect class="chip" x="16" y="58" width="68" height="28" rx="5"/><text class="tg" x="26" y="78">APP</text><text class="nt" x="135" text-anchor="middle" y="122">Your app</text><text class="nm" x="135" text-anchor="middle" y="152">chat.completions</text><text class="nm" x="135" text-anchor="middle" y="178">+ extra_body</text></g>
+<g class="node hot"><rect x="400" y="44" width="330" height="150" rx="12"/><rect class="chip" x="416" y="58" width="68" height="28" rx="5"/><text class="tg" x="426" y="78">PLG</text><text class="nt" x="565" text-anchor="middle" y="122">PII redaction</text><text class="nm" x="565" text-anchor="middle" y="152">plugin · rewrites</text><text class="nm" x="565" text-anchor="middle" y="178">pii.redact span</text></g>
+<g class="node"><rect x="860" y="44" width="370" height="150" rx="12"/><rect class="chip" x="876" y="58" width="68" height="28" rx="5"/><text class="tg" x="886" y="78">GRD</text><text class="nt" x="1045" text-anchor="middle" y="122">Input guardrails</text><text class="nm" x="1045" text-anchor="middle" y="152">secret · pii · CEL rule</text><text class="nm" x="1045" text-anchor="middle" y="178">judge · never rewrite</text></g>
+<g class="node ext"><rect x="1446" y="44" width="330" height="150" rx="12"/><rect class="chip" x="1462" y="58" width="68" height="28" rx="5"/><text class="tg" x="1472" y="78">EXT</text><text class="nt" x="1611" text-anchor="middle" y="122">Provider</text><text class="nm" x="1611" text-anchor="middle" y="152">sees placeholders</text><text class="nm" x="1611" text-anchor="middle" y="178">never the email</text></g>
+<g class="node hot"><rect x="400" y="244" width="330" height="150" rx="12"/><rect class="chip" x="416" y="258" width="68" height="28" rx="5"/><text class="tg" x="426" y="278">PLG</text><text class="nt" x="565" text-anchor="middle" y="322">PII restore</text><text class="nm" x="565" text-anchor="middle" y="352">originals back</text><text class="nm" x="565" text-anchor="middle" y="378">pii.restore span</text></g>
+<g class="node"><rect x="860" y="244" width="370" height="150" rx="12"/><rect class="chip" x="876" y="258" width="68" height="28" rx="5"/><text class="tg" x="886" y="278">GRD</text><text class="nt" x="1045" text-anchor="middle" y="322">Output guardrail</text><text class="nm" x="1045" text-anchor="middle" y="352">your custom rule</text><text class="nm" x="1045" text-anchor="middle" y="378">span.evaluator</text></g>
+<g class="node dsh"><rect x="860" y="490" width="370" height="150" rx="12"/><rect class="chip" x="876" y="504" width="68" height="28" rx="5"/><text class="tg" x="886" y="524">F7</text><text class="nt" x="1045" text-anchor="middle" y="568">Human hand-off</text><text class="nm" x="1045" text-anchor="middle" y="598">except branch</text><text class="nm" x="1045" text-anchor="middle" y="624">ticket</text></g>
+<path class="ai" d="M270 119H398" marker-end="url(#e-ai)"/><text class="ll" x="335" y="102" text-anchor="middle">REQUEST</text>
+<path class="ao" d="M730 119H858" marker-end="url(#e-ao)"/><text class="ll o" x="795" y="102" text-anchor="middle">REDACTED</text>
+<path class="ao" d="M1230 119H1444" marker-end="url(#e-ao)"/><text class="ll o" x="1338" y="102" text-anchor="middle">PLACEHOLDERS</text>
+<path class="ag" d="M1611 194V303Q1611 319 1595 319H1232" marker-end="url(#e-ag)"/><text class="ll" x="1632" y="262">RESPONSE</text>
+<path class="ai" d="M860 319H732" marker-end="url(#e-ai)"/><text class="ll" x="795" y="302" text-anchor="middle">PASSED</text>
+<path class="ai" d="M400 319H151Q135 319 135 303V196" marker-end="url(#e-ai)"/><text class="ll" x="155" y="278">ANSWER</text>
+<path class="ag dash" d="M1045 394V488" marker-end="url(#e-ag)"/><text class="ll" x="1062" y="448">HTTP 400</text>
+</svg>
+</div>
+<aside class="notes">Source: [Orq PII Redaction plugin](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction). Coverage depends on a supported text route and placeholder preservation by the provider; the plugin replaces detected values only on supported routes.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Guardrail Rules" class="slide full c-routing">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Guardrail rules: key concepts</h1>
+<p class="subtitle">A rule attaches checks to every request that matches its conditions.</p>
+<div class="cfg">
+<figure class="shot"><div class="c-mark"><img src="assets/shots/c-guardrail-rule-config.png" alt="Studio Edit Guardrail Rule form with General, Guardrails and Conditions sections."></div><figcaption>STUDIO · EDIT GUARDRAIL RULE · DEMO WORKSPACE</figcaption></figure>
+<ul class="flags">
+  <li><b>Enable rule</b>Disabled rules are saved, never evaluated.</li>
+  <li><b>Guardrails</b>The checks to run, such as PII detection or an LLM-based check; a rule can hold several.</li>
+  <li><b>Where and how often</b>Each check has its own execution settings: which side it applies to and the share of requests it runs on.</li>
+  <li><b>Conditions</b>Headers, identity, metadata, model or project, as a CEL expression.</li>
+</ul>
+</div>
+<p class="note">Live check: send a matching request and inspect the guardrail result in its trace.</p>
+<aside class="notes" style="display:none">Screenshot: orquesta-demos workspace, a disabled rule with two guardrails (project name masked). The direction icons and percentages beside each guardrail are per-check execution settings; confirm exact meaning in the live UI before presenting.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › Guardrail Rules" class="slide full c-ex">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Exercise: guard a request and redact PII</h1>
+<p class="subtitle">Block or mask sensitive data at the gateway, then prove it in the trace.</p>
+<div class="ex-meta"><span class="ex-time">&#9201; 15 min practical</span><span class="ex-q">+ 5 min questions</span></div>
+<div class="ex-grid">
+<ol class="ex-steps"><li><span>Create a rule in <b>AI Gateway › Guardrail Rules</b> with the PII Detection guardrail on input.</span></li><li><span>Switch on PII redaction for a routing rule, including Dutch identifiers such as a BSN.</span></li><li><span>Send a request containing a fictitious BSN.</span></li><li><span>Open its trace and find the guardrail result and the redaction span.</span></li></ol>
+<div class="ex-side"><div class="ex-done"><b>Done when</b>The provider only received placeholders, and the caller got the real values back.</div></div>
+</div>
+<aside class="notes" style="display:none">Run-of-show D1 15:25 (15 min practical + 5 min questions inside the 35 min block). Use fictitious identifiers only. Plan: D1-5.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Observability › Traces" class="slide full e-trace">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Traces and threads: key concepts</h1>
+<p class="subtitle">Search by thread or identity, then open a trace to read each step.</p>
+<div class="shot-concepts">
+  <figure class="shot e-shot"><img src="assets/shots/m02-traces-e.png" alt="Studio traces list with status, duration, tokens and cost per request"><figcaption>STUDIO · TRACES WITH DURATION, TOKENS AND COST</figcaption></figure>
+  <ol class="concepts">
+    <li><b>Trace</b><span>A gateway call starts or joins a trace; <code>traceparent</code> groups a turn.</span></li>
+    <li><b>Span</b><span>One step in a trace: a model or tool call.</span></li>
+    <li><b>Cost and tokens</b><span>Shown per request in the traces list.</span></li>
+    <li><b>Request fields</b><span>Send identity, thread and app name; they become trace filters.</span></li>
+    <li><b>Guardrail block</b><span>Root span turns red: <code>orq.guardrail.action=block</code>.</span></li>
+  </ol>
+</div>
+</div>
+<aside class="notes">Sources: [module 02, traceparent and top-level body fields](../../modules/02-tracing/README.md); [sample app identity header](../../app/refund_agent/agent.py). Module 02 demonstrates body fields through <code>extra_body</code>; the sample app sends identity as <code>X-ORQ-IDENTITY-ID</code> via <code>extra_headers</code>.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Observability › Traces" class="slide full e-spans">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Traces: who writes which span</h1>
+<p class="subtitle">Your app writes the root and tool spans. The gateway writes each model call.</p>
+<table class="cv-table">
+<colgroup><col style="width:19%"><col style="width:23%"><col></colgroup>
+<thead><tr><th>Trace item</th><th>Written by</th><th>What it represents</th></tr></thead>
+<tbody>
+<tr><td>Root span</td><td>Your app</td><td>The full agent turn; propagate <code>traceparent</code> to group calls.</td></tr>
+<tr><td>Model-call span</td><td>Orq gateway</td><td>Each routed model request, with usage and outcome.</td></tr>
+<tr><td>Tool span</td><td>Your app</td><td>Instrument tool execution and attach it to the same trace.</td></tr>
+<tr><td>Identity and thread</td><td>Request fields</td><td>Attribution and conversation filters; the sample app sends identity as <code>X-ORQ-IDENTITY-ID</code>.</td></tr>
+<tr><td>App name</td><td>Request metadata</td><td>Optional metadata filter for app-level attribution.</td></tr>
+</tbody>
+</table>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Observability" class="slide full e-cycle">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>The improvement cycle</h1>
+<p class="subtitle">Traces show what happened. Datasets, experiments and evaluators turn it into a measured change.</p>
+<svg class="e-flowmap l-cycle" viewBox="0 0 1776 520" role="img" aria-label="Cycle diagram: agent simulation adds test cases straight to the dataset, while live traffic produces traces; traces show how the agent behaved, failures become dataset rows, experiments run agent versions on the dataset and evaluators score them, the best version becomes the new agent, which produces new traces. Human review labels the dataset and aligns the evaluators.">
+<defs>
+<marker id="c-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#025558;stroke:none"/></marker>
+<marker id="c-ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#DF5325;stroke:none"/></marker>
+<marker id="c-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:#6b6570;stroke:none"/></marker>
+</defs>
+<g class="node "><rect x="0" y="90" width="380" height="190" rx="12"/><text class="tg" x="28" y="136">1 · OBSERVE</text><text class="nt" x="28" y="190">Traces</text><text class="nm" x="28" y="232">Every turn, with model</text><text class="nm" x="28" y="262">and tool spans.</text></g>
+<g class="node "><rect x="465" y="90" width="380" height="190" rx="12"/><text class="tg" x="493" y="136">2 · COLLECT</text><text class="nt" x="493" y="190">Datasets</text><text class="nm" x="493" y="232">Failures and edge cases</text><text class="nm" x="493" y="262">become test rows.</text></g>
+<g class="node hot"><rect x="930" y="90" width="380" height="190" rx="12"/><text class="tg" x="958" y="136">3 · MEASURE</text><text class="nt" x="958" y="190">Experiments + evals</text><text class="nm" x="958" y="232">Run versions on data</text><text class="nm" x="958" y="262">Evals score each row.</text></g>
+<g class="node "><rect x="1395" y="90" width="380" height="190" rx="12"/><text class="tg" x="1423" y="136">4 · CHANGE</text><text class="nt" x="1423" y="190">Agent</text><text class="nm" x="1423" y="232">Edit prompt or tools.</text><text class="nm" x="1423" y="262">Ship the best version.</text></g>
+<path class="ai" d="M386 185H457" marker-end="url(#c-ai)"/>
+<path class="ai" d="M851 185H922" marker-end="url(#c-ai)"/>
+<path class="ai" d="M1316 185H1387" marker-end="url(#c-ai)"/>
+<path class="ao" d="M1585 84V36H190V82" marker-end="url(#c-ao)"/><text class="ll o" x="887" y="26" text-anchor="middle">NEW TRAFFIC, NEW TRACES</text>
+<g class="node dsh"><rect x="465" y="380" width="845" height="130" rx="12"/><text class="nt" x="887" y="432" text-anchor="middle">Human review</text><text class="nm" x="887" y="470" text-anchor="middle">Label the grey-zone rows and align the judge,</text><text class="nm" x="887" y="498" text-anchor="middle">so the score can be trusted.</text></g>
+<g class="node"><rect x="0" y="380" width="380" height="130" rx="12"/><text class="tg" x="28" y="418">INPUT · SIMULATE</text><text class="nt" x="28" y="458">Agent simulation</text><text class="nm" x="28" y="492">Synthetic test users.</text></g>
+<path class="ai" d="M190 374V330H560V292" marker-end="url(#c-ai)"/><text class="ll" x="380" y="318" text-anchor="middle">SIMULATED CASES</text>
+<path class="ag dash" d="M655 374V292" marker-end="url(#c-ag)"/><path class="ag dash" d="M1120 374V292" marker-end="url(#c-ag)"/>
+</svg>
+<p class="note b-note b-plain">Every lap ends in a measured agent change.</p>
+<aside class="notes" style="display:none">Same flywheel as the PyData Amsterdam 2026 talk (Building the evaluation flywheel): a failure seen in traces is either an agent problem (change the agent) or a judge problem (change the evaluator). Human labels on grey-zone rows decide which. Agent simulation feeds the dataset directly with synthetic cases before real users arrive. Day 2 hackathon runs one lap of this cycle on the nominated use cases.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full e-mcp1">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1><img class="t-ico" src="assets/tool-mcp.svg" alt="">MCP Portal: key concepts</h1>
+<p class="subtitle">Clients call the gateway. The gateway calls the server.</p>
+<figure class="shot wide e-strip"><img src="assets/shots/m10-gateways-e.png" alt="Studio MCP Portal Gateways list showing a gateway with its exposed tools and its public URL"><figcaption>STUDIO · MCP GATEWAYS</figcaption></figure>
+<div class="callouts e-callouts">
+  <div><b>Server and gateway</b>The server is your upstream registration. The gateway is the public endpoint clients use.</div>
+  <div><b>Selected tools</b>Only picked tools are exposed. Hidden-tool calls fail and are logged as denied.</div>
+  <div><b>Read-only filter</b>Keeps read-only tools; unmarked tools disappear.</div>
+</div>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full e-mcp2">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1><img class="t-ico" src="assets/tool-mcp.svg" alt="">MCP Portal: controls and outcomes</h1>
+<p class="subtitle">OAuth for interactive clients; the workshop uses a bearer key.</p>
+<div class="dd e-dd">
+  <div class="col"><h3>CONTROLS</h3><ul>
+    <li><b>Client authentication</b><small>Headless clients can send a bearer API key instead.</small></li>
+    <li><b>Egress policy</b><small>Blocked domains stop calls to those servers. Other servers keep working.</small></li>
+    <li><b>Runtime limit</b><small>Set request and tool timeouts; inspect failed calls in Gateway Overview.</small></li>
+  </ul></div>
+  <div class="col e-out"><h3>OUTCOMES</h3><ul>
+    <li><b>Overview tab</b><small>Calls by outcome, a tools leaderboard and P95 latency.</small></li>
+    <li><b>Outcomes and traces</b><small>The Gateway Overview records successful and denied calls. A managed-agent trace shows its MCP server tool span.</small></li>
+  </ul></div>
+</div>
+</div>
+<aside class="notes">Sources: [Orq MCP Gateway](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-gateways); [module 10, bearer-key gateway client, Overview denial, and managed-agent MCP trace](../../modules/10-mcp-gateway/README.md). This gateway is distinct from the orq workspace MCP server, which uses OAuth in the coding-agent setup.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway › MCP Portal" class="slide full c-ex">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Exercise: expose one tool, hide another</h1>
+<p class="subtitle">Put a gateway in front of a server and watch it enforce what you expose.</p>
+<div class="ex-meta"><span class="ex-time">&#9201; 15 min practical</span><span class="ex-q">+ 5 min questions</span></div>
+<div class="ex-grid">
+<ol class="ex-steps"><li><span>In <b>MCP Portal</b>, add the suggested server (type HTTP, authentication <b>None</b>) and let it sync.</span></li><li><span>Create an MCP gateway, link the server and expose <b>one</b> tool.</span></li><li><span>Connect an MCP client to the gateway URL.</span></li><li><span>Call the exposed tool, then ask for the hidden one.</span></li><li><span>Find both calls in Traces.</span></li></ol>
+<div class="ex-side"><div class="ex-srv"><small>SUGGESTED SERVER · NO AUTHENTICATION</small><b>MCP Playground Complex Server</b><code>https://mcpplaygroundonline.com/mcp-complex-server</code><span>Dummy business tools, nothing is stored. Expose <code>analyze_data</code>, hide <code>process_order</code>.</span></div><div class="ex-done"><b>Done when</b>The hidden tool is logged as denied, not silently missing.</div></div>
+</div>
+<aside class="notes" style="display:none">Run-of-show D2 10:35 (15 min practical + 5 min questions inside the 30 min block). Check the server with Test connection the day before; plan Section 5 lists it. Alternatives with no sign-in: DeepWiki, Orq.ai Docs. Plan: D1-6.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Knowledge Bases" class="slide full e-kb1">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Knowledge bases: key concepts</h1>
+<p class="subtitle">Five settings decide what a search returns.</p>
+<div class="shot-concepts e-kb">
+  <figure class="shot e-shot"><img src="assets/shots/m09-knowledge-e.png" alt="Studio Knowledge list showing a knowledge base"><figcaption>STUDIO · KNOWLEDGE · KNOWLEDGE BASES</figcaption></figure>
+  <ol class="concepts">
+    <li><b>Chunking</b><span>Splits files into passages; size and overlap shape what search finds.</span></li>
+    <li><b>Embedding model</b><span>Embeds chunks and queries. After a model change, re-embed.</span></li>
+    <li><b>Search type</b><span>Vector: meaning. Keyword: exact words. Hybrid: both (workshop base).</span></li>
+    <li><b>Reranking</b><span>Needs an enabled model; look for a rerank score.</span></li>
+    <li><b>Attach to an agent</b><span>The agent also needs the knowledge search tools.</span></li>
+  </ol>
+</div>
+</div>
+<aside class="notes">Sources: [Orq Knowledge Bases](https://docs.orq.ai/ai-studio/ai-engineering/knowledge-bases); [module 09, seeded base and rerank observation](../../modules/09-knowledge-base-rag/README.md). Module 09 re-embeds stored chunks as a workaround for its seeded base when changing embedding models.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Knowledge Bases" class="slide full e-modes1">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Knowledge bases: search modes</h1>
+<p class="subtitle">Same question, three modes. Compare scores only within one mode.</p>
+<table class="cv-table e-modes">
+<colgroup><col style="width:22%"><col></colgroup>
+<thead><tr><th>Search mode</th><th>How it matches</th></tr></thead>
+<tbody>
+<tr><td>Keyword</td><td>Matches exact terms and phrases.</td></tr>
+<tr><td>Vector</td><td>Matches semantic similarity.</td></tr>
+<tr class="e-hl"><td>Hybrid</td><td>Combines keyword and vector results.</td></tr>
+</tbody>
+</table>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Knowledge Bases" class="slide full c-ex">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Exercise: compare search modes</h1>
+<p class="subtitle">Ask the same question three ways and read the chunks that come back.</p>
+<div class="ex-meta"><span class="ex-time">&#9201; 10 min practical</span><span class="ex-q">+ 5 min questions</span></div>
+<div class="ex-grid">
+<ol class="ex-steps"><li><span>Open the prepared knowledge base in <b>Knowledge Bases</b>.</span></li><li><span>Run one question in vector, keyword and hybrid search.</span></li><li><span>Compare the returned chunks and their scores.</span></li><li><span>Change the chunking and search again.</span></li></ol>
+<div class="ex-side"><div class="ex-done"><b>Done when</b>You can say which mode returned the best chunk for which kind of question.</div></div>
+</div>
+<aside class="notes" style="display:none">Run-of-show D2 09:50 (10 min practical + 5 min questions inside the 30 min block). Ingest the documents beforehand so the ten minutes go on searching. Plan: D1-8.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Prompt Management" class="slide full e-skill">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Skills: reusable instruction blocks</h1>
+<p class="subtitle">Write an instruction once, then reference it from many prompts and agents.</p>
+<table class="cv-table">
+<colgroup><col style="width:22%"><col></colgroup>
+<thead><tr><th>Field</th><th>What it holds</th></tr></thead>
+<tbody>
+<tr><td><code>display_name</code></td><td>The lookup key for the template placeholder. Starts with a letter; no dots. Unique in the workspace.</td></tr>
+<tr><td><code>description</code></td><td>When to apply the Skill. Shown in the Studio picker.</td></tr>
+<tr><td><code>instructions</code></td><td>The text that replaces the placeholder wherever the Skill is used.</td></tr>
+<tr><td><code>tags</code></td><td>Free labels, for example <code>policy</code> or <code>retired</code>.</td></tr>
+<tr><td>Project and path</td><td>Scope the Skill to one project or the whole workspace, and place it in a folder.</td></tr>
+</tbody>
+</table>
+<aside class="notes" style="display:none">Skills are the platform entity formerly called Prompt Snippets; migrated snippets keep working. Not the same as coding-assistant skills (SKILL.md files) or the A2A AgentCard skills list. Source: orq-manage-skills field reference (display_name regex ^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)*$). Verify against the live Studio before presenting.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Prompt Management" class="slide full e-skill">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Skills: template values</h1>
+<p class="subtitle">The placeholder is replaced by the Skill's instructions when the prompt renders.</p>
+<div class="sk-pair">
+<div><small class="sk-cap">YOU WRITE</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>agent instructions</span></div><pre><code>You are the Lumen Goods refund agent.
+<span class="p">{{skill.refund_policy}}</span>
+Answer in the customer's language.</code></pre></div></div>
+<div><small class="sk-cap">THE MODEL SEES</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>rendered</span></div><pre><code>You are the Lumen Goods refund agent.
+<span class="p">Refunds above EUR 500 go to a human.</span>
+Answer in the customer's language.</code></pre></div></div>
+</div>
+<div class="sk-rules">
+<div class="box"><span class="eyebrow">LOOKUP BY NAME</span><p>The placeholder matches <code>display_name</code> exactly, case-sensitive. <code>{{snippet.name}}</code> still works as an alias.</p></div>
+<div class="box"><span class="eyebrow">RENAME BREAKS IT</span><p>A renamed or deleted Skill leaves an empty placeholder. Tag it <code>retired</code> first.</p></div>
+<div class="box"><span class="eyebrow">SOFT GUIDANCE</span><p>Skill text only asks the model. Enforce hard limits with guardrails or tool gates.</p></div>
+</div>
+<aside class="notes" style="display:none">Canonical form is the skill placeholder with the Skill's display_name; the snippet form is the backward-compatible alias. The example text is illustrative. Verify rendering with a test run after creating a Skill, as the skills API was still rolling out when this deck was written.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Prompt Management" class="slide full e-skill">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Skills: create, use, check in the trace</h1>
+<p class="subtitle">Create the Skill once. Reference it by name. The trace shows the text the model received.</p>
+<div class="sk-pair">
+<div><small class="sk-cap">CREATE AND REFERENCE</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>zsh</span></div><pre><code><span class="p">❯</span> orq skills create \
+    --display-name refund_policy \
+    --instructions \
+    "Refunds above EUR 500 go to a human."
+<span class="c">  # then, in any prompt or agent:</span>
+<span class="p">{{skill.refund_policy}}</span></code></pre></div></div>
+<div><small class="sk-cap">IN THE TRACE · MODEL CALL INPUT</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>system message</span></div><pre><code>You are the Lumen Goods refund agent.
+<span class="p">Refunds above EUR 500 go to a human.</span>
+Answer in the customer's language.
+<span class="c">  # no placeholder left, only the text</span></code></pre></div></div>
+</div>
+<p class="note b-note b-plain">Open the model-call span to confirm which Skill text a request really used.</p>
+<aside class="notes" style="display:none">The CLI command and flags are from <code>orq skills create --help</code> (display_name required; instructions, description, tags, path and project_id optional). The trace panel is the expected result of render-time substitution; it was not captured from a live trace. Before presenting, create a Skill in a test project, call an agent that references it, and confirm the model-call span shows the resolved text. Replace this panel with a real screenshot if possible.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Prompt Management" class="slide full e-skill">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Skills: attach on demand</h1>
+<p class="subtitle">Two ways to give an agent a Skill. Attached Skills are listed in the prompt, not pasted into it.</p>
+<div class="sk-pair">
+<div class="sk-stack">
+<div class="box"><span class="eyebrow">STATIC REFERENCE</span><p>Put <code>{{skill.key}}</code> in the instructions. The full text is injected on every run.</p></div>
+<div class="box hot"><span class="eyebrow">ON-DEMAND ATTACHMENT</span><p>Add the Skill in the agent's Skills section. The agent reads it only when the conversation needs it, based on its description.</p></div>
+</div>
+<div><small class="sk-cap">ADDED TO THE PROMPT FOR ATTACHED SKILLS</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>system message</span></div><pre><code>You have access to these skills:
+<span class="p">- refund_policy</span>
+  Use when a refund may exceed
+  the EUR 500 limit.</code></pre></div></div>
+</div>
+<p class="note b-note b-plain">So write a clear description: it decides when the agent opens the Skill.</p>
+<aside class="notes" style="display:none">Source: docs.orq.ai build-agents (Skills: static reference vs on-demand attachment) and release 4.9 (agent picks a Skill from its description and the instructions; attached Skills do not cost tokens until used). The exact wording of the section the platform adds to the prompt is not in the docs, so the panel is illustrative. Before presenting, attach a Skill to a test agent, run it, and copy the real text from the model-call span.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Agents" class="slide full e-api">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Managed agents: the API</h1>
+<p class="subtitle">Function tools return a call for your app to execute, then continue the Responses turn.</p>
+<div class="e-lane"><span class="eyebrow"><img class="t-ico" src="assets/tool-function.svg" alt="">FUNCTION TOOL LOOP</span>
+<div class="flow e-flow">
+  <div><small>APP</small><b>Send</b>App sends input to the managed agent with its configured model.</div>
+  <div><small>AGENT</small><b>Call</b>Agent returns a function call to the app.</div>
+  <div class="e-hl"><small>APP</small><b>Execute</b>App executes the function and returns its result.</div>
+  <div><small>APP</small><b>Continue</b>App continues the turn until a final message.</div>
+</div></div>
+<div class="e-lane"><span class="eyebrow"><img class="t-ico" src="assets/tool-code.svg" alt="">HOSTED CODE TOOL</span>
+<div class="flow e-flow">
+  <div><small>APP</small><b>Send</b>Same input as above.</div>
+  <div><small>HOSTED</small><b>Run</b>Agent runs code in the hosted environment.</div>
+  <div><small>HOSTED</small><b>Result</b>Hosted environment returns the result.</div>
+  <div><small>AGENT</small><b>Final</b>Agent returns a final message.</div>
+</div></div>
+<p class="note">Return <code>function_call_output</code> with the matching <code>call_id</code>; continue with <code>previous_response_id</code>.</p>
+</div>
+<aside class="notes">Sources: [module 08, hosted code tools versus app-executed function tools](../../modules/08-managed-agents/README.md); [Orq Run Agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents).</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Tools" class="slide full e-skill">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Tool descriptions: what the model reads</h1>
+<p class="subtitle">The model picks a tool from its description alone, so a vague one means wrong calls.</p>
+<div class="sk-pair">
+<div><small class="sk-cap">VAGUE</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>search_customers</span></div><pre><code>Searches the database.
+
+<span class="c">query: "Search query"</span></code></pre></div></div>
+<div><small class="sk-cap">SPECIFIC</small><div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>search_customers</span></div><pre><code>Searches customers by name or email.
+<span class="p">Does NOT</span> search order history:
+use search_orders for that.
+
+<span class="c">query: Name (partial match) or full
+email. 'John Smith', 'a@b.com'.
+Minimum 2 characters.</span></code></pre></div></div>
+</div>
+<div class="sk-rules">
+<div class="box"><span class="eyebrow">WHEN, AND WHEN NOT</span><p>State the trigger, and name the sibling tool for nearby tasks. Overlapping triggers cause wrong picks.</p></div>
+<div class="box"><span class="eyebrow">PARAMETERS</span><p>Give type, format, constraints and one example for each.</p></div>
+<div class="box"><span class="eyebrow">RETURN AND ERRORS</span><p>Say which fields come back, what an empty result looks like, and how to react to a failure.</p></div>
+</div>
+<aside class="notes" style="display:none">Source: orq-build-agent skill and its resources/tool-description-guide.md in github.com/orq-ai/assistant-plugins. The five rules there: when to use, what it does NOT do, precise parameters, the return value, error cases. The skill calls tool descriptions the number one source of agent failures; that is a stated claim, not a measurement. The search_customers example is illustrative. Tie back to slide 53: the description is part of the injected context on every call.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="Managed Agents › Agents" class="slide full">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body d-dd">
+<h1>Agent design: rules of thumb</h1>
+<p class="subtitle">Starting points from the orq-build-agent skill. Check the numbers on your own traces.</p>
+<div class="dd">
+<div class="col"><h3>DO</h3><ul>
+<li>Give each agent one job and 3&ndash;5 tools<small>Every extra tool widens the choice and raises selection errors.</small></li>
+<li>Start with a capable model, then go cheaper<small>Fix the prompt first, compare cheaper models, pin the snapshot.</small></li>
+<li>Put the key constraints first, and be specific<small>"Answer in 2&ndash;3 sentences", plus an escalation path.</small></li>
+<li>Test edge cases before the evals<small>Errors, ambiguous input, out-of-scope asks, prompt injection.</small></li></ul></div>
+<div class="col bad"><h3>DO NOT</h3><ul>
+<li>Build one mega-agent with 8+ tools<small>Split it into specialised sub-agents.</small></li>
+<li>Swap models to fix a prompt problem<small>Most failures are instructions, not model limits.</small></li>
+<li>Write "be concise" and hope<small>Vague goals and buried constraints get ignored.</small></li>
+<li>Demo only the happy path<small>Then ship an agent that has never said no.</small></li></ul></div>
+</div>
+<aside class="notes" style="display:none">Source: orq-build-agent SKILL.md in github.com/orq-ai/assistant-plugins (scope, models, system instructions, testing). The "max 8 tools" and "3-5 tools" figures are heuristics in the skill with no cited experiment behind them; say so if asked. Model tier names in the skill age fast, so check the Model Garden for what is current. Links to the improvement-cycle slide: turn the test cases into an eval dataset.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section data-comp="AI Gateway" class="slide full e-gwcli">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Gateway and CLI: key concepts</h1>
+<p class="subtitle">Two ways in, one set of traces and budgets.</p>
+<div class="shot-concepts e-gw">
+  <figure class="shot"><div class="term e-term"><div class="term-bar"><i></i><i></i><i></i><span>app.py</span></div><pre><code><span class="k">from</span> openai <span class="k">import</span> OpenAI
+
+client = OpenAI(
+    base_url=<span class="s">ROUTER_URL</span>,
+    api_key=<span class="s">ORQ_API_KEY</span>,
+)</code></pre></div><figcaption>SDK · CHANGE THE BASE URL AND THE CREDENTIAL</figcaption></figure>
+  <ol class="concepts">
+    <li><b>Base URL and credential</b><span>Check model IDs and endpoint features for your SDK.</span></li>
+    <li><b>Anthropic Messages API</b><span>Supported format; confirm your model and features.</span></li>
+    <li><b>Request metadata</b><span>App name can be metadata; identity is a separate field.</span></li>
+    <li><b><code>orq launch</code></b><span>Session-only wiring; persistent setup uses <code>orq connect</code> (next slide).</span></li>
+    <li><b>MCP server and Skills</b><span>Wired into this repo with <code>orq setup</code> (next slide).</span></li>
+  </ol>
+</div>
+</div>
+<aside class="notes">Sources: [OpenAI-compatible integration](https://docs.orq.ai/docs/integrations/providers/vertex-ai); [module 00 setup](../../modules/00-setup/README.md); [module 13 launch and connect](../../modules/13-coding-agents/README.md); repo model IDs use <code>provider/model</code> in [AGENTS.md](../../AGENTS.md).</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+<section class="slide full e-term1">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Terminal: four commands</h1>
+<p class="subtitle">The CLI for scripts and technical users. MCP for plain-language work.</p>
+<div class="term e-bigterm"><div class="term-bar"><i></i><i></i><i></i><span>zsh</span></div><pre><code><span class="p">❯</span> orq setup --local --capability gateway
+<span class="c">  # wire MCP and Skills into this repo</span>
+<span class="p">❯</span> orq connect --local --dry-run
+<span class="c">  # inspect agent wiring, change nothing</span>
+<span class="p">❯</span> orq launch claude
+<span class="c">  # start Claude Code through the gateway</span>
+<span class="p">❯</span> orq traces conversation &lt;trace_id&gt;
+<span class="c">  # read one trace as a conversation</span></code></pre></div>
+</div>
+<aside class="notes">Sources: [module 00 setup command](../../modules/00-setup/README.md); [module 13 safe connect inspection and launch](../../modules/13-coding-agents/README.md); installed CLI help confirms <code>orq traces conversation &lt;trace_id&gt;</code>.</aside>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+
+
+<section data-comp="Managed Agents › Agents" class="slide full e-chat">
+<header><span>orq.ai <i>October Insurance · Building agents with orq.ai</i></span><span class="slide-num"></span></header>
+<div class="slide-body">
+<h1>Injected context or tool calls</h1>
+<p class="subtitle">Same question, same answer. The agent gets its policy in two different ways.</p>
+<div class="ch-pair"><div class="ch-col "><small class="sk-cap">INJECTED CONTEXT</small><div class="ch-card"><div class="ch-title">Policy is already in the prompt</div><div class="msg sys"><b>SYSTEM</b>You are the Lumen Goods refund agent.<br><code>Single-refund limit: EUR 500. Larger refunds go to human review.</code></div><div class="msg user"><b>USER</b>Refund ord_a6, the desk frame is wobbly.</div><div class="msg tool"><b>TOOL CALL</b><code>lookup_order("ord_a6")</code> → EUR 620</div><div class="msg bot"><b>AGENT</b>EUR 620 is above the EUR 500 limit, so I have routed it to human review.</div><div class="ch-foot">In every request, used or not. No fetch step.</div></div></div><div class="ch-col hot"><small class="sk-cap">TOOL CALLS</small><div class="ch-card"><div class="ch-title">The agent fetches the policy</div><div class="msg sys"><b>SYSTEM</b>You are the Lumen Goods refund agent.<code>For refund rules, call get_policy.</code></div><div class="msg user"><b>USER</b>Refund ord_a6, the desk frame is wobbly.</div><div class="msg tool"><b>TOOL CALL</b><code>lookup_order("ord_a6")</code> → EUR 620</div><div class="msg tool"><b>TOOL CALL</b><code>get_policy("refund_basics")</code> → limit EUR 500</div><div class="msg bot"><b>AGENT</b>EUR 620 is above the EUR 500 limit, so I have routed it to human review.</div><div class="ch-foot">Fetched only when needed. Each fetch is a span.</div></div></div></div>
+<aside class="notes" style="display:none">Illustrative transcript using the workshop refund agent (order ord_a6 is EUR 620, limit EUR 500; tools lookup_order and get_policy from app/refund_agent/tools.py). Left: policy injected into the system prompt, for example through a static Skill reference or retrieved chunks. Right: the agent calls get_policy itself, so the trace shows one more span and the prompt stays small. Use injection for rules that apply to every request, tool calls for large or rarely needed context.</aside>
+</div>
+<footer><span>orq.ai × October Insurance</span><span>19-22 Oct 2026 · On site</span></footer>
+</section>
+</div></div>
+<script src="assets/reveal/reveal.js"></script>
+<script>
+const slides = document.querySelectorAll('.reveal .slides > section');
+slides.forEach((s, i) => s.querySelector('.slide-num').textContent =
+  `${String(i + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`);
+Reveal.initialize({width: 1920, height: 1080, center: false, margin: 0, controls: false,
+  progress: true, hash: true, transition: 'none', showSlideNumber: false});
+</script>
+</body>
+</html>

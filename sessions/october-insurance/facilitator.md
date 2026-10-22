@@ -1,15 +1,15 @@
-# Facilitator notes · Certe, Coevorden, Mon 19 to Thu 22 Oct 2026
+# Facilitator notes · October Insurance, on site, Mon 19 to Thu 22 Oct 2026
 
-Local sources (gitignored, in `.context/`): `certe-prep-notes.md` (call 14 Oct), `certe-sow.md` (SOW 001), `certe-plan.md` (generic 2-day test plan, block ids D1-x / D2-x), `certe-deck.md` (text of Workshop Master Deck 05; the pptx is in `certe-deck-dl/`).
+Local sources (gitignored, in `.context/`): `october-insurance-prep-notes.md` (call 14 Oct), `october-insurance-sow.md` (SOW 001), `october-insurance-plan.md` (generic 2-day test plan, block ids D1-x / D2-x), `october-insurance-deck.md` (text of Workshop Master Deck 05; the pptx is in `october-insurance-deck-dl/`).
 
 ## Where call, SOW and plan agree, and where they differ
 
-- Agree: technical track Mon-Tue then non-technical Wed-Thu, technical first; a hands-on working session on Tue 20 Oct with Certe's nominated use cases, closing with a backlog Certe owns; governance (roles, SSO, keys, audit logs, EU/ZDR, guardrails/PII), gateway, MCP gateway, KB, agents, evals, CLI/MCP tooling on the technical days; prompting, evaluation and A/B testing for the business days; no production-grade agents.
-- Differ, follow the call (later): SOW has the non-technical track as a separate group of 4-8; the call has 5 technical carry-overs paired with 5 business people. Takhtar's four use cases (advice, compliance, claims, TBC) vs the SOW's two nominated for Tue: claims (needs integration work) plus one of advice or compliance on Tue; the rest on Thu.
+- Agree: technical track Mon-Tue then non-technical Wed-Thu, technical first; a hands-on working session on Tue 20 Oct with October Insurance's nominated use cases, closing with a backlog October Insurance owns; governance (roles, SSO, keys, audit logs, EU/ZDR, guardrails/PII), gateway, MCP gateway, KB, agents, evals, CLI/MCP tooling on the technical days; prompting, evaluation and A/B testing for the business days; no production-grade agents.
+- Differ, follow the call (later): SOW has the non-technical track as a separate group of 4-8; the call has 5 technical carry-overs paired with 5 business people. the customer contact's four use cases (advice, compliance, claims, TBC) vs the SOW's two nominated for Tue: claims (needs integration work) plus one of advice or compliance on Tue; the rest on Thu.
 - Open: SOW Part B (v) status is the yes/no item in the checklist above.
 - Plan tips to keep: set EU and ZDR filters before anyone builds; always test the deny path; use the full Chat, not the lighter panels; new builds on Agents or Prompts, not Deployments; open the trace first.
 
-## Reuse map (deck slide numbers from certe-deck.md)
+## Reuse map (deck slide numbers from october-insurance-deck.md)
 
 - Day 1 overview and basics, day 3 concepts: slides 5-8, 30-38 (Orqflow, platform, what's new); 10-27 (LLM vs workflow vs agent, tools, parameters).
 - Day 1 IT controls: slides 36, 44-45, 69-75 (governance, risk layers, guardrails, PII); plan blocks D1-1, D1-2, D1-5, D1-7, D1-9.
@@ -25,11 +25,11 @@ Local sources (gitignored, in `.context/`): `certe-prep-notes.md` (call 14 Oct),
 ## Before the week
 
 - [ ] Hotel booked in Emmen (Van der Valk preferred), Mon to Thu
-- [ ] Added to the Certe orq environment (Takhtar); on-prem URL still pending, SaaS workspace is the fallback
+- [ ] Added to the October Insurance orq environment (the customer contact); on-prem URL still pending, SaaS workspace is the fallback
 - [ ] Confirm orq MCP is available in the Claude marketplace; the ZIP plugin works without an enterprise account
 - [ ] Pre-session checklist from Cameron received
-- [ ] Participant roles per day received from Takhtar (5 technical carry over to days 3 and 4, plus 5 business)
-- [ ] 10 Studio accounts exist (EUR 35/user; Takhtar aligns with finance)
+- [ ] Participant roles per day received from the customer contact (5 technical carry over to days 3 and 4, plus 5 business)
+- [ ] 10 Studio accounts exist (EUR 35/user; the customer contact aligns with finance)
 - [ ] EU location and ZDR filters set on the workspace before Monday (SOW Part B ii)
 - [ ] Each technical participant ran `make doctor && make smoke` on their own laptop (SOW Part B v); each runs `make seed` under their own `WS_PREFIX` in module 00 (`make reset` refuses the bare prefix)
 - [ ] Trainer has workspace admin; participants who do module 05 need it too
@@ -43,7 +43,7 @@ Local sources (gitignored, in `.context/`): `certe-prep-notes.md` (call 14 Oct),
 - [ ] Day 3 per use case: knowledge base with the use case's documents uploaded before Wednesday, one ready-made tool a business person can attach (pre-registered code tool or a public MCP server from plan section 5), Chat enabled on the instance in use
 - [ ] SOW Part B (v) done for business participants (orq MCP connected in Claude or Codex): yes/no. If no, the Day 3 Claude Desktop block is a 10 min demo and 10 min go to Experiment
 - [ ] Dry-run in the Studio: a restricted key refuses a write, a model outside the EU/ZDR pool is denied. Module 05 stored API-created restrictions as `permission_mode: all`, so do not promise the refusal before seeing it
-- [ ] Insurance data for the 4 use cases from Takhtar, Tuesday's two in hand first (SOW 1.5.1 iv): advice, compliance officer, claims (reuses a third-party agent), fourth TBC
+- [ ] Insurance data for the 4 use cases from the customer contact, Tuesday's two in hand first (SOW 1.5.1 iv): advice, compliance officer, claims (reuses a third-party agent), fourth TBC
 
 ## Day 1 and 2 (technical)
 
@@ -52,10 +52,10 @@ Day 1 is platform options and IT controls (the IT manager is in the room): keys,
 ## Ask the room (do not decide these in advance)
 
 - Day 1 welcome: what they use today (Claude Code, which models, which providers) and what they want to leave with.
-- Day 1 platform options: which deployment Certe runs, who operates it, which identity provider (SSO).
-- Day 1 model access: which models Certe wants in the EU/ZDR pool; let the IT manager pick it live.
+- Day 1 platform options: which deployment October Insurance runs, who operates it, which identity provider (SSO).
+- Day 1 model access: which models October Insurance wants in the EU/ZDR pool; let the IT manager pick it live.
 - Day 1 IT controls: budget per team, who gets which key, audit-log retention, which personal data to redact (BSN, patient data), which tools and MCP servers they would allow. Capture the answers in the IT checklist.
-- Day 2 kickoff and MCP: which Certe systems they would connect first; who owns each use case.
+- Day 2 kickoff and MCP: which October Insurance systems they would connect first; who owns each use case.
 - Day 3 plan: business people state the requirements, risks and success measure for their pair's use case; ask which tasks they do by hand today.
 - Day 4 evaluate: business people write the golden questions and say what a good answer is. They know the right answers, the engineers do not.
 - Day 4 request block: priorities for the backlog; which item goes first to the build team.
@@ -76,6 +76,6 @@ Technical people pair with business people and share an account. Day 4 is not a 
 
 ## After the week
 
-- [ ] Hackathon on 24 Nov at the Certe offices (4 h build, then food and drinks): follow up
-- [ ] Handover note and follow-up recommendations to Takhtar by 31 Oct (SOW close-out), seeded from the Tuesday backlog and the Day 1 IT checklist
+- [ ] Hackathon on 24 Nov at the October Insurance offices (4 h build, then food and drinks): follow up
+- [ ] Handover note and follow-up recommendations to the customer contact by 31 Oct (SOW close-out), seeded from the Tuesday backlog and the Day 1 IT checklist
 - [ ] Review account count in 3 months
