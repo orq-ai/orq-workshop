@@ -38,7 +38,15 @@ from starlette.routing import Route
 
 from app import insurance
 from app.refund_agent import tools
-from app.refund_agent.agent import IDENTITY_HEADER, TRACE_HEADER, chat
+from app.refund_agent.agent import (
+    HANDOFF_TEXT,
+    IDENTITY_HEADER,
+    MAX_TOOL_ROUNDS,
+    TRACE_HEADER,
+    _propagation_headers,
+    chat,
+    system_message,
+)
 from app.refund_agent.client import make_openai_client, make_orq
 from app.refund_agent.config import ROOT, settings
 from app.refund_agent.entities import CHAT_CHANNELS
@@ -313,7 +321,7 @@ def _step(call_id: str, call: dict[str, Any], state: str) -> dict[str, Any]:
     """A `step` event: one tool call of the agent (a sub-agent call has `agent`), `running` or `done`."""
     return {
         "type": "step", "id": call_id, "tool": call["name"], "agent": call["agent"], "state": state,
-        "input": call["input"], "result": call["result"],
+        "input": call["input"], "result": call["result"], "ok": call.get("ok"), "error": call.get("error"),
     }
 
 
@@ -368,6 +376,64 @@ def _stream_turn(model: str, message: str, history: list[dict[str, Any]], extra_
     yield {
         "type": "done", "answer": answer, "tool_calls": list(calls.values()),
         "trace_id": trace_id, "trace_url": trace_url(trace_id), "history": [*history, *turn], "steps": steps,
+    }
+
+
+def _stream_local_turn(model: str, message: str, history: list[dict[str, Any]], store: OrderStore, extra_body: dict[str, Any]):
+    """`agent.run_turn` with each model round streamed: the same loop and tools, as UI events (a sync generator).
+
+    Same events as `_stream_turn`; the tools run here, so a `step` ends with the tool's `ok` and
+    `error`. Raises APIStatusError before the first event when the gateway rejects the request.
+    """
+    client = make_openai_client()
+    messages = list(history)
+    if not messages or messages[0].get("role") != "system":
+        messages.insert(0, system_message())
+    messages.append({"role": "user", "content": message})
+    instructions = messages.pop(0)["content"]  # the Responses API takes the system prompt as `instructions`
+    headers = {**_propagation_headers(), IDENTITY_HEADER: settings.identity_id}
+    outcomes: list[dict[str, Any]] = []
+    trace_id = None
+    for round_ in range(MAX_TOOL_ROUNDS + 1):
+        raw = client.responses.with_raw_response.create(
+            model=model, instructions=instructions, input=messages, tools=tools.RESPONSES_TOOLS, store=False,
+            extra_body=extra_body or {}, extra_headers=headers, stream=True,
+        )
+        trace_id = raw.headers.get(TRACE_HEADER) or trace_id
+        if round_ == 0:
+            yield {"type": "start", "trace_id": trace_id}
+            yield {"type": "node", "agent": "root", "state": "working"}
+        text, calls = "", []
+        for event in raw.parse():
+            item = getattr(event, "item", None)
+            if event.type == "response.output_text.delta":
+                text += event.delta
+                yield {"type": "delta", "text": event.delta}
+            elif event.type == "response.output_item.added" and item.type == "function_call":
+                yield _step(item.call_id, _call(item.name, None), "running")
+            elif event.type == "response.output_item.done" and item.type == "function_call":
+                calls.append(item)
+        if text:
+            messages.append({"role": "assistant", "content": text})
+        for item in calls:
+            messages.append({"type": "function_call", "call_id": item.call_id, "name": item.name, "arguments": item.arguments})
+        if not calls:
+            break
+        for item in calls:
+            result = tools.dispatch(store, item.name, json.loads(item.arguments or "{}"))
+            messages.append({"type": "function_call_output", "call_id": item.call_id, "output": json.dumps(result)})
+            call = _call(item.name, item.arguments, json.dumps(result))
+            call["ok"], call["error"] = result.get("ok"), result.get("error")
+            outcomes.append(call)
+            yield _step(item.call_id, call, "done")
+    else:  # out of rounds: hand off to a human, as run_turn does
+        messages.append({"role": "assistant", "content": HANDOFF_TEXT})
+        yield {"type": "delta", "text": HANDOFF_TEXT}
+    answer = next((m["content"] for m in reversed(messages) if m.get("role") == "assistant" and m.get("content")), "")
+    yield {"type": "node", "agent": "root", "state": "done"}
+    yield {
+        "type": "done", "answer": answer, "tool_calls": outcomes, "trace_id": trace_id, "trace_url": trace_url(trace_id),
+        "history": [system_message(instructions), *messages], "steps": [],
     }
 
 
@@ -592,7 +658,7 @@ def _sse(event: dict[str, Any]) -> bytes:
 
 
 async def post_chat_stream(request: Request) -> Response:
-    """Like /api/chat for a hosted agent, as server-sent events: node, delta and a final done event.
+    """Like /api/chat, as server-sent events: node, step, delta and a final done event.
 
     Errors before the first event keep the status codes of /api/chat. Errors after it are an
     `error` event. The gateway does not run output guardrails on a stream: the page does not offer
@@ -601,15 +667,16 @@ async def post_chat_stream(request: Request) -> Response:
     context, error = await _chat_context(request)
     if error is not None:
         return error
-    if not context["model"].startswith("agent/"):
-        _release(context, False)
-        return _error(422, "streaming is for hosted agents: pick an agent")
     if context["guarded"]:
         _release(context, False)
         return _error(422, "output guardrails do not run on a stream: set Guardrails to Off or turn streaming off")
-    events = iterate_in_threadpool(
-        _stream_turn(context["model"], context["message"], context["history"], context["extra_body"])
-    )
+    if context["model"].startswith("agent/"):
+        turn = _stream_turn(context["model"], context["message"], context["history"], context["extra_body"])
+    else:
+        turn = _stream_local_turn(
+            context["model"], context["message"], context["history"], context["store"], context["extra_body"]
+        )
+    events = iterate_in_threadpool(turn)
     try:  # the first event proves the gateway accepted the request; a block or a bad key is still a plain reply
         first = await anext(events)
     except APIStatusError as exc:
