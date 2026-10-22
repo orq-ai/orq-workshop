@@ -147,6 +147,10 @@
   #run li.running::before { background:var(--orange); border-color:var(--orange); animation:mm-pulse 1s ease-in-out infinite; }
   #run li.done::before,#run li.passed::before { background:var(--ink); border-color:var(--ink); }
   #run li.failed::before,#run li.blocked::before { background:#a93616; border-color:#a93616; }
+  #chain li { position:relative; }  /* a line joins each call's dot to the next one: the calls run in this order */
+  #chain li:not(:last-child)::after { content:""; position:absolute; left:calc(.275rem - .7px); top:1.13rem; bottom:-.58rem; width:1.4px; background:var(--rule); }
+  #chain li.done:not(:last-child)::after,#chain li.failed:not(:last-child)::after { background:var(--ink); }
+  #chain li.running:not(:last-child)::after { background:var(--orange); }
   #run .rl { display:block; overflow-wrap:anywhere; color:var(--ink); }
   #run .rn { display:block; color:var(--gray); font-size:.68rem; }
   #run li.idle .rl { color:var(--gray); }
