@@ -104,23 +104,86 @@ def test_stream_reports_each_agent_the_text_and_a_final_turn(monkeypatch):
         and done["steps"] == ["ws-claims-calculator"]
     )
     [call] = done["tool_calls"]  # the sub-agent's input and its result travel with the call
-    assert (call["agent"], call["input"], call["result"]) == ("ws-claims-calculator", "x", "EUR 400")
+    assert (call["agent"], call["input"], call["result"]) == (
+        "ws-claims-calculator",
+        "x",
+        "EUR 400",
+    )
     assert [e["result"] for e in events if e["type"] == "step"][-1] == "EUR 400"
     assert done["history"][-1] == {"role": "assistant", "content": "Uitkering EUR 400"}
 
 
-def test_stream_refuses_plain_models_and_a_guardrail_choice(monkeypatch):
+def test_stream_refuses_a_guardrail_choice(monkeypatch):
     _client(monkeypatch, lambda request: httpx.Response(500))
-    client = TestClient(web.app)
-    plain = client.post(
-        "/api/chat/stream", json={"message": "hi", "model": "openai/gpt-x", "conversation_id": "s1"}
-    )
-    guarded = client.post(
+    guarded = TestClient(web.app).post(
         "/api/chat/stream",
         json={"message": "hi", "model": "agent/a", "guardrails": "pii", "conversation_id": "s1"},
     )
-    assert plain.status_code == 422 and guarded.status_code == 422
+    assert guarded.status_code == 422
     assert "s1" not in web._busy  # a refused request must not keep the conversation locked
+
+
+def test_stream_runs_a_plain_models_tool_loop_round_by_round(monkeypatch):
+    rounds = iter(
+        [
+            [  # round 1: the model asks for a tool
+                {"type": "response.created", "response": {"id": "r", "output": []}},
+                {
+                    "type": "response.output_item.added",
+                    "item": {
+                        "type": "function_call",
+                        "id": "f",
+                        "call_id": "c1",
+                        "name": "lookup_order",
+                        "arguments": "",
+                    },
+                },
+                {
+                    "type": "response.output_item.done",
+                    "item": {
+                        "type": "function_call",
+                        "id": "f",
+                        "call_id": "c1",
+                        "name": "lookup_order",
+                        "arguments": '{"order_id": "ord_a1"}',
+                    },
+                },
+            ],
+            [  # round 2: the answer
+                {"type": "response.output_text.delta", "delta": "Your lamp "},
+                {"type": "response.output_text.delta", "delta": "arrived."},
+            ],
+        ]
+    )
+    sent: list[dict] = []
+
+    def gateway(request: httpx.Request) -> httpx.Response:
+        sent.append(json.loads(request.content))
+        return httpx.Response(
+            200,
+            content=_sse(next(rounds)),
+            headers={"content-type": "text/event-stream", "x-orq-trace-id": "t1"},
+        )
+
+    _client(monkeypatch, gateway)
+    res = TestClient(web.app).post(
+        "/api/chat/stream", json={"message": "Where is ord_a1?", "model": "openai/gpt-x"}
+    )
+
+    events = _events(res)
+    assert (
+        len(sent) == 2 and sent[1]["input"][-1]["type"] == "function_call_output"
+    )  # round 2 saw the tool result
+    steps = [(e["tool"], e["state"], e["ok"]) for e in events if e["type"] == "step"]
+    assert steps == [("lookup_order", "running", None), ("lookup_order", "done", True)]
+    assert "".join(e["text"] for e in events if e["type"] == "delta") == "Your lamp arrived."
+    done = events[-1]
+    assert done["type"] == "done" and done["answer"] == "Your lamp arrived."
+    assert [(c["name"], c["ok"]) for c in done["tool_calls"]] == [("lookup_order", True)]
+    assert done["history"][0]["role"] == "system" and done["history"][-1] == {
+        "role": "assistant",
+        "content": "Your lamp arrived.",
+    }
 
 
 def test_stream_keeps_a_gateway_block_a_plain_reply(monkeypatch):

@@ -658,7 +658,7 @@
   let streamPref = true, graph = null, graphFor = "", graphToken = 0, mmTurn = 0, nodeState = {};
   let steps = [], turnState = "idle", blockedIds = [];  // this turn's tool calls; idle | running | done | blocked | error
   const graphs = new Map();
-  const streamAvailable = () => modelSelect.value.startsWith("agent/") && $("guardrails").value === "";
+  const streamAvailable = () => Boolean(modelSelect.value) && $("guardrails").value === "";
   const streaming = () => streamPref && streamAvailable();
   function syncAgentUi() {  // the Stream toggle follows the model and the guardrails; the sidebar follows the agent
     const ok = streamAvailable(), on = streamPref && ok;
@@ -666,9 +666,8 @@
       const b = $(id);
       b.setAttribute("aria-pressed", String(value === on));
       b.disabled = send.disabled || !ok;
-      b.title = ok ? (value ? "Show the answer and the working agents as they happen" : "Wait for the whole answer")
-        : modelSelect.value.startsWith("agent/") ? "Output guardrails do not run on a stream: set Guardrails to Off to stream"
-        : "Streaming is for agents: pick one with the Agents toggle";
+      b.title = ok ? (value ? "Show the answer and the tool calls as they happen" : "Wait for the whole answer")
+        : "Output guardrails do not run on a stream: set Guardrails to Off to stream";
     }
     loadGraph();
     renderRun();
@@ -873,7 +872,7 @@
         let event;
         try { event = JSON.parse(chunk.slice(6)); } catch { continue; }
         if (event.type === "node") setNode(event.agent, event.state);
-        else if (event.type === "step") upsertStep({ id: event.id, kind: event.tool === "call_sub_agent" ? "agent" : "tool", tool: event.tool, agent: event.agent, state: event.state, input: event.input, result: event.result });
+        else if (event.type === "step") upsertStep({ id: event.id, kind: event.tool === "call_sub_agent" ? "agent" : "tool", tool: event.tool, agent: event.agent, state: event.ok === false ? "failed" : event.state, error: event.error, input: event.input, result: event.result });
         else if (event.type === "delta") {
           const follow = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
           text += event.text;
