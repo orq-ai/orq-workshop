@@ -105,8 +105,13 @@
   .box { border:1px solid #aaa39c; border-radius:10px; background:var(--white); }
   .box:focus-within { border-color:var(--ink); }
   .bar { display:flex; align-items:center; flex-wrap:wrap; gap:.45rem; padding:.35rem .5rem .5rem; }
-  .bar .kind { margin:0; }
-  .bar input[list] { width:21rem; max-width:100%; min-height:36px; padding-block:.3rem; font-size:.84rem; }
+  .bar .kind,.pick .kind { margin:0; }
+  .rail-demo { padding:.7rem 1.1rem 0; }
+  .rail-demo .demo-label { margin:0 0 .25rem; }
+  .rail-demo .kind { margin:0; }
+  .pick { display:flex; align-items:center; gap:.4rem; }
+  .pick input[list] { width:15rem; min-width:0; }
+  @media (max-width:430px) { .pick { flex-wrap:wrap; } .pick input[list] { width:100%; max-width:100%; } }
   .bar #send { margin-left:auto; }
   textarea { display:block; width:100%; min-height:48px; max-height:9rem; resize:vertical; padding:.75rem .85rem .35rem; border:0; border-radius:10px 10px 0 0; background:transparent; line-height:1.45; }
   textarea:focus-visible { outline:none; }
@@ -191,6 +196,13 @@
 <body>
 <aside id="backend" aria-labelledby="backend-title">
   <div class="rail-brand"><div class="brand-name">orq.ai<small>WORKSHOP</small></div></div>
+  <div class="rail-demo">
+    <span class="demo-label">Demo</span>
+    <div class="kind" role="group" aria-label="Demo">
+      <button type="button" id="demo-refund" aria-pressed="true">Refund</button>
+      <button type="button" id="demo-insurance" aria-pressed="false" title="Checking which claims agents exist…" disabled>Insurance</button>
+    </div>
+  </div>
   <div class="rail-heading"><div><span class="eyebrow">REFERENCE DATA</span><h2 id="backend-title">Workshop orders</h2></div><span class="readonly" id="readonly">MOCK · READ ONLY</span><button id="drawer-close" type="button">Close</button></div>
   <div role="tablist" aria-label="Backend data">
     <button role="tab" id="tab-orders" aria-controls="panel-orders" aria-selected="true">Orders</button>
@@ -215,13 +227,6 @@
     </div>
     <div class="controls">
       <button class="control-button" id="drawer-toggle" type="button" aria-controls="backend" aria-expanded="false">Reference data</button>
-      <div>
-        <span class="demo-label">Demo</span>
-        <div class="kind" role="group" aria-label="Demo">
-          <button type="button" id="demo-refund" aria-pressed="true">Refund</button>
-          <button type="button" id="demo-insurance" aria-pressed="false" title="Checking which claims agents exist…" disabled>Insurance</button>
-        </div>
-      </div>
       <div>
         <label for="guardrails">Guardrails</label>
         <select id="guardrails" aria-describedby="guard-desc">
@@ -265,13 +270,6 @@
         <textarea id="message" name="message" rows="1" autocomplete="off" required
                aria-describedby="message-hint" placeholder="Hi, I want a refund for order ord_a1, I changed my mind."></textarea>
         <div class="bar">
-          <div class="kind" role="group" aria-label="Run on">
-            <button type="button" id="kind-models" aria-pressed="true" title="Our loop and our tools run in this app">Models</button>
-            <button type="button" id="kind-agents" aria-pressed="false" title="The agent and its tools live in orq.ai" disabled>Agents</button>
-          </div>
-          <label for="model" class="visually-hidden">Model or agent</label>
-          <input id="model" list="model-list" autocomplete="off" spellcheck="false" placeholder="Search…" title="Click and type to search; pick one from the list">
-          <datalist id="model-list"></datalist>
           <div class="kind" role="group" aria-label="Response">
             <button type="button" id="stream-on" aria-pressed="false" disabled>Stream</button>
             <button type="button" id="stream-off" aria-pressed="true" disabled>Full</button>
