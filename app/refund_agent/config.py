@@ -10,10 +10,12 @@ Modules read `settings.<field>`; nothing else in `app/` touches `os.environ`.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
 import threading
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -40,6 +42,31 @@ def _env(name: str, default: str = "") -> str:
 _renew_lock = threading.Lock()  # one `orq` renewal at a time; concurrent requests wait, then read the fresh file
 
 
+_cli_lock = threading.Lock()
+_cli_cache = {"token": "", "exp": 0.0}
+
+
+def _cli_token(margin: int) -> str:
+    """The workspace token from `orq auth token`, for CLIs (12.5+) that keep session secrets in the OS
+    keychain instead of `~/.orq/sessions/*.json`. The CLI renews it; it is cached until `margin` seconds
+    before its `exp`, so a request does not start a process. Empty when there is no CLI or no login."""
+    with _cli_lock:
+        if _cli_cache["token"] and _cli_cache["exp"] - time.time() > margin:
+            return _cli_cache["token"]
+        env = {k: v for k, v in os.environ.items() if k not in ("ORQ_API_KEY", "ORQ_PROJECT", "ORQ_WORKSPACE")}
+        try:
+            out = subprocess.run(
+                ["orq", "auth", "token"], env=env, capture_output=True, text=True, timeout=30, check=False,
+                stdin=subprocess.DEVNULL,  # a CLI waiting on stdin would hang
+            ).stdout.strip()
+            payload = out.split(".")[1]
+            exp = float(json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))["exp"])
+        except (OSError, subprocess.SubprocessError, AttributeError, IndexError, ValueError, KeyError, TypeError):
+            return ""  # no CLI, not logged in, or not a JWT: the caller says what to do
+        _cli_cache.update(token=out, exp=exp)
+        return out if exp - time.time() > margin else ""
+
+
 def _oauth_session(base_url: str, margin: int = 300) -> tuple[str, str]:
     """(workspace token, workspace key) from the `orq auth login` session for this host, or ("", "").
 
@@ -49,12 +76,17 @@ def _oauth_session(base_url: str, margin: int = 300) -> tuple[str, str]:
     try:
         session = json.loads((Path.home() / ".orq" / "sessions" / f"{urlparse(base_url).hostname}.json").read_text())
         workspace = session["activeWorkspaceKey"]
-        entry = session["workspaceTokens"][workspace]
-        expires = datetime.fromisoformat(entry["expiresAt"].replace("Z", "+00:00"))
-        fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=margin)
-        return (entry["token"] if fresh else ""), workspace
     except (OSError, ValueError, KeyError, TypeError):
         return "", ""
+    try:
+        entry = session["workspaceTokens"][workspace]
+        if entry["token"]:
+            expires = datetime.fromisoformat(entry["expiresAt"].replace("Z", "+00:00"))
+            fresh = expires - datetime.now(timezone.utc) > timedelta(seconds=margin)
+            return (entry["token"] if fresh else ""), workspace
+    except (ValueError, KeyError, TypeError, StopIteration):
+        pass  # no token in the file: a keychain CLI keeps it elsewhere
+    return (_cli_token(margin) if margin >= 0 else ""), workspace  # margin < 0 only asks whether a login exists
 
 
 def _default_webhook_url() -> str:
