@@ -64,3 +64,30 @@ def test_trace_links_follow_the_oauth_workspace_when_there_is_no_key(monkeypatch
     cfg = replace(settings, api_key="", workspace="stale-env")
     assert cfg.studio_workspace() == "logged-in"
     assert replace(cfg, api_key="k").studio_workspace() == "stale-env"
+
+
+def jwt(exp):
+    import base64
+
+    payload = base64.urlsafe_b64encode(json.dumps({"exp": exp}).encode()).decode().rstrip("=")
+    return f"h.{payload}.s"
+
+
+def test_keychain_session_gets_its_token_from_orq_auth_token(home, monkeypatch):
+    from app.refund_agent import config
+
+    path = home / ".orq" / "sessions" / f"{HOST}.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"activeWorkspaceKey": "acme", "workspaceTokens": {"acme": {"token": "", "expiresAt": ""}}}))
+    token = jwt(int((datetime.now(UTC) + timedelta(hours=1)).timestamp()))
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append((cmd, "ORQ_API_KEY" in kw["env"]))
+        return subprocess.CompletedProcess(cmd, 0, stdout=token + "\n")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    monkeypatch.setitem(config._cli_cache, "token", "")
+    assert KEYLESS.bearer() == token
+    assert KEYLESS.bearer() == token  # cached until it nears its exp
+    assert calls == [(["orq", "auth", "token"], False)]
