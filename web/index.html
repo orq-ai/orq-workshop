@@ -113,17 +113,31 @@
   textarea::placeholder { color:#77716e; }
   #send { min-height:40px; padding:.5rem 1.15rem; border:0; border-radius:6px; background:var(--orange); color:var(--ink); font-weight:600; }
   #send:hover:not(:disabled) { background:#f0915f; }
+  .stage { position:relative; min-height:0; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); }
   .minimap-slot { position:sticky; top:0; z-index:3; height:0; display:flex; justify-content:flex-end; pointer-events:none; }
-  #minimap { pointer-events:auto; margin:-1.2rem -.6rem 0 0; text-align:right; }
-  #minimap[hidden] { display:none; }
-  #minimap-chip { min-height:34px; padding:.25rem .65rem; background:var(--paper); font:.72rem "Kurrent Mono",monospace; }
-  #minimap-card { display:none; margin-top:.35rem; padding:.45rem .6rem .5rem; border:1px solid var(--rule); border-radius:6px; background:color-mix(in srgb,var(--paper) 94%,transparent); text-align:left; box-shadow:0 2px 10px rgb(20 19 25 / .08); }
-  #minimap.open #minimap-card { display:block; }
-  .mm-title { margin:0 0 .2rem; color:var(--gray); font:.64rem "Kurrent Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+  #minimap-chip { pointer-events:auto; margin:-1.2rem -.6rem 0 0; min-height:34px; padding:.25rem .65rem; background:var(--paper); font:.72rem "Kurrent Mono",monospace; }
+  #run { display:none; min-height:0; overflow:auto; padding:1rem .9rem 1.2rem; background:var(--paper); }
+  .stage.run-open #run { display:block; position:absolute; top:2.4rem; right:.6rem; z-index:4; width:min(19rem,92%); max-height:calc(100% - 3rem); border:1px solid var(--rule); border-radius:6px; box-shadow:0 2px 10px rgb(20 19 25 / .08); }
+  #run h2,#run h3 { margin:0 0 .35rem; color:var(--gray); font:500 .66rem "Kurrent Mono",monospace; letter-spacing:.1em; text-transform:uppercase; }
+  #run h3 { margin-top:1.15rem; }
+  #run [hidden] { display:none; }
+  .run-empty { margin:.2rem 0 0; color:var(--gray); font-size:.8rem; line-height:1.4; }
+  #run ol,#run ul { list-style:none; margin:0; padding:0; }
+  #run li { display:grid; grid-template-columns:.7rem minmax(0,1fr); gap:0 .55rem; padding:.3rem 0; font:.74rem/1.35 "Kurrent Mono",monospace; }
+  #run li::before { content:""; width:.55rem; height:.55rem; margin-top:.28rem; border-radius:50%; border:1.4px solid var(--gray); background:var(--paper); transform-box:fill-box; }
+  #run li.running::before { background:var(--orange); border-color:var(--orange); animation:mm-pulse 1s ease-in-out infinite; }
+  #run li.done::before,#run li.passed::before { background:var(--ink); border-color:var(--ink); }
+  #run li.failed::before,#run li.blocked::before { background:#a93616; border-color:#a93616; }
+  #run .rl { display:block; overflow-wrap:anywhere; color:var(--ink); }
+  #run .rn { display:block; color:var(--gray); font-size:.68rem; }
+  #run li.idle .rl { color:var(--gray); }
+  #run summary { margin-top:.15rem; color:var(--gray); font-size:.66rem; cursor:pointer; }
+  #run details pre { margin:.25rem 0 0; max-height:9rem; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; font:.68rem/1.4 "Kurrent Mono",monospace; color:var(--ink); }
+  #run li.failed .rl,#run li.blocked .rl { color:#a93616; }
   #minimap-svg { display:block; }
   #minimap-svg text { font:11px "Kurrent Mono",monospace; fill:var(--gray); }
   #minimap-svg .edge { fill:none; stroke:var(--rule); stroke-width:1.2; }
-  #minimap-svg circle { fill:var(--paper); stroke:var(--gray); stroke-width:1.4; }
+  #minimap-svg circle { fill:var(--paper); stroke:var(--gray); stroke-width:1.4; transform-box:fill-box; transform-origin:center; }
   #minimap-svg .working circle { fill:var(--orange); stroke:var(--orange); animation:mm-pulse 1s ease-in-out infinite; }
   #minimap-svg .working text,#minimap-svg .done text { fill:var(--ink); }
   #minimap-svg .working text { font-weight:700; }
@@ -131,8 +145,11 @@
   #minimap-svg .error circle { fill:#a93616; stroke:#a93616; }
   #minimap-svg .error text { fill:#a93616; }
   @keyframes mm-pulse { 50% { transform:scale(1.5); } }
-  #minimap-svg circle { transform-box:fill-box; transform-origin:center; }
-  @media (min-width:1280px) { main.has-map { padding-right:17rem; } main.has-map #minimap-card { display:block; } main.has-map #minimap-chip { display:none; } main.has-map #minimap { margin-right:-15.2rem; } }
+  @media (min-width:1280px) {
+    .stage { grid-template-columns:minmax(0,1fr) 19rem; }
+    .stage #run,.stage.run-open #run { display:block; position:static; width:auto; max-height:none; border:0; border-left:1px solid var(--rule); border-radius:0; box-shadow:none; }
+    .minimap-slot { display:none; }
+  }
   .composer-hint { margin:.4rem .1rem 0; color:var(--gray); font-size:.76rem; }
   @keyframes arrive { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
   @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; } }
@@ -218,17 +235,9 @@
       <button class="control-button" id="reset" type="button">New chat</button>
     </div>
   </header>
+  <div class="stage" id="stage">
   <main id="chat-main">
-    <div class="minimap-slot">
-      <div id="minimap" hidden>
-        <button type="button" id="minimap-chip" class="control-button" aria-expanded="false" aria-controls="minimap-card"></button>
-        <div id="minimap-card">
-          <div class="mm-title">Agents</div>
-          <svg id="minimap-svg" role="img" aria-label="Agents this agent can call"></svg>
-        </div>
-        <span class="visually-hidden" role="status" id="minimap-status"></span>
-      </div>
-    </div>
+    <div class="minimap-slot"><button type="button" id="minimap-chip" class="control-button" aria-expanded="false" aria-controls="run"></button></div>
     <div class="conversation">
       <section class="welcome" id="welcome" aria-labelledby="welcome-title">
         <span class="eyebrow" id="welcome-eyebrow">YOUR WORKSHOP AGENT</span>
@@ -240,6 +249,15 @@
       <ol id="log" role="log" aria-live="polite" aria-label="Conversation"></ol>
     </div>
   </main>
+  <section id="run" aria-labelledby="run-title">
+    <h2 id="run-title">Run</h2>
+    <p class="run-empty" id="run-empty">Tool calls and checks of the agent show up here while it works.</p>
+    <div id="run-agents" hidden><h3>Agents</h3><svg id="minimap-svg" role="img" aria-label="Agents this agent can call"></svg></div>
+    <div id="run-chain" hidden><h3>Tool calls</h3><ol id="chain"></ol></div>
+    <div id="run-checks" hidden><h3>Evals and guardrails</h3><ul id="checks"></ul></div>
+    <span class="visually-hidden" role="status" id="minimap-status"></span>
+  </section>
+  </div>
   <form id="form">
     <div class="composer">
       <label class="composer-label" for="message">Your message</label>
@@ -615,6 +633,7 @@
     history = [];
     conversationId = crypto.randomUUID();
     log.replaceChildren();
+    resetNodes();  // the run sidebar starts empty again
     if (note) add("note", note);
     $("welcome").hidden = Boolean(note);
     if (!keepDraft) {
@@ -624,12 +643,13 @@
     input.focus();
   }
 
-  // ── Stream or full answer; the minimap of the agent's sub-agents ──
+  // ── Stream or full answer; the run sidebar: sub-agents, tool-call chain, evals and guardrails ──
   let streamPref = true, graph = null, graphFor = "", graphToken = 0, mmTurn = 0, nodeState = {};
+  let steps = [], turnState = "idle", blockedIds = [];  // this turn's tool calls; idle | running | done | blocked | error
   const graphs = new Map();
   const streamAvailable = () => modelSelect.value.startsWith("agent/") && $("guardrails").value === "";
   const streaming = () => streamPref && streamAvailable();
-  function syncAgentUi() {  // the Stream toggle follows the model and the guardrails; the minimap follows the agent
+  function syncAgentUi() {  // the Stream toggle follows the model and the guardrails; the sidebar follows the agent
     const ok = streamAvailable(), on = streamPref && ok;
     for (const [id, value] of [["stream-on", true], ["stream-off", false]]) {
       const b = $(id);
@@ -640,6 +660,7 @@
         : "Streaming is for agents: pick one with the Agents toggle";
     }
     loadGraph();
+    renderRun();
   }
   for (const [id, value] of [["stream-on", true], ["stream-off", false]]) $(id).addEventListener("click", () => { streamPref = value; syncAgentUi(); });
   async function loadGraph() {
@@ -652,7 +673,7 @@
       try {
         const res = await fetch("/api/agent-graph?model=" + encodeURIComponent(model));
         const data = res.ok ? await res.json() : null;
-        if (data && data.nodes.length > 1) graphs.set(model, found = data);
+        if (data && data.nodes.length) graphs.set(model, found = data);
       } catch { /* no map: the chat works without it */ }
     }
     if (mine === graphToken) showGraph(found);
@@ -664,75 +685,157 @@
     if (text) el.textContent = text;
     return el;
   }
-  function showGraph(next) {  // a tree, one row per agent, indented by depth: it fits a narrow corner
+  const rootId = () => (graph ? graph.root : "root");
+  const labelOf = (id) => ((graph && graph.nodes.find((n) => n.id === id)) || {}).label || id;
+  const stepLabel = (s) => (s.agent ? labelOf(s.agent) : s.tool);
+  function showGraph(next) {  // a tree, one row per agent, indented by depth: it fits a narrow column
     graph = next;
     nodeState = {};
-    $("minimap").hidden = !next;
-    $("chat-main").classList.toggle("has-map", Boolean(next));
+    steps = [];
+    blockedIds = [];
+    turnState = "idle";
+    const multi = Boolean(next && next.nodes.length > 1);
+    $("run-agents").hidden = !multi;
     const svg = $("minimap-svg");
     svg.replaceChildren();
-    if (!next) return;
-    const children = {};
-    for (const [from, to] of next.edges) (children[from] ||= []).push(to);
-    const rows = [];
-    (function walk(id, depth, parent) {
-      if (rows.some((r) => r.id === id)) return;
-      rows.push({ id, depth, parent });
-      for (const child of children[id] || []) walk(child, depth + 1, id);
-    })(next.root, 0, null);
-    const label = Object.fromEntries(next.nodes.map((n) => [n.id, n.label]));
-    const y = (i) => 12 + i * 22;
-    const x = (depth) => 8 + depth * 16;
-    for (const [i, row] of rows.entries()) {
-      if (row.parent === null) continue;
-      const from = rows.findIndex((r) => r.id === row.parent);
-      svg.append(svgEl("path", { class: "edge", d: `M${x(row.depth - 1)} ${y(from) + 5}V${y(i)}H${x(row.depth) - 5}` }));
+    if (multi) {
+      const children = {};
+      for (const [from, to] of next.edges) (children[from] ||= []).push(to);
+      const rows = [];
+      (function walk(id, depth, parent) {
+        if (rows.some((r) => r.id === id)) return;
+        rows.push({ id, depth, parent });
+        for (const child of children[id] || []) walk(child, depth + 1, id);
+      })(next.root, 0, null);
+      const label = Object.fromEntries(next.nodes.map((n) => [n.id, n.label]));
+      const y = (i) => 12 + i * 22;
+      const x = (depth) => 8 + depth * 16;
+      for (const [i, row] of rows.entries()) {
+        if (row.parent === null) continue;
+        const from = rows.findIndex((r) => r.id === row.parent);
+        svg.append(svgEl("path", { class: "edge", d: `M${x(row.depth - 1)} ${y(from) + 5}V${y(i)}H${x(row.depth) - 5}` }));
+      }
+      for (const [i, row] of rows.entries()) {
+        const g = svgEl("g", { "data-id": row.id, class: "idle" });
+        g.append(svgEl("circle", { cx: x(row.depth), cy: y(i), r: 4 }), svgEl("text", { x: x(row.depth) + 10, y: y(i) + 4 }, label[row.id] || row.id));
+        svg.append(g);
+      }
+      const width = Math.max(...rows.map((r) => x(r.depth) + 14 + (label[r.id] || r.id).length * 7.4));
+      svg.setAttribute("viewBox", `0 0 ${width} ${y(rows.length - 1) + 10}`);
+      svg.setAttribute("width", width);
+      svg.setAttribute("height", y(rows.length - 1) + 10);
     }
-    for (const [i, row] of rows.entries()) {
-      const g = svgEl("g", { "data-id": row.id, class: "idle" });
-      g.append(svgEl("circle", { cx: x(row.depth), cy: y(i), r: 4 }), svgEl("text", { x: x(row.depth) + 10, y: y(i) + 4 }, label[row.id] || row.id));
-      svg.append(g);
-    }
-    const width = Math.max(...rows.map((r, i) => x(r.depth) + 14 + (label[r.id] || r.id).length * 7.4));
-    svg.setAttribute("viewBox", `0 0 ${width} ${y(rows.length - 1) + 10}`);
-    svg.setAttribute("width", width);
-    svg.setAttribute("height", y(rows.length - 1) + 10);
-    describeGraph();
+    renderRun();
   }
-  function describeGraph() {  // the chip and the screen-reader line say what the picture shows
-    if (!graph) return;
-    const subs = graph.nodes.filter((n) => n.id !== graph.root);
-    const working = graph.nodes.filter((n) => nodeState[n.id] === "working");
+  function listRow(list, state, label, note, detail = []) {  // detail: [[heading, text]] shown when the row is opened
+    const li = document.createElement("li"), box = document.createElement("div"), l = document.createElement("span"), n = document.createElement("span");
+    li.className = state;
+    l.className = "rl";
+    n.className = "rn";
+    l.textContent = label;
+    n.textContent = note;
+    box.append(l, n);
+    for (const [heading, text] of detail) {
+      if (!text) continue;
+      const more = document.createElement("details"), head = document.createElement("summary"), block = document.createElement("pre");
+      head.textContent = heading;
+      block.textContent = text;
+      more.append(head, block);
+      box.append(more);
+    }
+    li.append(box);
+    list.append(li);
+  }
+  function checkRows() {  // [state, label, note]: the gateway guardrail picked above, then what the agents carry
+    const rows = [], picked = $("guardrails");
+    const turn = { idle: "idle", running: "running", done: "passed", blocked: "blocked", error: "idle" }[turnState];
+    if (picked.value) rows.push([turn, picked.selectedOptions[0].text, "gateway guardrail · this chat"]);
+    const multi = Boolean(graph && graph.nodes.length > 1);
+    for (const node of graph ? graph.nodes : []) {
+      const own = node.id === graph.root ? turn : { working: "running", done: "passed" }[nodeState[node.id]] || "idle";
+      for (const c of node.checks || []) {
+        const where = `${multi ? node.label + " · " : ""}${c.kind} · ${c.stage || "?"}`;
+        const hit = blockedIds.some((id) => id.includes(c.name));
+        if (c.kind === "guardrail") rows.push([hit ? "blocked" : own, c.name, where]);
+        else rows.push([own === "passed" ? "done" : own, c.name, own === "passed" ? where + " · score in the trace" : where]);
+      }
+    }
+    return rows;
+  }
+  function renderRun() {  // the chip, the screen-reader line and the three lists say what this turn did so far
+    const subs = graph ? graph.nodes.filter((n) => n.id !== graph.root) : [];
+    const working = steps.filter((s) => s.state === "running");
     const done = subs.filter((n) => nodeState[n.id] === "done").length;
-    const text = working.length ? `${working.map((n) => n.label).join(", ")} working` : nodeState[graph.root] === "error" ? "stopped" : done ? "done" : "idle";
-    $("minimap-chip").textContent = `${working.length ? "● " : ""}${text} · ${done}/${subs.length}`;
+    const text = working.length ? `${working.map(stepLabel).join(", ")} working` : turnState === "running" ? "thinking"
+      : turnState === "blocked" || turnState === "error" ? "stopped" : turnState === "done" ? "done" : "idle";
+    const count = subs.length ? ` · ${done}/${subs.length}` : steps.length ? ` · ${steps.length} call${steps.length > 1 ? "s" : ""}` : "";
+    $("minimap-chip").textContent = `${working.length || turnState === "running" ? "● " : ""}${text}${count}`;
     $("minimap-status").textContent = text;
+    const chain = $("chain"), checks = $("checks"), rows = checkRows();
+    chain.replaceChildren();
+    if (steps.length || turnState !== "idle") {
+      for (const s of steps) {
+        const what = s.kind === "agent" ? "sub-agent" : "tool";
+        listRow(chain, s.state, stepLabel(s), `${what} · ${s.state === "failed" ? "declined" + (s.error ? ": " + s.error : "") : s.state}`, [["input", s.input], ["result", s.result]]);
+      }
+      const last = { idle: "idle", running: "idle", done: "done", blocked: "blocked", error: "failed" }[turnState];
+      listRow(chain, turnState === "running" && !working.length ? "running" : last, "Answer", { running: "writing", done: "ready", blocked: "stopped by a guardrail", error: "turn failed" }[turnState] || "waits for the agent");
+    } else {
+      const seen = new Set();
+      for (const node of graph ? graph.nodes : []) for (const t of node.tools || []) if (!seen.has(t)) { seen.add(t); listRow(chain, "idle", t, "available to the agent"); }
+    }
+    checks.replaceChildren();
+    for (const [state, label, note] of rows) listRow(checks, state, label, note);
+    $("run-chain").hidden = !chain.children.length;
+    $("run-checks").hidden = !rows.length;
+    $("run-empty").hidden = Boolean(chain.children.length || rows.length || !$("run-agents").hidden);
+  }
+  function setTurn(state) { turnState = state; renderRun(); }
+  function upsertStep(s) {  // events of one tool call share a call id: later ones fill in or finish the earlier row
+    const i = steps.findIndex((x) => x.id === s.id);
+    if (i < 0) steps.push(s);
+    else steps[i] = { ...steps[i], ...Object.fromEntries(Object.entries(s).filter(([, v]) => v != null)) };  // later events add, never blank
+    renderRun();
   }
   function setNode(id, state) {
-    if (!graph) return;
-    id = id === "root" ? graph.root : id;
+    id = id === "root" ? rootId() : id;
     nodeState[id] = state;
     for (const g of $("minimap-svg").children) if (g.dataset && g.dataset.id === id) g.setAttribute("class", state);
-    describeGraph();
+    renderRun();
   }
   function resetNodes() {  // a new turn: every agent idle again; returns the turn number so late replays can tell they are stale
     nodeState = {};
+    steps = [];
+    blockedIds = [];
+    turnState = "idle";
     for (const g of $("minimap-svg").children) if (g.dataset && g.dataset.id) g.setAttribute("class", "idle");
-    describeGraph();
+    renderRun();
     return ++mmTurn;
   }
-  async function replaySteps(steps, turn) {  // without a stream we only learn the calls at the end: show them in order
-    for (const key of steps) {
+  function chainOf(data) {  // the calls of a finished turn in order; call_sub_agent calls take their agent from data.steps
+    const keys = [...(data.steps || [])];
+    return (data.tool_calls || []).map((c, i) => {
+      const agent = c.agent || (c.name === "call_sub_agent" ? keys.shift() || null : null);
+      return { id: "r" + i, kind: agent ? "agent" : "tool", tool: c.name, agent, input: c.input, result: c.result, failed: c.ok === false, error: c.error || "" };
+    });
+  }
+  async function replaySteps(chain, turn) {  // without a stream we only learn the calls at the end: show them in order
+    for (const c of chain) {
       if (turn !== mmTurn) return;
-      setNode(key, "working");
+      upsertStep({ ...c, state: "running" });
+      if (c.agent) setNode(c.agent, "working");
       await new Promise((r) => setTimeout(r, 450));
       if (turn !== mmTurn) return;
-      setNode(key, "done");
+      upsertStep({ ...c, state: c.failed ? "failed" : "done" });
+      if (c.agent) setNode(c.agent, "done");
     }
-    if (turn === mmTurn) setNode("root", "done");
+    if (turn === mmTurn) {
+      setNode("root", "done");
+      setTurn("done");
+    }
   }
   $("minimap-chip").addEventListener("click", () => {
-    const open = $("minimap").classList.toggle("open");
+    const open = $("stage").classList.toggle("run-open");
     $("minimap-chip").setAttribute("aria-expanded", String(open));
   });
   async function postChat(body, pending) {  // {res, data}: a stream ends with the same data a full answer has
@@ -759,6 +862,7 @@
         let event;
         try { event = JSON.parse(chunk.slice(6)); } catch { continue; }
         if (event.type === "node") setNode(event.agent, event.state);
+        else if (event.type === "step") upsertStep({ id: event.id, kind: event.tool === "call_sub_agent" ? "agent" : "tool", tool: event.tool, agent: event.agent, state: event.state, input: event.input, result: event.result });
         else if (event.type === "delta") {
           const follow = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
           text += event.text;
@@ -785,6 +889,7 @@
     const pending = add("agent", "Thinking…");
     const turn = resetNodes();
     setNode("root", "working");
+    setTurn("running");
     if (wasNearBottom) pending.scrollIntoView({ block: "end" });
     try {
       const { res, data } = await postChat({ message, history, conversation_id: conversationId, model: modelSelect.value, demo, guardrails: $("guardrails").value }, pending);
@@ -796,6 +901,8 @@
         setNode("root", "error");
         pending.className = "msg blocked";
         const failures = data.blocked.failures || [];
+        blockedIds = failures.map((f) => String(f.id));
+        setTurn("blocked");
         if (failures.some((f) => f.stage === "input")) {  // the agent never saw it: let the user retry
           userMsg.classList.add("not-sent");
           const hasDraft = input.value.length > 0;
@@ -822,14 +929,17 @@
       } else {
         pending.textContent = (data.answer || "(no answer)").replaceAll("**", "");  // the page shows plain text, not markdown
         addMeta(pending, data);
-        if (data.streamed) setNode("root", "done");
-        else replaySteps(data.steps || [], turn);  // not streamed: replay the sub-agent calls once the answer is in
+        if (data.streamed) {
+          setNode("root", "done");
+          setTurn("done");
+        } else replaySteps(chainOf(data), turn);  // not streamed: replay the tool calls once the answer is in
       }
       if (followReply) pending.scrollIntoView({ block: "end" });
     } catch (err) {
       const nearBottom = mainPane.scrollHeight - mainPane.scrollTop - mainPane.clientHeight < 96;
       pending.className = "msg agent error";
       setNode("root", "error");
+      setTurn("error");
       const hasDraft = input.value.length > 0;
       pending.textContent = "This turn did not complete. " + (hasDraft
         ? "Your next message has been kept in the composer."
