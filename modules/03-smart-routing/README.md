@@ -17,7 +17,7 @@ Commands and names here write the default prefix `ws-`. Your entities carry your
 
 ## The one concept to understand first
 
-A [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-5.6-luna`. The profile (`COST`, `BALANCED`, `QUALITY`) tunes how aggressively it prefers economical models over stronger ones. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
+A [Smart Router](https://docs.orq.ai/ai-gateway/smart-router) is a model id. `orq.smart_routers.create(key=..., models=[...], profile=...)` returns `model_ref` like `orq-research@orq/ws-refund-router`; you pass that where you passed `openai/gpt-5.6-luna`. The profile (`COST`, `BALANCED`, `QUALITY`) tunes how aggressively it prefers economical models over stronger ones. The trace gets a `span.auto_router` span and the `span.chat_completion` below it names the winner.
 
 A routing rule sits in front of that: `expression.cel` decides if it applies, `models_config` says where the request goes instead. The CEL variables are `model`, `metadata["key"]`, `identity`, `headers["name"]` and `project`. When a rule matches it replaces the request's `model`, `load_balancer` and `fallbacks` entirely.
 
@@ -100,9 +100,9 @@ Two things follow, and both explain the output above.
 
 #### Cost, Balanced and Quality
 
-The mode is a dial on one axis: [how aggressively the router prefers economical models over stronger ones](https://docs.orq.ai/docs/ai-gateway/smart-router).
+The mode is a dial on one axis: [how aggressively the router prefers economical models over stronger ones](https://docs.orq.ai/ai-gateway/smart-router).
 
-| Mode | Favours | The shape of it | Reach for it when |
+| Mode | Favors | The shape of it | Reach for it when |
 |---|---|---|---|
 | **Cost** | less expensive models | start from a strong baseline and send the simpler requests down to cheaper models, escalating only what needs it | the workload is mostly routine and the bill is the thing you are trying to move |
 | **Balanced** | trades off both | neither end weighted | you have no strong opinion, or you are measuring before you tune |
@@ -179,6 +179,12 @@ $ orq smart-routers create \
 
 Three gotchas the `--help` spells out: `--models` repeats once per model (2 to 50, all distinct and enabled in the workspace), the profile flag is **`--body-profile`** because `--profile` is reserved for the CLI's own auth profiles, and `--key` must be unique in the workspace because it becomes the `model_ref` your app calls. `orq smart-routers create --example` prints the raw body if you would rather pipe JSON on stdin, and `orq request POST /v2/routing-rules` takes the same bodies the SDK sends for rules.
 
+## Proof
+
+![Studio: Smart Router list showing ws-refund-router (Quality profile) alongside the workspace's other routers.](assets/studio-smart-router.png)
+
+![Studio: Routing Rules showing ws-route-mini-to-nano, disabled, from this module's probe.](assets/studio-routing-rules.png)
+
 ## With your coding agent
 
 ```bash
@@ -190,12 +196,6 @@ Paste `agent_prompt.md`:
 <blockquote class="agent-prompt-frame" markdown>
 Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the `orq smart-routers` CLI over `openai/gpt-5.6-luna`, `openai/gpt-5.4-nano`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-5.6-sol`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
 </blockquote>
-
-## Proof
-
-![Studio: Smart Router list showing ws-refund-router (Quality profile) alongside the workspace's other routers.](assets/studio-smart-router.png)
-
-![Studio: Routing Rules showing ws-route-mini-to-nano, disabled, from this module's probe.](assets/studio-routing-rules.png)
 
 ## Done when
 
@@ -224,4 +224,8 @@ The Smart Router got its own page in the AI Gateway: every router, the band each
 
 Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from module 01 on the request for the days a provider is down.
 
-Docs: [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router), [Routing rules](https://docs.orq.ai/docs/ai-gateway/configuration/routing-rules), [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes).
+## Official docs
+
+- [Smart Router](https://docs.orq.ai/ai-gateway/smart-router)
+- [Routing rules](https://docs.orq.ai/ai-gateway/configuration/routing-rules)
+- [Span attributes](https://docs.orq.ai/ai-studio/observability/span-attributes)

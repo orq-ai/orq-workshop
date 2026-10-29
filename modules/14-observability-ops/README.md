@@ -44,7 +44,7 @@ $ uv run python modules/14-observability-ops/solution/run.py
 
 ```text
 ── Step 1 · The number: Reporting API ─────────────────
-window   : last hour, project Bauke
+window   : last hour, project orq-workshop
 cost     : $1.0637
 errors   : rate 0.031 (genai.error_rate)
 top      : last 24 hours by model
@@ -163,4 +163,11 @@ Alerts on Reporting API metrics with triggers and notifiers, the Reporting API's
 
 - Add a second alert on `genai.latency.p95` with a threshold read from step 1, and a Slack notifier (`NOTIFIER_TYPE_SLACK_WEBHOOK`).
 - Subscribe the webhook to `llm.chat_completion` as well and write the receiver's events to a file: that is a trace export with no polling.
-- Docs: [Reporting API](https://docs.orq.ai/docs/ai-studio/observability/reporting-api), [Alerts](https://docs.orq.ai/docs/ai-studio/observability/alerts), [Webhooks](https://docs.orq.ai/docs/ai-studio/organization/webhooks), [Notifiers API](https://docs.orq.ai/reference/notifiers/create-a-notifier), [Observability quickstart](https://docs.orq.ai/docs/ai-studio/observability/quickstart).
+
+## Official docs
+
+- [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api)
+- [Alerts](https://docs.orq.ai/ai-studio/observability/alerts)
+- [Webhooks](https://docs.orq.ai/ai-studio/organization/webhooks)
+- [Notifiers API](https://docs.orq.ai/reference/notifiers/create-a-notifier)
+- [Observability quickstart](https://docs.orq.ai/ai-studio/observability/quickstart)

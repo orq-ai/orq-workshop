@@ -181,4 +181,9 @@ Advisor and Sidekick tools on Agents, metered separately with their own spans. 4
 
 - Give the sidekick a structured `output_format` (a JSON schema in prose) and parse the artifact in your loop instead of returning it verbatim.
 - Swap the advisor to a reasoning model and compare the cost split; the transcript cap (`max_transcript_tokens`) is what keeps that affordable.
-- Docs: [Advisor and Sidekick cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick), [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).
+
+## Official docs
+
+- [Advisor and Sidekick cookbook](https://docs.orq.ai/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
+- [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)

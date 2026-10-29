@@ -19,3 +19,9 @@
 | MCP server or gateway ids come back `None` from the SDK | SDK 4.14 models read `id`, the API returns `_id` | use `model_dump(by_alias=True)["_id"]` or `orq request GET /v2/mcp-servers` |
 | `400 No tool output found for function call` continuing an agent turn | a pending `call_id` got no `function_call_output`: a server-side tool's `function_call` was answered locally, or a target stubbed it away | answer every pending call and skip only those whose `call_id` has an `orq:*` sibling (module 08's loop); one failed trace among healthy ones is a platform hiccup, not your loop |
 | `mkdocs build --strict` fails | broken link or missing snippet | links inside module READMEs must be plain text, not relative paths |
+
+## Official docs
+
+- [orq.ai CLI reference](https://docs.orq.ai/reference/cli)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)
+- [Responses API](https://docs.orq.ai/ai-gateway/features/responses-api)

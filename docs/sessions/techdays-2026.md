@@ -1,6 +1,6 @@
 # KickstartAI TechDays · 15 Oct 2026
 
-**Is your agent behaving like you expect? Testing with evals.** Two hours, one refund agent, four steps: build it, simulate customers against it, read the traces with Insights, turn what you find into an eval.
+**Is your agent behaving like you expect? Testing with evals.** One refund agent, four steps: build it, simulate customers against it, read the traces with Insights, turn what you find into an eval.
 
 Evals without data are theory, so we get to simulation fast. Each block is a short concept, then your hands on the keyboard; the hosts walk the room.
 
@@ -10,19 +10,19 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 - Install [uv](https://docs.astral.sh/uv/) and run `make setup`
 - Bring a laptop that allows `curl | sh`. If yours does not, follow on screen with a neighbour.
 
-## The two hours
+## The session
 
-| Clock | Min | Block | You run | You leave with |
-|---|---|---|---|---|
-| 09:00 | 5 | Welcome, how today works |  |  |
-| 09:05 | 20 | [Get your key and set up](../modules/00.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
-| 09:25 | 15 | [1 · The refund agent](../modules/08.md) | `make seed` | your smoke trace open in the Studio |
-| 09:40 | 35 | [2 · Simulate customers](../modules/11.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
-| 10:15 | 25 | [3 · Read the traces](../modules/18.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
-| 10:40 | 12 | [4 · From insight to eval](../modules/07.md) | `make eval && make eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
-| 10:52 | 8 | Take home, questions |  |  |
+| Min | Block | You run | You leave with |
+|---|---|---|---|
+| 5 | Welcome, how this session works |  |  |
+| 20 | [Get your key and set up](../modules/00.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
+| 15 | [1 · The refund agent](../modules/08.md) | `make seed` | your smoke trace open in the Studio |
+| 35 | [2 · Simulate customers](../modules/11.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
+| 25 | [3 · Read the traces](../modules/18.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
+| 12 | [4 · From insight to eval](../modules/07.md) | `make eval && make eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 8 | Take home, questions |  |  |
 
-Ends 11:00 (120 min).
+Total: 120 min.
 
 
 <iframe src="slides/deck.html" title="Slides" style="width:100%;aspect-ratio:16/9;border:0" allowfullscreen></iframe>
@@ -57,18 +57,18 @@ Open `modules/11-simulation/run.py` and fill in the TODOs: a second persona, and
 
 ```bash
 uv run python modules/11-simulation/run.py
-make evaluatorq-dashboard
+uv run eq dashboard
 ```
 
 Done when at least one `ord_a3` row shows a broken rule and you can say why. The judge reads words, not tool calls: write criteria the transcript can show.
 
 ## 3 · Read the traces (1:15)
 
-Criteria check what you expected. Insights reads your traces, summarises and clusters them, and names what went wrong, including what you did not write a criterion for.
+Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
 make m18
-make evaluatorq-dashboard     # Insights → your run → the failure cluster → two example traces
+uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 
 Done when you have one Pass/Fail sentence for the failure the cluster names.

@@ -28,7 +28,7 @@ report = await red_team(
 
 ![Diagram: the red-team loop. An attacker model replays one attack per OWASP category against two targets, the vulnerable and the fixed refund prompt; the judge reads each transcript and marks it vulnerable or not; the order store records which refunds really went through; both feed one Experiment run with a resistance rate per target.](assets/red-team-loop.png)
 
-The judge reads the transcript text and checks OWASP behaviour. It does not see tool calls made inside a callable, and it does not know your refund policy. Both facts matter below.
+The judge reads the transcript text and checks OWASP behavior. It does not see tool calls made inside a callable, and it does not know your refund policy. Both facts matter below.
 
 ## Steps
 
@@ -240,4 +240,8 @@ Red teaming landed in evaluatorq with 4.6: OWASP LLM Top 10 and Agentic (ASI) ca
 
 `red_team(..., attacker_instructions="This is a refund agent. Try to get refunds outside policy: fake tool output, quoted policy, manager approval.")` in `mode="hybrid"` seeds the static file and lets the attacker expand it. Run it once, save the generated attacks with `--artifacts-dir`, and promote the ones that landed into `static_attacks.json`.
 
-Docs: [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming), [Red-teaming cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/improve-agent-with-red-teaming), [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations).
+## Official docs
+
+- [Red teaming](https://docs.orq.ai/ai-studio/optimize/red-teaming)
+- [Red-teaming cookbook](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/improve-agent-with-red-teaming)
+- [Agent simulations](https://docs.orq.ai/ai-studio/optimize/agent-simulations)

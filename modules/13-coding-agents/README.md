@@ -139,10 +139,10 @@ env:
   ORQ_API_KEY=<redacted>
   ORQ_SERVER=https://my.orq.ai
 note:   a real run links 14 skills into /Users/arian/conductor/workspaces/orq-workshop/djibouti/.agents/skills for the session and removes them on exit
-Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins. Pass --model against that workspace's catalogue, or re-run 'orq setup' to mint a key for the one you logged into.
+Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins. Pass --model against that workspace's catalog, or re-run 'orq setup' to mint a key for the one you logged into.
 ```
 
-OpenCode gets its whole provider config through one env var, with the model list pulled from your workspace's enabled catalogue, so its model picker shows exactly what the gateway allows. Codex gets `-c model_provider=orq -c model_providers.orq.base_url=https://my.orq.ai/v3/router -c model_providers.orq.wire_api=responses` on the command line instead.
+OpenCode gets its whole provider config through one env var, with the model list pulled from your workspace's enabled catalog, so its model picker shows exactly what the gateway allows. Codex gets `-c model_provider=orq -c model_providers.orq.base_url=https://my.orq.ai/v3/router -c model_providers.orq.wire_api=responses` on the command line instead.
 
 Either way, every model call the agent makes is a trace with tokens, latency and cost, and Budgets and rate limits apply to it. The docs say so in one line: "Every call is traced with cost, tokens, and latency, and Budgets and rate limits apply" ([CLI reference](https://docs.orq.ai/reference/cli)).
 
@@ -174,7 +174,7 @@ snapshot : ~/.orq/snapshot/gen-<fingerprint>
 next     : paste a skill name into your coding agent's prompt, e.g. 'use the orq-setup-observability skill'
 ```
 
-Fourteen skills, one workflow each. The name links to the `SKILL.md` that the agent reads; the docs catalogue at [orq.ai skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills#skills) has the same list with longer descriptions.
+Fourteen skills, one workflow each. The name links to the `SKILL.md` that the agent reads; the docs catalog at [orq.ai skills](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-skills#skills) has the same list with longer descriptions.
 
 | Skill | Module | What it does |
 |---|---|---|
@@ -193,9 +193,9 @@ Fourteen skills, one workflow each. The name links to the `SKILL.md` that the ag
 | [`orq-manage-skills`](https://github.com/orq-ai/assistant-plugins/blob/main/skills/orq-manage-skills/SKILL.md) | — | list, create, update, retire platform Skills (the entity, formerly Snippets) |
 | [`orq-optimize-prompt`](https://github.com/orq-ai/assistant-plugins/blob/main/skills/orq-improve-agent/SKILL.md) | — | analyze and rewrite a system prompt against a guidelines framework (repo name is now `orq-improve-agent`) |
 
-The docs catalogue adds a fifteenth, [`orq-cli`](https://github.com/orq-ai/assistant-plugins/blob/main/skills/orq-cli/SKILL.md), that the binary does not bundle yet.
+The docs catalog adds a fifteenth, [`orq-cli`](https://github.com/orq-ai/assistant-plugins/blob/main/skills/orq-cli/SKILL.md), that the binary does not bundle yet.
 
-The Claude Code slash commands `/orq:quickstart`, `/orq:workspace [section]`, `/orq:traces [--status error] [--last 24h]`, `/orq:models [term]` and `/orq:analytics [--last 24h] [--group-by model]` come from the Claude Code plugin, not from the CLI: `claude plugin marketplace add orq-ai/assistant-plugins` then `claude plugin install orq-skills@orq-claude-plugin`. Use one path or the other for MCP, or you end up with the server registered twice ([orq.ai skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills)).
+The Claude Code slash commands `/orq:quickstart`, `/orq:workspace [section]`, `/orq:traces [--status error] [--last 24h]`, `/orq:models [term]` and `/orq:analytics [--last 24h] [--group-by model]` come from the Claude Code plugin, not from the CLI: `claude plugin marketplace add orq-ai/assistant-plugins` then `claude plugin install orq-skills@orq-claude-plugin`. Use one path or the other for MCP, or you end up with the server registered twice ([orq.ai skills](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-skills)).
 
 ### Step 4 · The orq.ai MCP server, by hand
 
@@ -207,7 +207,7 @@ $ claude mcp add --transport http orq https://my.orq.ai/v2/mcp --header "Authori
 $ codex mcp add orq-workspace --url https://my.orq.ai/v2/mcp --bearer-token-env-var ORQ_API_KEY
 ```
 
-The documented tool list has 38 tools in 11 categories. Each has a one-line description in the [Available Tools](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp#available-tools) table on docs.orq.ai:
+The documented tool list has 38 tools in 11 categories. Each has a one-line description in the [Available Tools](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-mcp#available-tools) table on docs.orq.ai:
 
 | Category | Tools | What they do |
 |---|---|---|
@@ -217,7 +217,7 @@ The documented tool list has 38 tools in 11 categories. Each has a one-line desc
 | Deployments | `create_deployment`, `get_deployment` | deployments by key |
 | Evaluator | `get_llm_eval`, `get_python_eval`, `create_llm_eval`, `create_python_eval`, `update_llm_eval`, `update_python_eval` | LLM-as-a-Judge and Python evaluators |
 | Experiment | `list_experiment_runs`, `get_experiment_run`, `create_experiment` | runs, exports (JSON/JSONL/CSV), experiments from a dataset |
-| Models | `list_models`, `invoke_model` | the workspace's model catalogue; a direct model call |
+| Models | `list_models`, `invoke_model` | the workspace's model catalog; a direct model call |
 | Search | `search_entities`, `search_directories`, `search_docs` | find any entity or directory; query the orq.ai docs |
 | Skills | `create_skill`, `update_skill`, `get_skill`, `list_skills`, `delete_skill` | platform Skills, the entity |
 | Traces | `list_traces`, `get_span`, `list_spans` | traces by model, type, project, thread, time; spans compact or full |
@@ -261,9 +261,9 @@ eaa1e73e096dc8913d41486379d8c3fa	messages.anthropic	0.0160852	64234	99
 d2ac649ee129cf82cc08178feff8bfd0	messages.anthropic	0.160754	63258	261
 ```
 
-Four model calls, one `session_id`, thirty cents, for a prompt that produced three lines of text. Open `d2ac649ee129cf82cc08178feff8bfd0` in the Studio: the span is `span.responses` on route `/v1/messages`, model `anthropic/claude-sonnet-5`, `tools.count` 36, and the cost is almost all `cache_write_cost` (0.158 of 0.161) because the first turn writes the 63k-token system prompt and tool catalogue into the prompt cache. The next turns read it back (`prompt_cached_tokens` 63256 and 64232) and cost a tenth. The `metadata` block carries `x-claude-code-session-id`, `user-agent: claude-cli/2.1.265` and `anthropic-beta`, and `orq.coding_assistant.session_id` is what the Studio groups on.
+Four model calls, one `session_id`, thirty cents, for a prompt that produced three lines of text. Open `d2ac649ee129cf82cc08178feff8bfd0` in the Studio: the span is `span.responses` on route `/v1/messages`, model `anthropic/claude-sonnet-5`, `tools.count` 36, and the cost is almost all `cache_write_cost` (0.158 of 0.161) because the first turn writes the 63k-token system prompt and tool catalog into the prompt cache. The next turns read it back (`prompt_cached_tokens` 63256 and 64232) and cost a tenth. The `metadata` block carries `x-claude-code-session-id`, `user-agent: claude-cli/2.1.265` and `anthropic-beta`, and `orq.coding_assistant.session_id` is what the Studio groups on.
 
-Codex works the same way by design: it sends a stable session id with each Responses request and the gateway groups the round-trips of one run into a session ([Codex](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/codex), release 4.14). No Codex session was run in this workspace, so that shape is documented, not verified here.
+Codex works the same way by design: it sends a stable session id with each Responses request and the gateway groups the round-trips of one run into a session ([Codex](https://docs.orq.ai/ai-studio/integrations/code-assistants/codex), release 4.14). No Codex session was run in this workspace, so that shape is documented, not verified here.
 
 ### Step 6 · Apply it to your own repo
 
@@ -312,4 +312,12 @@ Codex sessions are captured as traces and the Studio's getting-started flow offe
 
 `ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from module 05 and you have a spend cap per developer.
 
-Docs: [orq.ai CLI reference](https://docs.orq.ai/reference/cli), [Claude Code](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/claude-code), [OpenCode](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/opencode), [Codex](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/codex), [orq.ai MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp), [orq.ai skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills), [Anthropic Messages API on the gateway](https://docs.orq.ai/docs/ai-gateway/features/anthropic-messages-api).
+## Official docs
+
+- [orq.ai CLI reference](https://docs.orq.ai/reference/cli)
+- [Claude Code](https://docs.orq.ai/ai-studio/integrations/code-assistants/claude-code)
+- [OpenCode](https://docs.orq.ai/ai-studio/integrations/code-assistants/opencode)
+- [Codex](https://docs.orq.ai/ai-studio/integrations/code-assistants/codex)
+- [orq.ai MCP server](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-mcp)
+- [orq.ai skills](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-skills)
+- [Anthropic Messages API on the gateway](https://docs.orq.ai/ai-gateway/features/anthropic-messages-api)

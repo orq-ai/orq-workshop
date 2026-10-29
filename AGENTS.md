@@ -25,7 +25,7 @@ This is a training repo for orq.ai. Participants run it with Claude Code, OpenCo
 - Module titles and link text carry no numbers; numbers stay in folder names and URLs.
 - No day or hour framing ("Day 1", clock times). Sessions are described in minutes.
 - Module READMEs are included into the docs via snippets, so links inside them are absolute URLs (relative links break the build).
-- Lesson pages before the simulation must not name the behaviours the simulation is meant to find.
+- Lesson pages before the simulation must not name the behaviors the simulation is meant to find.
 
 ## Useful orq skills when working here
 

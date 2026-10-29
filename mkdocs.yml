@@ -9,7 +9,7 @@ docs_dir: docs
 # snippet-included from modules/, so without this an edit there shows nothing until restart.
 watch:
   - modules
-copyright: "© 2026 Orq AI · MIT License"
+copyright: "© 2026 orq.ai · MIT License"
 
 theme:
   name: material
@@ -94,12 +94,11 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Start here:
-      - TechDays 15 Oct: sessions/techdays-2026.md
       - Agenda: agenda.md
   - Setup:
       - Setup CLI: modules/00.md
       - Coding agents: modules/13.md
-      - Setup Orqi : setup/orqi.md
+      - orqi harness: setup/orqi.md
       - Troubleshooting with orqi: modules/06.md
   - AI Gateway:
       - Gateway: modules/01.md
@@ -127,6 +126,8 @@ nav:
       - Trace insights: modules/18.md
       - Red teaming: modules/16.md
       - Failure analysis to experiments: modules/07.md
+  - Past sessions:
+      - TechDays 15 Oct: sessions/techdays-2026.md
   - Reference:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md

@@ -3,7 +3,7 @@ date: 2026-10-15
 start: "09:00"
 public: true
 blocks:
-  - {title: "Welcome, how today works", minutes: 5}
+  - {title: "Welcome, how this session works", minutes: 5}
   - {module: 00-setup, title: Get your key and set up, minutes: 20, command: "make setup && make doctor && make smoke", leave_with: a green orq doctor and one trace}
   - {module: 08-managed-agents, title: "1 · The refund agent", minutes: 15, command: "make seed", leave_with: your smoke trace open in the Studio, with its tool calls}
   - {module: 11-simulation, title: "2 · Simulate customers", minutes: 35, command: "uv run python modules/11-simulation/run.py", leave_with: an ord_a3 row that broke a rule, and why}

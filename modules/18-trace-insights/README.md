@@ -15,7 +15,7 @@ Evals without data are theory, and criteria only test what you thought of. After
 
 ## The one concept to understand first
 
-Insights is a pipeline over a **population** of traces: pick traces (by agent, project, model, time window), summarise each one with a model, embed the summaries, cluster them per **dimension** (`failure`: what went wrong; `intent`: what the user wanted), and name every cluster. **Labels** are yes/no questions asked of every trace (`made_errors`). Everything runs through the orq.ai router with your key; the models come from the `EVALUATORQ_*` lines in `.env`.
+Insights is a pipeline over a **population** of traces: pick traces (by agent, project, model, time window), summarize each one with a model, embed the summaries, cluster them per **dimension** (`failure`: what went wrong; `intent`: what the user wanted), and name every cluster. **Labels** are yes/no questions asked of every trace (`made_errors`). Everything runs through the orq.ai router with your key; the models come from the `EVALUATORQ_*` lines in `.env`.
 
 ```bash
 eq insights --agent ws-refund-agent-vulnerable --window-days 1 \
@@ -93,7 +93,7 @@ Failure: no top-level clusters.
 Summary: 6 traces; 0 failed traces.
 ```
 
-The log says `dimension failure skipped: only 3 traces have signal (need at least 5)`: Insights summarised six of the nine traces and found a failure in only three, so the failure dimension did not cluster, while the intent dimension did. Run step 1 again, or raise the number of conversations, and the failure cluster appears once five traces carry a failure. Cluster names and counts differ per run.
+The log says `dimension failure skipped: only 3 traces have signal (need at least 5)`: Insights summarized six of the nine traces and found a failure in only three, so the failure dimension did not cluster, while the intent dimension did. Run step 1 again, or raise the number of conversations, and the failure cluster appears once five traces carry a failure. Cluster names and counts differ per run.
 
 `made_errors: no` on every trace is the opposite problem to a label that says yes too often: the tool errors happen inside orq.ai's code tool and the agent recovers in words, so a yes/no question over the whole trace does not see them. A pointer, not a measurement. The cluster is the finding.
 
@@ -133,3 +133,9 @@ Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators
 - `--dimension` takes other discovered dimensions; `--label` takes a preset name or a JSON label spec of your own.
 - Re-run step 1 with the fixed agent (`settings.key("refund-agent")`) and compare the clusters.
 - `eq insights --help` lists facets: `--model`, `--tool`, `--status`, token and duration ranges.
+
+## Official docs
+
+- [Insights](https://docs.orq.ai/ai-studio/observability/insights)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)
+- [Trace evaluations](https://docs.orq.ai/ai-studio/observability/trace-evaluations)

@@ -15,7 +15,7 @@ The refund agent will run in CI and in production under different keys, and it w
 
 ## The one concept to understand first
 
-Two credentials, two jobs ([API keys](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets)). An **API key** calls models. A **Management Key** administers API keys and budgets, and cannot call models. The demo key in `.env` is an all-projects API key; it can list identities and traces, and it gets `403` on `/v2/budgets`. Budgets are scoped to one of six targets (workspace, project, identity, API key, provider, model), carry a period limit in USD or tokens, and optionally a rolling requests-per-minute cap. The most restrictive matching budget wins.
+Two credentials, two jobs ([API keys](https://docs.orq.ai/ai-studio/organization/api-keys), [Management keys](https://docs.orq.ai/ai-studio/organization/management-keys), [Budgets](https://docs.orq.ai/ai-gateway/budgets)). An **API key** calls models. A **Management Key** administers API keys and budgets, and cannot call models. The demo key in `.env` is an all-projects API key; it can list identities and traces, and it gets `403` on `/v2/budgets`. Budgets are scoped to one of six targets (workspace, project, identity, API key, provider, model), carry a period limit in USD or tokens, and optionally a rolling requests-per-minute cap. The most restrictive matching budget wins.
 
 ```python
 mgmt = Orq(api_key=os.environ["ORQ_MANAGEMENT_KEY"])
@@ -215,4 +215,9 @@ Budgets became a first-class entity with six scopes, cost, token and requests-pe
 
 ## Go further
 
-Docs: [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [API keys](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys), [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities).
+## Official docs
+
+- [Budgets](https://docs.orq.ai/ai-gateway/budgets)
+- [API keys](https://docs.orq.ai/ai-studio/organization/api-keys)
+- [Management keys](https://docs.orq.ai/ai-studio/organization/management-keys)
+- [Identities](https://docs.orq.ai/ai-studio/observability/identities)

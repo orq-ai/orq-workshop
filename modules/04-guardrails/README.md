@@ -15,7 +15,7 @@ The refund agent touches customer data and money. Two things must never leave th
 
 ## The one concept to understand first
 
-Three controls travel on the same request, and they differ in what they are allowed to do ([PII redaction plugin](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction), [guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails), [guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules)):
+Three controls travel on the same request, and they differ in what they are allowed to do ([PII redaction plugin](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction), [guardrails](https://docs.orq.ai/ai-gateway/configuration/guardrails), [guardrail rules](https://docs.orq.ai/ai-gateway/configuration/guardrail-rules)):
 
 | Field | Does | On failure |
 |---|---|---|
@@ -221,6 +221,10 @@ next     : open https://my.orq.ai/traces, filter the last 5 minutes, look for th
 
 Open the trace in the Studio. The root span is red (the request failed), the model span is green (the provider answered), and a third span named after the evaluator carries the verdict. Since 4.14 every trace shows which guardrails and evaluators ran: look for the shield icon on the span row, and on the span itself the attributes `orq.guardrail.action=block`, `orq.evaluation.outcome=condition_failed`, `orq.evaluation.stage=output` and `gen_ai.evaluation.passed=false`. A plugin run shows as `pii.redact` and `pii.restore` spans with the placeholder count.
 
+## Proof
+
+![Studio: Evaluators list showing ws-refund-limit-guard, the evaluator the output guardrail invokes on every refund answer.](assets/studio-evaluators.png)
+
 ## With your coding agent
 
 ```bash
@@ -232,10 +236,6 @@ Paste the prompt from `agent_prompt.md` in this module directory:
 <blockquote class="agent-prompt-frame" markdown>
 Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
 </blockquote>
-
-## Proof
-
-![Studio: Evaluators list showing ws-refund-limit-guard, the evaluator the output guardrail invokes on every refund answer.](assets/studio-evaluators.png)
 
 ## Done when
 
@@ -265,4 +265,10 @@ Every trace now shows which guardrails and evaluators ran on a span (the shield 
 
 The same `pii_redaction` config can be switched on for the whole workspace under Settings > Plugins, and a request can only make it stricter, never looser. `GET /v2/pii/capabilities` is the live catalog of entity types and regions.
 
-Docs: [Guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails), [Guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules), [PII redaction plugin](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction), [Evaluators (guardrail error response)](https://docs.orq.ai/docs/ai-studio/optimize/evaluators), [Trace evaluations](https://docs.orq.ai/docs/ai-studio/observability/trace-evaluations).
+## Official docs
+
+- [Guardrails](https://docs.orq.ai/ai-gateway/configuration/guardrails)
+- [Guardrail rules](https://docs.orq.ai/ai-gateway/configuration/guardrail-rules)
+- [PII redaction plugin](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction)
+- [Evaluators (guardrail error response)](https://docs.orq.ai/ai-studio/optimize/evaluators)
+- [Trace evaluations](https://docs.orq.ai/ai-studio/observability/trace-evaluations)

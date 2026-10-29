@@ -15,7 +15,7 @@ Hand-written test transcripts go stale the day the prompt changes. evaluatorq dr
 
 ## The one concept to understand first
 
-A **target** is anything that maps a transcript to a reply ([agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations)). Three shapes work:
+A **target** is anything that maps a transcript to a reply ([agent simulations](https://docs.orq.ai/ai-studio/optimize/agent-simulations)). Three shapes work:
 
 ```python
 async def target(messages: list[Message]) -> str: ...            # a callable, simplest
@@ -258,7 +258,7 @@ $ orq launch claude
 Paste `agent_prompt.md`:
 
 <blockquote class="agent-prompt-frame" markdown>
-Use the simulate-agent skill to run 3 personas against the managed agent `ws-refund-agent` (max 3 turns each) and summarise the failures: which criteria broke, in which turn, and whether the failure is the agent's or the harness's (empty replies, stubbed tool calls). Then propose one persona the run did not cover.
+Use the simulate-agent skill to run 3 personas against the managed agent `ws-refund-agent` (max 3 turns each) and summarize the failures: which criteria broke, in which turn, and whether the failure is the agent's or the harness's (empty replies, stubbed tool calls). Then propose one persona the run did not cover.
 </blockquote>
 
 The skill wraps `eq sim run --target agent:...`. Ask the agent to tell you which failures are the harness and which are the agent.
@@ -285,4 +285,7 @@ Agent simulation and red teaming landed in evaluatorq together with 4.6; results
 
 Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim simulate --input cases.jsonl` after every prompt change: that is the regression test module 12 puts in CI. Module 16 turns the same targets against an attacker.
 
-Docs: [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations), [Simulation cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/agent-simulations).
+## Official docs
+
+- [Agent simulations](https://docs.orq.ai/ai-studio/optimize/agent-simulations)
+- [Simulation cookbook](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/agent-simulations)

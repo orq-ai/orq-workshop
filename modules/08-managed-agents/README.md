@@ -46,7 +46,7 @@ Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`
 
 ## Steps
 
-Open [`modules/08-managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/08-managed-agents/run.py). `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
+Open [`modules/08-managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/08-managed-agents/run.py). `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
 
 ### Step 1 · Inspect the agent
 
@@ -239,7 +239,7 @@ next     : orq responses get resp_01M52HM5PHDNM9BKEB9PV07KXC -o json | jq '.outp
 
 ### Step 6 · Control tool calls
 
-`tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least one, `{"type": "function", "name": "ws-get_policy"}` forces a named one (the tool key). A `tools` array in the request is accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration, MCP and HTTP tools included ([module 10](https://orq-ai.github.io/orq-workshop/modules/10/), [module 15](https://orq-ai.github.io/orq-workshop/modules/15/)). Built-in tools (`orq:current_date` in SDK 4.14, `orq:datetime` in the docs) follow the same rule: attach them to the agent.
+`tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least one, `{"type": "function", "name": "ws-get_policy"}` forces a named one (the tool key). A `tools` array in the request is accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration, MCP and HTTP tools included ([MCP servers and gateway](https://orq-ai.github.io/orq-workshop/modules/10/), [Advisor and sidekick](https://orq-ai.github.io/orq-workshop/modules/15/)). Built-in tools (`orq:current_date` in SDK 4.14, `orq:datetime` in the docs) follow the same rule: attach them to the agent.
 
 ```python
 orq.responses.create(model="agent/ws-refund-agent", input="Refund ord_a2 please, the dock does not fit.", tool_choice="none")
@@ -308,6 +308,10 @@ $ orq responses create --model agent/ws-refund-agent --input '"One sentence: wha
 $ orq traces search --from 5m --to now -o json | jq '.data[] | select(.name == "ws-refund-agent") | .trace_id' | head -3
 ```
 
+## Proof
+
+![Studio: Agents list showing ws-refund-agent and the variants each module step in this repo creates (approval, delegating, mcp, memory, rag, vulnerable).](assets/studio-agents.png)
+
 ## With your coding agent
 
 ```bash
@@ -319,10 +323,6 @@ Paste `agent_prompt.md`:
 <blockquote class="agent-prompt-frame" markdown>
 Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces conversation <trace_id>`.
 </blockquote>
-
-## Proof
-
-![Studio: Agents list showing ws-refund-agent and the variants each module step in this repo creates (approval, delegating, mcp, memory, rag, vulnerable).](assets/studio-agents.png)
 
 ## Done when
 
@@ -353,4 +353,13 @@ Agents can delegate: an `advisor` tool consults a second model mid-turn and a `s
 
 - Module 15: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
 - `solution/stretch_factor7.py`: a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
-- Docs: [Run agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents), [Responses API](https://docs.orq.ai/docs/ai-gateway/features/responses-api), [Memory stores](https://docs.orq.ai/docs/ai-studio/ai-engineering/memory-stores), [Advisor and Sidekick](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick), [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents), [Create tools](https://docs.orq.ai/docs/ai-studio/ai-engineering/create-tools), [Create response API](https://docs.orq.ai/reference/responses/create-response).
+
+## Official docs
+
+- [Run agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents)
+- [Responses API](https://docs.orq.ai/ai-gateway/features/responses-api)
+- [Memory stores](https://docs.orq.ai/ai-studio/ai-engineering/memory-stores)
+- [Advisor and Sidekick](https://docs.orq.ai/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
+- [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
+- [Create tools](https://docs.orq.ai/ai-studio/ai-engineering/create-tools)
+- [Create response API](https://docs.orq.ai/reference/responses/create-response)

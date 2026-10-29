@@ -1,4 +1,4 @@
-# Failure analysis and evals
+# Failure analysis to experiments
 
 !!! abstract "A prompt you own is a prompt you can measure"
     A prompt you own is a prompt you can measure. The traces say what the prompt does, a taxonomy says what to fix, an evaluator says whether the fix held. The tools already return short error strings (`outside_window`, `already_refunded`); a judge reads short answers the same way.
@@ -17,7 +17,7 @@ Half of the traffic this module reads was produced by a prompt with three lines 
 
 ## The one concept to understand first
 
-Error analysis comes before [evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators). Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
+Error analysis comes before [evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators). Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
 
 ![Diagram: the error analysis loop. Traces from make traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
 
@@ -229,6 +229,14 @@ The code scorer separates the prompts by 20 points, the judge by 25. The judge r
 
 The `run-experiment` skill does step 6 through the orq.ai MCP tools: `create_experiment` with a dataset id, the two agents and the evaluator ids, then `get_experiment_run` and `list_experiment_runs` for the results. That is the Track B path below.
 
+## Proof
+
+![Studio: Evaluators list showing ws-refund-limit-guard and ws-refund-policy-judge, the judge used throughout this module.](assets/studio-evaluators.png)
+
+![Studio: Datasets list showing ws-refund-eval, the dataset built in Step 5.](assets/studio-datasets.png)
+
+![Studio: an Experiment run for ws-refund-regression, the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts, under the orq-workshop project.](assets/studio-experiment.png)
+
 ## With your coding agent
 
 ```bash
@@ -242,14 +250,6 @@ Use analyze-trace-failures on the traces tagged traffic from the last hour, then
 </blockquote>
 
 The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset` finds it), and runs the comparison with `create_experiment`.
-
-## Proof
-
-![Studio: Evaluators list showing ws-refund-limit-guard and ws-refund-policy-judge, the judge used throughout this module.](assets/studio-evaluators.png)
-
-![Studio: Datasets list showing ws-refund-eval, the dataset built in Step 5.](assets/studio-datasets.png)
-
-![Studio: an Experiment run for ws-refund-regression, the fixed vs. vulnerable comparison from Step 6, per-row inputs, expected output and evaluator verdicts, under the orq-workshop project.](assets/studio-experiment.png)
 
 ## Done when
 
@@ -277,4 +277,11 @@ Evaluator and guardrail results now show as indicators on every trace span, with
 
 Write the judge that this module says is missing: a binary `ws-refund-decision-judge` whose prompt receives the tool results as well as the answer, label 40 rows by hand (the `details` block in `evals/results/latest.json` after module 12 is a good start), and compute TPR and TNR before you let it into CI.
 
-Docs: [Evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators), [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Align evaluators cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/align-evaluators), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).
+## Official docs
+
+- [Evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators)
+- [Datasets](https://docs.orq.ai/ai-studio/optimize/datasets)
+- [Experiments](https://docs.orq.ai/ai-studio/optimize/experiments)
+- [Evaluatorq cookbook](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/evaluator-q)
+- [Align evaluators cookbook](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/align-evaluators)
+- [Search traces API](https://docs.orq.ai/reference/traces/search-traces)

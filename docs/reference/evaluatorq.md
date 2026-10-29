@@ -4,7 +4,7 @@
 
 It is a library first and a platform client second. With no orq.ai credential it runs entirely on your machine and writes its results to a local folder; with `ORQ_API_KEY` set, the same call also lands as an **Experiment** in the Studio. Nothing is uploaded unless you opt in.
 
-It is open source, and the repository is the reference for everything below: README, runnable examples, the full evaluator and attack catalogues, and the issue tracker:
+It is open source, and the repository is the reference for everything below: README, runnable examples, the full evaluator and attack catalogs, and the issue tracker:
 
 [:octicons-mark-github-16: orq-ai/evaluatorq](https://github.com/orq-ai/evaluatorq){ .md-button .md-button--primary }
 [:octicons-book-16: Documentation](https://orq-ai.github.io/evaluatorq/){ .md-button }
@@ -13,9 +13,9 @@ It is open source, and the repository is the reference for everything below: REA
 
 | | What it does | Where it shows up here |
 |---|---|---|
-| **Evaluation** | runs a job over a dataset and scores each row with evaluators you write (or built-ins like an LLM judge) | [module 07](../modules/07.md), [module 12](../modules/12.md) |
-| **Agent simulation** | a user-simulator LLM plays a persona with a goal and holds a multi-turn conversation with your agent; a judge scores the transcript | [module 11](../modules/11.md) |
-| **Red teaming** | an attacker model works through OWASP categories (Agentic Top 10 and LLM Top 10) and a judge decides whether each attack landed | [module 16](../modules/16.md) |
+| **Evaluation** | runs a job over a dataset and scores each row with evaluators you write (or built-ins like an LLM judge) | [Failure analysis to experiments](../modules/07.md), [Evals and agents in CI](../modules/12.md) |
+| **Agent simulation** | a user-simulator LLM plays a persona with a goal and holds a multi-turn conversation with your agent; a judge scores the transcript | [Agent simulation](../modules/11.md) |
+| **Red teaming** | an attacker model works through OWASP categories (Agentic Top 10 and LLM Top 10) and a judge decides whether each attack landed | [Red teaming](../modules/16.md) |
 
 All three share one shape: a **target** (the thing under test), **cases** (rows, personas or attacks), and **judges** (what counts as a pass). Change the target, keep the cases, and two runs compare.
 
@@ -79,15 +79,15 @@ Two details that bite:
 
 **Send it to orq.ai when** the result is evidence someone else will act on:
 
-- **A regression gate in CI.** The exit code is what fails the build, but the Experiment is what a reviewer reads to see *which* row dropped ([module 12](../modules/12.md)).
-- **Comparing two versions.** Two Experiment runs of the same dataset sit side by side with per-row verdicts; two local JSON files do not ([module 07](../modules/07.md)).
-- **Anything with a cost question.** Router calls are traced and budgeted, so "what did this eval cost" has an answer ([module 05](../modules/05.md)).
+- **A regression gate in CI.** The exit code is what fails the build, but the Experiment is what a reviewer reads to see *which* row dropped ([Evals and agents in CI](../modules/12.md)).
+- **Comparing two versions.** Two Experiment runs of the same dataset sit side by side with per-row verdicts; two local JSON files do not ([Failure analysis to experiments](../modules/07.md)).
+- **Anything with a cost question.** Router calls are traced and budgeted, so "what did this eval cost" has an answer ([Budgets and keys](../modules/05.md)).
 - **Work that outlives the session.** A local folder is a scratch pad; an Experiment is a record with a URL you can paste into a ticket.
 
 The practical answer for most teams is *both*: develop against the local dashboard, then let CI run the same file with a key set so the result is durable. The code does not change between the two; only the environment does.
 
-## Where to go next
+## Official docs
 
 - The repo: [orq-ai/evaluatorq](https://github.com/orq-ai/evaluatorq) (README, examples, issues)
 - The docs: [orq-ai.github.io/evaluatorq](https://orq-ai.github.io/evaluatorq/)
-- In this workshop: [module 07](../modules/07.md) builds the evaluators, [module 11](../modules/11.md) simulates customers, [module 16](../modules/16.md) attacks the agent, and [module 12](../modules/12.md) puts the whole thing in CI.
+- In this workshop: [Failure analysis to experiments](../modules/07.md) builds the evaluators, [Agent simulation](../modules/11.md) simulates customers, [Red teaming](../modules/16.md) attacks the agent, and [Evals and agents in CI](../modules/12.md) puts the whole thing in CI.

@@ -201,6 +201,10 @@ With `WS_EDGE_URL` set, the step registers `ws-refund-policy-ext` (`type: extern
 
 The external knowledge base attaches to agents and deployments exactly like the managed one (step 5c). What changes is the division of labour: chunking, embeddings, metadata filters and the search itself are yours now, but orq.ai still cuts the results to `top_k`, applies the threshold and reranks them before handing them back. You own retrieval; the platform still owns ranking. It waits at most 50 s and then answers the caller `504`; a non-2xx from your endpoint is passed through as it is, and anything else becomes a `502`. [How retrieval works](https://orq-ai.github.io/orq-workshop/reference/rag/) lays the two engines side by side. Without `WS_EDGE_URL` the step prints the contract and stops.
 
+## Proof
+
+![Studio: Knowledge list showing ws-refund-policy, the seeded knowledge base, next to an older copy left over from the days when the small embedding model was the default.](assets/studio-knowledge.png)
+
 ## With your coding agent
 
 ```bash
@@ -212,10 +216,6 @@ Paste `agent_prompt.md`:
 <blockquote class="agent-prompt-frame" markdown>
 Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
 </blockquote>
-
-## Proof
-
-![Studio: Knowledge list showing ws-refund-policy, the seeded knowledge base, next to an older copy left over from the days when the small embedding model was the default.](assets/studio-knowledge.png)
 
 ## Done when
 
@@ -240,4 +240,12 @@ The Chunking API (`orq.chunking.parse`) exposes seven strategies (`token`, `sent
 ## Go further
 
 - `app/edge.py`: the `/search` contract in 20 lines. Point it at a real index (Weaviate, Pinecone, pgvector) instead of keyword scoring and nothing on the orq.ai side changes.
-- Docs: [Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases), [Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base), [Knowledge bases via AI Gateway](https://docs.orq.ai/docs/ai-gateway/features/knowledge-bases), [External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases), [Chunking guide](https://docs.orq.ai/docs/ai-studio/ai-engineering/chunking), [Chunking API](https://docs.orq.ai/reference/chunking/parse-text).
+
+## Official docs
+
+- [Knowledge bases](https://docs.orq.ai/ai-studio/ai-engineering/knowledge-bases)
+- [Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base)
+- [Knowledge bases via AI Gateway](https://docs.orq.ai/ai-gateway/features/knowledge-bases)
+- [External knowledge bases](https://docs.orq.ai/ai-studio/ai-engineering/external-knowledge-bases)
+- [Chunking guide](https://docs.orq.ai/ai-studio/ai-engineering/chunking)
+- [Chunking API](https://docs.orq.ai/reference/chunking/parse-text)

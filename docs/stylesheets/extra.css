@@ -50,7 +50,7 @@
 .md-typeset h4, .md-typeset h5, .md-typeset h6,
 .md-header__title { font-family: "Kurrent", var(--md-text-font-family); }
 
-/* Orq brand palette + design language (see /DESIGN.md).
+/* Orq brand palette + design language.
    Rule: teal carries the interface, orange punctuates — one accent per view. */
 :root {
   --orq-teal: #025558;

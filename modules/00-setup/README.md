@@ -17,7 +17,7 @@ This workshop drives orq.ai from the terminal. The `orq` CLI is how we do it: it
 
 `orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq.ai MCP server and the orq.ai skills. Every entity in the workspace is a subcommand you can script. Learn it once, use it in every module.
 
-It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is catalogued in the [CLI reference](https://docs.orq.ai/reference/cli).
+It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is catalogd in the [CLI reference](https://docs.orq.ai/reference/cli).
 
 ## Steps
 
@@ -208,7 +208,7 @@ Read [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/m
 $ make chat        # http://127.0.0.1:8002
 ```
 
-[`app/web.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/web.py) puts the same `chat()` behind `POST /api/chat`, and [`web/index.html`](https://github.com/orq-ai/orq-workshop/blob/main/web/index.html) is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Models / Agents** toggle chooses which list the dropdown shows. The model dropdown switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq.ai code tools, so orq.ai runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation. A tool the policy refused shows as a `DECLINED` or `NOT FOUND` chip. The **Guardrails** dropdown picks `PII · input`, `Refund limit · output` or `Both`; each tags the request so one gateway rule (`<prefix>-guardrail-rule-chat-pii`, `-refund`, `-chat`, created by `make seed`, which needs an admin key) blocks personal data on input and/or refund promises over EUR 500 on output; a block shows as its own message with the guardrail and the reason, and the trace link. The rule matches on request metadata because request-level `guardrails` are ignored on Responses. Leave `ORQ_API_KEY` empty and the chat uses your `orq auth login` session instead (tokens last an hour; the link then opens the CLI's active workspace).
+[`app/web.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/web.py) puts the same `chat()` behind `POST /api/chat`; [`web/index.html`](https://github.com/orq-ai/orq-workshop/blob/main/web/index.html) is the page. Transcript, tool chips, model per turn and a **trace** link per answer. [All its features](https://github.com/orq-ai/orq-workshop/blob/main/web/README.md).
 
 ## With your coding agent
 
@@ -244,4 +244,8 @@ The Studio onboarding now offers a CLI path. `orq setup` is the same flow the pr
 
 ## Go further
 
-Docs: [orq.ai CLI reference](https://docs.orq.ai/reference/cli), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).
+## Official docs
+
+- [orq.ai CLI reference](https://docs.orq.ai/reference/cli)
+- [OpenAI-compatible API](https://docs.orq.ai/ai-gateway/features/openai-compatible-api)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)

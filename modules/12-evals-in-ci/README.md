@@ -1,4 +1,4 @@
-# Evals in CI
+# Evals and agents in CI
 
 !!! abstract "A gate is an agent run with an exit code"
     A gate is an agent run you can start from a workflow, read as an exit code, and resume from a JSON file. The same key that runs the refund agent also runs the judge, the red team and a headless coding agent, from a cron or a PR label.
@@ -15,7 +15,7 @@ Module 07 measured the refund agent once. Nobody re-runs a notebook before mergi
 
 ## The one concept to understand first
 
-A gate is three things ([evaluatorq](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)): a fixed input set, a scorer per failure mode, and a threshold on the mean. [`evals/regression.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/regression.py) runs the local agent over [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl), scores every row with the three scorers in [`evals/scorers.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/scorers.py), and exits 1 when a mean drops below its threshold. [`evals/redteam_gate.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_gate.py) does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
+A gate is three things ([evaluatorq](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/evaluator-q)): a fixed input set, a scorer per failure mode, and a threshold on the mean. [`evals/regression.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/regression.py) runs the local agent over [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl), scores every row with the three scorers in [`evals/scorers.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/scorers.py), and exits 1 when a mean drops below its threshold. [`evals/redteam_gate.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_gate.py) does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
 
 ```python
 THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.70}   # evals/regression.py
@@ -226,6 +226,10 @@ Same shape, one prompt each, all through `orqi "<prompt>"` with `CI=1`:
 | Guardrail audit | Weekly | `orqi "List the guardrail blocks of the last 7 days grouped by evaluator, and flag evaluators that blocked more than 5 percent of traffic"` |
 | Trace failure analysis | On PR label | `orq launch claude --no-mcp -- -p "Use the analyze-trace-failures skill on traces tagged traffic from the last 24 hours ..."` |
 
+## Proof
+
+![Studio: an Experiment run for ws-refund-regression, the CI gate's own uploaded results, under the orq-workshop project.](assets/studio-experiment.png)
+
 ## With your coding agent
 
 ```bash
@@ -237,10 +241,6 @@ Paste `agent_prompt.md`:
 <blockquote class="agent-prompt-frame" markdown>
 Open a pull request from a new branch that swaps the contents of [`app/data/fixed_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/fixed_instructions.md) for the contents of [`app/data/vulnerable_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/vulnerable_instructions.md) (keep the file name, the CI gate reads that path). The run waits for a deployment approval on the `evals` environment: approve it in the Actions tab (or ask the instructor), then watch `.github/workflows/evals.yml` with `gh run watch` and wait for the `quality` job to fail. Then read the job summary, quote the scorer table, and explain in five lines which scorer means dropped, why the vulnerable instructions cause exactly those drops, and why the `security` job may still pass. Do not merge the PR; close it when done.
 </blockquote>
-
-## Proof
-
-![Studio: an Experiment run for ws-refund-regression, the CI gate's own uploaded results, under the orq-workshop project.](assets/studio-experiment.png)
 
 ## Done when
 
@@ -259,7 +259,7 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 - evaluatorq's static default dataset is `hf:orq/redteam-vulnerabilities`, which needs `huggingface_hub`. It is not in this lockfile, so the gate ships its own `evals/redteam_static.json`. `uv add "evaluatorq[redteam]"` unlocks the public set.
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
 - orqi writes reports to a file in the working directory unless the prompt says "print the report as your final answer, do not create any files".
-- `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behaviour in CI.
+- `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behavior in CI.
 - Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
 
 ## New in orq.ai 4.6
@@ -270,4 +270,11 @@ Red teaming shipped in evaluatorq with OWASP LLM Top 10 and Agentic categories, 
 
 Replace the local `chat()` in `evals/regression.py` with one `orq.responses.create(model="agent/ws-refund-agent")` call (orq.ai runs its tool loop) and you gate the managed agent instead of the local loop, with the same scorers. Then add `--previous-run` style comparison: read the previous `latest.json` artifact and fail when any mean drops by more than 0.10, even if it is still above the bar. Today the gate is absolute; that step is what turns it into a true regression comparison.
 
-Docs: [Evaluatorq cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q), [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming), [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments), [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets), [Automate evals with Claude Code](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/automate-evals-and-observability-with-claude-code), [orq.ai CLI reference](https://docs.orq.ai/reference/cli).
+## Official docs
+
+- [Evaluatorq cookbook](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/evaluator-q)
+- [Red teaming](https://docs.orq.ai/ai-studio/optimize/red-teaming)
+- [Experiments](https://docs.orq.ai/ai-studio/optimize/experiments)
+- [Budgets](https://docs.orq.ai/ai-gateway/budgets)
+- [Automate evals with Claude Code](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/automate-evals-and-observability-with-claude-code)
+- [orq.ai CLI reference](https://docs.orq.ai/reference/cli)

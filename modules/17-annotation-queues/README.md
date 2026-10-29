@@ -147,4 +147,11 @@ Human Review became **Annotations** with queues and an API in 4.11; 4.14 added *
 
 - Sample 10% into the queue with the automation, review for a day, and compare the bad rate with module 07's judge on the same traces: that gap is the judge's error.
 - Add a `correction` annotation definition (text) and store the reviewer's rewrite on the trace itself; promote it as `expected_output` instead of the fixed sentence used here.
-- Docs: [Annotation queues](https://docs.orq.ai/docs/ai-studio/observability/annotation-queues), [Annotations](https://docs.orq.ai/docs/ai-studio/observability/annotations), [Annotations API](https://docs.orq.ai/docs/ai-studio/observability/annotations-api), [Trace automations](https://docs.orq.ai/docs/ai-studio/observability/automations), [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets).
+
+## Official docs
+
+- [Annotation queues](https://docs.orq.ai/ai-studio/observability/annotation-queues)
+- [Annotations](https://docs.orq.ai/ai-studio/observability/annotations)
+- [Annotations API](https://docs.orq.ai/ai-studio/observability/annotations-api)
+- [Trace automations](https://docs.orq.ai/ai-studio/observability/automations)
+- [Datasets](https://docs.orq.ai/ai-studio/optimize/datasets)

@@ -1,6 +1,6 @@
 # KickstartAI TechDays · 15 Oct 2026
 
-**Is your agent behaving like you expect? Testing with evals.** Two hours, one refund agent, four steps: build it, simulate customers against it, read the traces with Insights, turn what you find into an eval.
+**Is your agent behaving like you expect? Testing with evals.** One refund agent, four steps: build it, simulate customers against it, read the traces with Insights, turn what you find into an eval.
 
 Evals without data are theory, so we get to simulation fast. Each block is a short concept, then your hands on the keyboard; the hosts walk the room.
 
@@ -10,7 +10,7 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 - Install [uv](https://docs.astral.sh/uv/) and run `make setup`
 - Bring a laptop that allows `curl | sh`. If yours does not, follow on screen with a neighbour.
 
-## The two hours
+## The session
 
 <!-- run-of-show -->
 
@@ -50,7 +50,7 @@ Done when at least one `ord_a3` row shows a broken rule and you can say why. The
 
 ## 3 · Read the traces (1:15)
 
-Criteria check what you expected. Insights reads your traces, summarises and clusters them, and names what went wrong, including what you did not write a criterion for.
+Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
 make m18
