@@ -1,6 +1,6 @@
 # Coding agents
 
-!!! abstract "Your workspace from a coding agent, and the wrap-up"
+!!! abstract "Your workspace from a coding agent"
     The same gateway, MCP server and skills you used from Python all day are one command away from Claude Code, OpenCode, Pi and Codex. A coding-agent session is just another traced, budgeted client of your workspace.
 
 ## Starting point
@@ -272,10 +272,7 @@ Codex works the same way by design: it sends a stable session id with each Respo
 
 ### Step 6 · Apply it to your own repo
 
-1. In your repo: `orq connect --local --dry-run`, read the file list, then `orq connect --local`. Commit `.mcp.json` or `opencode.json` if the team should share the wiring; keep `.claude/skills` and `.agents/skills` out of git (they are symlinks into `~/.orq/snapshot`).
-2. Launch the agent and paste the setup-observability prompt: "Use the setup-observability skill on this repo. Detect the framework, prefer the AI Router mode, set `service.name`, and stop after the baseline trace is verified." The skill refuses to add enrichment before a baseline trace exists.
-3. A good first trace has a model span with `provider/model`, tokens and cost filled in, a name you would search for (`chat.openai`, not `trace-1`), and the request `route`. If you send identity, thread and metadata (module 02), they show on the same span.
-4. After a week of traffic: "Use the analyze-trace-failures skill on the last 7 days of traces for project X" and let it build the failure taxonomy before you write an evaluator (module 07).
+The [wrap-up page](https://orq-ai.github.io/orq-workshop/start/wrap-up/) takes your own repository around the loop once, with the skills you just listed doing most of the work. It starts with `orq connect --local --dry-run` in that repo.
 
 ## With your coding agent
 

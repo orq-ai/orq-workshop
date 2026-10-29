@@ -36,3 +36,9 @@ def test_audience_pages_link_every_stage_or_module():
     all_slugs = {d.name for d in (ROOT / "modules").iterdir() if d.is_dir()}
     for slug in all_slugs - set(CORE_PATH):
         assert f"../modules/{slug}.md" in already, slug
+
+
+def test_wrap_up_closes_the_core_path():
+    assert "start/wrap-up.md" in (ROOT / "mkdocs.yml").read_text()
+    core = (ROOT / "docs/start/core-path.md").read_text()
+    assert "[Wrap-up](wrap-up.md)" in core
