@@ -435,7 +435,7 @@ wheels = [
 
 [[package]]
 name = "evaluatorq"
-version = "1.73.2"
+version = "1.82.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -446,9 +446,9 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/f6/7a8d12fa78b52a1229c71e21a5e8d915c74092d06ac65c83fcb985616aae/evaluatorq-1.73.2.tar.gz", hash = "sha256:10b418ed00c1e3ed6086deb4bdfea880f1bbbc19fa6a16dd6a07486f4044b8dc", size = 26023367, upload-time = "2026-10-15T08:06:15.527Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/a0/eaca4fd07f66c7523d49f2d3f48238b4e05f38699bee4a599257ade4285a/evaluatorq-1.82.1.tar.gz", hash = "sha256:5503f426276230338e0488d45b57f7cd6c7d0fab28d6eb076c02c5745a2b13d4", size = 26037239, upload-time = "2026-10-29T00:25:00.111Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/8b/b1d578c925a65e2441495943a56b05c4276c03745daaa3c86323057db6ef/evaluatorq-1.73.2-py3-none-any.whl", hash = "sha256:e51cebc6c0c9e864fcac7d56e2b1ba9f832c350d1f478544f85a36d1e03fd7c1", size = 3873686, upload-time = "2026-10-15T08:06:13.111Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/51/a8fec2528bb0df476fdefdfff1e9b61ba68d2b3ae633166fb80b66d0b5f1/evaluatorq-1.82.1-py3-none-any.whl", hash = "sha256:ee90796e5924edccc6552d314fc13523749b02505b98afb2d46807ad1590bfe7", size = 3902267, upload-time = "2026-10-29T00:24:57.778Z" },
 ]
 
 [package.optional-dependencies]
@@ -1950,7 +1950,7 @@ wheels = [
 
 [[package]]
 name = "orq-ai-sdk"
-version = "4.16.10"
+version = "4.17.18"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpcore" },
@@ -1958,9 +1958,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/f9/12b85d6b7ddd75db3af4ba3994aadd4a78505c08d9618ab27f26c6af2e22/orq_ai_sdk-4.16.10.tar.gz", hash = "sha256:959743af876b538522c5e88a4d81bb148cd8679bdbcd8fa13ccaf6d8cb9132cf", size = 1014642, upload-time = "2026-10-16T08:38:53.741Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/ab/3d23a0a6982f0dea148a8b515796888b20af30319a32a6136fd97d6043ef/orq_ai_sdk-4.17.18.tar.gz", hash = "sha256:d5df191f63c60e286c07a5c1cf3a661df9e7a22799daec6ebadb514aca3f534a", size = 1084735, upload-time = "2026-10-28T22:26:11.863Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/98/6e0144963e94ef3a509ec5b4619e68276b7c4ba0b6eac417d5492b1c17a8/orq_ai_sdk-4.16.10-py3-none-any.whl", hash = "sha256:45c876ea2c3ce37b806c3887ea273b888e3b78ed7ff6596608e367402d9c461a", size = 1624440, upload-time = "2026-10-16T08:38:51.729Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/81/b53973ccefec2f29a3bfd4273d7b8ccb97712247ee3e36edd3f301d7c2c4/orq_ai_sdk-4.17.18-py3-none-any.whl", hash = "sha256:d94ee6bc5a4c867aacef7d570bbb0eea6394d5bceb99a978896ae9e1684ee9b7", size = 1804330, upload-time = "2026-10-28T22:26:08.975Z" },
 ]
 
 [[package]]
@@ -2006,7 +2006,7 @@ notebooks = [
 
 [package.metadata]
 requires-dist = [
-    { name = "evaluatorq", extras = ["redteam", "dashboard", "insights"], specifier = ">=1.73.2" },
+    { name = "evaluatorq", extras = ["redteam", "dashboard", "insights"], specifier = ">=1.82.1" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "langchain-core", marker = "extra == 'langgraph'", specifier = ">=0.3" },
     { name = "langchain-openai", marker = "extra == 'langgraph'", specifier = ">=0.3" },
@@ -2015,7 +2015,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.60" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.30" },
     { name = "opentelemetry-sdk", specifier = ">=1.30" },
-    { name = "orq-ai-sdk", specifier = ">=4.16,<5" },
+    { name = "orq-ai-sdk", specifier = ">=4.17.18,<5" },
     { name = "python-dotenv", specifier = ">=1.0" },
 ]
 provides-extras = ["langgraph"]

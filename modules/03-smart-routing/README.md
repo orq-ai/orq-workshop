@@ -216,9 +216,9 @@ Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the
 - Routing rule list items dump as `_id`; create and update responses as `id`.
 - Since orq.ai API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
-## New in orq.ai 4.13
+## New in orq.ai 4.17
 
-The Smart Router got its own page in the AI Gateway: every router, the band each pool model lands in from the intelligence index, and a copyable invocation snippet. `route_pool` picks from N candidates instead of one strong and one cheap model.
+Session affinity keeps every turn of a conversation on the model the Smart Router picked for its first turn, so the provider prompt cache survives; a harder later turn can still move up to a stronger model, never down. Turn it on per router and pin for 1 to 60 minutes ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 

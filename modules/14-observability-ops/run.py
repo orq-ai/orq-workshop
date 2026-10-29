@@ -1,7 +1,7 @@
 """Module 14 starter: alerts, automations and framework hooks.
 
 Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a
-Reporting API query gives the number, an alert watches it and opens an incident, and a webhook
+Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook
 delivers every model call, signed, to a system you run. `make seed` created `ws-alert-notifier`
 and `ws-cost-alert`; your job is to query the metric the alert watches, push it over the
 threshold, and fire two events into your own receiver.
@@ -22,7 +22,7 @@ from app.refund_agent.entities import (
     ensure_notifier,
     ensure_webhook,
     project_id,
-    reporting_query,
+    telemetry_query,
 )
 
 orq = make_orq()
@@ -33,47 +33,44 @@ BYPASS = {"bypass-tunnel-reminder": "1"}  # localtunnel serves an HTML reminder 
 
 
 def iso(moment: datetime) -> str:
-    """The timestamp format the Reporting API wants: UTC, second precision, trailing Z."""
+    """The timestamp format the Telemetry API wants: UTC, second precision, trailing Z."""
     return moment.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def step_1_reporting() -> None:
+def step_1_telemetry() -> None:
     """One scalar query for the last hour, then the same metric as a top list per model."""
     now = datetime.now(UTC)
     project_filter = [{"field": "project", "op": "eq", "values": [PROJECT]}]
-    cost = reporting_query(
+    cost = telemetry_query(
         orq,
-        metric="genai.cost",
+        compute=[{"metric": "genai.cost", "op": "sum"}],
         **{"from": iso(now - timedelta(hours=1))},  # `from` is a Python keyword, so it goes in as **kwargs
         to=iso(now),
         mode="scalar",
         filters=project_filter,
     )
-    error_rate = None  # TODO: the same query with metric="genai.error_rate"
-    usage = None  # TODO: metric="genai.usage" over the last 24 h with group_by=["model"] and limit=5 (a top list)
+    error_rate = None  # TODO: the same query with compute=[{"metric": "genai.error_rate", "op": "rate"}]
+    top = None  # TODO: genai.cost (sum) over the last 24 h with mode="scalar", group_by=["model"] and limit=5 (a top list)
 
-    print("── Step 1 · The number: Reporting API ─────────────────")
+    print("── Step 1 · The number: Telemetry API ─────────────────")
     print(f"window   : last hour, project {settings.project}")
-    print(f"cost     : ${cost['data'][0]['metrics']['genai.cost']:.4f}")
-    if error_rate is None or usage is None:
-        print("TODO     : fill in `error_rate` and `usage`, then rerun")
+    print(f"cost     : ${cost['data'][0]['metrics']['genai.cost:sum']:.4f}")
+    if error_rate is None or top is None:
+        print("TODO     : fill in `error_rate` and `top`, then rerun")
     if error_rate is not None:
-        print(f"errors   : rate {error_rate['data'][0]['metrics']['genai.error_rate']:.3f} (genai.error_rate)")
-    if usage is not None:
-        print("top      : last 24 hours by model")
-        for row in usage["data"]:
-            metrics = row["metrics"]
-            print(
-                f"    {row['dimensions']['model']:<28} requests={metrics['request_count']:<4} errors={metrics['error_count']:<3} cost=${metrics['total_cost']:.4f}"
-            )
-    print("next     : Observability > Reporting in the Studio draws these same numbers")
+        print(f"errors   : rate {error_rate['data'][0]['metrics']['genai.error_rate:rate']:.3f} (genai.error_rate)")
+    if top is not None:
+        print("top      : last 24 hours by cost")
+        for row in top["data"]:
+            print(f"    {row['group']['model']:<28} cost=${row['metrics']['genai.cost:sum']:.4f}")
+    print("next     : Observability > Traces in the Studio draws these same numbers")
 
 
 def step_2_alert() -> None:
     """Push the metric the alert watches over its threshold, then read the trigger history."""
     alert_id = ensure_alert(orq, notifier_id=ensure_notifier(orq))
     # A burst is a runaway loop in miniature: refund turns until the window's spend passes the
-    # threshold with margin. The alert ticks every 5 minutes and reporting lags, so the trigger
+    # threshold with margin. The alert ticks every 5 minutes and telemetry lags, so the trigger
     # shows up later, not now.
     burst: list[str] = []  # TODO: trace ids of orq.responses.create(model=f"agent/{AGENT}", input="Explain the refund policy in about 300 words.") until the summed usage.total_cost is 2 * ALERT_THRESHOLD_USD
     triggers = None  # TODO: entities.alert_triggers(alert_id), newest first (empty until the alert ticks)
@@ -106,6 +103,6 @@ def step_3_webhook() -> None:
 
 
 if __name__ == "__main__":
-    step_1_reporting()
+    step_1_telemetry()
     step_2_alert()
     step_3_webhook()

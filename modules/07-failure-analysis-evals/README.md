@@ -192,7 +192,7 @@ $ DATASET=<id>   # the dataset line that `make seed` printed for ws-refund-eval
 $ orq datasets list-datapoints "$DATASET" --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
 
-`orq datasets list --limit 100` returns HTTP 500 (`error decoding key _id`) in orq CLI 11.6.0-rc.2, so take the id from the seed output instead.
+The dataset id is in the seed output.
 
 Twenty rows cover four decisions and every trap in `orders.json`. When the taxonomy names a mode the dataset does not cover (say, multilingual authority claims), the `generate-synthetic-dataset` skill expands it: dimensions, tuples, then natural-language rows, deduplicated and rebalanced before upload.
 
@@ -262,16 +262,16 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 ## Gotchas
 
 - `orq.traces.search` takes `from_` and `to` as datetimes (the CLI takes `--from 30m --to now`). Filter ops are `eq, neq, in, not_in, gt, gte, lt, lte, exists`; `sort` only accepts `end_time desc`.
-- The SDK's `Attributes` model on search results is empty in 4.14.14. Read `gen_ai.output`, `metadata.*` and `thread_id` from the raw JSON.
+- The SDK's `Attributes` model on search results is empty in SDK 4.17. Read `gen_ai.output`, `metadata.*` and `thread_id` from the raw JSON.
 - Router traces expose the model output (single-item only) and the input items (`openresponses.input._value`) through search and `get-span`; `orq traces conversation` prints `[content unavailable: N items]` for multi-item outputs. The Studio shows both.
 - `orq.evals.invoke` returns an empty `InvokeEvaluatorResponse`; the REST reply has `passed`, `value`, `explanation`, `status`. `orq.evals.get(id=)` exists, `retrieve` does not.
 - The seeded Python guardrail was created with `output_type: number` and returns booleans; every invoke failed with HTTP 500 `result should be type number!` until `orq.evals.update(id=, output_type="boolean")`. The solution does that idempotently.
 - Judges drift: the same 20 rows scored 0.65 and 0.75 in consecutive runs. Compare columns inside one run, not across runs.
 - `evaluatorq`'s upload does not target the current project: the Experiment lands in the workspace's **Default** project, not `orq-workshop`. It will not show under Studio > Experiments while `orq-workshop` is the active project. Open the printed URL directly, or switch the project picker to Default.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.16
 
-Evaluator and guardrail results now show as indicators on every trace span, with a time-range selector and search by id in the Traces view. The verdicts step 4 produced are visible on the trace of each invoke, next to the model call they graded, instead of only in the evaluator's own history.
+Python evaluators are written in a real editor with completions and diagnostics ([release 4.15](https://docs.orq.ai/changelog/release-4-15)), can return `{"value": 0.7, "explanation": "..."}` so the explanation shows next to the score on the trace, and the `llm.evaluator` webhook delivers every result as it finishes ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). The `orq-recommend-evaluators` skill reads an agent's instructions, tools and 14 days of traces and proposes up to five evaluators ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
 
 ## Go further
 

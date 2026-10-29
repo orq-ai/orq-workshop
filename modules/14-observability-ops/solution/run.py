@@ -2,7 +2,7 @@
 # # 14 · Alerts, automations and framework hooks
 #
 # Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a
-# Reporting API query gives the number, an alert watches it and opens an incident, and a webhook
+# Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook
 # delivers every model call, signed, to a system you run. Three steps; the review queue that
 # collects traces for a human is module 17.
 #
@@ -35,7 +35,7 @@ from app.refund_agent.entities import (
     ensure_webhook,
     list_alerts,
     project_id,
-    reporting_query,
+    telemetry_query,
 )
 
 orq = make_orq()
@@ -48,14 +48,14 @@ BYPASS = {"bypass-tunnel-reminder": "1"}  # localtunnel serves an HTML reminder 
 
 
 def iso(moment: datetime) -> str:
-    """The timestamp format the Reporting API wants: UTC, second precision, trailing Z."""
+    """The timestamp format the Telemetry API wants: UTC, second precision, trailing Z."""
     return moment.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # %% [markdown]
-# ## Step 1 · The number: Reporting API
+# ## Step 1 · The number: Telemetry API
 #
-# `POST /v2/reporting` answers "what did the last hour cost" and "who spends what" from the same
+# `POST /v3/telemetry/query` answers "what did the last hour cost" and "who spends what" from the same
 # trace data the Studio charts. `mode: scalar` aggregates the window into one row; `group_by` turns
 # it into a top list. Every alert in step 2 is one of these queries on a timer.
 
@@ -63,47 +63,39 @@ def iso(moment: datetime) -> str:
 now = datetime.now(UTC)
 project_filter = [{"field": "project", "op": "eq", "values": [PROJECT]}]
 
-cost = reporting_query(
+cost = telemetry_query(
     orq,
-    metric="genai.cost",
+    compute=[{"metric": "genai.cost", "op": "sum"}],
     **{"from": iso(now - timedelta(hours=1))},  # `from` is a Python keyword, so it goes in as **kwargs
     to=iso(now),
     mode="scalar",
     filters=project_filter,
 )
-error_rate = reporting_query(
+error_rate = telemetry_query(
     orq,
-    metric="genai.error_rate",
+    compute=[{"metric": "genai.error_rate", "op": "rate"}],
     **{"from": iso(now - timedelta(hours=1))},
     to=iso(now),
     mode="scalar",
     filters=project_filter,
 )
 
-print("── Step 1 · The number: Reporting API ─────────────────")
+print("── Step 1 · The number: Telemetry API ─────────────────")
 print(f"window   : last hour, project {settings.project}")
-print(f"cost     : ${cost['data'][0]['metrics']['genai.cost']:.4f}")
-print(f"errors   : rate {error_rate['data'][0]['metrics']['genai.error_rate']:.3f} (genai.error_rate)")
+print(f"cost     : ${cost['data'][0]['metrics']['genai.cost:sum']:.4f}")
+print(f"errors   : rate {error_rate['data'][0]['metrics']['genai.error_rate:rate']:.3f} (genai.error_rate)")
 
 # %%
-usage = reporting_query(
-    orq,
-    metric="genai.usage",
-    **{"from": iso(now - timedelta(days=1))},
-    to=iso(now),
-    mode="scalar",
-    group_by=["model"],
-    filters=project_filter,
-    limit=5,
-)
+# A grouped scalar query takes exactly one `compute`, so the top list is two queries joined on the model.
+top = {"from": iso(now - timedelta(days=1)), "to": iso(now), "mode": "scalar", "group_by": ["model"], "filters": project_filter, "limit": 5}
+by_cost = telemetry_query(orq, compute=[{"metric": "genai.cost", "op": "sum"}], **top)
+requests = {row["group"]["model"]: row["metrics"]["genai.requests:count"] for row in telemetry_query(orq, compute=[{"metric": "genai.requests", "op": "count"}], **top)["data"]}
 
-print("top      : last 24 hours by model")
-for row in usage["data"]:
-    metrics = row["metrics"]
-    print(
-        f"    {row['dimensions']['model']:<28} requests={metrics['request_count']:<4} errors={metrics['error_count']:<3} cost=${metrics['total_cost']:.4f}"
-    )
-print("next     : Observability > Reporting in the Studio draws these same numbers")
+print("top      : last 24 hours by cost")
+for row in by_cost["data"]:
+    model = row["group"]["model"]
+    print(f"    {model:<28} requests={requests.get(model, 0):<4} cost=${row['metrics']['genai.cost:sum']:.4f}")
+print("next     : Observability > Traces in the Studio draws these same numbers")
 
 # %% [markdown]
 # ## Step 2 · The watcher: an alert on spend
@@ -112,7 +104,7 @@ print("next     : Observability > Reporting in the Studio draws these same numbe
 # minutes, notifying `ws-alert-notifier` (a webhook; `WS_WEBHOOK_URL` in `.env`). An alert without
 # notifiers still evaluates and records triggers. The burst below is a runaway loop in miniature:
 # refund turns until the window's spend passes the threshold with margin, fifteen at most. The alert
-# ticks on its own schedule and reporting ingests in minutes, so the trigger shows up 5 to 10 minutes
+# ticks on its own schedule and telemetry ingests in minutes, so the trigger shows up 5 to 10 minutes
 # later, not now: re-run with `ALERT_WAIT=600`, or check from the CLI.
 
 # %%
@@ -150,7 +142,7 @@ for trigger in triggers[:3]:  # newest first
         f"trigger  : {trigger['trigger_id']} {trigger['status']} {trigger['severity']} peak=${trigger['peak_value']:.4f} opened={trigger['opened_at']}"
     )
 if not triggers:
-    print(f"verdict  : no trigger yet (the alert checks every {condition['interval']}, reporting lags a few minutes)")
+    print(f"verdict  : no trigger yet (the alert checks every {condition['interval']}, telemetry lags a few minutes)")
 print(f"next     : orq alerts list-triggers {alert_id}; Observability > Alerts in the Studio shows the burst, the threshold line and the incident")
 
 # %% [markdown]
@@ -223,7 +215,7 @@ else:
 # %% [markdown]
 # ## What to take away
 #
-# - One trace store, three readers: the Reporting API aggregates it, an alert is one of those
+# - One trace store, three readers: the Telemetry API aggregates it, an alert is one of those
 #   queries on a timer, a webhook is the store calling you.
 # - Alerts are project-scoped and only successful traces carry a project, so alert on cost,
 #   latency or guardrail metrics, not on the error rate of requests the gateway rejected.

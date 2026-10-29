@@ -200,16 +200,15 @@ With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_c
 
 ## Gotchas
 
-- `orq_ai_sdk 4.14.14` MCP models expect `id` but the API returns `_id`, so `orq.mcp_servers.create(...).mcp_server.id` and every tool `id` after `sync` are `None`. The solution reads the raw records with one `GET /v2/mcp-servers/<id>`. The CLI shows `_id` correctly.
+- `orq_ai_sdk 4.17` MCP models expect `id` but the API returns `_id`, so `orq.mcp_servers.create(...).mcp_server.id` and every tool `id` after `sync` are `None`. The solution reads the raw records with one `GET /v2/mcp-servers/<id>`. The CLI shows `_id` correctly.
 - A server link without `"enabled": True` is stored disabled and exposes zero tools. The create call succeeds, `exposed_tools_count` is `0`.
 - `tool_exposure.read_only: true` keeps only tools that carry a `readOnlyHint` annotation. DeepWiki's tools have none, so `read_only` alone hides everything. Use `tool_ids`.
 - The upstream URL must be public. `ssh -R`, `cloudflared` or `ngrok` in front of `make mcp-server` work; loopback and RFC 1918 hosts are rejected by the API.
 - Agents reference MCP tools by the server key plus a tool id, not by the gateway. Unverified: whether a gateway can be attached to an agent at all; the API has no field for it.
-- `orq traces search` needs both `--from` and `--to` in 8.0.4. Use `orq.traces.list_spans(trace_id=)` with the `telemetry.trace_id` from the response instead.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.17
 
-The MCP Portal is new in 4.14: MCP Servers and MCP Gateway share one area, the old MCP Tool type is retired, every gateway call is logged with exposed and upstream name, and Management Keys can be scoped to MCP. Code Mode and Direct Mode are the two exposure modes of the same gateway.
+OAuth is the default way to connect a client to an MCP Gateway (a browser sign-in, no pasted key), and a gateway can allow or block the domains its upstream tools may call, cap execution time, and run plugins such as PII redaction on every tool call ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). A gateway can also serve workspace Skills to MCP clients, picked in the new Skill set tab ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 

@@ -304,9 +304,9 @@ While it thinks, run `make m13` in another terminal: the session you are in shou
 - The 401 warning in `orq launch opencode --dry-run` (`Could not fetch enabled models`) means the shell's `ORQ_API_KEY` belongs to another workspace. `launch` falls back to a default model and still runs.
 - `orq skills` (platform Skill entities) and `orq connect skills` (files for agents) are different nouns.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.16
 
-Codex sessions are captured as traces and the Studio's getting-started flow offers a CLI path, so `orq launch codex` and `orq setup` are now the documented way in. The `orq connect --local` project scope and `orq traces query-oql` are CLI 8.x.
+Eight coding agents (Claude Code, Codex, OpenCode, Kimi Code, Kilo, Pi, GitHub Copilot CLI, Gemini CLI) are wired with `orq connect` per capability or run through `orq launch` ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Install the orq.ai skills in any of them with `npx skills add orq-ai/assistant-plugins` ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
 
 ## Go further
 

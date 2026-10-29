@@ -1,6 +1,5 @@
 """Every module README follows one template, so the lessons read the same."""
 
-import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

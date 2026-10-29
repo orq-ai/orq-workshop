@@ -232,9 +232,9 @@ The skill wraps `eq redteam run`. Ask the agent to tell you which failures are t
 - `red_team()` has no `path` parameter, so its Experiment lands in the workspace's Default project; the solution patches `send_results_to_orq` to pass `settings.path`. `evals/redteam_gate.py` does the same.
 - Dynamic mode generates attacks with a model and takes minutes per category. Keep it out of CI.
 
-## New in orq.ai 4.6
+## New in orq.ai evaluatorq 1.82
 
-Red teaming landed in evaluatorq with 4.6: OWASP LLM Top 10 and Agentic (ASI) categories, agent-aware attacks, exit-code gating, and results stored as Experiment runs, which is why every run above has a Studio URL.
+evaluatorq 1.82.1 is what this repo now locks (it was 1.73.2); it runs the OWASP static and dynamic attacks used here. Release notes live in the [evaluatorq repository](https://github.com/orq-ai/evaluatorq).
 
 ## Go further
 

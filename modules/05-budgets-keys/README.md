@@ -209,9 +209,9 @@ Use the orq.ai MCP tool `query_analytics` to break down spend by model for the l
 - Requests-per-minute is a rolling 60 s window independent of the period. The `x-ratelimit-*` headers show a budget's values only on the `429` it raises; on a `200` they show the platform limit.
 - SDK 4.14: `mgmt.budgets.list()` fails on an empty list (`data` missing) and `api_keys.create()` rejects the documented `single` scope. The solution uses `httpx` against `/v2/budgets` and `/v2/api-keys`.
 
-## New in orq.ai 4.11
+## New in orq.ai 4.15 to 4.17
 
-Budgets became a first-class entity with six scopes, cost, token and requests-per-minute limits, threshold alerts to notifiers, and Management Keys to administer them from code. 4.12 added an activity overview per model and API key.
+API key permissions can be granted per area (Traces, Logs, Experiments, Webhooks and more), so an ingestion key can write spans and nothing else ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Home shows requests, cost and tokens per API key ([release 4.16](https://docs.orq.ai/changelog/release-4-16)), and workload federation swaps a CI OIDC token for a short-lived key, so no orq.ai secret is stored in the pipeline ([release 4.17](https://docs.orq.ai/changelog/release-4-17), Enterprise).
 
 ## Go further
 

@@ -343,11 +343,11 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 - The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
-- SDK 4.14 rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
+- SDK 4.14 (not retested on 4.17) rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
 
-## New in orq.ai 4.13
+## New in orq.ai 4.15 and 4.16
 
-Agents can delegate: an `advisor` tool consults a second model mid-turn and a `sidekick` tool hands off a discrete task, each metered on its own span. Module 15 is that pattern on `ws-refund-agent-delegating`, down to the cost split in the trace. 4.12 added a configurable timeout per agent tool.
+MCP servers are their own section in the Agent builder instead of a tool type, and `orq:subagent` and `orq:advisor` are server tools you add to `tools` ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Every model call in an Agent run records the Agent version that produced it, so automations can target it without custom metadata ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
 
 ## Go further
 

@@ -1,7 +1,7 @@
 # Alerts and webhooks
 
 !!! abstract "The platform pushes to you"
-    Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Reporting API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
+    Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
 
 | | |
 |---|---|
@@ -17,16 +17,16 @@ A trace nobody reads is a log file. Three things turn traces into operations: a 
 
 ## The one concept to understand first
 
-Everything here reads from the same place. The alert is a Reporting API query on a timer; the webhook is the trace store calling you:
+Everything here reads from the same place. The alert is a metric query on a timer; the webhook is the trace store calling you:
 
 ```python
-reporting_query(orq, metric="genai.cost", **{"from": iso(now - timedelta(hours=1))}, to=iso(now), mode="scalar", filters=[{"field": "project", "op": "eq", "values": [PROJECT]}])
+telemetry_query(orq, compute=[{"metric": "genai.cost", "op": "sum"}], **{"from": iso(now - timedelta(hours=1))}, to=iso(now), mode="scalar", filters=[{"field": "project", "op": "eq", "values": [PROJECT]}])
 orq.alerts.create(display_name="ws-cost-alert", project_id=PROJECT, signal="cost", query={"metric": "genai.cost", "filters": []},
                   condition={"comparator": "gt", "threshold": 0.002, "window": "5m", "interval": "5m"}, notifier_ids=[notifier])
 orq.webhooks.create(id="ws-events-webhook", url=WS_WEBHOOK_URL, events=["llm.response", "agent.updated"], secret=WS_WEBHOOK_SECRET, ...)
 ```
 
-![Diagram: your app sends traces into orq.ai; the Reporting API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is module 17's subject.](assets/observability-ops.png)
+![Diagram: your app sends traces into orq.ai; the Telemetry API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is module 17's subject.](assets/observability-ops.png)
 
 Two facts shape what you can alert on. Alerts are project-scoped, and only successful traces carry a project: a request the gateway rejected (unknown model, timeout, guardrail block) is an error trace with no project, so an error-rate alert on your project never sees it. Cost, latency and guardrail metrics come from successful traces and work. And reporting ingests in minutes, not seconds, so an alert with a five-minute window fires a tick or two after the fact.
 
@@ -34,29 +34,26 @@ Two facts shape what you can alert on. Alerts are project-scoped, and only succe
 
 Open [`modules/14-observability-ops/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/14-observability-ops/run.py). Every step has a `TODO`. The solution is in `solution/run.py`.
 
-### Step 1 · The number: Reporting API
+### Step 1 · The number: Telemetry API
 
-`POST /v2/reporting`. `mode: scalar` aggregates the window into one row; `group_by` turns it into a top list. The SDK's `orq.reporting.query` rejects the response in 4.14 (it echoes `grain: ""`), so `entities.reporting_query` posts the same body over REST.
+`POST /v3/telemetry/query` on the traces source. `mode: scalar` aggregates the window into one row; `group_by` turns it into a top list (one `compute` per grouped query). The SDK's `orq.telemetry.query` rejects the response in SDK 4.17 (it echoes `sort: ""`), so `entities.telemetry_query` posts the same body over REST. The older [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api) still works for existing callers.
 
 ```bash
 $ uv run python modules/14-observability-ops/solution/run.py
 ```
 
 ```text
-── Step 1 · The number: Reporting API ─────────────────
+── Step 1 · The number: Telemetry API ─────────────────
 window   : last hour, project orq-workshop
-cost     : $1.0637
-errors   : rate 0.031 (genai.error_rate)
-top      : last 24 hours by model
-    openai/gpt-6-luna            requests=469  errors=0   cost=$0.0566
-    openai/gpt-5.6-terra         requests=61   errors=0   cost=$0.9911
-    anthropic/claude-opus-5      requests=33   errors=2   cost=$4.2295
-    openai/gpt-5.6-sol           requests=11   errors=5   cost=$0.0155
-    agent/ws-refund-agent-hosted requests=10   errors=10  cost=$0.0000
-next     : Observability > Reporting in the Studio draws these same numbers
+cost     : $0.0052
+errors   : rate 0.125 (genai.error_rate)
+top      : last 24 hours by cost
+    openai/gpt-5.6-luna          requests=18   cost=$0.0052
+    openai/text-embedding-3-large requests=6    cost=$0.0000
+next     : Observability > Traces in the Studio draws these same numbers
 ```
 
-The `errors` column counts failed spans inside successful traces, such as module 01's fallback chain. The 404s and 408s you can cause from the client are not in this table: no project.
+The error rate counts failed spans inside successful traces, such as module 01's fallback chain. The 404s and 408s you can cause from the client are not in this number: no project.
 
 ### Step 2 · The watcher: an alert on spend
 
@@ -68,14 +65,14 @@ alert    : wsvE-cost-alert <alert-id>
 rule     : genai.cost gt 0.002 over 5m, every 5m
 status   : ok, 1 notifier(s)
 burst    : 15 turns, $0.0032 in the window (threshold $0.002)
-verdict  : no trigger yet (the alert checks every 5m, reporting lags a few minutes)
+verdict  : no trigger yet (the alert checks every 5m, telemetry lags a few minutes)
 next     : orq alerts list-triggers <alert-id>; Observability > Alerts in the Studio shows the burst, the threshold line and the incident
 warning  : WS_WEBHOOK_SECRET is empty, using a generated secret
 fix      : put the line below in .env and restart the receiver, or signatures will not verify
 secret   : WS_WEBHOOK_SECRET=<secret>
 ```
 
-The first run prints `no trigger yet`: the alert ticks on its own schedule and reporting lags. Re-run with `ALERT_WAIT=600` to poll, or check later. Take `<alert-id>` from the `alert_id` field of `orq alerts list -o json`, because ids are per workspace and do not carry over from this page:
+The first run prints `no trigger yet`: the alert ticks on its own schedule and telemetry lags. Re-run with `ALERT_WAIT=600` to poll, or check later. Take `<alert-id>` from the `alert_id` field of `orq alerts list -o json`, because ids are per workspace and do not carry over from this page:
 
 ```bash
 $ orq alerts list -o json | jq '.data[] | {display_name, status, last_triggered_at}'
@@ -131,7 +128,7 @@ $ orq launch claude
 Paste `agent_prompt.md`:
 
 <blockquote class="agent-prompt-frame" markdown>
-Query the Reporting API for the last 24 hours grouped by model and give me a table. Read `ws-cost-alert` and its triggers and tell me whether it has an open incident and at what peak. Then propose one more alert, latency or cost, with a threshold you justify from those numbers, and create it with `orq alerts create` using the `ws-` prefix and the notifier `ws-alert-notifier`.
+Query the Telemetry API (`POST /v3/telemetry/query`) for the last 24 hours grouped by model and give me a table. Read `ws-cost-alert` and its triggers and tell me whether it has an open incident and at what peak. Then propose one more alert, latency or cost, with a threshold you justify from those numbers, and create it with `orq alerts create` using the `ws-` prefix and the notifier `ws-alert-notifier`.
 </blockquote>
 
 ## Done when
@@ -142,10 +139,10 @@ Query the Reporting API for the last 24 hours grouped by model and give me a tab
 
 ## Gotchas
 
-- `orq.reporting.query` and `orq.alerts.list` raise `ResponseValidationError` in SDK 4.14 (the API echoes `grain: ""`, and an evaluated alert has `severity: ""`). `entities.reporting_query`, `list_alerts` and `alert_triggers` use REST for those.
+- `orq.telemetry.query` and `orq.alerts.list` raise `ResponseValidationError` in SDK 4.17 (the API echoes `sort: ""`, and an evaluated alert has `severity: ""`). `entities.telemetry_query`, `list_alerts` and `alert_triggers` use REST for those.
 - `alerts.create` and `alerts.get` wrap the entity (`{"alert": {...}}`); `alerts.list` does not.
 - Alerts are project-scoped and error traces carry no project, so pick a metric successful traces produce: cost, latency, guardrail pass rate.
-- Reporting shows the last complete minutes with a delay of a few minutes. A query for "the last 30 seconds" is empty.
+- Telemetry shows the last complete minutes with a delay of a few minutes. A query for "the last 30 seconds" is empty.
 - Plan limits: Free, Team and Consumption plans allow 2 alerts checked hourly; Growth, Pro and Custom allow 5-minute checks. Saving below the plan minimum returns `evaluation interval 5m is below your plan's minimum of 1h`.
 - A webhook's secret has to exist before the webhook does, and the receiver needs the same one. Generate it, put it in `.env`, start the receiver, then run the step. With `WS_WEBHOOK_SECRET` empty the step generates one and prints it, and the receiver reports `signature_valid=None`.
 - Webhook deliveries take 3 to 30 seconds. The step polls for 30; orq.ai retries failed deliveries later.
@@ -155,9 +152,9 @@ Query the Reporting API for the last 24 hours grouped by model and give me a tab
 - Notifiers and webhooks are different things: a notifier is where alerts and budgets send their notifications; a webhook is a subscription to workspace events. Both can point at the same URL.
 - `make reset` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 to 4.17
 
-Alerts on Reporting API metrics with triggers and notifiers, the Reporting API's entity dimensions (`agent`, `tool`, `thread`, ...), and `llm.*` webhook events next to the agent, deployment and prompt lifecycle events from 4.6.
+The Telemetry API (`POST /v3/telemetry/query`) answers cost, token, latency and evaluator questions over traces, metrics or logs in one request shape ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Monitors are custom dashboards over the same queries, with Create alert on any widget ([release 4.16](https://docs.orq.ai/changelog/release-4-16)), and alerts can watch runtime Metrics as well as Traces ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 
@@ -166,7 +163,7 @@ Alerts on Reporting API metrics with triggers and notifiers, the Reporting API's
 
 ## Official docs
 
-- [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api)
+- [Telemetry API](https://docs.orq.ai/ai-studio/observability/telemetry-api)
 - [Alerts](https://docs.orq.ai/ai-studio/observability/alerts)
 - [Webhooks](https://docs.orq.ai/ai-studio/organization/webhooks)
 - [Notifiers API](https://docs.orq.ai/reference/notifiers/create-a-notifier)

@@ -233,9 +233,9 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 - The shell export from `orq setup` may belong to another workspace. `orq launch` prints `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is expected here: the repo key decides where traces land.
 - `.env` overrides the shell by design, which is why Step 2 breaks the client in code rather than through a temp env file.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.16
 
-`orq orqi` is a first-class CLI command (since 8.x): it installs orqi on first use and hands it the login session. The Studio's CLI onboarding path (4.14) is the same flow, so a new workspace can go from sign-up to `orqi "check workspace health"` without opening the API keys page.
+`orq traces conversation` renders one trace as readable text ([release 4.15](https://docs.orq.ai/changelog/release-4-15)), and `GET /v3/traces/{trace_id}/conversation` returns the same as an ordered list of user, assistant and tool messages ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). Coding agents that cannot change the request body can tag requests with `X-ORQ-METADATA-<key>` headers, so traces can be sliced by repo or ticket ([release 4.15](https://docs.orq.ai/changelog/release-4-15)).
 
 ## Go further
 

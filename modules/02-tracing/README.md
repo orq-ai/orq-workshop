@@ -225,13 +225,13 @@ Use the `setup-observability` skill against this repository. Do not change anyth
 - On both router endpoints, `identity`, `thread` and `metadata` worked as top-level body fields here. Nested under `orq` (the shape the request-metadata docs describe for this endpoint) they were silently ignored: `identity_id` and `thread_id` stayed empty.
 - The SDK's automatic `traceparent` injection (a patch on `httpx.Client.send`) did not reach the OpenAI client (openai 3.9, httpx 0.28), so `run_turn` merges `propagation_headers()` into the request headers itself. If you call the gateway from your own code inside a `@traced` function, pass `extra_headers=propagation_headers()`.
 - `orq traces search` needs `--from` and `--to`; relative values are `now-10m` and `now`. Without `ORQ_API_KEY` in the shell the CLI searches the project of your `orq` session, which is not necessarily this one.
-- `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.14.14. `orq request GET /v3/traces/<id> -o json | jq .body.trace.attributes.metadata` shows it.
+- `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.17. `orq request GET /v3/traces/<id> -o json | jq .body.trace.attributes.metadata` shows it.
 - `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes. Gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions; filter on both.
 - Reasoning items in `orq traces conversation` show as `[encrypted]`; the text, tool calls and tool results render in full.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 to 4.17
 
-Every trace span now shows guardrail and evaluator indicators, the Traces view has a time-range selector and search by id, and (since 4.11) Human Review is called Annotations with queues and the API used in step 4.
+The Traces page was rebuilt: filter on any attribute or metadata field, write the query in OQL, configure columns, and share the exact list as a URL ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). The span panel splits reasoning and cached tokens out of the total ([release 4.15](https://docs.orq.ai/changelog/release-4-15) and [release 4.16](https://docs.orq.ai/changelog/release-4-16)), and dragging across the activity chart zooms into a time window ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 

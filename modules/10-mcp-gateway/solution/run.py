@@ -66,7 +66,7 @@ def rest_get(path: str, **params: Any) -> dict[str, Any]:
 
 
 def rest_id(kind: str, key: str) -> str | None:
-    """Find a Portal record's id by key. Records carry `_id`; orq_ai_sdk 4.14.14 models drop it, so `.id` is None."""
+    """Find a Portal record's id by key. Records carry `_id`; orq_ai_sdk 4.17 models drop it, so `.id` is None."""
     records = rest_get(f"/v2/{kind}", limit=100).get("data", [])
     return next((record.get("_id") for record in records if record.get("key") == key), None)
 

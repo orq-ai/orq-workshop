@@ -4,9 +4,9 @@ version = "0.1.0"
 description = "Hands-on orq.ai workshop: gateway, guardrails, tracing, evals, agents, RAG, MCP, simulation, red teaming, coding agents."
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "orq-ai-sdk>=4.16,<5",
+    "orq-ai-sdk>=4.17.18,<5",
     "openai>=1.60",
-    "evaluatorq[redteam,dashboard,insights]>=1.73.2",
+    "evaluatorq[redteam,dashboard,insights]>=1.82.1",
     "python-dotenv>=1.0",
     "opentelemetry-sdk>=1.30",
     "opentelemetry-exporter-otlp-proto-http>=1.30",

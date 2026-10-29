@@ -23,8 +23,6 @@ from __future__ import annotations
 
 import json
 
-import httpx
-
 from app.refund_agent.agent import chat
 from app.refund_agent.client import make_openai_client, make_orq
 from app.refund_agent.config import DATA_DIR, settings
@@ -65,18 +63,11 @@ def first_line(match: dict, width: int = 26) -> str:
 # `make seed` embedded the four policy files. One chunk per file: `chunk_size` 300 is in tokens and
 # each file is under 300 tokens. In the Studio: **Knowledge Bases** > `ws-refund-policy` >
 # **Retrieval playground**.
-#
-# SDK note: `orq.knowledge.list_datasources` sends `limit=50.0` and the API rejects the float
-# (4.14.14), so the datasource list is one REST call.
 
 # %%
 knowledge_id = knowledge_id_for(KB_KEY)
 knowledge_base = orq.knowledge.retrieve(knowledge_id=knowledge_id).model_dump(by_alias=True)
-datasources = httpx.get(
-    f"{settings.base_url}/v2/knowledge/{knowledge_id}/datasources",
-    headers={"Authorization": f"Bearer {settings.api_key}"},
-    timeout=30,
-).json()["data"]
+datasources = [d.model_dump(by_alias=True) for d in orq.knowledge.list_datasources(knowledge_id=knowledge_id, limit=50).data or []]
 
 print("── Step 1 · Inspect the seeded knowledge base ─────────")
 print(f"kb       : {knowledge_base['key']} ({knowledge_id})")
@@ -87,7 +78,7 @@ for datasource in datasources:
         knowledge_id=knowledge_id, datasource_id=datasource["_id"]
     ).model_dump(by_alias=True)
     print(
-        f"file     : {datasource['display_name']:<26} chunks={datasource['chunks_count']} "
+        f"file     : {datasource['display_name']:<26} chunks={int(datasource['chunks_count'])} "
         f"status={datasource['status']} completed={status['total_completed']:.0f} "
         f"failed={status['total_failed']:.0f} queued={status['total_queued']:.0f}"
     )

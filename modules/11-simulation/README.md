@@ -277,9 +277,9 @@ The skill wraps `eq sim run --target agent:...`. Ask the agent to tell you which
 - The CLI reads `ORQ_API_KEY` from the shell. `uv run --env-file .env` does not override a stale key already exported, and a stale key fails with `openresponses.http.401` on every attack and "the target was not tested". `set -a; source .env; set +a` first.
 - Judges see text. A criterion like "agent looks the order up first" is invisible when the tool call happens inside your callable; write criteria the customer would notice.
 
-## New in orq.ai 4.6
+## New in orq.ai 4.15 and evaluatorq 1.82
 
-Agent simulation and red teaming landed in evaluatorq together with 4.6; results are stored as Experiment runs, which is why every run above has a Studio URL. Locally, `eq dashboard` (step 4) reads the saved runs; the older `eq sim ui` / `eq redteam ui` Streamlit views still exist but print a deprecation warning.
+Evaluators skip Agent runs that ended in an error, so scores reflect completed runs only ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). evaluatorq 1.82, the version this repo locks, ships typed `MustHappenCriterion` and `MustNotHappenCriterion` next to the generic `Criterion` used here.
 
 ## Go further
 

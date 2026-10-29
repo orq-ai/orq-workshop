@@ -101,9 +101,9 @@ auth:
   status: authenticated
   user_email: you@example.com
 binary:
-  api_version: 4.17.0-rc.24
+  api_version: 4.17.17
   name: orq
-  version: 11.6.0-rc.2
+  version: 12.7.5
 checks[16]:
   -
     id: session_file
@@ -112,7 +112,7 @@ checks[16]:
   ...
 ```
 
-The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 11.6.0-rc.2` (the capture above) the checks are `session_file`, `bootstrap_token`, one `coding_agent_*` per detected agent (Claude Code, Codex, OpenCode, Pi, Kimi, Kilo, ...), `coding_agents`, `mcp` (when an agent is wired), `gateway_key_expiry`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
+The count and the list depend on the CLI version and on the coding agents installed on your machine. On `orq 12.7.5` (the capture above) the checks are `session_file`, `credential_store`, `bootstrap_token`, one `coding_agent_*` per detected agent (Codex, OpenCode, Kimi, Kilo, Pi, ...), `coding_agents`, `skills`, `mcp`, `credential_permissions`, and the three `*_base_url` reachability checks. Only `fail` matters:
 
 ```bash
 $ orq doctor | grep -c "status: fail"     # 0 on a healthy machine
@@ -158,7 +158,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API keys** |
+| `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API Keys** (**+ Secret key**) |
 | `401` from the router | wrong or stale key in `.env` | `.env` beats your shell: check that file, not `echo $ORQ_API_KEY` |
 | `404 Model ... not found` | `MODEL` in `.env` is not enabled in the workspace | enable it under **Models**, or set `MODEL=openai/gpt-6-luna` |
 | `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
@@ -238,9 +238,9 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 - The repo `.env` overrides a stale `ORQ_API_KEY` exported in your shell. If `make smoke` says "API key is not valid for this workspace", the key belongs to another workspace.
 - `orq launch` without `ORQ_API_KEY` mints a one-hour token that cannot refresh mid-session. `source .env` first for long sessions.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.17
 
-The Studio onboarding now offers a CLI path. `orq setup` is the same flow the product shows to new users.
+The orq.ai CLI installs with one command and `orq setup` signs in and wires every coding agent it detects; `orq launch <agent>` runs one through the gateway without writing config ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Studio opens every page as a tab and lets you hide and reorder sidebar sections, so the sidebar in the screenshots can differ from yours ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 

@@ -16,9 +16,9 @@
 
 **Thread.** A conversation id. Attach `orq.thread.id` so multi-turn traces group into one thread view. [Docs](https://docs.orq.ai/ai-gateway/thread-management)
 
-**Reporting API.** `POST /v2/reporting`. Usage, cost, latency, error, evaluator and guardrail metrics from the trace data, sliced by model, provider, project, identity or entity. What the Studio charts and what alerts evaluate. [Docs](https://docs.orq.ai/ai-studio/observability/reporting-api)
+**Telemetry API.** `POST /v3/telemetry/query`. Usage, cost, latency, error, evaluator and guardrail metrics from the trace data, sliced by model, provider, project, identity or entity. What the Studio charts and what alerts evaluate. [Docs](https://docs.orq.ai/ai-studio/observability/telemetry-api)
 
-**Alert.** A Reporting API metric with a threshold, a window and a check frequency, scoped to one project. A breach opens a **trigger** that stays open until the value recovers; each open and resolve notifies the alert's **notifiers** (email, Slack, generic webhook). [Docs](https://docs.orq.ai/ai-studio/observability/alerts)
+**Alert.** A telemetry metric with a threshold, a window and a check frequency, scoped to one project. A breach opens a **trigger** that stays open until the value recovers; each open and resolve notifies the alert's **notifiers** (email, Slack, generic webhook). [Docs](https://docs.orq.ai/ai-studio/observability/alerts)
 
 **Webhook.** A workspace subscription that POSTs chosen events (`llm.response`, `llm.chat_completion`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, signed with `X-Orq-Signature` (HMAC-SHA256 of the body). Different from a **notifier**, which is where alerts and budgets send their notifications. [Docs](https://docs.orq.ai/ai-studio/organization/webhooks)
 
