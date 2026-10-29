@@ -1,4 +1,4 @@
-"""Module 02 starter: from zero-code gateway traces to a trace that reads agent -> tool -> llm.
+"""The tracing module starter: from zero-code gateway traces to a trace that reads agent -> tool -> llm.
 
 Factor 3: own your context window. Every turn, every tool result, is in the trace.
 Factor 5: unify execution and business state. Identity, thread and metadata travel with the call.
@@ -162,7 +162,7 @@ def step_4_annotation(trace_id: str, span_id: str) -> None:
     try:
         orq.annotations.create(trace_id=trace_id, span_id=span_id, annotations=annotations)
         print("verdict  : written")
-        print(f"next     : open the trace in {TRACES_URL}, Annotations panel; module 17 reads these back as labels")
+        print(f"next     : open the trace in {TRACES_URL}, Annotations panel; the annotation-queues module reads these back as labels")
     except Exception as exc:  # noqa: BLE001
         print(f"verdict  : failed: {str(exc)[:220]}")
         print("fix      : Studio > Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad, then rerun")

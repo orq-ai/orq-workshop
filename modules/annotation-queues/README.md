@@ -1,7 +1,7 @@
 # Annotation queues and automations
 
 !!! abstract "The human loop"
-    Module 14 made the platform push numbers and events to you. This module is the human loop: a queue collects the traces worth a look, an automation fills it without you, a reviewer scores each one, and the reviewed traces become a dataset the next experiment runs on.
+    The alerts-and-webhooks module made the platform push numbers and events to you. This module is the human loop: a queue collects the traces worth a look, an automation fills it without you, a reviewer scores each one, and the reviewed traces become a dataset the next experiment runs on.
 
 ## Starting point
 
@@ -17,7 +17,7 @@ Commands and names here write the default prefix `ws-`. Your entities carry your
 
 ## Why
 
-Evaluators (module 07) score at scale; humans score what evaluators cannot yet. The queue is where the two meet: an automation samples production traces into it, a reviewer says good or bad and why, and the bad ones become the rows a future experiment is measured on. Every step but one has an API; the one that does not, the automation, is a Studio form you fill once.
+Evaluators (the evaluators-and-experiments module) score at scale; humans score what evaluators cannot yet. The queue is where the two meet: an automation samples production traces into it, a reviewer says good or bad and why, and the bad ones become the rows a future experiment is measured on. Every step but one has an API; the one that does not, the automation, is a Studio form you fill once.
 
 ## The one concept to understand first
 
@@ -29,7 +29,7 @@ orq.annotations.create(trace_id=t, span_id=root_span, annotations=[{"key": "rati
 orq.datasets.create_datapoint(dataset_id=DATASET, request_body=[{"inputs": {"message": user}, "expected_output": correction}])
 ```
 
-![Diagram: refund-agent traces reach the annotation queue ws-review-queue through a Studio trace automation or through the add_items API; a reviewer, in the Studio or through the Annotations API, applies a rating and a defect to each queued span, which marks it reviewed; the bad ones are promoted as rows into the dataset ws-review-dataset, which module 07's experiments run on.](assets/review-loop.png)
+![Diagram: refund-agent traces reach the annotation queue ws-review-queue through a Studio trace automation or through the add_items API; a reviewer, in the Studio or through the Annotations API, applies a rating and a defect to each queued span, which marks it reviewed; the bad ones are promoted as rows into the dataset ws-review-dataset, which the evaluators-and-experiments module's experiments run on.](assets/review-loop.png)
 
 ## Steps
 
@@ -102,7 +102,7 @@ cli      : orq datasets list-datapoints 01M52HKCY9V0HKCDT10K20HM8B -o json | jq 
 next     : point the evaluators-and-experiments module at this dataset, or an experiment: the bad answers of today are the regression test of tomorrow
 ```
 
-Point module 07's experiment at `ws-review-dataset` and the promoted row becomes a number that has to go up. Adding a trace to a dataset does not copy its annotations; the row carries the correction, the verdict stays on the trace, where the orq.ai MCP tools can still query it.
+Point the evaluators-and-experiments module's experiment at `ws-review-dataset` and the promoted row becomes a number that has to go up. Adding a trace to a dataset does not copy its annotations; the row carries the correction, the verdict stays on the trace, where the orq.ai MCP tools can still query it.
 
 ### Step 5 · The same from the CLI
 
@@ -150,7 +150,7 @@ Automations can target the spans of a given variant or Agent version without cus
 
 ## Go further
 
-- Sample 10% into the queue with the automation, review for a day, and compare the bad rate with module 07's judge on the same traces: that gap is the judge's error.
+- Sample 10% into the queue with the automation, review for a day, and compare the bad rate with the evaluators-and-experiments module's judge on the same traces: that gap is the judge's error.
 - Add a `correction` annotation definition (text) and store the reviewer's rewrite on the trace itself; promote it as `expected_output` instead of the fixed sentence used here.
 
 ## End state

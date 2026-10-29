@@ -1,8 +1,8 @@
-"""Module 18: trace insights on your own simulated conversations.
+"""The trace-insights module: trace insights on your own simulated conversations.
 
-Module 11 scored each conversation against criteria you wrote. Insights works the other way
+The simulation module scored each conversation against criteria you wrote. Insights works the other way
 round: it reads the traces, summarises each one, clusters the summaries and names the clusters,
-so it finds failures you did not write a criterion for. Two steps: simulate module 11's personas
+so it finds failures you did not write a criterion for. Two steps: simulate the simulation module's personas
 and scenarios against the managed v1 agent (vulnerable prompt), so the traces carry its agent
 name; then run `eq insights` on exactly those traces and open the result in `eq dashboard`.
 
@@ -30,12 +30,12 @@ from evaluatorq.simulation.contracts import CommunicationStyle, Criterion, Perso
 M11 = ROOT / "modules" / "11-simulation"
 sys.path.insert(0, str(M11))
 
-# Module 11's personas, scenarios and judge config, loaded by path: both files are named run.py.
+# The simulation module's personas, scenarios and judge config, loaded by path: both files are named run.py.
 _spec = importlib.util.spec_from_file_location("m11", M11 / "run.py")
 m11 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(m11)
 
-# Insights needs at least five conversations to cluster. Module 11's two-by-two matrix makes four,
+# Insights needs at least five conversations to cluster. The simulation module's two-by-two matrix makes four,
 # because the code-tool agent answers each in a single trace, so add one persona and one scenario.
 PERSONAS = [
     *m11.PERSONAS,
@@ -68,7 +68,7 @@ RUN_JSON = ROOT / ".evaluatorq" / f"{AGENT_KEY}-insights.json"
 
 
 # ── Step 1 · Simulate the managed v1 agent ──
-# Module 11's personas and scenarios plus one of each, against the managed copy of the vulnerable prompt.
+# The simulation module's personas and scenarios plus one of each, against the managed copy of the vulnerable prompt.
 # Every agent response is a trace tagged with the agent's name, which is how step 2 finds
 # yours among the simulator's and judge's own calls.
 async def step_1_simulate() -> None:

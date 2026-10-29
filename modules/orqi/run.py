@@ -1,4 +1,4 @@
-"""Module 06 starter: orqi as the troubleshooting entry point.
+"""The orqi module starter: orqi as the troubleshooting entry point.
 
 orqi is the orq helper agent: it operates the platform, it does not build your app. Find a failed
 trace with the CLI, reproduce a client-side failure without touching `.env`, and hand both to orqi

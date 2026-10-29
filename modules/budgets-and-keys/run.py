@@ -1,4 +1,4 @@
-"""Module 05 starter: API keys, identities and budgets. Instructor demo.
+"""The budgets-and-keys module starter: API keys, identities and budgets. Instructor demo.
 
 Factor 5: who calls, for whom, and at what cost are request attributes the gateway enforces,
 not bookkeeping the app does afterwards. Mint a key for the CI runner, tag a call with a customer

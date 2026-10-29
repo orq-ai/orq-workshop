@@ -132,7 +132,7 @@ Routing, model selection and monitoring: you said the docs cover those. They are
 
 # 1 · Own your agent
 
-<span class="tag orange">examples/own-your-agent.py</span> <span class="tag">module 02</span> <span class="tag">module 08</span>
+<span class="tag orange">examples/own-your-agent.py</span> <span class="tag">the tracing module</span> <span class="tag">the managed-agents module</span>
 
 <!-- 0:32. The block Vansh asked for: keep the agent architecture framework-agnostic, use orq as the infrastructure layer. -->
 
@@ -206,7 +206,7 @@ orq.responses.create(model="agent/ws-refund-agent", input="Refund {{order}} plea
 
 Function tools come back as `function_call` items. **Your code executes them** and continues with `previous_response_id`. Tools stay structured outputs; state stays yours.
 
-**Advisor** asks a second model for guidance mid-turn (it gets the transcript). **Sidekick** delegates a discrete task (it gets only the task). Each is its own span with its own cost: module 15 reads the split, one advisor call versus five agent calls.
+**Advisor** asks a second model for guidance mid-turn (it gets the transcript). **Sidekick** delegates a discrete task (it gets only the task). Each is its own span with its own cost: the advisor-and-sidekick module reads the split, one advisor call versus five agent calls.
 
 ---
 
@@ -255,7 +255,7 @@ Watch for: the `function_call` item and the continuation · a second turn answer
 
 # 3 · Knowledge base and RAG
 
-<span class="tag orange">module 09</span>
+<span class="tag orange">the knowledge-base module</span>
 
 ---
 
@@ -329,7 +329,7 @@ Watch for: scores side by side · the retrieval span in the trace · the grounde
 
 # 4 · MCP servers and the MCP Gateway
 
-<span class="tag orange">module 10</span>
+<span class="tag orange">the mcp-gateway module</span>
 
 ---
 
@@ -488,7 +488,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | module 00 |
+| **Needs** | the setup module |
 | **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span |
 
 `make module M=gateway` · <span class="tag">docs</span> `modules/gateway` · <span class="tag orange">block A</span>
@@ -504,7 +504,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 01 |
+| **Needs** | the gateway module |
 | **You will have** | traces searchable by thread and customer, one `refund_turn -> tool -> llm` trace, one human annotation |
 
 `make module M=tracing` · <span class="tag">docs</span> `modules/tracing` · <span class="tag orange">block C</span>
@@ -520,7 +520,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 20 min |
-| **Needs** | module 01 |
+| **Needs** | the gateway module |
 | **You will have** | `ws-refund-router` called by reference, traces showing which model it picked, a rule sending cheap-tier traffic to `gpt-5.4-nano` |
 
 `make module M=smart-routing` · <span class="tag">docs</span> `modules/smart-routing` · <span class="tag orange">block A</span>
@@ -536,7 +536,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | module 00, `make seed-workspace` |
+| **Needs** | the setup module, `make seed-workspace` |
 | **You will have** | PII placeholders before the provider, an over-limit refund turned into a hand-off, a gateway rule for unguarded calls |
 
 `make module M=guardrails` · <span class="tag">docs</span> `modules/guardrails` · <span class="tag orange">block B</span>
@@ -552,7 +552,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 15 min, instructor demo |
-| **Needs** | module 00, workspace admin |
+| **Needs** | the setup module, workspace admin |
 | **You will have** | a purpose-built API key, an identity, two budgets that block the third call in a minute |
 
 `make module M=budgets-and-keys` · <span class="tag">docs</span> `modules/budgets-and-keys` · <span class="tag orange">block A</span>
@@ -568,7 +568,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 15 min |
-| **Needs** | module 00, orqi installed, traffic from modules 01 to 04 (or `make generate-traffic`) |
+| **Needs** | the setup module, orqi installed, traffic from the gateway, tracing, smart-routing and guardrails modules (or `make generate-traffic`) |
 | **You will have** | four real answers about your workspace, a seeded client-side failure diagnosed, when to use orqi vs `orq launch` |
 
 `make module M=orqi` · <span class="tag">docs</span> `modules/orqi` · <span class="tag orange">block C</span>
@@ -584,7 +584,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 40 min |
-| **Needs** | modules 00 and 02 |
+| **Needs** | the setup and tracing modules |
 | **You will have** | a taxonomy from 20 conversations, two evaluators, `ws-refund-eval`, an Experiment comparing fixed vs vulnerable |
 
 `make module M=failure-analysis` · <span class="tag">docs</span> `modules/failure-analysis` · <span class="tag orange">block D</span>
@@ -600,7 +600,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 40 min |
-| **Needs** | modules 00 to 02, `make seed-workspace` |
+| **Needs** | the setup, gateway and tracing modules, `make seed-workspace` |
 | **You will have** | the refund agent over the Responses API with a local tool loop, streamed, with memory, pinned by `@version` |
 
 `make module M=managed-agents` · <span class="tag">docs</span> `modules/managed-agents` · <span class="tag orange">blocks 1 and 2</span>
@@ -616,7 +616,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 35 min |
-| **Needs** | modules 00 to 02, `make seed-workspace` |
+| **Needs** | the setup, gateway and tracing modules, `make seed-workspace` |
 | **You will have** | the policy searched three ways, re-chunked two ways, wired in place of `get_policy`, pre-fetched, and searched by a managed agent |
 
 `make module M=knowledge-base` · <span class="tag">docs</span> `modules/knowledge-base` · <span class="tag orange">block 3</span>
@@ -632,7 +632,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 00, `make seed-workspace` |
+| **Needs** | the setup module, `make seed-workspace` |
 | **You will have** | the tools as an MCP server, `ws-refund-gateway` exposing two of three, an MCP client and a coding agent on it, a managed-agent MCP span |
 
 `make module M=mcp-gateway` · <span class="tag">docs</span> `modules/mcp-gateway` · <span class="tag orange">block 4</span>
@@ -648,7 +648,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | modules 00 and 07, `make seed-workspace` |
+| **Needs** | the setup and failure-analysis modules, `make seed-workspace` |
 | **You will have** | four simulation runs as Experiments and in the local dashboard, a managed-agent adapter, one surprise about judges |
 
 `make module M=simulation` · <span class="tag">docs</span> `modules/simulation` · <span class="tag orange">block H</span>
@@ -664,7 +664,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 35 min |
-| **Needs** | modules 00, 07 and 16 |
+| **Needs** | the setup, failure-analysis and red-teaming modules |
 | **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, two headless agent runs |
 
 `make module M=evals-in-ci` · <span class="tag">docs</span> `modules/evals-in-ci` · <span class="tag orange">block I</span>
@@ -680,7 +680,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | module 00, one coding agent installed |
+| **Needs** | the setup module, one coding agent installed |
 | **You will have** | a dry-run of `orq connect`, the env `orq launch` injects, the CLI skills, a session visible as traces with cost |
 
 `make module M=coding-agents` · <span class="tag">docs</span> `modules/coding-agents` · <span class="tag orange">block J</span>
@@ -696,7 +696,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 02, `make seed-workspace`, a public URL for the receiver |
+| **Needs** | the tracing module, `make seed-workspace`, a public URL for the receiver |
 | **You will have** | a cost alert that opened a trigger on your burst, signed events at a receiver you run |
 
 `make module M=alerts-and-webhooks` · <span class="tag">docs</span> `modules/alerts-and-webhooks` · <span class="tag orange">block C</span>
@@ -712,7 +712,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 08, `make seed-workspace` |
+| **Needs** | the managed-agents module, `make seed-workspace` |
 | **You will have** | an agent that consults `gpt-5.6-sol` before a refusal and delegates the closing note to `gpt-5.4-nano`, cost read off one trace |
 
 `make module M=advisor-and-sidekick` · <span class="tag">docs</span> `modules/advisor-and-sidekick` · <span class="tag orange">block 2</span>
@@ -723,12 +723,12 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 
 ## 16 · Red teaming
 
-**An attacker is a simulated user with a worse goal.** The module 11 loop now tries to break the agent, and the tool results say what really happened.
+**An attacker is a simulated user with a worse goal.** The simulation module loop now tries to break the agent, and the tool results say what really happened.
 
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | modules 07 and 11, `make seed-workspace` |
+| **Needs** | the failure-analysis and simulation modules, `make seed-workspace` |
 | **You will have** | two red-team runs as Experiments, a per-target resistance rate, a CLI gate that exits 0 or 1 |
 
 `make module M=red-teaming` · <span class="tag">docs</span> `modules/red-teaming` · <span class="tag orange">block H</span>
@@ -744,7 +744,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | modules 02 and 07, `make seed-workspace` |
+| **Needs** | the tracing and failure-analysis modules, `make seed-workspace` |
 | **You will have** | `ws-review-queue` filled by hand and by automation, items annotated by API, bad ones promoted to `ws-review-dataset` |
 
 `make module M=annotation-queues` · <span class="tag">docs</span> `modules/annotation-queues` · <span class="tag orange">block C</span>
@@ -809,7 +809,7 @@ Open `modules/gateway/run.py`, fill the three `TODO`s, run it.
 
 **Gotchas:** every fallback gets the same timeout · GPT-5.x rejects `tools` on chat completions unless `reasoning_effort` is `none` (the app uses Responses) · budgets need a Management Key.
 
-**Ask your agent:** "Add a fallback chain and a cache to module 01 without touching app/, then fetch the fallback trace's spans over MCP and tell me which model answered."
+**Ask your agent:** "Add a fallback chain and a cache to the gateway module without touching app/, then fetch the fallback trace's spans over MCP and tell me which model answered."
 
 ---
 
@@ -817,7 +817,7 @@ Open `modules/gateway/run.py`, fill the three `TODO`s, run it.
 
 # Block B · Guardrails and PII
 
-<span class="tag orange">module 04</span>
+<span class="tag orange">the guardrails module</span>
 
 ---
 
@@ -932,7 +932,7 @@ Watch for: the thread view grouping two turns · agent → tool → llm nesting 
 
 # Block D · Failure analysis to evaluators to experiments
 
-<span class="tag orange">module 07</span>
+<span class="tag orange">the failure-analysis module</span>
 
 ---
 
@@ -957,7 +957,8 @@ The orq skills encode exactly this: `analyze-trace-failures` → `build-evaluato
 
 ```bash
 $ make generate-traffic    # 20 conversations, half with the vulnerable instructions
-$ make module M=failure-analysis        # taxonomy from real traces, judge invoked, evaluatorq experiment fixed vs vulnerable
+$ make module M=failure-analysis               # taxonomy from real traces
+$ make module M=evaluators-and-experiments     # judge invoked, evaluatorq experiment fixed vs vulnerable
 ```
 
 Watch for: which failure modes the vulnerable variant produces · the judge's true/false on a good and a bad answer · the experiment URL and the table in the Studio.
@@ -1034,7 +1035,7 @@ Watch for: the resistance rate per target · which attack got a refund on the vu
 
 # Block I · Evals and headless agents in CI
 
-<span class="tag orange">module 12</span>
+<span class="tag orange">the evals-in-ci module</span>
 
 ---
 
@@ -1090,7 +1091,7 @@ Watch for: exit codes · the step-summary markdown · the triage report and its 
 
 # Block J · Coding agents wired to orq
 
-<span class="tag orange">module 13</span>
+<span class="tag orange">the coding-agents module</span>
 
 ---
 

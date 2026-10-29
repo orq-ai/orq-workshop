@@ -1,4 +1,4 @@
-"""Module 10 starter: the refund tools behind an orq MCP Gateway.
+"""The mcp-gateway module starter: the refund tools behind an orq MCP Gateway.
 
 Tools leak. A coding agent that can look up orders can also refund them if both tools sit on
 the same server. The MCP Portal puts a governed endpoint between the client and the upstream

@@ -1,4 +1,4 @@
-# PR failure analysis (module 12, step 5). Label a pull request `analyze-traces` and a headless
+# PR failure analysis (the evals-in-ci module, step 5). Label a pull request `analyze-traces` and a headless
 # Claude Code session, launched through `orq launch claude`, runs the analyze-trace-failures
 # skill over the traces tagged `traffic` and writes a short report into the job summary.
 #

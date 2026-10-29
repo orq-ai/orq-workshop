@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step7-external-kb-title step7-external-kb-desc">
   <title id="step7-external-kb-title">External knowledge base: the call comes back to you</title>
-  <desc id="step7-external-kb-desc">Architecture diagram for module 09 step 7. The knowledge base is registered as external with your public URL, so when your code searches it, orq posts the query to your own endpoint and waits for matches with scores. Orq then applies the same tail it applies to an internal base, cutting to top_k, filtering by threshold and reranking, before returning the matches through the same API. Retrieval runs in your service; ranking still runs in orq.</desc>
+  <desc id="step7-external-kb-desc">Architecture diagram for the knowledge-base module, step 7. The knowledge base is registered as external with your public URL, so when your code searches it, orq posts the query to your own endpoint and waits for matches with scores. Orq then applies the same tail it applies to an internal base, cutting to top_k, filtering by threshold and reranking, before returning the matches through the same API. Retrieval runs in your service; ranking still runs in orq.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

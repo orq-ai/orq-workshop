@@ -69,4 +69,4 @@ The usual order is arena first, evaluatorq forever after: pick the model with a 
 
 - The repo: [orq-ai/orq-arena](https://github.com/orq-ai/orq-arena)
 - The docs: [orq-ai.github.io/orq-arena](https://orq-ai.github.io/orq-arena/)
-- In this workshop: [Smart routing](../modules/smart-routing.md) routes between models once you have picked them, and [Failure analysis to experiments](../modules/failure-analysis.md) turns a chosen model's failures into evaluators.
+- In this workshop: [Smart routing](../modules/smart-routing.md) routes between models once you have picked them, and [Evaluators and experiments](../modules/evaluators-and-experiments.md) turns a chosen model's failures into evaluators.

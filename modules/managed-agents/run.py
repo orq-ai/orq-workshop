@@ -1,4 +1,4 @@
-"""Module 08 starter: the refund agent as a managed orq Agent.
+"""The managed-agents module starter: the refund agent as a managed orq Agent.
 
 The agent ws-refund-agent already exists (`make seed-workspace`). Its tools are code tools, so orq runs the
 loop and the tools: one Responses call per customer turn. Your job is the client side: invoke it

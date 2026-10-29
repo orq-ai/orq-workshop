@@ -98,7 +98,7 @@ How the table is built, because the API has opinions:
 - A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make generate-traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
 - Without `tools` in the request, search wraps the output as `{"_value": "<json>", "type": "text"}` instead of a JSON string; the parser handles both.
 - Each router call is its own trace, so a conversation is 1 to 3 traces. `make generate-traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
-- `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), so tools are not spans here (module 02 adds them with OTel).
+- `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), so tools are not spans here (the tracing module adds them with OTel).
 
 The four labels are the taxonomy. They came from reading the twenty answers, not from a list: the vulnerable prompt refunded a "never received" claim without evidence (row 05) and a refund a "manager" had approved in the chat (row 09), repeated a customer's email back (row 17), and answered a shipping question instead of routing it (row 11). The fixed prompt refunded three orders in one turn for a customer "moving abroad" (row 18), where the policy wants a human. One of the five is on the prompt you thought was safe.
 
@@ -203,7 +203,7 @@ Run the skill on a project of your own: `analyze-trace-failures` on the last 7 d
 
 ## End state
 
-A failure taxonomy with counts, and `app/data/my_instructions.md` with one edit per mode, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/).
+A failure taxonomy with counts, and `app/data/my_instructions.md` with one edit per mode. The traffic traces stay in your workspace; the file stays in this repo. Next: [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/).
 
 ## Official docs
 

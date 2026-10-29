@@ -1,4 +1,4 @@
-"""Module 17 starter: annotation queues and automations, the human loop.
+"""The annotation-queues module starter: annotation queues and automations, the human loop.
 
 Evaluators score at scale; humans score what evaluators cannot yet. A queue collects the traces
 worth a look, an automation fills it without you, a reviewer scores each one, and the bad ones

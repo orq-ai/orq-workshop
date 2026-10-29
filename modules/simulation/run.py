@@ -1,4 +1,4 @@
-"""Module 11 starter: simulate customers against the refund agent.
+"""The simulation module starter: simulate customers against the refund agent.
 
 Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent
 with three models: a user simulator playing a persona with a goal, the agent under test, and a

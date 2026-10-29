@@ -1,7 +1,7 @@
 # Trace insights
 
 !!! abstract "Criteria find what you expected; insights find what you did not"
-    Module 11 scored each conversation against criteria you wrote. Insights reads the traces, writes a summary of each, clusters the summaries and names the clusters. The failure you planted shows up as a cluster with a name you did not choose.
+    The simulation module scored each conversation against criteria you wrote. Insights reads the traces, writes a summary of each, clusters the summaries and names the clusters. The failure you planted shows up as a cluster with a name you did not choose.
 
 ## Starting point
 
@@ -10,7 +10,7 @@ Command: `make seed-workspace`. Time: 25 min.
 
 ## Goal
 
-An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07.
+An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in the evaluators-and-experiments module.
 
 
 ## Why
@@ -37,7 +37,7 @@ $ uv run python modules/trace-insights/run.py --only=2  # insights again on the 
 
 ### Step 1 · Simulate the managed v1 agent
 
-Module 11's two personas and two scenarios plus one more of each (a confident business buyer and an above-limit refund, `ord_a6`), nine conversations in all, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed-workspace` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
+The simulation module's two personas and two scenarios plus one more of each (a confident business buyer and an above-limit refund, `ord_a6`), nine conversations in all, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed-workspace` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (the simulation module step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
 
 ```text
 ── Step 1 · Simulate the managed v1 agent ─────────────
@@ -109,7 +109,7 @@ $ make evaluatorq-dashboard
 
 Open **Insights**, pick the run, open the biggest cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq.ai 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
 
-Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or promises a refund outside the 30-day window because the customer says someone approved it." That sentence is the evaluator you build in module 07, and the criterion you add to module 11.
+Write the cluster down as one Pass/Fail sentence: "Fail if the agent attempts or promises a refund outside the 30-day window because the customer says someone approved it." That sentence is the evaluator you build in the evaluators-and-experiments module, and the criterion you add to the simulation module.
 
 ## With your coding agent
 
@@ -130,7 +130,7 @@ Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators
 - `eq` reads `ORQ_API_KEY` from the environment. A stale key exported in your shell wins over `.env` when you call `eq` yourself (401 "API key is not valid for this workspace"); the script loads `.env` first, so `make module M=trace-insights` does not have this problem. Outside the script: `unset ORQ_API_KEY`.
 - evaluatorq's default smart model is `openai/gpt-6-sol`. If your workspace has not enabled it, the summaries fail; the `EVALUATORQ_SMART_MODEL` line in `.env` picks a model that is enabled.
 - Without `--agent`, the population includes the simulator and judge calls (they share your key), and every other trace in the window.
-- Local-agent traces (module 11 step 1) are one per model call, without an agent name: insights still runs on them, but summaries of single tool rounds read as "pending lookup_order call, no user message". Use the managed agent for this module.
+- Local-agent traces (the simulation module step 1) are one per model call, without an agent name: insights still runs on them, but summaries of single tool rounds read as "pending lookup_order call, no user message". Use the managed agent for this module.
 
 ## New in orq.ai 4.16
 
@@ -144,7 +144,7 @@ Insights has no entry in the 4.15 to 4.17 release notes; the [Insights page](htt
 
 ## End state
 
-An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Annotation queues and automations](https://orq-ai.github.io/orq-workshop/modules/annotation-queues/).
+An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in the evaluators-and-experiments module, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Annotation queues and automations](https://orq-ai.github.io/orq-workshop/modules/annotation-queues/).
 
 ## Official docs
 

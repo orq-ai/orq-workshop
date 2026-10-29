@@ -1,4 +1,4 @@
-"""Optional OpenTelemetry setup. Module 02 turns it on with TRACING=otel.
+"""Optional OpenTelemetry setup. The tracing module turns it on with TRACING=otel.
 
 The gateway already traces every model call with zero code. This file adds our own spans
 around the agent loop and each tool, so one trace reads agent -> tool -> llm instead of

@@ -99,7 +99,7 @@ $ orq identities list --search customer-user_001 -o json | jq '.data[] | {_id, e
 { "_id": "01M21F3FT4XNRRAWZGKYRV1H4K", "external_id": "customer-user_001" }
 ```
 
-Open Traces, filter by identity `customer-user_001`: the calls from this module and from module 02 sit together.
+Open Traces, filter by identity `customer-user_001`: the calls from this module and from the tracing module sit together.
 
 ### Step 3 · Budgets: the third call fails
 

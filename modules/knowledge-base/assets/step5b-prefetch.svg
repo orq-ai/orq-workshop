@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step5b-prefetch-title step5b-prefetch-desc">
   <title id="step5b-prefetch-title">Pre-fetched context: search first, then one model call</title>
-  <desc id="step5b-prefetch-desc">Architecture diagram for module 09 step 5b. Your code searches the knowledge base first and puts the chunks into a system message, so the model call carries the policy text in its prompt. One gateway call, no tool round trip, 591 prompt tokens.</desc>
+  <desc id="step5b-prefetch-desc">Architecture diagram for the knowledge-base module, step 5b. Your code searches the knowledge base first and puts the chunks into a system message, so the model call carries the policy text in its prompt. One gateway call, no tool round trip, 591 prompt tokens.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

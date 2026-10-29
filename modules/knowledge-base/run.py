@@ -1,4 +1,4 @@
-"""Module 09 starter: the refund policy as a knowledge base.
+"""The knowledge-base module starter: the refund policy as a knowledge base.
 
 `get_policy(topic)` works because the policy is four short files. A knowledge base turns
 "which file" into "which chunks match this question". The KB `ws-refund-policy` already

@@ -46,7 +46,7 @@ On orq.ai the reading happens in the Studio's Traces view or through the traces 
 
 ## Practice it
 
-- [Failure analysis to experiments](../modules/failure-analysis.md) (core path)
+- [Failure analysis](../modules/failure-analysis.md) (core path)
 - [Trace insights](../modules/trace-insights.md)
 - [Annotation queues and automations](../modules/annotation-queues.md)
 

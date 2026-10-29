@@ -1,4 +1,4 @@
-"""Module 12 starter: run the CI gates locally, green then red.
+"""The evals-in-ci module starter: run the CI gates locally, green then red.
 
 A gate is an agent run you read as an exit code. `evals/regression.py` exits 1 when a scorer mean
 drops below its threshold; `evals/redteam_gate.py` exits 1 when the refund agent resists fewer

@@ -3,13 +3,13 @@
 evaluatorq's simulation and red-team loops drive a *target*: anything with
 `respond(messages) -> AgentResponse` and `new()` (a fresh instance per conversation). Orq-hosted
 agents need no class: pass the string `agent:<key>` (the hosted refund agents run their tools in
-orq, so the built-in target works as is; module 11 step 3 shows why the function-tool agent
+orq, so the built-in target works as is; the simulation module step 3 shows why the function-tool agent
 does not).
 
 `LocalRefundTarget` wraps the in-process agent (`app.refund_agent.agent.chat`) with a chosen
 instruction file (`fixed` or `vulnerable`). Factor 12: `run_turn` is a reducer, so replaying the
 transcript each turn is enough state. It also records which refunds really went through, a
-ground truth the text-only judge cannot see (module 16 reads it).
+ground truth the text-only judge cannot see (the red-teaming module reads it).
 
 Imported by modules/red-teaming; keep the class name, constructor arguments and
 `REFUNDS_ISSUED` as they are.

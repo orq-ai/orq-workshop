@@ -18,7 +18,7 @@ Commands and names here write the default prefix `ws-`. Your entities carry your
 
 ## Why
 
-Modules 01 to 07 kept the agent loop in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py). This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
+The gateway, tracing, smart-routing, guardrails, budgets-and-keys, orqi and failure-analysis modules kept the agent loop in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py). This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
 
 ## The one concept to understand first
 
@@ -345,7 +345,7 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 - `orq agents get` does not exist; it is `orq agents retrieve <key>`.
 - Each `responses.create` is a new trace, also with `previous_response_id`. Search by agent name, or pass `thread={"id": ...}` to group them in the thread view.
 - `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/managed-agents/stretch_factor7.py).
-- The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
+- The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. The knowledge-base module covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
 
@@ -357,12 +357,12 @@ MCP servers are their own section in the Agent builder instead of a tool type, a
 
 ## Go further
 
-- Module 15: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
+- The advisor-and-sidekick module: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
 - [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/managed-agents/stretch_factor7.py): a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
 
 ## End state
 
-The refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Failure analysis to experiments](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/).
+The refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Failure analysis](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/).
 
 ## Official docs
 

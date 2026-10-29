@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step5c-managed-agent-title step5c-managed-agent-desc">
   <title id="step5c-managed-agent-title">Managed agent retrieval: orq runs the loop and the search</title>
-  <desc id="step5c-managed-agent-desc">Architecture diagram for module 09 step 5c. Your code calls a managed agent by model name. The agent holds the knowledge base and the two built-in server tools, so orq performs the search itself and records it as an orq:query_knowledge_base item and a span before calling the model.</desc>
+  <desc id="step5c-managed-agent-desc">Architecture diagram for the knowledge-base module, step 5c. Your code calls a managed agent by model name. The agent holds the knowledge base and the two built-in server tools, so orq performs the search itself and records it as an orq:query_knowledge_base item and a span before calling the model.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

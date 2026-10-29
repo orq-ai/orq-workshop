@@ -1,4 +1,4 @@
-"""Module 03 starter: let the gateway pick the model, then override it with a rule.
+"""The smart-routing module starter: let the gateway pick the model, then override it with a rule.
 
 Factor 8: own your control flow. The app asks for `<workspace>@orq/ws-refund-router`; which model answers is a
 decision you can read in the trace (`span.auto_router`) and change without a deploy (profile, routing rule).

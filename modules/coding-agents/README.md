@@ -16,7 +16,7 @@ A dry-run of every file `orq connect` would touch, the exact env `orq launch` in
 
 ## Why
 
-Every module ends with "With your coding agent". This one explains what that line does. Once you see that a Claude Code turn is four `messages.anthropic` traces sharing a session id, with cache writes as the dominant cost, you understand why budgets (module 05) and identities apply to developers as much as to end users.
+Every module ends with "With your coding agent". This one explains what that line does. Once you see that a Claude Code turn is four `messages.anthropic` traces sharing a session id, with cache writes as the dominant cost, you understand why budgets (the budgets-and-keys module) and identities apply to developers as much as to end users.
 
 ## The one concept to understand first
 
@@ -230,11 +230,11 @@ The documented tool list has 38 tools in 11 categories. Each has a one-line desc
 
 The live server exposes a few more (orqi counts 43 after filtering three invocation tools), so treat the docs table as the stable core.
 
-This is orq.ai's own MCP server, the one coding assistants talk to. It is not the MCP Portal of module 10, where "MCP Server" means a third-party server that orq.ai connects to and re-exposes to Agents and to the MCP Gateway at `/v3/mcp/<key>`.
+This is orq.ai's own MCP server, the one coding assistants talk to. It is not the MCP Portal of the mcp-gateway module, where "MCP Server" means a third-party server that orq.ai connects to and re-exposes to Agents and to the MCP Gateway at `/v3/mcp/<key>`.
 
 ### Step 5 · A coding session is a set of traces
 
-This workspace already has one: a headless run from module 06, `orq launch claude -- -p "run orq doctor and summarise in three lines"`. Find it by session id:
+This workspace already has one: a headless run from the orqi module, `orq launch claude -- -p "run orq doctor and summarise in three lines"`. Find it by session id:
 
 ```bash
 $ make module M=coding-agents     # step 4
@@ -294,7 +294,7 @@ While it thinks, run `make module M=coding-agents` in another terminal: the sess
 - [ ] `orq launch claude --dry-run` shows `ANTHROPIC_BASE_URL=https://my.orq.ai/v3/anthropic` and an empty `ANTHROPIC_API_KEY`
 - [ ] You can name the fourteen bundled skills and the skill you would paste first in a new repo
 - [ ] `make module M=coding-agents` step 4 shows a session id per run with its calls and a cost
-- [ ] You can explain the difference between the orq.ai MCP server and the MCP Gateway of module 10
+- [ ] You can explain the difference between the orq.ai MCP server and the MCP Gateway of the mcp-gateway module
 
 ## Gotchas
 
@@ -313,7 +313,7 @@ Eight coding agents (Claude Code, Codex, OpenCode, Kimi Code, Kilo, Pi, GitHub C
 
 ## Go further
 
-`ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from module 05 and you have a spend cap per developer.
+`ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from the budgets-and-keys module and you have a spend cap per developer.
 
 ## End state
 

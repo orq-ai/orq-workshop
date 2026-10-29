@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="key-scopes-title key-scopes-desc">
   <title id="key-scopes-title">Key scoping: permission mode across project scope</title>
-  <desc id="key-scopes-desc">Diagram for module 05 step 1. An API key is scoped on two axes: the permission mode (all, read only, or restricted with a per-domain access map) and the project scope (every project or a single one). A panel records what this workshop observed in September 2026: a key requested as restricted and single-project was stored as all and all, so the budget became the real limit.</desc>
+  <desc id="key-scopes-desc">Diagram for the budgets-and-keys module, step 1. An API key is scoped on two axes: the permission mode (all, read only, or restricted with a per-domain access map) and the project scope (every project or a single one). A panel records what this workshop observed in September 2026: a key requested as restricted and single-project was stored as all and all, so the budget became the real limit.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

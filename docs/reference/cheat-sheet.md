@@ -71,7 +71,7 @@ make generate-traffic                    # 20 traced conversations for failure a
 make module M=<name>            # run a module's run.py; make modules lists the names
 make regression-eval                       # regression gate, exit 1 on failure
 make redteam-gate               # static red team gate
-make edge                       # modules 09 + 14: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
+make edge                       # knowledge base + alerts modules: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
 make reset-workspace                      # delete everything with WS_PREFIX
 make docs-serve slides          # docs site, deck
 ```

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step4-retrieval-as-tool-title step4-retrieval-as-tool-desc">
   <title id="step4-retrieval-as-tool-title">Retrieval as a tool: the search runs in your process</title>
-  <desc id="step4-retrieval-as-tool-desc">Architecture diagram for module 09 step 4. The model asks for the get_policy tool, and your own loop executes it: your code searches the knowledge base directly and sends the chunks back as a tool result on the next round. The gateway proxies only the model calls, so the knowledge base search never appears as a span in the trace.</desc>
+  <desc id="step4-retrieval-as-tool-desc">Architecture diagram for the knowledge-base module, step 4. The model asks for the get_policy tool, and your own loop executes it: your code searches the knowledge base directly and sends the chunks back as a tool result on the next round. The gateway proxies only the model calls, so the knowledge base search never appears as a span in the trace.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

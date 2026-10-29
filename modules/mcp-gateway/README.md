@@ -160,7 +160,7 @@ next     : the MCP Connect and Discover Tools spans are the agent reaching the s
 
 Agents attach to the MCP **Server**, not the gateway: `settings.tools` takes `{"type": "mcp", "key": "ws-refund-mcp", "tool_id": "<tool id from sync>"}`, one entry per tool. The agent then executes the tool server-side: the response contains an `mcp_call` output item, and the trace has an `MCP Connect` span, an `MCP Discover Tools` span and one `span.tool` per call. Nothing to run on your side. The gateway URL is for clients outside the platform.
 
-The solution creates `ws-refund-agent-mcp` as a copy so `ws-refund-agent` stays as module 07 left it.
+The solution creates `ws-refund-agent-mcp` as a copy so `ws-refund-agent` stays as the failure-analysis module left it.
 
 ### Step 6 · Direct mode vs Code mode, and keys that cannot reach a gateway
 

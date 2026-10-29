@@ -1,4 +1,4 @@
-"""Module 01 starter: fallbacks, retry, cache and load balancing through the gateway.
+"""The gateway module starter: fallbacks, retry, cache and load balancing through the gateway.
 
 The app does not change; the request does. Every control in this module is a field in
 `extra_body`, and every decision the gateway takes for it becomes a span in the trace.

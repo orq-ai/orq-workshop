@@ -13,7 +13,7 @@ It is open source, and the repository is the reference for everything below: REA
 
 | | What it does | Where it shows up here |
 |---|---|---|
-| **Evaluation** | runs a job over a dataset and scores each row with evaluators you write (or built-ins like an LLM judge) | [Failure analysis to experiments](../modules/failure-analysis.md), [Evals and agents in CI](../modules/evals-in-ci.md) |
+| **Evaluation** | runs a job over a dataset and scores each row with evaluators you write (or built-ins like an LLM judge) | [Evaluators and experiments](../modules/evaluators-and-experiments.md), [Evals and agents in CI](../modules/evals-in-ci.md) |
 | **Agent simulation** | a user-simulator LLM plays a persona with a goal and holds a multi-turn conversation with your agent; a judge scores the transcript | [Agent simulation](../modules/simulation.md) |
 | **Red teaming** | an attacker model works through OWASP categories (Agentic Top 10 and LLM Top 10) and a judge decides whether each attack landed | [Red teaming](../modules/red-teaming.md) |
 
@@ -80,7 +80,7 @@ Two details that bite:
 **Send it to orq.ai when** the result is evidence someone else will act on:
 
 - **A regression gate in CI.** The exit code is what fails the build, but the Experiment is what a reviewer reads to see *which* row dropped ([Evals and agents in CI](../modules/evals-in-ci.md)).
-- **Comparing two versions.** Two Experiment runs of the same dataset sit side by side with per-row verdicts; two local JSON files do not ([Failure analysis to experiments](../modules/failure-analysis.md)).
+- **Comparing two versions.** Two Experiment runs of the same dataset sit side by side with per-row verdicts; two local JSON files do not ([Evaluators and experiments](../modules/evaluators-and-experiments.md)).
 - **Anything with a cost question.** Router calls are traced and budgeted, so "what did this eval cost" has an answer ([Budgets and keys](../modules/budgets-and-keys.md)).
 - **Work that outlives the session.** A local folder is a scratch pad; an Experiment is a record with a URL you can paste into a ticket.
 
@@ -90,4 +90,4 @@ The practical answer for most teams is *both*: develop against the local dashboa
 
 - The repo: [orq-ai/evaluatorq](https://github.com/orq-ai/evaluatorq) (README, examples, issues)
 - The docs: [orq-ai.github.io/evaluatorq](https://orq-ai.github.io/evaluatorq/)
-- In this workshop: [Failure analysis to experiments](../modules/failure-analysis.md) builds the evaluators, [Agent simulation](../modules/simulation.md) simulates customers, [Red teaming](../modules/red-teaming.md) attacks the agent, and [Evals and agents in CI](../modules/evals-in-ci.md) puts the whole thing in CI.
+- In this workshop: [Evaluators and experiments](../modules/evaluators-and-experiments.md) builds the evaluators, [Agent simulation](../modules/simulation.md) simulates customers, [Red teaming](../modules/red-teaming.md) attacks the agent, and [Evals and agents in CI](../modules/evals-in-ci.md) puts the whole thing in CI.

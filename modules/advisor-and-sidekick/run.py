@@ -1,4 +1,4 @@
-"""Module 15 starter: advisor and sidekick, second-model delegation inside a managed agent.
+"""The advisor-and-sidekick module starter: advisor and sidekick, second-model delegation inside a managed agent.
 
 One agent on one model runs every step. The `advisor` and `sidekick` tools hand single steps to
 a second model configured at design time, each metered on its own span. The agent
@@ -33,7 +33,7 @@ def run_agent(
     max_steps: int = 8,
     **kwargs: Any,
 ) -> dict[str, Any]:
-    """Module 08's loop, plus `items`: every output item of the chain, so step 3 can read the delegation."""
+    """The managed-agents module's loop, plus `items`: every output item of the chain, so step 3 can read the delegation."""
     store = store or OrderStore()
     response = orq.responses.create(model=f"agent/{agent}", input=text, **kwargs).model_dump(by_alias=True)
     traces = [response["telemetry"]["trace_id"]]

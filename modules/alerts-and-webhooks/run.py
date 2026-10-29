@@ -1,6 +1,6 @@
-"""Module 14 starter: alerts, automations and framework hooks.
+"""The alerts-and-webhooks module starter: alerts, automations and framework hooks.
 
-Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a
+The tracing and orqi modules read traces after the fact. This module makes the platform push to you: a
 Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook
 delivers every model call, signed, to a system you run. `make seed-workspace` created `ws-alert-notifier`
 and `ws-cost-alert`; your job is to query the metric the alert watches, push it over the

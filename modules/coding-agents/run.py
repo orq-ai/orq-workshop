@@ -1,4 +1,4 @@
-"""Module 13 starter: what `orq connect` and `orq launch` would change, which skills ship in the CLI,
+"""The coding-agents module starter: what `orq connect` and `orq launch` would change, which skills ship in the CLI,
 and what a coding-agent session costs once it runs through the gateway.
 
 A coding agent is one more traced, budgeted client of your workspace. Nothing here writes to

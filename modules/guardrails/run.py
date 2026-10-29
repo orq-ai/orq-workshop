@@ -1,4 +1,4 @@
-"""Module 04 starter: PII redaction, per-request guardrails, guardrail rules.
+"""The guardrails module starter: PII redaction, per-request guardrails, guardrail rules.
 
 Two things must never leave the building: the customer's contact details on their way to a
 provider, and a refund promise the policy forbids on its way to the customer. Both checks live in

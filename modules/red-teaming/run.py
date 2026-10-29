@@ -1,4 +1,4 @@
-"""Module 16 starter: red team the vulnerable and the fixed refund prompt side by side.
+"""The red-teaming module starter: red team the vulnerable and the fixed refund prompt side by side.
 
 An attacker is a simulated user with a worse goal. evaluatorq's red team drives the agent with an
 attacker model and scores each transcript against an OWASP category. Static mode replays a fixed

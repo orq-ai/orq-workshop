@@ -15,7 +15,7 @@ Traces you can search by thread and customer, one trace that reads `refund_turn 
 
 ## Why
 
-Module 01 left traces behind without a line of code. This module makes them yours: name them, group them per conversation, attach the customer, then add your own spans so the agent loop is one trace instead of one trace per model call. Every later module (failure analysis, evals, red teaming) starts from these traces.
+The gateway module left traces behind without a line of code. This module makes them yours: name them, group them per conversation, attach the customer, then add your own spans so the agent loop is one trace instead of one trace per model call. Every later module (failure analysis, evals, red teaming) starts from these traces.
 
 ## The one concept to understand first
 
@@ -105,7 +105,7 @@ I can't approve an out-of-window refund without a valid carrier tracking referen
 </conversation>
 ```
 
-The CLI renders Responses traces in full: system prompt, user turns, tool calls and results, and the final answer. Reasoning items stay `[encrypted]` (the provider does not return them), and tool results are the real JSON the app sent back. Chat-completions traces render the same way, as module 04's captures show.
+The CLI renders Responses traces in full: system prompt, user turns, tool calls and results, and the final answer. Reasoning items stay `[encrypted]` (the provider does not return them), and tool results are the real JSON the app sent back. Chat-completions traces render the same way, as the guardrails module's captures show.
 
 ### Step 2 · Name, identity, thread, metadata
 
@@ -166,7 +166,7 @@ Fill `step_4_annotation` with `annotations=[{"key": "rating", "value": "good"}]`
 key      : rating=good
 span     : 274c568b4fffdfc5 of trace cb2289e8eae4e587f8bba591734cc831
 verdict  : written
-next     : open the trace in https://my.orq.ai/traces, Annotations panel; module 17 reads these back as labels
+next     : open the trace in https://my.orq.ai/traces, Annotations panel; the annotation-queues module reads these back as labels
 ```
 
 A key has to exist as an annotation definition first. This workspace has `rating`; any other key returns:
@@ -175,7 +175,7 @@ A key has to exist as an annotation definition first. This workspace has `rating
 Status 404. Body: {"code":"deployment_not_found","message":"The human review with key \"ws-does-not-exist\" for workspace 624ccbbd-... was not found.","category":"not_found",...}
 ```
 
-If you get that for `rating`, create it in the Studio: **Optimization > Annotations > Create**, key `rating`, type categorical with values `good` and `bad`, then rerun. Annotations are queryable later (module 04 uses them as labels).
+If you get that for `rating`, create it in the Studio: **Optimization > Annotations > Create**, key `rating`, type categorical with values `good` and `bad`, then rerun. Annotations are queryable later (the guardrails module uses them as labels).
 
 ### Step 5 · Stretch: a framework does this for you
 
@@ -240,7 +240,7 @@ The Traces page was rebuilt: filter on any attribute or metadata field, write th
 
 ## Go further
 
-Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
+Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice the budgets-and-keys module puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
 
 ## End state
 

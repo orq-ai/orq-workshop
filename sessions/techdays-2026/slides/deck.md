@@ -95,7 +95,7 @@ Laptop blocks `curl | sh`, or setup is still red at 0:20? Pair with a neighbour 
 
 # 1 · The refund agent
 
-<span class="tag orange">module 00 · setup</span> <span class="tag">module 08 · managed agents</span>
+<span class="tag orange">the setup module · setup</span> <span class="tag">the managed-agents module · managed agents</span>
 
 <!-- 0:25. Seven minutes of concept, eight minutes of running it. -->
 
@@ -158,7 +158,7 @@ Watch for: the trace in the Studio, its tool calls, its cost, the agent version 
 
 # 2 · Simulate customers
 
-<span class="tag orange">module 11 · agent simulation</span>
+<span class="tag orange">the simulation module · agent simulation</span>
 
 <!-- 0:40. Ten minutes of concept, then 25 minutes on the TODOs. -->
 
@@ -257,7 +257,7 @@ Before you trust a red number, check who ran the tools. Block 3 uses the adapter
 
 # 3 · Read the traces
 
-<span class="tag orange">module 18 · trace insights</span>
+<span class="tag orange">the trace-insights module · trace insights</span>
 
 <!-- 1:15. Five minutes of concept, twenty minutes clicking. Never cut this block. -->
 
@@ -329,7 +329,7 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 # 4 · From insight to eval
 
-<span class="tag orange">module 07 · failure analysis and evals</span> <span class="tag">module 12 · evals in CI</span>
+<span class="tag orange">the failure-analysis module · failure analysis and evals</span> <span class="tag">the evals-in-ci module · evals in CI</span>
 
 <!-- 1:40. Demo only, twelve minutes. If late, this block is the first to shrink. -->
 
@@ -339,9 +339,9 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ## 4 · One cluster, one binary evaluator
 
-- **Name it after the failure**: `refund_when_should_refuse`, module 07's label for this shape.
+- **Name it after the failure**: `refund_when_should_refuse`, the failure-analysis module's label for this shape.
 - **Binary, Pass/Fail.** Never a 1 to 5 scale: nobody can act on a 3.
-- **Code first** where the tool call shows it: module 07's `decision_matches` checks whether `issue_refund` was called when it should not be.
+- **Code first** where the tool call shows it: the evaluators-and-experiments module's `decision_matches` checks whether `issue_refund` was called when it should not be.
 - **LLM judge last**, for what only the words show: accepting a reason that is not on the list.
 - **Evaluate the evaluator**: label a few rows yourself, or let `orq-evaluator-alignment` jury-test the judge prompt.
 
@@ -357,7 +357,7 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ![w:1000](../../../modules/simulation/assets/step1-persona-matrix.png)
 
-<!-- 1:46. In module 11, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the module 11 README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
+<!-- 1:46. In the simulation module, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the simulation module README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
 
 ---
 
@@ -378,7 +378,7 @@ THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.7
 - `.github/workflows/evals.yml` runs it on every PR that touches `app/` or `evals/`.
 - Your new evaluator goes in the same list. The prompt that broke it can no longer merge.
 
-<!-- 1:50. One slide, not a lab. Module 12 has the full walkthrough. -->
+<!-- 1:50. One slide, not a lab. The evals-in-ci module has the full walkthrough. -->
 
 ---
 
@@ -412,7 +412,7 @@ Everything today: `github.com/orq-ai/orq-workshop`, modules 00 setup, 08 managed
 
 Building evals from traces, testing the judge, red teaming
 
-<span class="tag orange">module 07</span> <span class="tag">module 12</span> <span class="tag">module 16</span>
+<span class="tag orange">the failure-analysis module</span> <span class="tag">the evals-in-ci module</span> <span class="tag">the red-teaming module</span>
 
 <!-- Not presented live. For questions, and for anyone going further after the session. -->
 
@@ -468,13 +468,13 @@ $ uv run python modules/failure-analysis/run.py 2     # your turn: the TODO is i
 | `decision_matches` (code) | 95% | 75% |
 | `policy_judge` (LLM) | 90% | 65% |
 
-<!-- Numbers from the module 07 README run. Yours will differ by a few points. -->
+<!-- Numbers from the failure-analysis module README run. Yours will differ by a few points. -->
 
 ---
 
 <!-- _class: block -->
 
-## Module 07 · You try
+## The failure-analysis module · You try
 
 ```bash
 $ make module M=failure-analysis       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
@@ -511,7 +511,7 @@ Four things this workshop's own runs showed:
 
 ## Measure the judge like any classifier
 
-1. **Label by hand.** Open the module 07 Experiment. For 20 rows, write your own pass or fail before reading the judge's.
+1. **Label by hand.** Open the evaluators-and-experiments module Experiment. For 20 rows, write your own pass or fail before reading the judge's.
 2. **Count agreement.** Where you said fail, how often did the judge say fail (true positive rate)? Where you said pass, how often did it say pass (true negative rate)?
 3. **Fix the prompt, not the threshold.** Each disagreement is a missing line in the judge prompt.
 4. **Bar before trust:** both rates above 90% on rows you did not tune on. Then it can gate.
@@ -554,4 +554,4 @@ $ make redteam-gate      # static red team, 95% bar, fails closed on errors
 - Fails closed: an attack that errored or was not evaluated exits 1, so an outage cannot pass as "no vulnerabilities".
 - `.github/workflows/evals.yml` runs it next to `make regression-eval` on every PR that touches `app/` or `evals/`.
 
-Module 16 step 4: `diff` the two instruction files; most of the diff is noise, three sentences moved the number.
+The red-teaming module step 4: `diff` the two instruction files; most of the diff is noise, three sentences moved the number.
