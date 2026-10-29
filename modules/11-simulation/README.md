@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 and 07, `make seed-workspace` |
 | **You will have** | four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges. |
 
+**Read first:** [Simulation concepts](https://orq-ai.github.io/orq-workshop/modules/11-concepts/) (personas, scenarios, criteria, how a run ends). This page is the tutorial.
+
 ## Why
 
 Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent with three models: a **user simulator** playing a persona with a goal, the **agent under test**, and a **judge** that scores the transcript. Every one of those model calls goes through the orq.ai router with your key, so they are traced, costed and budgeted like the agent itself. Module 16 runs the same loop with an attacker instead of a customer.

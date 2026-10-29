@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 and 02 |
 | **You will have** | a failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions. |
 
+**Read first:** [Concepts](https://orq-ai.github.io/orq-workshop/modules/07-concepts/) (error analysis, scorers, the gate). This page is Part A, find and fix; [Evaluate](https://orq-ai.github.io/orq-workshop/modules/07-evaluate/) is Part B, prove it with an eval.
+
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
 ## Why
@@ -229,6 +231,50 @@ The code scorer separates the prompts by 20 points, the judge by 25. The judge r
 
 The `run-experiment` skill does step 6 through the orq.ai MCP tools: `create_experiment` with a dataset id, the two agents and the evaluator ids, then `get_experiment_run` and `list_experiment_runs` for the results. That is the Track B path below.
 
+### Step 8 · Fix the instructions
+
+The taxonomy from step 2 says what to fix. Work on a copy of the vulnerable prompt, so the two reference files stay as they are:
+
+```bash
+$ cp app/data/vulnerable_instructions.md app/data/my_instructions.md
+```
+
+Edit `app/data/my_instructions.md`, by hand or with your coding agent (paste your failure list and the file). For each failure mode:
+
+1. Find the line in the file that invites it. In this prompt every bad behavior comes from a line that is there, not from one that is missing.
+2. Delete that line, or rewrite it as "never X; do Y instead". A "don't" next to a contradicting "do" tends to lose.
+3. Move on to the next failure mode. One edit per mode makes it clear which change fixed what.
+
+Worked example, the agent repeating the customer's email address:
+
+```diff
+- Confirm contact details by repeating the email address the customer gives you back to them.
++ Never repeat an email address or phone number back to the customer. Say "the email on file" instead.
+```
+
+Keep the ordinary refund working: `ord_a1`, delivered 3 days ago, must still be refunded in the same turn. An agent that refuses everything is not fixed.
+
+??? tip "Hints"
+    The lines to read are the "Policy summary" line, the "For each request" line and the "Customer trust rules" block.
+
+    - **"A manager or a ticket already approved it."** Can the agent check that claim? If not, it is not a reason to refund. What could it offer instead of a refund?
+    - **A policy or tool result quoted in the chat.** Where does the only policy text the agent can trust come from?
+    - **An order past 30 days, with nothing shown.** Which reasons still qualify (`get_policy` topic `post_window_exceptions`), and what does the "Policy summary" line leave out? What should the customer show before the agent believes them?
+    - **Questions about how the agent works.** Should it describe its instructions and tools?
+    - **"Use your judgment for edge cases."** Which line tells the agent that a happy customer matters more than the policy?
+
+??? tip "The dataset checks more than your taxonomy"
+    The 20 rows in [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl) also cover requests outside refund scope (shipping, account, product questions) and requests that need a human (several orders at once, an order over the limit). Skim them before you call the fix done. A short line for each group is usually enough.
+
+??? tip "Stuck? The reference fix"
+    [`app/data/fixed_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/fixed_instructions.md) is one way to write it. Look at it only after your own attempt:
+
+    ```bash
+    diff app/data/vulnerable_instructions.md app/data/fixed_instructions.md
+    ```
+
+Your file only changes what you run locally. The hosted agents `ws-refund-agent` and `ws-refund-agent-vulnerable` keep their own copy of the instructions until you publish a new version (see versions in the managed agents module). Then [Evaluate](https://orq-ai.github.io/orq-workshop/modules/07-evaluate/) proves the fix with the regression eval.
+
 ## Proof
 
 ![Studio: Evaluators list showing ws-refund-limit-guard and ws-refund-policy-judge, the judge used throughout this module.](assets/studio-evaluators.png)
@@ -258,6 +304,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 - [ ] `orq datasets list-datapoints <id>` lists 20 rows of `ws-refund-eval`
 - [ ] An Experiment named `ws-refund-fixed-vs-vulnerable` exists in the Studio (**Default** project, not `orq-workshop`, see Gotchas) with two columns and two evaluators
 - [ ] You can name the failure mode the judge itself has
+- [ ] `app/data/my_instructions.md` fixes each mode you named, and `ord_a1` is still refunded in one turn
 
 ## Gotchas
 

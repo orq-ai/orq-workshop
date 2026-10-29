@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 816" width="1920" height="816" role="img" aria-labelledby="mcp-trust-chain-title mcp-trust-chain-desc">
+  <title id="mcp-trust-chain-title">MCP trust chain: client, gateway, server, upstream</title>
+  <desc id="mcp-trust-chain-desc">Architecture diagram showing an MCP client calling the orq MCP Gateway, which exposes two of the three tools registered on the MCP Server that fronts app/mcp_server.py, while a managed agent attaches to the MCP Server directly.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="816" class="bg"/>
+  <!-- Zone: orq.ai (gateway, server, agent) -->
+  <rect x="480" y="80" width="992" height="560" rx="20" class="zone"/>
+  <rect x="512" y="88" width="112" height="24" rx="4" class="mask"/>
+  <text x="568" y="106" text-anchor="middle" class="zone-title">ORQ.AI</text>
+  <!-- Zone: your server -->
+  <rect x="1520" y="80" width="352" height="288" rx="20" class="zone"/>
+  <rect x="1552" y="88" width="168" height="24" rx="4" class="mask"/>
+  <text x="1636" y="106" text-anchor="middle" class="zone-title">YOUR SERVER</text>
+  <!-- Arrows first -->
+  <line x1="368" y1="240" x2="528" y2="240" class="link"/>
+  <line x1="912" y1="240" x2="1072" y2="240" class="arrow"/>
+  <line x1="1424" y1="240" x2="1552" y2="240" class="link"/>
+  <line x1="1248" y1="464" x2="1248" y2="320" class="arrow"/>
+  <!-- Arrow labels (mask + 8px gap above the stroke) -->
+  <rect x="376" y="200" width="144" height="24" rx="4" class="mask"/>
+  <text x="448" y="218" text-anchor="middle" class="lbl">BEARER KEY</text>
+  <rect x="928" y="200" width="128" height="24" rx="4" class="mask"/>
+  <text x="992" y="218" text-anchor="middle" class="lbl">TOOL_IDS</text>
+  <rect x="1440" y="200" width="96" height="24" rx="4" class="mask"/>
+  <text x="1488" y="218" text-anchor="middle" class="lbl">HTTPS</text>
+  <rect x="1272" y="376" width="136" height="24" rx="4" class="mask"/>
+  <text x="1280" y="394" class="lbl">TYPE: MCP</text>
+  <!-- Node: MCP client (input) -->
+  <rect x="80" y="160" width="288" height="160" rx="16" class="mask"/>
+  <rect x="80" y="160" width="288" height="160" rx="16" class="alt"/>
+  <rect x="96" y="176" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="194" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="224" y="248" text-anchor="middle" class="name">MCP client</text>
+  <text x="224" y="280" text-anchor="middle" class="sub">coding agent · mcp</text>
+  <!-- Node: MCP Gateway (focal) -->
+  <rect x="528" y="160" width="384" height="160" rx="16" class="mask"/>
+  <rect x="528" y="160" width="384" height="160" rx="16" class="focal"/>
+  <rect x="544" y="176" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="572" y="194" text-anchor="middle" class="tag t-accent">GW</text>
+  <text x="720" y="240" text-anchor="middle" class="name">MCP Gateway</text>
+  <text x="720" y="272" text-anchor="middle" class="sub">/v3/mcp/ws-refund-gateway</text>
+  <text x="720" y="300" text-anchor="middle" class="sub">lookup_order · get_policy</text>
+  <!-- Node: MCP Server (orq entity, store) -->
+  <rect x="1072" y="160" width="352" height="160" rx="16" class="mask"/>
+  <rect x="1072" y="160" width="352" height="160" rx="16" class="soft"/>
+  <rect x="1088" y="176" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1116" y="194" text-anchor="middle" class="tag">REG</text>
+  <text x="1248" y="240" text-anchor="middle" class="name">MCP Server</text>
+  <text x="1248" y="272" text-anchor="middle" class="sub">ws-refund-mcp · synced</text>
+  <text x="1248" y="300" text-anchor="middle" class="sub">3 tools discovered</text>
+  <!-- Node: app/mcp_server.py (your code, backend) -->
+  <rect x="1552" y="160" width="288" height="160" rx="16" class="mask"/>
+  <rect x="1552" y="160" width="288" height="160" rx="16" class="node"/>
+  <rect x="1568" y="176" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="1596" y="194" text-anchor="middle" class="tag t-ink">SRV</text>
+  <text x="1696" y="240" text-anchor="middle" class="name">Upstream server</text>
+  <text x="1696" y="272" text-anchor="middle" class="sub">app/mcp_server.py</text>
+  <text x="1696" y="300" text-anchor="middle" class="sub">3 @server.tool</text>
+  <!-- Node: Managed agent (orq entity, store) -->
+  <rect x="1072" y="464" width="352" height="128" rx="16" class="mask"/>
+  <rect x="1072" y="464" width="352" height="128" rx="16" class="soft"/>
+  <rect x="1088" y="480" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1116" y="498" text-anchor="middle" class="tag">AGT</text>
+  <text x="1248" y="536" text-anchor="middle" class="name">Managed agent</text>
+  <text x="1248" y="568" text-anchor="middle" class="sub">ws-refund-agent-mcp</text>
+  <!-- Editorial callout (italic aside, dashed leader, landing dot) -->
+  <path d="M 720 320 V 376" class="faint dash"/>
+  <circle cx="720" cy="320" r="4" class="dot"/>
+  <text x="720" y="416" text-anchor="middle" class="note">issue_refund is not forbidden,</text>
+  <text x="720" y="452" text-anchor="middle" class="note">it is absent from tools/list.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="696" x2="1840" y2="696" class="hair"/>
+  <text x="80" y="728" class="legend-title">LEGEND</text>
+  <rect x="80" y="760" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="776" class="msg">Governed endpoint</text>
+  <rect x="360" y="760" width="28" height="20" rx="4" class="soft"/>
+  <text x="400" y="776" class="msg">orq entity</text>
+  <rect x="600" y="760" width="28" height="20" rx="4" class="node"/>
+  <text x="640" y="776" class="msg">Your code</text>
+  <rect x="840" y="760" width="28" height="20" rx="4" class="alt"/>
+  <text x="880" y="776" class="msg">Outside client</text>
+  <line x1="1120" y1="772" x2="1176" y2="772" class="link"/>
+  <text x="1192" y="776" class="msg">HTTP call</text>
+  <line x1="1400" y1="772" x2="1456" y2="772" class="arrow"/>
+  <text x="1472" y="776" class="msg">Platform-internal link</text>
+    
+</svg>

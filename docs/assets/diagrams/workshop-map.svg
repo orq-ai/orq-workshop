@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 992" width="1920" height="992" role="img" aria-labelledby="workshop-map-title workshop-map-desc">
+  <title id="workshop-map-title">How the workshop pieces fit together</title>
+  <desc id="workshop-map-desc">Architecture diagram showing the refund agent and a coding agent on your machine calling the orq AI Gateway, which routes to model providers, hosts the managed agent whose tool calls come back to your code, and feeds traces to the Studio, while the coding agent also talks to the orq MCP server.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="992" class="bg"/>
+  <!-- Zone: your machine -->
+  <rect x="48" y="80" width="384" height="736" rx="20" class="zone"/>
+  <rect x="80" y="88" width="176" height="24" rx="4" class="mask"/>
+  <text x="168" y="106" text-anchor="middle" class="zone-title">YOUR MACHINE</text>
+  <!-- Zone: orq.ai -->
+  <rect x="480" y="80" width="992" height="736" rx="20" class="zone"/>
+  <rect x="512" y="88" width="112" height="24" rx="4" class="mask"/>
+  <text x="568" y="106" text-anchor="middle" class="zone-title">ORQ.AI</text>
+  <!-- Zone: providers -->
+  <rect x="1520" y="80" width="352" height="256" rx="20" class="zone"/>
+  <rect x="1552" y="88" width="144" height="24" rx="4" class="mask"/>
+  <text x="1624" y="106" text-anchor="middle" class="zone-title">PROVIDERS</text>
+  <!-- Arrows first -->
+  <!-- 1. app -> gateway -->
+  <line x1="400" y1="224" x2="528" y2="224" class="link"/>
+  <!-- 2. gateway -> providers -->
+  <line x1="944" y1="224" x2="1552" y2="224" class="link"/>
+  <!-- 3. gateway -> managed agent -->
+  <line x1="640" y1="304" x2="640" y2="400" class="arrow"/>
+  <!-- 4. gateway -> studio (traces, passive) -->
+  <path d="M 832 304 V 352 Q 832 368 848 368 H 1200 Q 1216 368 1216 384 V 400" class="arrow dash"/>
+  <!-- 5. managed agent -> app (function_call items come back), dashed return, hops over arrow 6 -->
+  <path d="M 528 464 H 480 a 16 16 0 0 1 -32 0 H 256 Q 240 464 240 448 V 304" class="arrow dash"/>
+  <!-- 6. coding agent -> gateway -->
+  <path d="M 400 672 H 448 Q 464 672 464 656 V 288 Q 464 272 480 272 H 528" class="link"/>
+  <!-- 7. coding agent -> orq MCP server -->
+  <line x1="400" y1="720" x2="528" y2="720" class="link"/>
+  <!-- Arrow labels -->
+  <rect x="416" y="184" width="96" height="24" rx="4" class="mask"/>
+  <text x="464" y="202" text-anchor="middle" class="lbl">ROUTER</text>
+  <rect x="1160" y="184" width="176" height="24" rx="4" class="mask"/>
+  <text x="1248" y="202" text-anchor="middle" class="lbl">PROVIDER CALL</text>
+  <rect x="664" y="328" width="136" height="24" rx="4" class="mask"/>
+  <text x="672" y="346" class="lbl">RESPONSES</text>
+  <rect x="976" y="328" width="104" height="24" rx="4" class="mask"/>
+  <text x="1028" y="346" text-anchor="middle" class="lbl">TRACES</text>
+  <rect x="272" y="424" width="176" height="24" rx="4" class="mask"/>
+  <text x="360" y="442" text-anchor="middle" class="lbl">FUNCTION_CALL</text>
+  <rect x="488" y="560" width="160" height="24" rx="4" class="mask"/>
+  <text x="496" y="578" class="lbl">MESSAGES API</text>
+  <rect x="432" y="680" width="64" height="24" rx="4" class="mask"/>
+  <text x="464" y="698" text-anchor="middle" class="lbl">MCP</text>
+  <!-- Node: Refund agent (your code, backend) -->
+  <rect x="80" y="144" width="320" height="160" rx="16" class="mask"/>
+  <rect x="80" y="144" width="320" height="160" rx="16" class="node"/>
+  <rect x="96" y="160" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="124" y="178" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="240" y="224" text-anchor="middle" class="name">Refund agent</text>
+  <text x="240" y="256" text-anchor="middle" class="sub">app/refund_agent</text>
+  <text x="240" y="284" text-anchor="middle" class="sub">run_turn + 3 tools</text>
+  <!-- Node: AI Gateway (focal) -->
+  <rect x="528" y="144" width="416" height="160" rx="16" class="mask"/>
+  <rect x="528" y="144" width="416" height="160" rx="16" class="focal"/>
+  <rect x="544" y="160" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="572" y="178" text-anchor="middle" class="tag t-accent">GW</text>
+  <text x="736" y="224" text-anchor="middle" class="name">AI Gateway</text>
+  <text x="736" y="256" text-anchor="middle" class="sub">/v3/router · /v3/anthropic</text>
+  <text x="736" y="284" text-anchor="middle" class="sub">routing · guardrails · budgets</text>
+  <!-- Node: Model providers (external) -->
+  <rect x="1552" y="160" width="288" height="128" rx="16" class="mask"/>
+  <rect x="1552" y="160" width="288" height="128" rx="16" class="ghost"/>
+  <rect x="1568" y="176" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1596" y="194" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="1696" y="232" text-anchor="middle" class="name">Model providers</text>
+  <text x="1696" y="264" text-anchor="middle" class="sub">openai · anthropic · …</text>
+  <!-- Node: Managed agent (orq entity, store) -->
+  <rect x="528" y="400" width="384" height="128" rx="16" class="mask"/>
+  <rect x="528" y="400" width="384" height="128" rx="16" class="soft"/>
+  <rect x="544" y="416" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="572" y="434" text-anchor="middle" class="tag">AGT</text>
+  <text x="720" y="472" text-anchor="middle" class="name">Managed agent</text>
+  <text x="720" y="504" text-anchor="middle" class="sub">agent/ws-refund-agent</text>
+  <!-- Node: Studio + CLI (orq entity, store) -->
+  <rect x="1040" y="400" width="352" height="128" rx="16" class="mask"/>
+  <rect x="1040" y="400" width="352" height="128" rx="16" class="soft"/>
+  <rect x="1056" y="416" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1084" y="434" text-anchor="middle" class="tag">UI</text>
+  <text x="1216" y="472" text-anchor="middle" class="name">Studio + CLI</text>
+  <text x="1216" y="504" text-anchor="middle" class="sub">traces · experiments</text>
+  <!-- Node: Coding agent (outside client, input) -->
+  <rect x="80" y="640" width="320" height="128" rx="16" class="mask"/>
+  <rect x="80" y="640" width="320" height="128" rx="16" class="alt"/>
+  <rect x="96" y="656" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="674" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="240" y="712" text-anchor="middle" class="name">Coding agent</text>
+  <text x="240" y="744" text-anchor="middle" class="sub">orq launch claude</text>
+  <!-- Node: orq MCP server (orq entity, store) -->
+  <rect x="528" y="640" width="384" height="128" rx="16" class="mask"/>
+  <rect x="528" y="640" width="384" height="128" rx="16" class="soft"/>
+  <rect x="544" y="656" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="572" y="674" text-anchor="middle" class="tag">MCP</text>
+  <text x="720" y="712" text-anchor="middle" class="name">orq MCP server</text>
+  <text x="720" y="744" text-anchor="middle" class="sub">/v2/mcp · tools + skills</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="872" x2="1840" y2="872" class="hair"/>
+  <text x="80" y="904" class="legend-title">LEGEND</text>
+  <rect x="80" y="936" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="952" class="msg">AI Gateway (every call)</text>
+  <rect x="400" y="936" width="28" height="20" rx="4" class="node"/>
+  <text x="440" y="952" class="msg">Your code</text>
+  <rect x="600" y="936" width="28" height="20" rx="4" class="soft"/>
+  <text x="640" y="952" class="msg">orq entity</text>
+  <rect x="800" y="936" width="28" height="20" rx="4" class="alt"/>
+  <text x="840" y="952" class="msg">Outside client</text>
+  <rect x="1032" y="936" width="28" height="20" rx="4" class="ghost"/>
+  <text x="1072" y="952" class="msg">External</text>
+  <line x1="1216" y1="948" x2="1272" y2="948" class="link"/>
+  <text x="1288" y="952" class="msg">HTTP call</text>
+  <line x1="1432" y1="948" x2="1488" y2="948" class="arrow"/>
+  <text x="1504" y="952" class="msg">Internal</text>
+  <line x1="1624" y1="948" x2="1680" y2="948" class="arrow dash"/>
+  <text x="1696" y="952" class="msg">Return / passive</text>
+    
+</svg>

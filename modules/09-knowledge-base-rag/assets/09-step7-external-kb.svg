@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step7-external-kb-title step7-external-kb-desc">
+  <title id="step7-external-kb-title">External knowledge base: the call comes back to you</title>
+  <desc id="step7-external-kb-desc">Architecture diagram for module 09 step 7. The knowledge base is registered as external with your public URL, so when your code searches it, orq posts the query to your own endpoint and waits for matches with scores. Orq then applies the same tail it applies to an internal base, cutting to top_k, filtering by threshold and reranking, before returning the matches through the same API. Retrieval runs in your service; ranking still runs in orq.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Arrows first: z-order puts them behind the nodes. -->
+  <line x1="816" y1="400" x2="816" y2="496" class="link"/>
+  <line x1="1104" y1="496" x2="1104" y2="400" class="link dash"/>
+  <!-- The registration: how orq knows which URL to call. Config, not traffic. -->
+  <path d="M 1360 176 V 528 Q 1360 544 1344 544 H 1248" class="arrow dash"/>
+  <!-- The retrieval: orq POSTs into your own service, and the matches come back. -->
+  <line x1="816" y1="624" x2="816" y2="752" class="accent"/>
+  <line x1="1104" y1="752" x2="1104" y2="624" class="accent dash"/>
+  <!-- Arrow labels: beside the vertical segments, 8px gap, on open canvas. -->
+  <rect x="832" y="424" width="224" height="24" rx="4" class="mask"/>
+  <text x="840" y="442" class="lbl">KNOWLEDGE.SEARCH</text>
+  <rect x="1120" y="424" width="208" height="24" rx="4" class="mask"/>
+  <text x="1128" y="442" class="lbl">MATCHES · RANKED</text>
+  <rect x="1376" y="336" width="128" height="24" rx="4" class="mask"/>
+  <text x="1384" y="354" class="lbl">API_URL</text>
+  <rect x="1376" y="368" width="152" height="24" rx="4" class="mask"/>
+  <text x="1384" y="386" class="lbl t-mute">+ API_KEY</text>
+  <rect x="832" y="664" width="176" height="24" rx="4" class="mask"/>
+  <text x="840" y="682" class="lbl t-accent">POST /SEARCH</text>
+  <rect x="832" y="696" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="714" class="lbl t-mute">+ BEARER</text>
+  <rect x="1120" y="672" width="224" height="24" rx="4" class="mask"/>
+  <text x="1128" y="690" class="lbl t-accent">MATCHES + SCORES</text>
+  <!-- Node: External knowledge base registration (focal, top bar) -->
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="focal"/>
+  <rect x="160" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="114" text-anchor="middle" class="tag t-accent">KB</text>
+  <text x="960" y="120" text-anchor="middle" class="name">External knowledge base</text>
+  <text x="960" y="152" text-anchor="middle" class="sub">ws-refund-policy-ext · type: external · no chunks, no embeddings stored by orq</text>
+  <!-- Node: your code -->
+  <rect x="672" y="272" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="272" width="576" height="128" rx="16" class="node"/>
+  <rect x="688" y="288" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="716" y="306" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="960" y="344" text-anchor="middle" class="name">Your code</text>
+  <text x="960" y="376" text-anchor="middle" class="sub">the same orq.knowledge.search as step 2</text>
+  <!-- Node: orq knowledge API -->
+  <rect x="672" y="496" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="496" width="576" height="128" rx="16" class="soft"/>
+  <rect x="688" y="512" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="716" y="530" text-anchor="middle" class="tag">ORQ</text>
+  <text x="960" y="568" text-anchor="middle" class="name">orq knowledge API</text>
+  <text x="960" y="600" text-anchor="middle" class="sub">calls out, then top_k → threshold → rerank</text>
+  <!-- Node: your edge service (yours, not a provider: white fill, ink stroke) -->
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="node"/>
+  <rect x="160" y="768" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="188" y="786" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="960" y="792" text-anchor="middle" class="name">Your edge service</text>
+  <text x="960" y="824" text-anchor="middle" class="sub">app/edge.py /search · chunking, embedding and the search are yours now</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="920" x2="1840" y2="920" class="hair"/>
+  <text x="80" y="952" class="legend-title">LEGEND</text>
+  <rect x="80" y="984" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1000" class="msg">External knowledge base</text>
+  <rect x="432" y="984" width="28" height="20" rx="4" class="node"/>
+  <text x="472" y="1000" class="msg">Your code</text>
+  <rect x="648" y="984" width="28" height="20" rx="4" class="soft"/>
+  <text x="688" y="1000" class="msg">orq entity</text>
+  <line x1="912" y1="996" x2="968" y2="996" class="accent"/>
+  <text x="984" y="1000" class="msg">Retrieval, in your service — called by orq</text>
+  <line x1="1496" y1="996" x2="1552" y2="996" class="link"/>
+  <text x="1568" y="1000" class="msg">API call from your code</text>
+    
+</svg>

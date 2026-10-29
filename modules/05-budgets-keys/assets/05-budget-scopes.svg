@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="budget-scopes-title budget-scopes-desc">
+  <title id="budget-scopes-title">Budget scopes, and the one that fires</title>
+  <desc id="budget-scopes-desc">Diagram for module 05 step 3. A budget is attached to one of six targets: workspace, project, identity, API key, provider or model. Every matching budget is evaluated and the most restrictive one wins. The panel shows the real 429 from the workshop run, whose body names the scope kind and target that rejected the third call.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <text x="144" y="112" class="zone-title">SIX THINGS A BUDGET CAN BE ATTACHED TO</text>
+  <!-- workspace -->
+  <rect x="144" y="144" width="992" height="80" rx="16" class="soft"/>
+  <text x="176" y="194" class="name">workspace</text>
+  <text x="464" y="194" class="sub">everything in the workspace</text>
+  <!-- project -->
+  <rect x="144" y="240" width="992" height="80" rx="16" class="soft"/>
+  <text x="176" y="290" class="name">project</text>
+  <text x="464" y="290" class="sub">one project</text>
+  <!-- identity: the one the module fires -->
+  <rect x="144" y="336" width="992" height="80" rx="16" class="focal"/>
+  <text x="176" y="386" class="name">identity</text>
+  <text x="464" y="386" class="sub t-accent">one customer · X-ORQ-IDENTITY-ID</text>
+  <!-- api key -->
+  <rect x="144" y="432" width="992" height="80" rx="16" class="soft"/>
+  <text x="176" y="482" class="name">api key</text>
+  <text x="464" y="482" class="sub">one key, e.g. the CI runner</text>
+  <!-- provider -->
+  <rect x="144" y="528" width="992" height="80" rx="16" class="soft"/>
+  <text x="176" y="578" class="name">provider</text>
+  <text x="464" y="578" class="sub">one provider, e.g. openai</text>
+  <!-- model -->
+  <rect x="144" y="624" width="992" height="80" rx="16" class="soft"/>
+  <text x="176" y="674" class="name">model</text>
+  <text x="464" y="674" class="sub">one model, e.g. openai/gpt-5.6-luna</text>
+  <!-- The rule, and the two dials every budget carries -->
+  <text x="144" y="760" class="name">Every matching budget is checked; the most restrictive one wins.</text>
+  <text x="144" y="800" class="sub t-mute">each one carries a period limit in USD or tokens, plus an optional requests-per-minute cap</text>
+  <!-- Panel: the real rejection from the workshop run -->
+  <rect x="1232" y="144" width="544" height="560" rx="16" class="soft"/>
+  <rect x="1264" y="176" width="208" height="24" rx="4" class="tag-box"/>
+  <text x="1368" y="194" text-anchor="middle" class="tag">THE THIRD CALL</text>
+  <text x="1264" y="252" class="name t-accent">HTTP 429</text>
+  <text x="1264" y="308" class="sub">code</text>
+  <text x="1264" y="340" class="sub t-ink">requests_per_minute_exceeded</text>
+  <text x="1264" y="388" class="sub">scope_kind</text>
+  <text x="1264" y="420" class="sub t-ink">IDENTITY</text>
+  <text x="1264" y="468" class="sub">scope_target_id</text>
+  <text x="1264" y="500" class="sub t-ink">customer-user_001</text>
+  <line x1="1264" y1="532" x2="1744" y2="532" class="hair"/>
+  <text x="1264" y="572" class="sub">x-ratelimit-limit: 2</text>
+  <text x="1264" y="604" class="sub">x-ratelimit-remaining: 0</text>
+  <text x="1264" y="636" class="sub">x-ratelimit-reset: 58s</text>
+  <text x="1264" y="668" class="sub t-mute">the body names what stopped you</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="880" x2="1840" y2="880" class="hair"/>
+  <text x="80" y="912" class="legend-title">LEGEND</text>
+  <rect x="80" y="944" width="28" height="20" rx="4" class="soft"/>
+  <text x="120" y="960" class="msg">A scope you can attach a budget to</text>
+  <rect x="608" y="944" width="28" height="20" rx="4" class="focal"/>
+  <text x="648" y="960" class="msg">The scope this module trips — an identity budget of 2 requests per minute</text>
+    
+</svg>

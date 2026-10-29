@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="own-your-agent-loops-title own-your-agent-loops-desc">
+  <title id="own-your-agent-loops-title">Who owns the agentic loop: three shapes, one gateway</title>
+  <desc id="own-your-agent-loops-desc">Architecture diagram showing the same question, instructions and tools sent through three shapes of agent: your own code calling chat(), a LangGraph graph invoked directly, and a managed agent invoked through responses.create. All three converge on the same AI Gateway and the same model, so the difference between them is only where the loop runs and who wrote it, not what the model or the gateway do.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Column eyebrows -->
+  <text x="152" y="256" class="zone-title">A · YOUR CODE</text>
+  <text x="776" y="256" class="zone-title">B · A FRAMEWORK</text>
+  <text x="1400" y="256" class="zone-title">C · ORQ</text>
+  <!-- Arrows first: z-order puts them behind the nodes. -->
+  <line x1="336" y1="176" x2="336" y2="272" class="link"/>
+  <line x1="960" y1="176" x2="960" y2="272" class="link"/>
+  <line x1="1584" y1="176" x2="1584" y2="272" class="link"/>
+  <line x1="336" y1="400" x2="336" y2="496" class="arrow"/>
+  <line x1="960" y1="400" x2="960" y2="496" class="arrow"/>
+  <line x1="1584" y1="400" x2="1584" y2="496" class="arrow"/>
+  <line x1="960" y1="624" x2="960" y2="752" class="arrow"/>
+  <!-- Arrow labels: masked, 6-10px clear of the stroke, on open canvas. -->
+  <rect x="240" y="200" width="192" height="24" rx="4" class="mask"/>
+  <text x="248" y="218" text-anchor="middle" class="lbl">CHAT()</text>
+  <rect x="848" y="200" width="224" height="24" rx="4" class="mask"/>
+  <text x="960" y="218" text-anchor="middle" class="lbl">GRAPH.INVOKE()</text>
+  <rect x="1448" y="200" width="272" height="24" rx="4" class="mask"/>
+  <text x="1584" y="218" text-anchor="middle" class="lbl">RESPONSES.CREATE()</text>
+  <rect x="224" y="424" width="224" height="24" rx="4" class="mask"/>
+  <text x="336" y="442" text-anchor="middle" class="lbl">RESPONSES API</text>
+  <rect x="824" y="424" width="272" height="24" rx="4" class="mask"/>
+  <text x="960" y="442" text-anchor="middle" class="lbl">CHAT COMPLETIONS</text>
+  <rect x="1472" y="424" width="224" height="24" rx="4" class="mask"/>
+  <text x="1584" y="442" text-anchor="middle" class="lbl">RESPONSES API</text>
+  <rect x="864" y="672" width="192" height="24" rx="4" class="mask"/>
+  <text x="960" y="690" text-anchor="middle" class="lbl">MODEL CALL</text>
+  <!-- Node: the same input (focal, top bar) -->
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="focal"/>
+  <rect x="160" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="114" text-anchor="middle" class="tag t-accent">IN</text>
+  <text x="960" y="120" text-anchor="middle" class="name">The same question, instructions and tools</text>
+  <text x="960" y="152" text-anchor="middle" class="sub">"Refund ord_a2 please, the dock does not fit my laptop."</text>
+  <!-- Node: Your app (A) -->
+  <rect x="144" y="272" width="384" height="128" rx="16" class="mask"/>
+  <rect x="144" y="272" width="384" height="128" rx="16" class="node"/>
+  <rect x="160" y="288" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="188" y="306" text-anchor="middle" class="tag t-ink">SDK</text>
+  <text x="336" y="344" text-anchor="middle" class="name">Your app</text>
+  <text x="336" y="376" text-anchor="middle" class="sub">the loop is yours</text>
+  <!-- Node: LangGraph (B) -->
+  <rect x="768" y="272" width="384" height="128" rx="16" class="mask"/>
+  <rect x="768" y="272" width="384" height="128" rx="16" class="node"/>
+  <rect x="784" y="288" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="812" y="306" text-anchor="middle" class="tag t-ink">LG</text>
+  <text x="960" y="344" text-anchor="middle" class="name">LangGraph</text>
+  <text x="960" y="376" text-anchor="middle" class="sub">the loop is the framework's</text>
+  <!-- Node: Managed agent (C, orq entity) -->
+  <rect x="1392" y="272" width="384" height="128" rx="16" class="mask"/>
+  <rect x="1392" y="272" width="384" height="128" rx="16" class="soft"/>
+  <rect x="1408" y="288" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1436" y="306" text-anchor="middle" class="tag">AGT</text>
+  <text x="1584" y="344" text-anchor="middle" class="name">Managed agent</text>
+  <text x="1584" y="376" text-anchor="middle" class="sub">the loop is orq's</text>
+  <!-- Node: AI Gateway (orq entity, spans all three columns) -->
+  <rect x="144" y="496" width="1632" height="128" rx="16" class="mask"/>
+  <rect x="144" y="496" width="1632" height="128" rx="16" class="soft"/>
+  <rect x="160" y="512" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="188" y="530" text-anchor="middle" class="tag">GW</text>
+  <text x="960" y="568" text-anchor="middle" class="name">AI Gateway</text>
+  <text x="960" y="600" text-anchor="middle" class="sub">routes, budgets, caches and traces every call above</text>
+  <!-- Node: Model (external, bottom bar) -->
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="ghost"/>
+  <rect x="160" y="768" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="188" y="786" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="960" y="792" text-anchor="middle" class="name">Model</text>
+  <text x="960" y="824" text-anchor="middle" class="sub">openai/gpt-5.6-luna · the same model, three ways in</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="904" x2="1840" y2="904" class="hair"/>
+  <text x="80" y="936" class="legend-title">LEGEND</text>
+  <rect x="80" y="968" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="984" class="msg">The same in all three</text>
+  <rect x="424" y="968" width="28" height="20" rx="4" class="node"/>
+  <text x="464" y="984" class="msg">Your code</text>
+  <rect x="664" y="968" width="28" height="20" rx="4" class="soft"/>
+  <text x="704" y="984" class="msg">orq entity</text>
+  <rect x="880" y="968" width="28" height="20" rx="4" class="ghost"/>
+  <text x="920" y="984" class="msg">Provider model</text>
+  <line x1="1152" y1="980" x2="1208" y2="980" class="link"/>
+  <text x="1224" y="984" class="msg">Entry call from your code</text>
+    
+</svg>

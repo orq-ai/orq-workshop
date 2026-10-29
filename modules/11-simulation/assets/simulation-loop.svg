@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 720" width="1920" height="720" role="img" aria-labelledby="simulation-loop-title simulation-loop-desc">
+  <title id="simulation-loop-title">Simulation and red-team loop around the refund agent</title>
+  <desc id="simulation-loop-desc">Architecture diagram showing a user simulator or attacker exchanging turns with the target under test, the transcript accumulating up to max_turns, a judge scoring the transcript text only into one Experiment row per conversation, while the target's tool calls hit the order store that holds the ground truth.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="720" class="bg"/>
+  <!-- Arrows first -->
+  <!-- simulator -> target (turn), upper attach point -->
+  <line x1="432" y1="160" x2="528" y2="160" class="arrow"/>
+  <!-- target -> simulator (reply), dashed return, lower attach point -->
+  <line x1="528" y1="224" x2="432" y2="224" class="arrow dash"/>
+  <!-- target -> transcript -->
+  <line x1="880" y1="192" x2="1008" y2="192" class="arrow"/>
+  <!-- transcript -> judge -->
+  <line x1="1296" y1="192" x2="1424" y2="192" class="arrow"/>
+  <!-- judge -> experiment run (HTTP upload) -->
+  <line x1="1600" y1="272" x2="1600" y2="416" class="link"/>
+  <!-- target -> order store (tool calls) -->
+  <line x1="704" y1="272" x2="704" y2="416" class="arrow"/>
+  <!-- Arrow labels (mask + 8px gap from the stroke) -->
+  <rect x="440" y="120" width="80" height="24" rx="4" class="mask"/>
+  <text x="480" y="138" text-anchor="middle" class="lbl">TURN</text>
+  <rect x="432" y="240" width="96" height="24" rx="4" class="mask"/>
+  <text x="480" y="258" text-anchor="middle" class="lbl">REPLY</text>
+  <rect x="896" y="152" width="96" height="24" rx="4" class="mask"/>
+  <text x="944" y="170" text-anchor="middle" class="lbl">APPEND</text>
+  <rect x="1296" y="152" width="128" height="24" rx="4" class="mask"/>
+  <text x="1360" y="170" text-anchor="middle" class="lbl">TEXT ONLY</text>
+  <rect x="1624" y="332" width="144" height="24" rx="4" class="mask"/>
+  <text x="1632" y="350" class="lbl">1 ROW/CONV</text>
+  <rect x="728" y="332" width="136" height="24" rx="4" class="mask"/>
+  <text x="736" y="350" class="lbl">TOOL CALLS</text>
+  <!-- Node: User simulator / attacker (input) -->
+  <rect x="80" y="112" width="352" height="160" rx="16" class="mask"/>
+  <rect x="80" y="112" width="352" height="160" rx="16" class="alt"/>
+  <rect x="96" y="128" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="146" text-anchor="middle" class="tag t-mute">SIM</text>
+  <text x="256" y="192" text-anchor="middle" class="name">User simulator</text>
+  <text x="256" y="224" text-anchor="middle" class="sub">persona · scenario · goal</text>
+  <text x="256" y="252" text-anchor="middle" class="sub">red team: OWASP attacker</text>
+  <!-- Node: Target under test (focal) -->
+  <rect x="528" y="112" width="352" height="160" rx="16" class="mask"/>
+  <rect x="528" y="112" width="352" height="160" rx="16" class="focal"/>
+  <rect x="544" y="128" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="572" y="146" text-anchor="middle" class="tag t-accent">TGT</text>
+  <text x="704" y="192" text-anchor="middle" class="name">Target under test</text>
+  <text x="704" y="224" text-anchor="middle" class="sub">run_turn(messages) -&gt; str</text>
+  <text x="704" y="252" text-anchor="middle" class="sub">agent:&lt;key&gt; · AgentTarget</text>
+  <!-- Node: Transcript (store) -->
+  <rect x="1008" y="112" width="288" height="160" rx="16" class="mask"/>
+  <rect x="1008" y="112" width="288" height="160" rx="16" class="soft"/>
+  <rect x="1024" y="128" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1052" y="146" text-anchor="middle" class="tag">TXT</text>
+  <text x="1152" y="192" text-anchor="middle" class="name">Transcript</text>
+  <text x="1152" y="224" text-anchor="middle" class="sub">up to max_turns</text>
+  <text x="1152" y="252" text-anchor="middle" class="sub">text, no tool calls</text>
+  <!-- Node: Judge (model, backend) -->
+  <rect x="1424" y="112" width="352" height="160" rx="16" class="mask"/>
+  <rect x="1424" y="112" width="352" height="160" rx="16" class="node"/>
+  <rect x="1440" y="128" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="1468" y="146" text-anchor="middle" class="tag t-ink">LLM</text>
+  <text x="1600" y="192" text-anchor="middle" class="name">Judge</text>
+  <text x="1600" y="224" text-anchor="middle" class="sub">criteria · goal_achieved</text>
+  <text x="1600" y="252" text-anchor="middle" class="sub">red team: OWASP judge</text>
+  <!-- Node: Order store (store, ground truth) -->
+  <rect x="528" y="416" width="352" height="128" rx="16" class="mask"/>
+  <rect x="528" y="416" width="352" height="128" rx="16" class="soft"/>
+  <rect x="544" y="432" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="572" y="450" text-anchor="middle" class="tag">DB</text>
+  <text x="704" y="488" text-anchor="middle" class="name">Order store</text>
+  <text x="704" y="520" text-anchor="middle" class="sub">tool results = ground truth</text>
+  <!-- Node: Experiment run (orq entity, store) -->
+  <rect x="1424" y="416" width="352" height="128" rx="16" class="mask"/>
+  <rect x="1424" y="416" width="352" height="128" rx="16" class="soft"/>
+  <rect x="1440" y="432" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1468" y="450" text-anchor="middle" class="tag">EXP</text>
+  <text x="1600" y="488" text-anchor="middle" class="name">Experiment run</text>
+  <text x="1600" y="520" text-anchor="middle" class="sub">one row per conversation</text>
+  <!-- Callout 1: the judge's blind spot (under the transcript) -->
+  <path d="M 1152 272 V 344" class="faint dash"/>
+  <circle cx="1152" cy="272" r="4" class="dot"/>
+  <text x="1152" y="392" text-anchor="middle" class="note">The judge reads text.</text>
+  <text x="1152" y="428" text-anchor="middle" class="note">It never sees a tool call.</text>
+  <!-- Callout 2: every model call goes through the router (under the simulator) -->
+  <path d="M 256 272 V 344" class="faint dash"/>
+  <circle cx="256" cy="272" r="4" class="dot"/>
+  <text x="256" y="392" text-anchor="middle" class="note">All three models call the</text>
+  <text x="256" y="428" text-anchor="middle" class="note">orq router with your key.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="600" x2="1840" y2="600" class="hair"/>
+  <text x="80" y="632" class="legend-title">LEGEND</text>
+  <rect x="80" y="664" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="680" class="msg">Target under test</text>
+  <rect x="360" y="664" width="28" height="20" rx="4" class="alt"/>
+  <text x="400" y="680" class="msg">Simulated user or attacker</text>
+  <rect x="680" y="664" width="28" height="20" rx="4" class="node"/>
+  <text x="720" y="680" class="msg">Model</text>
+  <rect x="880" y="664" width="28" height="20" rx="4" class="soft"/>
+  <text x="920" y="680" class="msg">State / orq entity</text>
+  <line x1="1160" y1="676" x2="1216" y2="676" class="arrow"/>
+  <text x="1232" y="680" class="msg">Call</text>
+  <line x1="1360" y1="676" x2="1416" y2="676" class="arrow dash"/>
+  <text x="1432" y="680" class="msg">Reply</text>
+  <line x1="1560" y1="676" x2="1616" y2="676" class="link"/>
+  <text x="1632" y="680" class="msg">Upload to Studio</text>
+    
+</svg>

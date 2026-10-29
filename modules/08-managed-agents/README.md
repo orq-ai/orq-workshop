@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
 
+**Read first:** [Foundations](https://orq-ai.github.io/orq-workshop/modules/08-concepts/) (the agent loop), [Use case](https://orq-ai.github.io/orq-workshop/modules/08-logic/) (the refund policy) and [Agent design](https://orq-ai.github.io/orq-workshop/modules/08-solution-design/) (prompt, tools, limits). This page is the build tutorial.
+
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
 ## Why
@@ -337,6 +339,7 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 
 ## Gotchas
 
+- Step 5 failed on 2026-10-29 against orq.ai API 4.17.17: the `previous_response_id` follow-up after a turn that used the agent's code tools answered `400 No tool output found for function call`, in three runs. It worked when this module's output was captured.
 - `orq agents get` does not exist; it is `orq agents retrieve <key>`.
 - Each `responses.create` is a new trace, also with `previous_response_id`. Search by agent name, or pass `thread={"id": ...}` to group them in the thread view.
 - `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See `solution/stretch_factor7.py`.

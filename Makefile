@@ -63,7 +63,7 @@ agent-chat-ui: ## Run the refund agent chat UI on :8002
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
-diagrams: ## Re-export the docs diagrams (modules/*/assets/*.html) to PNG
+diagrams: ## Re-export the diagram SVGs (modules/*/assets, docs/assets/diagrams) to PNG
 	$(UV) run --with playwright python scripts/export_diagrams.py
 
 # Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 848" width="1920" height="848" role="img" aria-labelledby="span-ownership-title span-ownership-desc">
+  <title id="span-ownership-title">Span ownership: your app versus the AI Gateway</title>
+  <desc id="span-ownership-desc">Swimlane diagram showing the app's @traced root span refund_turn and its tool spans in one lane, the gateway's responses.openai trace and span.responses in the other, joined by the traceparent header, with request body fields becoming filters in the Traces view.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="848" class="bg"/>
+  <!-- Lane A: your app -->
+  <rect x="80" y="80" width="1760" height="288" rx="20" class="zone"/>
+  <rect x="112" y="88" width="544" height="24" rx="4" class="mask"/>
+  <text x="384" y="106" text-anchor="middle" class="zone-title">YOUR APP · @TRACED · OTLP TO /V2/OTEL</text>
+  <!-- Lane B: AI Gateway -->
+  <rect x="80" y="400" width="1760" height="304" rx="20" class="zone"/>
+  <rect x="880" y="408" width="560" height="24" rx="4" class="mask"/>
+  <text x="1160" y="426" text-anchor="middle" class="zone-title">AI GATEWAY · /V3/ROUTER · ONE TRACE PER CALL</text>
+  <!-- Arrows first -->
+  <!-- request fields ride on the call: down from N1, into N4 from the left -->
+  <path d="M 304 320 V 560 Q 304 576 320 576 H 608" class="link"/>
+  <!-- traceparent: root span -> gateway trace (focal) -->
+  <line x1="752" y1="320" x2="752" y2="496" class="accent"/>
+  <!-- root -> tool spans -->
+  <line x1="928" y1="240" x2="1056" y2="240" class="arrow"/>
+  <!-- responses.openai -> span.responses -->
+  <line x1="896" y1="576" x2="992" y2="576" class="arrow"/>
+  <!-- fields become filters (passive) -->
+  <line x1="1328" y1="576" x2="1424" y2="576" class="arrow dash"/>
+  <!-- Arrow labels -->
+  <rect x="328" y="472" width="160" height="24" rx="4" class="mask"/>
+  <text x="336" y="490" class="lbl">BODY FIELDS</text>
+  <rect x="776" y="376" width="168" height="24" rx="4" class="mask"/>
+  <text x="784" y="394" class="lbl t-accent">TRACEPARENT</text>
+  <rect x="952" y="200" width="80" height="24" rx="4" class="mask"/>
+  <text x="992" y="218" text-anchor="middle" class="lbl">CHILD</text>
+  <rect x="904" y="536" width="80" height="24" rx="4" class="mask"/>
+  <text x="944" y="554" text-anchor="middle" class="lbl">CHILD</text>
+  <rect x="1336" y="536" width="80" height="24" rx="4" class="mask"/>
+  <text x="1376" y="554" text-anchor="middle" class="lbl">QUERY</text>
+  <!-- N1: Request fields (input) -->
+  <rect x="128" y="160" width="352" height="160" rx="16" class="mask"/>
+  <rect x="128" y="160" width="352" height="160" rx="16" class="alt"/>
+  <rect x="144" y="176" width="64" height="24" rx="4" class="tag-box mute"/>
+  <text x="176" y="194" text-anchor="middle" class="tag t-mute">BODY</text>
+  <text x="304" y="240" text-anchor="middle" class="name">Request fields</text>
+  <text x="304" y="272" text-anchor="middle" class="sub">name · identity · thread</text>
+  <text x="304" y="300" text-anchor="middle" class="sub">metadata · via extra_body</text>
+  <!-- N2: refund_turn root span (your code) -->
+  <rect x="608" y="160" width="320" height="160" rx="16" class="mask"/>
+  <rect x="608" y="160" width="320" height="160" rx="16" class="node"/>
+  <rect x="624" y="176" width="72" height="24" rx="4" class="tag-box ink"/>
+  <text x="660" y="194" text-anchor="middle" class="tag t-ink">AGENT</text>
+  <text x="768" y="240" text-anchor="middle" class="name">refund_turn</text>
+  <text x="768" y="272" text-anchor="middle" class="sub">@traced(type="agent")</text>
+  <text x="768" y="300" text-anchor="middle" class="sub">root span · one per turn</text>
+  <!-- N3: tool spans (your code) -->
+  <rect x="1056" y="160" width="528" height="160" rx="16" class="mask"/>
+  <rect x="1056" y="160" width="528" height="160" rx="16" class="node"/>
+  <rect x="1072" y="176" width="64" height="24" rx="4" class="tag-box ink"/>
+  <text x="1104" y="194" text-anchor="middle" class="tag t-ink">TOOL</text>
+  <text x="1320" y="240" text-anchor="middle" class="name">tool spans ×3</text>
+  <text x="1320" y="272" text-anchor="middle" class="sub">@traced(type="tool")</text>
+  <text x="1320" y="300" text-anchor="middle" class="sub">lookup_order · get_policy · issue_refund</text>
+  <!-- N4: responses.openai trace (gateway) -->
+  <rect x="608" y="496" width="288" height="160" rx="16" class="mask"/>
+  <rect x="608" y="496" width="288" height="160" rx="16" class="soft"/>
+  <rect x="624" y="512" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="660" y="530" text-anchor="middle" class="tag">TRACE</text>
+  <text x="752" y="576" text-anchor="middle" class="name">responses.openai ×4</text>
+  <text x="752" y="608" text-anchor="middle" class="sub">one per model call</text>
+  <text x="752" y="636" text-anchor="middle" class="sub">nested under root</text>
+  <!-- N5: span.responses (gateway) -->
+  <rect x="992" y="496" width="336" height="160" rx="16" class="mask"/>
+  <rect x="992" y="496" width="336" height="160" rx="16" class="soft"/>
+  <rect x="1008" y="512" width="64" height="24" rx="4" class="tag-box"/>
+  <text x="1040" y="530" text-anchor="middle" class="tag">SPAN</text>
+  <text x="1160" y="576" text-anchor="middle" class="name">span.responses</text>
+  <text x="1160" y="608" text-anchor="middle" class="sub">model · cost · tokens</text>
+  <text x="1160" y="636" text-anchor="middle" class="sub">latency · status</text>
+  <!-- N6: Traces view (external) -->
+  <rect x="1424" y="496" width="400" height="160" rx="16" class="mask"/>
+  <rect x="1424" y="496" width="400" height="160" rx="16" class="ghost"/>
+  <rect x="1440" y="512" width="64" height="24" rx="4" class="tag-box mute"/>
+  <text x="1472" y="530" text-anchor="middle" class="tag t-mute">VIEW</text>
+  <text x="1624" y="576" text-anchor="middle" class="name">Traces · CLI filters</text>
+  <text x="1624" y="608" text-anchor="middle" class="sub">thread_id · identity_id</text>
+  <text x="1624" y="636" text-anchor="middle" class="sub">metadata.* · name</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="736" x2="1840" y2="736" class="hair"/>
+  <text x="80" y="768" class="legend-title">LEGEND</text>
+  <rect x="80" y="800" width="28" height="20" rx="4" class="node"/>
+  <text x="120" y="816" class="msg">Span your code emits</text>
+  <rect x="392" y="800" width="28" height="20" rx="4" class="soft"/>
+  <text x="432" y="816" class="msg">Span the gateway emits</text>
+  <rect x="728" y="800" width="28" height="20" rx="4" class="alt"/>
+  <text x="768" y="816" class="msg">Request body</text>
+  <rect x="960" y="800" width="28" height="20" rx="4" class="ghost"/>
+  <text x="1000" y="816" class="msg">Studio / CLI</text>
+  <line x1="1184" y1="812" x2="1240" y2="812" class="accent"/>
+  <text x="1256" y="816" class="msg">W3C traceparent header</text>
+  <line x1="1528" y1="812" x2="1584" y2="812" class="link"/>
+  <text x="1600" y="816" class="msg">HTTP call</text>
+    
+</svg>

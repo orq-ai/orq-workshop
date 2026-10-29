@@ -1,37 +1,38 @@
-"""Export diagram sources (HTML with inline SVG) to PNG, diagram only, 2x (`make diagrams`).
+"""Export SVG diagram sources (styled by scripts/diagram.css) to committed PNGs (`make diagrams`).
 
-    uv run --with playwright python scripts/export_diagrams.py [file.html ...]
+    uv run --with playwright python scripts/export_diagrams.py [file.svg ...]
 
-No arguments exports every modules/*/assets/*.html and docs/assets/diagrams/*.html; the PNG
-lands next to its source with the same stem. The PNGs are committed: GitHub renders the
-README from them, and scripts/mkdocs_hooks.py registers them for the docs site.
+No arguments exports every modules/*/assets/*.svg and docs/assets/diagrams/*.svg; the PNG lands
+next to its source with the same stem. The PNGs are committed: GitHub renders the READMEs from
+them, and scripts/mkdocs_hooks.py registers them for the docs site. Each PNG is about 2400px
+wide (2x for a 1000 unit viewBox, less for wider ones) with the sand background baked in.
 Needs a Playwright Chromium once: `uv run --with playwright playwright install chromium`.
 """
 
+import re
 import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-files = [Path(a) for a in sys.argv[1:]] or sorted(
-    [*ROOT.glob("modules/*/assets/*.html"), *ROOT.glob("docs/assets/diagrams/*.html")]
+TARGET_WIDTH = 2400
+files = [Path(arg).resolve() for arg in sys.argv[1:]] or sorted(
+    [*ROOT.glob("modules/*/assets/*.svg"), *ROOT.glob("docs/assets/diagrams/*.svg")]
 )
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    # 2x device scale: the docs site shows the PNG at half its pixel size, so text stays crisp
-    # on retina screens.
-    page = browser.new_page(device_scale_factor=2)
-    for src in files:
-        page.goto(src.resolve().as_uri())
+with sync_playwright() as playwright:
+    browser = playwright.chromium.launch()
+    for source in files:
+        width = int(re.search(r'viewBox="0 0 (\d+)', source.read_text()).group(1))
+        page = browser.new_page(device_scale_factor=min(2, TARGET_WIDTH / width))
+        page.goto(source.as_uri())
         page.wait_for_load_state("networkidle")
-        # The brand web fonts load after the page is "loaded"; screenshot before they arrive
-        # and the labels render in the fallback face.
+        # The web fonts load after the page is "loaded"; screenshot before they arrive and the
+        # labels render in the fallback face.
         page.evaluate("document.fonts.ready")
-        out = src.with_suffix(".png")
-        # Screenshot the <svg> element only (no page margins) with a transparent background,
-        # so the PNG takes the background of whichever page shows it (GitHub or the docs site).
-        page.locator("svg").first.screenshot(path=str(out), omit_background=True)
-        print(f"{out}  {out.stat().st_size // 1024} KB")
+        output = source.with_suffix(".png")
+        page.locator("svg").first.screenshot(path=str(output), omit_background=True)
+        page.close()
+        print(f"{output.relative_to(ROOT)}")
     browser.close()
