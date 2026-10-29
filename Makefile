@@ -104,6 +104,10 @@ module: ## Run modules/$(M)/run.py (starter on main, finished file on the soluti
 	@echo "Source file: modules/$(M)/run.py"; echo "Full command: $(RUN) python modules/$(M)/run.py"; echo
 	$(RUN) python modules/$(M)/run.py
 
+check: ## Verify a module's Done when list against orq.ai, e.g. make check M=tracing
+	@test -n "$(M)" || { echo "usage: make check M=<module>"; exit 1; }
+	$(RUN) python -m app.checks $(M)
+
 # ponytail: the old numbered names (make m07) stay as aliases because printed handouts and private
 # run-of-shows use them. Drop after the next client run.
 OLD_NUMBERS := 00=setup 01=gateway 02=tracing 03=smart-routing 04=guardrails 05=budgets-and-keys 06=orqi 08=managed-agents 09=knowledge-base 10=mcp-gateway 11=simulation 12=evals-in-ci 13=coding-agents 14=alerts-and-webhooks 15=advisor-and-sidekick 16=red-teaming 17=annotation-queues 18=trace-insights
@@ -112,7 +116,7 @@ m%:
 	@slug=$$(echo "$(OLD_NUMBERS)" | tr ' ' '\n' | sed -n 's/^$*=//p'); test -n "$$slug" || { echo "no module $*"; exit 1; }; \
 	echo "make m$* is now: make module M=$$slug"; $(MAKE) --no-print-directory module M=$$slug
 
-.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules module
+.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules module check
 
 # ponytail: old target names, kept because private run-of-shows and printed handouts still say them.
 # Drop after the next client run. Hidden from `make help` (no `##`).
