@@ -3,11 +3,15 @@
 !!! abstract "Retrieval decides what the model sees"
     Retrieval decides what the model sees. Chunking decides what retrieval can find. Both are settings you own, and the cheapest RAG is the one that searches before the model call instead of asking the model to search.
 
-| | |
-|---|---|
-| **Time** | 35 min |
-| **Prerequisites** | modules 00 to 02, `make seed-workspace` |
-| **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/), [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Command: `make seed-workspace`. Time: 35 min.
+
+## Goal
+
+The refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -240,6 +244,10 @@ Cohere `embed-v5.0-pro` and `embed-v5.0-fast` ([release 4.16](https://docs.orq.a
 ## Go further
 
 - `app/edge.py`: the `/search` contract in 20 lines. Point it at a real index (Weaviate, Pinecone, pgvector) instead of keyword scoring and nothing on the orq.ai side changes.
+
+## End state
+
+The refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [MCP servers and gateway](https://orq-ai.github.io/orq-workshop/modules/mcp-gateway/).
 
 ## Official docs
 

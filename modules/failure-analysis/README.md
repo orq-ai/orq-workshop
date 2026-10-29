@@ -3,13 +3,16 @@
 !!! abstract "A prompt you own is a prompt you can measure"
     A prompt you own is a prompt you can measure. The traces say what the prompt does, a taxonomy says what to fix, an evaluator says whether the fix held. The tools already return short error strings (`outside_window`, `already_refunded`); a judge reads short answers the same way.
 
-| | |
-|---|---|
-| **Time** | 40 min |
-| **Prerequisites** | modules 00 and 02 |
-| **You will have** | a failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions. |
+## Starting point
 
-**Read first:** [Concepts](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/concepts/) (error analysis, scorers, the gate). This page is Part A, find and fix; [Evaluate](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/evaluate/) is Part B, prove it with an eval.
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Command: `make module M=tracing`. Time: 40 min.
+
+## Goal
+
+A failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions.
+
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -323,6 +326,10 @@ Python evaluators are written in a real editor with completions and diagnostics 
 ## Go further
 
 Write the judge that this module says is missing: a binary `ws-refund-decision-judge` whose prompt receives the tool results as well as the answer, label 40 rows by hand (the `details` block in `evals/results/latest.json` after module 12 is a good start), and compute TPR and TNR before you let it into CI.
+
+## End state
+
+A failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Agent simulation](https://orq-ai.github.io/orq-workshop/modules/simulation/).
 
 ## Official docs
 

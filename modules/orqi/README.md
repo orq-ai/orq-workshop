@@ -3,11 +3,15 @@
 !!! abstract "Ask your workspace questions in plain language"
     The workspace you have been filling with traces, guardrail blocks and timeouts can be questioned from a terminal in plain language. orqi is the orq.ai helper agent: it operates the platform, it does not build your app.
 
-| | |
-|---|---|
-| **Time** | 15 min |
-| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make generate-traffic`) |
-| **You will have** | four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/) and the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page (orqi installed and signed in). Traffic in the workspace from the gateway, tracing, routing and guardrails modules, or `make generate-traffic`.
+Command: `make generate-traffic`. Time: 15 min.
+
+## Goal
+
+Four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`.
+
 
 ## Why
 
@@ -240,6 +244,10 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 ## Go further
 
 `orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make generate-traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
+
+## End state
+
+Four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

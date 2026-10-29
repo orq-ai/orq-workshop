@@ -3,11 +3,15 @@
 !!! abstract "The human loop"
     Module 14 made the platform push numbers and events to you. This module is the human loop: a queue collects the traces worth a look, an automation fills it without you, a reviewer scores each one, and the reviewed traces become a dataset the next experiment runs on.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | modules 02 and 07, `make seed-workspace` |
-| **You will have** | `ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`. |
+## Starting point
+
+Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/), [Failure analysis to experiments](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/).
+Command: `make seed-workspace`. Time: 25 min.
+
+## Goal
+
+`ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -147,6 +151,10 @@ Automations can target the spans of a given variant or Agent version without cus
 
 - Sample 10% into the queue with the automation, review for a day, and compare the bad rate with module 07's judge on the same traces: that gap is the judge's error.
 - Add a `correction` annotation definition (text) and store the reviewer's rewrite on the trace itself; promote it as `expected_output` instead of the fixed sentence used here.
+
+## End state
+
+`ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

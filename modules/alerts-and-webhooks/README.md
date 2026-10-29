@@ -3,11 +3,16 @@
 !!! abstract "The platform pushes to you"
     Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 02, `make seed-workspace`, a public URL for the receiver (see step 3) |
-| **You will have** | a cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run. |
+## Starting point
+
+Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Also: a public URL for the receiver (see step 3).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+A cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -160,6 +165,10 @@ The Telemetry API (`POST /v3/telemetry/query`) answers cost, token, latency and 
 
 - Add a second alert on `genai.latency.p95` with a threshold read from step 1, and a Slack notifier (`NOTIFIER_TYPE_SLACK_WEBHOOK`).
 - Subscribe the webhook to `llm.chat_completion` as well and write the receiver's events to a file: that is a trace export with no polling.
+
+## End state
+
+A cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

@@ -3,11 +3,16 @@
 !!! abstract "Your workspace from a coding agent, and the wrap-up"
     The same gateway, MCP server and skills you used from Python all day are one command away from Claude Code, OpenCode, Pi and Codex. A coding-agent session is just another traced, budgeted client of your workspace.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 00; at least one of Claude Code, OpenCode, Pi or Codex installed |
-| **You will have** | a dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Also: At least one of Claude Code, OpenCode, Pi or Codex installed.
+Command: `make module M=setup`. Time: 25 min.
+
+## Goal
+
+A dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo.
+
 
 ## Why
 
@@ -311,6 +316,10 @@ Eight coding agents (Claude Code, Codex, OpenCode, Kimi Code, Kilo, Pi, GitHub C
 ## Go further
 
 `ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from module 05 and you have a spend cap per developer.
+
+## End state
+
+A dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Troubleshooting with orqi](https://orq-ai.github.io/orq-workshop/modules/orqi/).
 
 ## Official docs
 

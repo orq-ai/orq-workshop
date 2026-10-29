@@ -3,13 +3,16 @@
 !!! abstract "The agent and its tools live in orq.ai"
     The agent lives in orq.ai, and so do its three refund tools: they are code tools, small Python functions orq runs for you. One Responses call is one customer turn, eight iterations max. The hybrid alternative, function tools that your own code runs, is step 2b.
 
-| | |
-|---|---|
-| **Time** | 40 min |
-| **Prerequisites** | modules 00 to 02, `make seed-workspace` |
-| **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
+## Starting point
 
-**Read first:** [Foundations](https://orq-ai.github.io/orq-workshop/modules/managed-agents/concepts/) (the agent loop), [Use case](https://orq-ai.github.io/orq-workshop/modules/managed-agents/logic/) (the refund policy) and [Agent design](https://orq-ai.github.io/orq-workshop/modules/managed-agents/solution-design/) (prompt, tools, limits). This page is the build tutorial.
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/), [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Command: `make seed-workspace`. Time: 40 min.
+
+## Goal
+
+The refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`.
+
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -356,6 +359,10 @@ MCP servers are their own section in the Agent builder instead of a tool type, a
 
 - Module 15: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
 - [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/managed-agents/stretch_factor7.py): a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
+
+## End state
+
+The refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Failure analysis to experiments](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/).
 
 ## Official docs
 

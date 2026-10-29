@@ -3,11 +3,15 @@
 !!! abstract "Spend is a request attribute, not a spreadsheet"
     Who is calling, on whose behalf, and how much they may spend are attributes of the request, enforced by the gateway. Not a spreadsheet you reconcile after the invoice.
 
-| | |
-|---|---|
-| **Time** | 15 min, instructor demo |
-| **Prerequisites** | module 00, workspace admin |
-| **You will have** | a purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/). Needs a workspace admin, so this module runs as an instructor demo in most rooms.
+Command: `make module M=setup`. Time: 15 min.
+
+## Goal
+
+A purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end.
+
 
 ## Why
 
@@ -214,6 +218,10 @@ Use the orq.ai MCP tool `query_analytics` to break down spend by model for the l
 API key permissions can be granted per area (Traces, Logs, Experiments, Webhooks and more), so an ingestion key can write spans and nothing else ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Home shows requests, cost and tokens per API key ([release 4.16](https://docs.orq.ai/changelog/release-4-16)), and workload federation swaps a CI OIDC token for a short-lived key, so no orq.ai secret is stored in the pipeline ([release 4.17](https://docs.orq.ai/changelog/release-4-17), Enterprise).
 
 ## Go further
+
+## End state
+
+A purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

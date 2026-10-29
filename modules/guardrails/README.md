@@ -3,11 +3,15 @@
 !!! abstract "A block is the hand-off to a human"
     A guardrail that blocks is the agent saying "I need a person". The gateway returns an error the app can catch, and the app opens the escalation path. The model never has to be prompted into asking for help.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 00, `make seed-workspace` |
-| **You will have** | PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Command: `make seed-workspace`. Time: 25 min.
+
+## Goal
+
+PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all.
+
 
 ## Why
 
@@ -264,6 +268,10 @@ PII detection and redaction run as a System guardrail and cover country-specific
 ## Go further
 
 The same `pii_redaction` config can be switched on for the whole workspace under Settings > Plugins, and a request can only make it stricter, never looser. `GET /v2/pii/capabilities` is the live catalog of entity types and regions.
+
+## End state
+
+PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Budgets and keys](https://orq-ai.github.io/orq-workshop/modules/budgets-and-keys/).
 
 ## Official docs
 

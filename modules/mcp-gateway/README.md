@@ -3,11 +3,16 @@
 !!! abstract "One set of tools, three callers, one allow-list"
     The three refund tools return the same JSON whether the local loop, an MCP client or a managed agent calls them. The gateway decides which of them a given client is allowed to see. A small agent gets `lookup_order` and `get_policy`; nobody outside gets `issue_refund`.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 00, `make seed-workspace`, an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys) |
-| **You will have** | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Also: an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+The refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -213,6 +218,10 @@ OAuth is the default way to connect a client to an MCP Gateway (a browser sign-i
 ## Go further
 
 Create a **Toolset** on the gateway (a named subset of tools across servers) and bind an API key to it with `mcp_access.toolset_ids`. The key then sees only the intersection of what the gateway exposes and what the toolset contains, which is how one gateway serves several teams.
+
+## End state
+
+The refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Advisor and sidekick](https://orq-ai.github.io/orq-workshop/modules/advisor-and-sidekick/).
 
 ## Official docs
 

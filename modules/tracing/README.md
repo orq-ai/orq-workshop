@@ -3,11 +3,15 @@
 !!! abstract "The context window, readable after the fact"
     The trace is the context window you can read after the fact: every model call, every tool result, in order. Identity, thread and metadata ride on the same request, so who asked, in which conversation, on which plan, is on the trace and not in a side table.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 01 |
-| **You will have** | traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it. |
+## Starting point
+
+Done: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
+Command: `make module M=gateway`. Time: 30 min.
+
+## Goal
+
+Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it.
+
 
 ## Why
 
@@ -236,6 +240,10 @@ The Traces page was rebuilt: filter on any attribute or metadata field, write th
 ## Go further
 
 Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
+
+## End state
+
+Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Managed agents](https://orq-ai.github.io/orq-workshop/modules/managed-agents/).
 
 ## Official docs
 

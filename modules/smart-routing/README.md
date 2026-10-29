@@ -3,11 +3,15 @@
 !!! abstract "Which model answers is a decision"
     Which model answers is a decision. This module moves that decision out of the code and into two places you can read and change at runtime: a Smart Router that picks per request, and a routing rule that overrides it.
 
-| | |
-|---|---|
-| **Time** | 20 min |
-| **Prerequisites** | module 01 |
-| **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`. |
+## Starting point
+
+Done: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
+Command: `make module M=gateway`. Time: 20 min.
+
+## Goal
+
+A Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -223,6 +227,10 @@ Session affinity keeps every turn of a conversation on the model the Smart Route
 ## Go further
 
 Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from module 01 on the request for the days a provider is down.
+
+## End state
+
+A Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Guardrails](https://orq-ai.github.io/orq-workshop/modules/guardrails/).
 
 ## Official docs
 
