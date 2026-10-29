@@ -5,8 +5,8 @@ Two things break when a page is assembled that way, and this hook fixes both:
 
 - Images. A `![...](assets/x.png)` in modules/NN-name/README.md resolves on GitHub but not on
   the site, because the page is docs/modules/NN.md. `on_files` registers every
-  modules/*/assets/*.png as the docs-relative file `modules/assets/<name>`, which is exactly
-  where the snippet-included page looks for it.
+  modules/*/assets/*.png and *.svg as the docs-relative file `modules/assets/<name>`, which is
+  exactly where the snippet-included page looks for it.
 - Terminal fences. termynal turns `<!-- termynal -->` fences into animated terminals, but its
   preprocessor runs before the snippet is included, so it never sees fences that live inside a
   README. Lowering its priority runs it after snippets.
@@ -55,9 +55,10 @@ def on_page_content(content, **kwargs):
 
 
 def on_files(files, config):
-    """Add every module diagram PNG to the build as `modules/assets/<name>` (MkDocs `on_files` event)."""
-    for png in sorted(ROOT.glob("modules/*/assets/*.png")):
-        files.append(File.generated(config, f"modules/assets/{png.name}", abs_src_path=str(png)))
+    """Add module images (PNG and SVG) to the build as `modules/assets/<name>` (MkDocs `on_files` event)."""
+    for asset in sorted(ROOT.glob("modules/*/assets/*")):
+        if asset.suffix.lower() in {".png", ".svg"}:
+            files.append(File.generated(config, f"modules/assets/{asset.name}", abs_src_path=str(asset)))
     # public sessions: serve the compiled deck next to the generated page docs/sessions/<name>.md
     for cfg in sorted(ROOT.glob("sessions/*/session.yml")):
         if yaml.safe_load(cfg.read_text()).get("public"):

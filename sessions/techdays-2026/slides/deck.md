@@ -41,7 +41,7 @@ Today, one refund agent, four steps:
 
 ## How the next two hours work
 
-- **First 20 minutes**: everyone gets a key and a green `make smoke`. Two of us walk the room.
+- **First 20 minutes**: everyone gets a key and a green `make gateway-check`. Two of us walk the room.
 - **One sample app**, a customer-support refund agent. We do not change it; we measure it.
 - **Each block**: a short concept, then your hands on the keyboard. TODOs in the module's `run.py`, the finished version in `solution/`.
 - **Two ways to follow**: run the commands yourself, or watch and read the expected output in each module README.
@@ -76,13 +76,13 @@ Everyone works in one shared workshop workspace. Your prefix keeps your agents a
 
 ```bash
 $ cp .env.example .env        # then paste the block from the email over it
-$ make setup && make doctor && make smoke
+$ make setup && make orq-doctor && make gateway-check
 ```
 
 Not cloned yet: `git clone https://github.com/orq-ai/orq-workshop`. The block sets `ORQ_API_KEY`, `ORQ_PROJECT`, `WS_PREFIX=ws<NN>` and the model lines. Nothing to edit by hand.
 
-- [ ] `make doctor` is green
-- [ ] `make smoke` prints an answer and a trace id
+- [ ] `make orq-doctor` is green
+- [ ] `make gateway-check` prints an answer and a trace id
 - [ ] You can find that trace in the Studio
 
 Laptop blocks `curl | sh`, or setup is still red at 0:20? Pair with a neighbour or follow on screen; every module README has the expected output.
@@ -136,8 +136,8 @@ v1 today: `vulnerable_instructions.md`. We find out what is wrong with it withou
 ## 1 · Live demo · Two copies, local and managed
 
 ```bash
-$ make seed     # ws<NN>-refund-agent, ws<NN>-refund-agent-vulnerable, judge, guard, dataset
-$ make smoke    # the local loop: one turn, one trace id
+$ make seed-workspace     # ws<NN>-refund-agent, ws<NN>-refund-agent-vulnerable, judge, guard, dataset
+$ make gateway-check    # the local loop: one turn, one trace id
 $ orq agents retrieve ws<NN>-refund-agent    # the managed copy: instructions, model, tools
 ```
 
@@ -366,8 +366,8 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 ## 4 · The eval as a gate in CI
 
 ```bash
-$ make eval              # quality gate, fixed instructions: exit 0
-$ make eval-vulnerable   # same gate, vulnerable instructions: exit 1
+$ make regression-eval              # quality gate, fixed instructions: exit 0
+$ make regression-eval-vulnerable   # same gate, vulnerable instructions: exit 1
 ```
 
 ```python
@@ -445,7 +445,7 @@ What the 20 conversations actually produced:
 | `leaks_pii_or_tools` | 1 |
 
 ```bash
-$ make traffic
+$ make generate-traffic
 $ uv run python modules/07-failure-analysis-evals/run.py 2     # your turn: the TODO is in traffic_traces()
 ```
 
@@ -552,6 +552,6 @@ $ make redteam-gate      # static red team, 95% bar, fails closed on errors
 ```
 
 - Fails closed: an attack that errored or was not evaluated exits 1, so an outage cannot pass as "no vulnerabilities".
-- `.github/workflows/evals.yml` runs it next to `make eval` on every PR that touches `app/` or `evals/`.
+- `.github/workflows/evals.yml` runs it next to `make regression-eval` on every PR that touches `app/` or `evals/`.
 
 Module 16 step 4: `diff` the two instruction files; most of the diff is noise, three sentences moved the number.

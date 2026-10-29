@@ -1,10 +1,10 @@
-"""make traffic: 20 conversations through the gateway, so Traces has something to analyze.
+"""make generate-traffic: 20 conversations through the gateway, so Traces has something to analyze.
 
 What: every row of `app/data/dataset.jsonl` (or the first N) sent as one refund turn.
 Why: failure analysis (module 07) needs real policy violations to find. Even rows run with the
 fixed instructions, odd rows with the vulnerable ones. Each call carries an identity and a thread
 id, so traces group per customer and per conversation.
-How: `make traffic`, or `uv run python -m app.traffic 6` for the first six rows. Filter the
+How: `make generate-traffic`, or `uv run python -m app.traffic 6` for the first six rows. Filter the
 traces afterwards on `metadata.batch` (this run) or `metadata.tag == "traffic"` (every run).
 """
 

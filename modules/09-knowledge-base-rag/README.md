@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 35 min |
-| **Prerequisites** | modules 00 to 02, `make seed` |
+| **Prerequisites** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
@@ -158,7 +158,7 @@ next     : the orq:* output items are the tools the agent used; open the trace t
 
 - 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 25 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
 - 5b is five lines of code and works everywhere: search, then a system message. 599 prompt tokens, an answer that quotes the policy.
-- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in [`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py)), which is why the step calls `agent/ws-refund-agent` and the output items show what it used. When it searches the knowledge base an `orq:query_knowledge_base` item appears, carrying the query the agent wrote, the chunk, the file name and the score; in the run above it answered through its `get_policy` tool instead, so the items read `orq:ws-get_policy`. Either way the agent decides, so ask a question the four files cannot answer to see the search. An agent with the knowledge base attached but without those two tools never searches it.
+- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed-workspace` gives `ws-refund-agent` both (see `agent_payload` in [`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py)), which is why the step calls `agent/ws-refund-agent` and the output items show what it used. When it searches the knowledge base an `orq:query_knowledge_base` item appears, carrying the query the agent wrote, the chunk, the file name and the score; in the run above it answered through its `get_policy` tool instead, so the items read `orq:ws-get_policy`. Either way the agent decides, so ask a question the four files cannot answer to see the search. An agent with the knowledge base attached but without those two tools never searches it.
 
 ### Step 6 · Agentic RAG
 
@@ -227,7 +227,7 @@ Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent
 
 ## Gotchas
 
-- Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset && make seed`.
+- Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset-workspace && make seed-workspace`.
 - `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it (SDK 4.14, not retested).
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
 - `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.

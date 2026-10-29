@@ -9,8 +9,8 @@ The session follows one agent through four steps: build it, simulate customers a
 | Clock | Block | Min | Slides | Source | Hands-on |
 |---|---|---|---|---|---|
 | 0:00 | Welcome, hands count, how today works | 5 | 1 to 3 | | |
-| 0:05 | Onboarding: QR → key by email → `.env` → `make setup && make doctor && make smoke` | 20 | 4 to 5 | module 00 | walk the room |
-| 0:25 | 1 · The refund agent: loop in code, `make seed`, managed copy, one trace | 15 | 6 to 8 | modules 00, 08 | 7 concept + 8 run |
+| 0:05 | Onboarding: QR → key by email → `.env` → `make setup && make orq-doctor && make gateway-check` | 20 | 4 to 5 | module 00 | walk the room |
+| 0:25 | 1 · The refund agent: loop in code, `make seed-workspace`, managed copy, one trace | 15 | 6 to 8 | modules 00, 08 | 7 concept + 8 run |
 | 0:40 | 2 · Agent simulation: personas × scenarios, criteria, run against v1 (vulnerable prompt), `eq dashboard` | 35 | 9 to 14 | module 11 | 10 concept + 25 TODOs |
 | 1:15 | 3 · Trace insights: `make m18` on your own sim traces, failure clusters in `eq dashboard` → Insights | 25 | 15 to 18 | module 18 | 5 concept + 20 click |
 | 1:40 | 4 · From insight to eval: one binary evaluator for the failure, swap to fixed prompt, re-run, CI gate in one slide | 12 | 19 to 22 | modules 07, 12 | demo |
@@ -27,12 +27,12 @@ Two facilitators. During onboarding and the hands-on parts of blocks 2 and 3, bo
 ## Before the session
 
 - [ ] Latest orq CLI on the demo machine: `curl -fsSL https://cli.orq.ai/install.sh | sh`, then `orq --version`. Version used: `________`.
-- [ ] Demo workspace clean: `make reset && make seed` from a fresh clone, with a key claimed through the kickstart page like a participant's.
+- [ ] Demo workspace clean: `make reset-workspace && make seed-workspace` from a fresh clone, with a key claimed through the kickstart page like a participant's.
 - [ ] `uv run python modules/11-simulation/solution/run.py --only=1,3` and `make m18` each run once today. Keep the terminal output in a scratch file as fallback.
 - [ ] `uv run eq dashboard` open in a browser tab with the Agent Sim run and the Insights run above loaded.
-- [ ] `make eval` and `make eval-vulnerable` run once: exit 0 and exit 1.
+- [ ] `make regression-eval` and `make regression-eval-vulnerable` run once: exit 0 and exit 1.
 - [ ] `orq launch claude` works on the demo machine, and `npx skills add orq-ai/assistant-plugins` is installed for the `orq-recommend-evaluators` line on slide 20.
-- [ ] Concurrency dry run: `make seed`, module 11 step 1 and `make m18` from four laptops at once on the workshop workspace. Note where it breaks, and the cost of one full seat run (Home → usage per API key): `________`.
+- [ ] Concurrency dry run: `make seed-workspace`, module 11 step 1 and `make m18` from four laptops at once on the workshop workspace. Note where it breaks, and the cost of one full seat run (Home → usage per API key): `________`.
 - [ ] Put the real passcode on slide 4 in the local copy you present from. Never commit it.
 - [ ] `make session S=techdays-2026`, and keep `slides/deck.html` (self-contained) on a USB stick for the venue. If the globally installed `marp` fails (it does on Node 26), run `make session S=techdays-2026 MARP="npx -y @marp-team/marp-cli@latest"`.
 
@@ -43,9 +43,9 @@ One shared workshop workspace. Each participant claims their own key on the day:
 1. Open https://orq-kickstart.vercel.app (the QR code on slide 4 points there).
 2. Enter their email and the passcode the hosts set. The slide shows `PASSCODE` as a placeholder; the real passcode is set by the hosts and never committed.
 3. They get an email with a ready-to-paste `.env` block: `ORQ_API_KEY`, `ORQ_PROJECT`, `WS_PREFIX=ws<NN>` and the model lines.
-4. `cp .env.example .env`, paste the block, then `make setup && make doctor && make smoke`.
+4. `cp .env.example .env`, paste the block, then `make setup && make orq-doctor && make gateway-check`.
 
-The per-seat `WS_PREFIX` (`ws01`, `ws02`, ...) keeps 30 copies of the agent apart: keys become `ws07-refund-agent`, `ws07-refund-agent-vulnerable`. `make reset` deletes by prefix afterwards.
+The per-seat `WS_PREFIX` (`ws01`, `ws02`, ...) keeps 30 copies of the agent apart: keys become `ws07-refund-agent`, `ws07-refund-agent-vulnerable`. `make reset-workspace` deletes by prefix afterwards.
 
 - Prerequisites mail (Anastasia sends it Wednesday): clone the repo, install `uv`, run `make setup`, bring a laptop that allows `curl | sh`. Fallback for anyone who cannot install: follow on the demo screen and read the expected-output blocks. Say this up front so nobody feels behind.
 - No email after two minutes: check spam first, then a facilitator.
@@ -76,7 +76,7 @@ The participant TODOs are in `modules/11-simulation/run.py`: a second persona an
 
 Then `uv run eq dashboard` → Insights tab. Two Studio features help here: the rebuilt Traces page (orq 4.16) filters on any attribute or metadata field and saves views with the filter in the URL, so each participant can filter on their own agent name; `orq traces conversation <id>` (orq 4.15) prints one trace as a readable conversation. Push people to read two traces from the cluster before they accept its name.
 
-**4 · From insight to eval.** Demo only. The cluster becomes one binary evaluator in the style of module 07's `refund_when_should_refuse`: code where the tool call shows it, a judge for what only the words show. Then set `VARIANT = "fixed"` in module 11 and re-run step 1 (0 rules broken on our run). The figure on slide 21 is the module 11 README run on the fixed prompt, from before the manager-approval criterion was added; it shows the shape (refusal reads as goal not achieved, rules broken none), not today's numbers. Slide 22 is the module 12 CI gate: `make eval` exits 0, `make eval-vulnerable` exits 1. Since orq 4.15 evaluators skip failed Agent runs, so scores reflect completed runs only. The "Ask your agent" line uses orq Skills from 4.16: `orq-recommend-evaluators` reads the agent's instructions, tools and recent traces and proposes up to five evaluators; `orq-evaluator-alignment` runs a jury test of a judge prompt. Install with `npx skills add orq-ai/assistant-plugins`.
+**4 · From insight to eval.** Demo only. The cluster becomes one binary evaluator in the style of module 07's `refund_when_should_refuse`: code where the tool call shows it, a judge for what only the words show. Then set `VARIANT = "fixed"` in module 11 and re-run step 1 (0 rules broken on our run). The figure on slide 21 is the module 11 README run on the fixed prompt, from before the manager-approval criterion was added; it shows the shape (refusal reads as goal not achieved, rules broken none), not today's numbers. Slide 22 is the module 12 CI gate: `make regression-eval` exits 0, `make regression-eval-vulnerable` exits 1. Since orq 4.15 evaluators skip failed Agent runs, so scores reflect completed runs only. The "Ask your agent" line uses orq Skills from 4.16: `orq-recommend-evaluators` reads the agent's instructions, tools and recent traces and proposes up to five evaluators; `orq-evaluator-alignment` runs a jury test of a judge prompt. Install with `npx skills add orq-ai/assistant-plugins`.
 
 **Appendix.** Not presented. If someone asks about red teaming: static mode only, deterministic, about three minutes. Do not show `modules/16-red-teaming/assets/red-team-loop.png`: its caption (judge flagged one, store saw two refunds) contradicts the run output in the same README (judge flagged two, store saw one). The module 07 judge prompt has since been fixed for the "change of mind" case (`app/data/judge_prompt.md` now says any reason is valid in-window); module 07's README still describes the old behaviour.
 
@@ -93,7 +93,7 @@ Every module README has real expected-output blocks. If a live command fails, sh
 ## Reset after the session
 
 ```bash
-make reset
+make reset-workspace
 ```
 
 Run it once per prefix used. Traces stay.

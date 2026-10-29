@@ -2,7 +2,7 @@
 
 ## Before the session
 
-- [ ] `make reset && make seed && make traffic`
+- [ ] `make reset-workspace && make seed-workspace && make generate-traffic`
 
 ## What to cut when the room runs slow
 

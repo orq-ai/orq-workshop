@@ -15,11 +15,11 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | Min | Block | You run | You leave with |
 |---|---|---|---|
 | 5 | Welcome, how this session works |  |  |
-| 20 | [Get your key and set up](../modules/00.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
-| 15 | [1 · The refund agent](../modules/08.md) | `make seed` | your smoke trace open in the Studio |
+| 20 | [Get your key and set up](../modules/00.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
+| 15 | [1 · The refund agent](../modules/08.md) | `make seed-workspace` | your smoke trace open in the Studio |
 | 35 | [2 · Simulate customers](../modules/11.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
 | 25 | [3 · Read the traces](../modules/18.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
-| 12 | [4 · From insight to eval](../modules/07.md) | `make eval && make eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 12 | [4 · From insight to eval](../modules/07.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 8 | Take home, questions |  |  |
 
 Total: 120 min.
@@ -38,14 +38,14 @@ Total: 120 min.
 4. In the repo: `cp .env.example .env`, paste the block over it, then:
 
 ```bash
-make setup && make doctor && make smoke
+make setup && make orq-doctor && make gateway-check
 ```
 
-Done when `make smoke` prints an answer, the tools it called and a trace id. Nothing in `.env` needs editing by hand; every model comes from it.
+Done when `make gateway-check` prints an answer, the tools it called and a trace id. Nothing in `.env` needs editing by hand; every model comes from it.
 
 ## 1 · The refund agent (0:25)
 
-Three tools, one loop, your code; every model call goes through the orq gateway, so every turn is a trace. `make seed` creates the managed copies you need later: `ws<NN>-refund-agent` (the fixed prompt) and `ws<NN>-refund-agent-vulnerable` (v1, the one we test today).
+Three tools, one loop, your code; every model call goes through the orq gateway, so every turn is a trace. `make seed-workspace` creates the managed copies you need later: `ws<NN>-refund-agent` (the fixed prompt) and `ws<NN>-refund-agent-vulnerable` (v1, the one we test today).
 
 Done when you have opened your smoke trace in the Studio and can point at its tool calls.
 
@@ -78,8 +78,8 @@ Done when you have one Pass/Fail sentence for the failure the cluster names.
 The sentence becomes one binary evaluator. Swap to the fixed prompt, re-run, and gate on it:
 
 ```bash
-make eval              # fixed prompt: exits 0
-make eval-vulnerable   # v1: exits 1
+make regression-eval              # fixed prompt: exits 0
+make regression-eval-vulnerable   # v1: exits 1
 ```
 
 ## Take home

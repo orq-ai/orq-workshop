@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step5c-managed-agent-title step5c-managed-agent-desc">
+  <title id="step5c-managed-agent-title">Managed agent retrieval: orq runs the loop and the search</title>
+  <desc id="step5c-managed-agent-desc">Architecture diagram for module 09 step 5c. Your code calls a managed agent by model name. The agent holds the knowledge base and the two built-in server tools, so orq performs the search itself and records it as an orq:query_knowledge_base item and a span before calling the model.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Arrows first: z-order puts them behind the nodes. -->
+  <line x1="816" y1="400" x2="816" y2="496" class="link"/>
+  <!-- The retrieval, entirely inside orq: routed around the app box on both sides. -->
+  <path d="M 1248 560 H 1344 Q 1360 560 1360 544 V 192" class="accent"/>
+  <path d="M 560 176 V 528 Q 560 544 576 544 H 672" class="accent dash"/>
+  <line x1="816" y1="624" x2="816" y2="752" class="arrow"/>
+  <!-- Arrow labels: beside the vertical segments, 8px gap, on open canvas. -->
+  <rect x="832" y="424" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="442" class="lbl">RESPONSES</text>
+  <rect x="1376" y="336" width="144" height="24" rx="4" class="mask"/>
+  <text x="1384" y="354" class="lbl t-accent">QUERY_KB</text>
+  <rect x="1376" y="368" width="176" height="24" rx="4" class="mask"/>
+  <text x="1384" y="386" class="lbl t-accent">SERVER TOOL</text>
+  <rect x="384" y="336" width="144" height="24" rx="4" class="mask"/>
+  <text x="392" y="354" class="lbl t-accent">CHUNKS</text>
+  <rect x="832" y="672" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="690" class="lbl">MODEL CALL</text>
+  <!-- Node: Knowledge base (focal, top bar) -->
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="focal"/>
+  <rect x="160" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="114" text-anchor="middle" class="tag t-accent">KB</text>
+  <text x="960" y="120" text-anchor="middle" class="name">Knowledge base</text>
+  <text x="960" y="152" text-anchor="middle" class="sub">ws-refund-policy · attached to the agent, searched by orq</text>
+  <!-- Node: your code -->
+  <rect x="672" y="272" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="272" width="576" height="128" rx="16" class="node"/>
+  <rect x="688" y="288" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="716" y="306" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="960" y="344" text-anchor="middle" class="name">Your code</text>
+  <text x="960" y="376" text-anchor="middle" class="sub">model=agent/ws-refund-agent · no loop of yours</text>
+  <!-- Node: Managed agent -->
+  <rect x="672" y="496" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="496" width="576" height="128" rx="16" class="soft"/>
+  <rect x="688" y="512" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="716" y="530" text-anchor="middle" class="tag">AGT</text>
+  <text x="960" y="568" text-anchor="middle" class="name">Managed agent</text>
+  <text x="960" y="600" text-anchor="middle" class="sub">retrieve_knowledge_bases + query_knowledge_base</text>
+  <!-- Node: Model (external, bottom bar) -->
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="ghost"/>
+  <rect x="160" y="768" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="188" y="786" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="960" y="792" text-anchor="middle" class="name">Model</text>
+  <text x="960" y="824" text-anchor="middle" class="sub">openai/gpt-5.6-luna · 902 input tokens · the retrieval is in the trace</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="920" x2="1840" y2="920" class="hair"/>
+  <text x="80" y="952" class="legend-title">LEGEND</text>
+  <rect x="80" y="984" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1000" class="msg">Knowledge base</text>
+  <rect x="352" y="984" width="28" height="20" rx="4" class="node"/>
+  <text x="392" y="1000" class="msg">Your code</text>
+  <rect x="568" y="984" width="28" height="20" rx="4" class="soft"/>
+  <text x="608" y="1000" class="msg">orq entity</text>
+  <rect x="784" y="984" width="28" height="20" rx="4" class="ghost"/>
+  <text x="824" y="1000" class="msg">Provider model</text>
+  <line x1="1040" y1="996" x2="1096" y2="996" class="accent"/>
+  <text x="1112" y="1000" class="msg">Retrieval, inside orq</text>
+  <line x1="1400" y1="996" x2="1456" y2="996" class="link"/>
+  <text x="1472" y="1000" class="msg">API call from your code</text>
+    
+</svg>

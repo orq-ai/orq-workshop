@@ -2,7 +2,7 @@
 
 One agent on one model runs every step. The `advisor` and `sidekick` tools hand single steps to
 a second model configured at design time, each metered on its own span. The agent
-`ws-refund-agent-delegating` already exists (`make seed`): the refund agent on gpt-5.6-luna plus
+`ws-refund-agent-delegating` already exists (`make seed-workspace`): the refund agent on gpt-5.6-luna plus
 an `advisor` on gpt-5.6-sol and a `sidekick` on gpt-5.4-nano. Your job: run it, read what each
 tool sent and got back, and read the cost of each choice off the trace.
 

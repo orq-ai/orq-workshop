@@ -116,7 +116,11 @@ nav:
       - Annotation queues and automations: modules/17.md
   - Managed agents:
       - own-your-agent.md
-      - Managed agents: modules/08.md
+      - Managed agents:
+          - Foundations: modules/08-concepts.md
+          - Use case: modules/08-logic.md
+          - Agent design: modules/08-solution-design.md
+          - Build: modules/08.md
       - Advisor and sidekick: modules/15.md
   - RAG and Retrieval:
       - reference/rag.md
@@ -125,10 +129,15 @@ nav:
       - reference/evaluatorq.md
       - reference/orq-arena.md
       - Evals and agents in CI: modules/12.md
-      - Agent simulation: modules/11.md
+      - Agent simulation:
+          - Concepts: modules/11-concepts.md
+          - Run: modules/11.md
       - Trace insights: modules/18.md
       - Red teaming: modules/16.md
-      - Failure analysis to experiments: modules/07.md
+      - Failure analysis to experiments:
+          - Concepts: modules/07-concepts.md
+          - Find and fix: modules/07.md
+          - Evaluate: modules/07-evaluate.md
   - Past sessions:
       - TechDays 15 Oct: sessions/techdays-2026.md
   - Administration:

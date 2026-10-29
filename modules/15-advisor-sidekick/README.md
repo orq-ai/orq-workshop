@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Prerequisites** | module 08, `make seed` |
+| **Prerequisites** | module 08, `make seed-workspace` |
 | **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
@@ -64,7 +64,7 @@ next     : Agents > wsvE-refund-agent-delegating > Tools in the Studio: the two 
 
 The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
 
-`make seed` built it from the fixed refund agent ([`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py), `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
+`make seed-workspace` built it from the fixed refund agent ([`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py), `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
 
 ### Step 2 · Run a refund the agent has to refuse
 

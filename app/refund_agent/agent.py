@@ -17,7 +17,7 @@ How to use it:
     result.tool_calls  # ["lookup_order", "get_policy", "issue_refund"]
     result.trace_id    # from the x-orq-trace-id response header; search it in the Studio
 
-`make smoke` does exactly that once.
+`make gateway-check` does exactly that once.
 """
 
 from __future__ import annotations

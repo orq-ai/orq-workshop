@@ -1,6 +1,6 @@
 """Module 08 starter: the refund agent as a managed orq Agent.
 
-The agent ws-refund-agent already exists (`make seed`). Its tools are code tools, so orq runs the
+The agent ws-refund-agent already exists (`make seed-workspace`). Its tools are code tools, so orq runs the
 loop and the tools: one Responses call per customer turn. Your job is the client side: invoke it
 through the Responses API and read the tool calls from the output items, then the rest of the Run
 Agents surface: variables and metadata, a second user turn, tool_choice, memory, versions. The

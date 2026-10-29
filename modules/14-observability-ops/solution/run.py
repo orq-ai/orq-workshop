@@ -9,7 +9,7 @@
 # | | |
 # |---|---|
 # | **Time** | 30 min |
-# | **Prerequisites** | module 02, `make seed` |
+# | **Prerequisites** | module 02, `make seed-workspace` |
 # | **You will have** | a cost alert that opened a trigger on a burst you caused, and orq events arriving signed at a receiver you run |
 #
 # This file is both the solution script (`make m14`) and the notebook source (`make notebooks`).
@@ -100,7 +100,7 @@ print("next     : Observability > Traces in the Studio draws these same numbers"
 # %% [markdown]
 # ## Step 2 · The watcher: an alert on spend
 #
-# `make seed` created `ws-cost-alert`: `genai.cost > $0.002` over the last 5 minutes, checked every 5
+# `make seed-workspace` created `ws-cost-alert`: `genai.cost > $0.002` over the last 5 minutes, checked every 5
 # minutes, notifying `ws-alert-notifier` (a webhook; `WS_WEBHOOK_URL` in `.env`). An alert without
 # notifiers still evaluates and records triggers. The burst below is a runaway loop in miniature:
 # refund turns until the window's spend passes the threshold with margin, fifteen at most. The alert

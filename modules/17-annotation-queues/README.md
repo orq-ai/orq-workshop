@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Prerequisites** | modules 02 and 07, `make seed` |
+| **Prerequisites** | modules 02 and 07, `make seed-workspace` |
 | **You will have** | `ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
@@ -33,7 +33,7 @@ Open [`modules/17-annotation-queues/run.py`](https://github.com/orq-ai/orq-works
 
 ### Step 1 · Fill the queue by API
 
-The last refund-agent traces in the project, newest first. One agent turn with tools is several traces with the same name, and only the last one ends in a message: the root span's `gen_ai.output` says which (`output_text` versus a lone `function_call`), so the hops are skipped. Run `make traffic` first so there are refund-agent traces to pick from (it names its traces `refund-traffic`, which the filter accepts next to the agent's own name); without it this step prints `traces: 0 candidates`.
+The last refund-agent traces in the project, newest first. One agent turn with tools is several traces with the same name, and only the last one ends in a message: the root span's `gen_ai.output` says which (`output_text` versus a lone `function_call`), so the hops are skipped. Run `make generate-traffic` first so there are refund-agent traces to pick from (it names its traces `refund-traffic`, which the filter accepts next to the agent's own name); without it this step prints `traces: 0 candidates`.
 
 ```bash
 $ uv run python modules/17-annotation-queues/run.py
@@ -137,7 +137,7 @@ The agent is a better reviewer than the rule in step 3, and slower than a human 
 - Annotation keys must exist as definitions in the workspace; an unknown key is a 404, a `defects` value outside the fixed list (`grammatical, spelling, hallucination, repetition, inappropriate, off_topic, incompleteness, ambiguity`) is a 400. No list endpoint for definitions was found; the id of one shows up in `used_human_review_ids` after the first annotation.
 - A queue created by API has no annotations configured; set `human_review_ids` (the step does) or the Studio panel is empty.
 - Automations have no API and act on future traces only. Step 2 detects one by running a turn and polling for 30 seconds.
-- `make reset` deletes the queue and the dataset by prefix; annotations stay on the traces.
+- `make reset-workspace` deletes the queue and the dataset by prefix; annotations stay on the traces.
 
 ## New in orq.ai 4.16 and 4.17
 

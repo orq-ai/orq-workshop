@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="rag-pipeline-title rag-pipeline-desc">
+  <title id="rag-pipeline-title">The retrieval pipeline, from documents to matches</title>
+  <desc id="rag-pipeline-desc">Reference diagram. Indexing happens once per datasource: documents are chunked, each chunk is embedded, and text and vector are stored together in one index. Searching happens per query against that same index: retrieve by vector, keyword or hybrid, drop results below the threshold, cut to top_k, optionally rerank with its own model and limits, and return the matches with their scores.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <text x="144" y="160" class="zone-title">ONCE, PER DATASOURCE</text>
+  <text x="144" y="496" class="zone-title">PER QUERY</text>
+  <!-- Arrows first -->
+  <line x1="592" y1="264" x2="672" y2="264" class="link"/>
+  <line x1="1120" y1="264" x2="1200" y2="264" class="link"/>
+  <!-- the same index feeds every search -->
+  <path d="M 1488 336 V 416 Q 1488 432 1472 432 H 360 Q 344 432 344 448 V 528" class="arrow dash"/>
+  <!-- the per-query chain -->
+  <line x1="544" y1="600" x2="592" y2="600" class="arrow"/>
+  <line x1="912" y1="600" x2="960" y2="600" class="arrow"/>
+  <line x1="1280" y1="600" x2="1328" y2="600" class="arrow"/>
+  <line x1="1552" y1="672" x2="1552" y2="752" class="accent"/>
+  <!-- Labels -->
+  <rect x="760" y="392" width="224" height="24" rx="4" class="mask"/>
+  <text x="768" y="410" class="lbl">THE SAME INDEX</text>
+  <!-- Indexing lane -->
+  <rect x="144" y="192" width="448" height="144" rx="16" class="node"/>
+  <text x="368" y="256" text-anchor="middle" class="name">Chunk</text>
+  <text x="368" y="292" text-anchor="middle" class="sub">strategy · size · overlap</text>
+  <rect x="672" y="192" width="448" height="144" rx="16" class="node"/>
+  <text x="896" y="256" text-anchor="middle" class="name">Embed</text>
+  <text x="896" y="292" text-anchor="middle" class="sub">one embedding model</text>
+  <rect x="1200" y="192" width="576" height="144" rx="16" class="soft"/>
+  <text x="1488" y="256" text-anchor="middle" class="name">Index</text>
+  <text x="1488" y="292" text-anchor="middle" class="sub">chunk text and vector, together</text>
+  <!-- Search lane -->
+  <rect x="144" y="528" width="400" height="144" rx="16" class="soft"/>
+  <text x="344" y="592" text-anchor="middle" class="name">Retrieve</text>
+  <text x="344" y="628" text-anchor="middle" class="sub">vector | keyword | hybrid</text>
+  <rect x="592" y="528" width="320" height="144" rx="16" class="soft"/>
+  <text x="752" y="592" text-anchor="middle" class="name">Threshold</text>
+  <text x="752" y="628" text-anchor="middle" class="sub">drop low scores</text>
+  <rect x="960" y="528" width="320" height="144" rx="16" class="soft"/>
+  <text x="1120" y="592" text-anchor="middle" class="name">top_k</text>
+  <text x="1120" y="628" text-anchor="middle" class="sub">cut to size</text>
+  <rect x="1328" y="528" width="448" height="144" rx="16" class="soft"/>
+  <text x="1552" y="584" text-anchor="middle" class="name">Rerank · optional</text>
+  <text x="1552" y="620" text-anchor="middle" class="sub">own model, top_k, threshold</text>
+  <text x="1552" y="652" text-anchor="middle" class="sub t-mute">retrieve 50, return 5</text>
+  <!-- Output -->
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="focal"/>
+  <rect x="160" y="768" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="786" text-anchor="middle" class="tag t-accent">OUT</text>
+  <text x="960" y="792" text-anchor="middle" class="name">matches</text>
+  <text x="960" y="824" text-anchor="middle" class="sub">text · id · metadata · scores.search_score (+ rerank_score when a reranker ran)</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="880" x2="1840" y2="880" class="hair"/>
+  <text x="80" y="912" class="legend-title">LEGEND</text>
+  <rect x="80" y="944" width="28" height="20" rx="4" class="node"/>
+  <text x="120" y="960" class="msg">Indexing, done once</text>
+  <rect x="432" y="944" width="28" height="20" rx="4" class="soft"/>
+  <text x="472" y="960" class="msg">A stage you configure</text>
+  <rect x="816" y="944" width="28" height="20" rx="4" class="focal"/>
+  <text x="856" y="960" class="msg">What the search returns</text>
+    
+</svg>

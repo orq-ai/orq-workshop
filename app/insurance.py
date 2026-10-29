@@ -224,7 +224,7 @@ def seed(orq=None) -> None:
             print(f"chat rule: {rule_id} ({choice}, the chat's Guardrails dropdown)")
     except RuntimeError as exc:  # rules need an admin key: the rest of the seed must not stop here
         print(f"chat rule: skipped: {str(exc)[:100]}")
-    print(f"next     : `make chat`, Demo: Insurance ({settings.base_url})")
+    print(f"next     : `make agent-chat-ui`, Demo: Insurance ({settings.base_url})")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="rag-internal-external-title rag-internal-external-desc">
+  <title id="rag-internal-external-title">Internal and external knowledge bases compared</title>
+  <desc id="rag-internal-external-desc">Reference diagram. With an internal knowledge base orq chunks, embeds and searches your documents. With an external one you do all three behind your own endpoint and orq stores nothing. Either way orq applies the same tail to the results, cutting to top_k, filtering by threshold and reranking, so both return matches in the same shape.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <text x="536" y="144" text-anchor="middle" class="zone-title">INTERNAL — ORQ HOLDS THE DOCUMENTS</text>
+  <text x="1384" y="144" text-anchor="middle" class="zone-title">EXTERNAL — YOU DO</text>
+  <!-- Arrows first -->
+  <line x1="536" y1="464" x2="536" y2="512" class="arrow"/>
+  <line x1="1384" y1="464" x2="1384" y2="512" class="arrow"/>
+  <line x1="960" y1="640" x2="960" y2="688" class="accent"/>
+  <!-- Row 1: chunk and embed -->
+  <rect x="144" y="176" width="784" height="128" rx="16" class="soft"/>
+  <text x="536" y="240" text-anchor="middle" class="name">Chunk and embed</text>
+  <text x="536" y="276" text-anchor="middle" class="sub">orq, using the embedding_model you picked</text>
+  <rect x="992" y="176" width="784" height="128" rx="16" class="node"/>
+  <text x="1384" y="240" text-anchor="middle" class="name">Chunk and embed</text>
+  <text x="1384" y="276" text-anchor="middle" class="sub">you — orq stores no chunks and no vectors</text>
+  <!-- Row 2: the search itself -->
+  <rect x="144" y="336" width="784" height="128" rx="16" class="soft"/>
+  <text x="536" y="400" text-anchor="middle" class="name">The search</text>
+  <text x="536" y="436" text-anchor="middle" class="sub">vector | keyword | hybrid, via retrieval_type</text>
+  <rect x="992" y="336" width="784" height="128" rx="16" class="node"/>
+  <text x="1384" y="400" text-anchor="middle" class="name">The search</text>
+  <text x="1384" y="436" text-anchor="middle" class="sub">your endpoint — there is no retrieval_type</text>
+  <!-- The shared tail: the fact that surprises people -->
+  <rect x="144" y="512" width="1632" height="128" rx="16" class="focal"/>
+  <rect x="160" y="528" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="546" text-anchor="middle" class="tag t-accent">ORQ</text>
+  <text x="960" y="576" text-anchor="middle" class="name">The same tail runs either way</text>
+  <text x="960" y="612" text-anchor="middle" class="sub">top_k → threshold → rerank → rerank threshold</text>
+  <!-- Output -->
+  <rect x="144" y="688" width="1632" height="96" rx="16" class="ghost"/>
+  <rect x="160" y="704" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="188" y="722" text-anchor="middle" class="tag t-mute">OUT</text>
+  <text x="960" y="728" text-anchor="middle" class="name">matches</text>
+  <text x="960" y="760" text-anchor="middle" class="sub">the same shape from both: text · id · metadata · scores</text>
+  <text x="144" y="832" class="sub t-mute">you own retrieval, the platform still owns ranking — so the choice is not all or nothing</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="880" x2="1840" y2="880" class="hair"/>
+  <text x="80" y="912" class="legend-title">LEGEND</text>
+  <rect x="80" y="944" width="28" height="20" rx="4" class="soft"/>
+  <text x="120" y="960" class="msg">orq does it</text>
+  <rect x="336" y="944" width="28" height="20" rx="4" class="node"/>
+  <text x="376" y="960" class="msg">You do it</text>
+  <rect x="544" y="944" width="28" height="20" rx="4" class="focal"/>
+  <text x="584" y="960" class="msg">Applies to both</text>
+    
+</svg>

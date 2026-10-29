@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step4-retrieval-as-tool-title step4-retrieval-as-tool-desc">
+  <title id="step4-retrieval-as-tool-title">Retrieval as a tool: the search runs in your process</title>
+  <desc id="step4-retrieval-as-tool-desc">Architecture diagram for module 09 step 4. The model asks for the get_policy tool, and your own loop executes it: your code searches the knowledge base directly and sends the chunks back as a tool result on the next round. The gateway proxies only the model calls, so the knowledge base search never appears as a span in the trace.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Arrows first: z-order puts them behind the nodes. -->
+  <!-- The focal path: your process searches the knowledge base and gets chunks back. -->
+  <line x1="816" y1="272" x2="816" y2="176" class="accent"/>
+  <line x1="1104" y1="176" x2="1104" y2="272" class="accent dash"/>
+  <!-- The model rounds, through the gateway. -->
+  <line x1="816" y1="400" x2="816" y2="496" class="link"/>
+  <line x1="1104" y1="496" x2="1104" y2="400" class="arrow dash"/>
+  <line x1="816" y1="624" x2="816" y2="752" class="arrow"/>
+  <!-- Arrow labels: beside the vertical segments, 8px gap, on open canvas. -->
+  <rect x="832" y="196" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="214" class="lbl t-accent">KB.SEARCH</text>
+  <rect x="1120" y="196" width="176" height="24" rx="4" class="mask"/>
+  <text x="1128" y="214" class="lbl t-accent">CHUNKS AS TEXT</text>
+  <rect x="832" y="424" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="442" class="lbl">ROUND 1..N</text>
+  <rect x="1120" y="424" width="184" height="24" rx="4" class="mask"/>
+  <text x="1128" y="442" class="lbl">FUNCTION_CALL</text>
+  <rect x="832" y="672" width="152" height="24" rx="4" class="mask"/>
+  <text x="840" y="690" class="lbl">MODEL CALL</text>
+  <!-- Node: Knowledge base (focal, top bar) -->
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="80" width="1632" height="96" rx="16" class="focal"/>
+  <rect x="160" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="188" y="114" text-anchor="middle" class="tag t-accent">KB</text>
+  <text x="960" y="120" text-anchor="middle" class="name">Knowledge base</text>
+  <text x="960" y="152" text-anchor="middle" class="sub">ws-refund-policy · orq.knowledge.search · a separate API call, not a gateway call</text>
+  <!-- Node: your tool loop (where the retrieval decision lands) -->
+  <rect x="672" y="272" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="272" width="576" height="128" rx="16" class="node"/>
+  <rect x="688" y="288" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="716" y="306" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="960" y="344" text-anchor="middle" class="name">Your tool loop</text>
+  <text x="960" y="376" text-anchor="middle" class="sub">dispatch → policy_fn=kb_policy</text>
+  <!-- Node: AI Gateway -->
+  <rect x="672" y="496" width="576" height="128" rx="16" class="mask"/>
+  <rect x="672" y="496" width="576" height="128" rx="16" class="soft"/>
+  <rect x="688" y="512" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="716" y="530" text-anchor="middle" class="tag">GW</text>
+  <text x="960" y="568" text-anchor="middle" class="name">AI Gateway</text>
+  <text x="960" y="600" text-anchor="middle" class="sub">traces the model calls only · no retrieval span</text>
+  <!-- Node: Model (external, bottom bar) -->
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="mask"/>
+  <rect x="144" y="752" width="1632" height="96" rx="16" class="ghost"/>
+  <rect x="160" y="768" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="188" y="786" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="960" y="792" text-anchor="middle" class="name">Model</text>
+  <text x="960" y="824" text-anchor="middle" class="sub">openai/gpt-5.6-luna · asks for get_policy, never sees the knowledge base</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="920" x2="1840" y2="920" class="hair"/>
+  <text x="80" y="952" class="legend-title">LEGEND</text>
+  <rect x="80" y="984" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1000" class="msg">Knowledge base</text>
+  <rect x="352" y="984" width="28" height="20" rx="4" class="node"/>
+  <text x="392" y="1000" class="msg">Your code</text>
+  <rect x="568" y="984" width="28" height="20" rx="4" class="soft"/>
+  <text x="608" y="1000" class="msg">orq entity</text>
+  <rect x="784" y="984" width="28" height="20" rx="4" class="ghost"/>
+  <text x="824" y="1000" class="msg">Provider model</text>
+  <line x1="1040" y1="996" x2="1096" y2="996" class="accent"/>
+  <text x="1112" y="1000" class="msg">Retrieval, in your process</text>
+  <line x1="1432" y1="996" x2="1488" y2="996" class="link"/>
+  <text x="1504" y="1000" class="msg">API call from your code</text>
+    
+</svg>

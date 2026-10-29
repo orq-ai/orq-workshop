@@ -7,37 +7,37 @@ MARP ?= $(shell command -v marp 2>/dev/null || echo npx -y @marp-team/marp-cli)
 MODULES := $(sort $(notdir $(wildcard modules/*)))
 
 help: ## List targets
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-18s\033[0m %s\n",$$1,$$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-28s\033[0m %s\n",$$1,$$2}'
 
 setup: ## Install Python deps (uv) and create .env from the example if missing
 	$(UV) sync --all-groups --extra langgraph
 	@test -f .env || { cp .env.example .env; echo "Created .env. Fill ORQ_API_KEY or run: orq setup --local"; }
 
-doctor: ## orq CLI self-check: auth, endpoints, skills
+orq-doctor: ## orq CLI self-check: auth, endpoints, skills
 	orq doctor
 
-smoke: ## One refund turn through the gateway; prints answer + trace id
-	$(RUN) python -m app.smoke
+gateway-check: ## One refund turn through the gateway; prints answer + trace id
+	$(RUN) python -m app.gateway_check
 
 test: ## Unit tests for the tools
 	$(RUN) pytest -q
 
-seed: ## Create every workshop entity in orq (idempotent, prefixed with WS_PREFIX)
+seed-workspace: ## Create every workshop entity in orq (idempotent, prefixed with WS_PREFIX)
 	$(RUN) python -m app.refund_agent.entities seed
 
 seed-insurance: ## Create the insurance claims demo (agents, evaluators, 15 test cases) for the chat's Insurance demo
 	$(RUN) python -m app.insurance
 
-traffic: ## Generate 20 mixed good/bad conversations so traces exist for failure analysis
+generate-traffic: ## Generate 20 mixed good/bad conversations so traces exist for failure analysis
 	$(RUN) python -m app.traffic
 
-reset: ## Delete every entity this repo created (by WS_PREFIX)
+reset-workspace: ## Delete every entity this repo created (by WS_PREFIX)
 	$(RUN) python -m app.refund_agent.entities reset
 
-eval: ## Quality regression gate (exit 1 on regression). Used by CI.
+regression-eval: ## Quality regression gate (exit 1 on regression). Used by CI.
 	$(RUN) python -m evals.regression
 
-eval-vulnerable: ## Same gate against the vulnerable instructions. The gate must exit 1; this target succeeds when it does.
+regression-eval-vulnerable: ## Same gate against the vulnerable instructions. The gate must exit 1; this target succeeds when it does.
 	@$(RUN) python -m evals.regression --instructions app/data/vulnerable_instructions.md --out evals/results/vulnerable.json; ec=$$?; \
 	  echo "gate exit code: $$ec (expected 1)"; test $$ec -eq 1
 
@@ -57,13 +57,13 @@ edge: ## Run app/edge.py on :8001 (module 09 external KB + module 14 webhook rec
 edge-docker: ## The same as a container (what the instructor hosts for the room)
 	docker build -t orq-edge . && docker run --rm -p 8001:8001 -e WS_WEBHOOK_SECRET=$$WS_WEBHOOK_SECRET orq-edge
 
-chat: ## Run the refund agent chat UI on :8002
+agent-chat-ui: ## Run the refund agent chat UI on :8002
 	$(RUN) python -m app.web
 
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
-diagrams: ## Re-export the docs diagrams (modules/*/assets/*.html) to PNG
+diagrams: ## Re-export the diagram SVGs (modules/*/assets, docs/assets/diagrams) to PNG
 	$(UV) run --with playwright python scripts/export_diagrams.py
 
 # Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.
@@ -108,4 +108,15 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: evaluatorq-dashboard help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+
+# ponytail: old target names, kept because private run-of-shows and printed handouts still say them.
+# Drop after the next client run. Hidden from `make help` (no `##`).
+smoke: gateway-check
+doctor: orq-doctor
+seed: seed-workspace
+reset: reset-workspace
+eval: regression-eval
+eval-vulnerable: regression-eval-vulnerable
+chat: agent-chat-ui
+traffic: generate-traffic

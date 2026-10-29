@@ -11,7 +11,7 @@
 # | | |
 # |---|---|
 # | **Time** | 30 min |
-# | **Prerequisites** | module 08, `make seed` |
+# | **Prerequisites** | module 08, `make seed-workspace` |
 # | **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace |
 #
 # This file is both the solution script (`make m15`) and the notebook source (`make notebooks`).
@@ -104,7 +104,7 @@ def run_agent(
 # %% [markdown]
 # ## Step 1 · Inspect the delegating agent
 #
-# `make seed` created `ws-refund-agent-delegating`: the fixed refund agent plus two entries in
+# `make seed-workspace` created `ws-refund-agent-delegating`: the fixed refund agent plus two entries in
 # `settings.tools`. Neither is a sub-agent. The second model gets one call, no tools, no memory.
 #
 # | | Advisor | Sidekick |
@@ -230,7 +230,7 @@ print(f"next     : orq traces get-span {turn['traces'][-1]} <span_id> for any ro
 print("── Step 5 · When the secondary model fails ────────────")
 try:
     orq.agents.retrieve(agent_key=BROKEN)
-except Exception:  # noqa: BLE001  not there yet: build it once, the same way make seed built the working one
+except Exception:  # noqa: BLE001  not there yet: build it once, the same way make seed-workspace built the working one
     ensure_delegating_agent(
         name="refund-agent-delegating-broken",
         advisor_model="openai/gpt-does-not-exist",

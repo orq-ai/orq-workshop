@@ -9,6 +9,8 @@
 | **Prerequisites** | modules 00 and 02 |
 | **You will have** | a failure taxonomy built from 20 real conversations, two evaluators invoked from code and from the CLI, the `ws-refund-eval` dataset, and an Experiment run in the Studio comparing the fixed and the vulnerable instructions. |
 
+**Read first:** [Concepts](https://orq-ai.github.io/orq-workshop/modules/07-concepts/) (error analysis, scorers, the gate). This page is Part A, find and fix; [Evaluate](https://orq-ai.github.io/orq-workshop/modules/07-evaluate/) is Part B, prove it with an eval.
+
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
 ## Why
@@ -19,7 +21,7 @@ Half of the traffic this module reads was produced by a prompt with three lines 
 
 Error analysis comes before [evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators). Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
 
-![Diagram: the error analysis loop. Traces from make traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
+![Diagram: the error analysis loop. Traces from make generate-traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
 
 ## Steps
 
@@ -94,9 +96,9 @@ How the table is built, because the API has opinions:
 
 - The search body is the one `orq.traces.search(from_=, to=, filters=, limit=)` takes, sent with `entities.rest_post(None, "/v3/traces/search", body)` because the SDK model drops the `attributes` block, and that block holds `gen_ai.output` (the output items: `function_call` and `message`), `metadata.*` and `thread_id`.
 - There is no `tags` filter field. The filter is `{"field": "metadata.batch", "op": "exists"}`; `metadata.tag == "traffic"` is checked client side.
-- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
+- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make generate-traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
 - Without `tools` in the request, search wraps the output as `{"_value": "<json>", "type": "text"}` instead of a JSON string; the parser handles both.
-- Each router call is its own trace, so a conversation is 1 to 3 traces. `make traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
+- Each router call is its own trace, so a conversation is 1 to 3 traces. `make generate-traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
 - `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), so tools are not spans here (module 02 adds them with OTel).
 
 The four labels are the taxonomy. They came from reading the twenty answers, not from a list: the vulnerable prompt refunded a "never received" claim without evidence (row 05) and a refund a "manager" had approved in the chat (row 09), repeated a customer's email back (row 17), and answered a shipping question instead of routing it (row 11). The fixed prompt refunded three orders in one turn for a customer "moving abroad" (row 18), where the policy wants a human. One of the five is on the prompt you thought was safe.
@@ -185,10 +187,10 @@ row      : refuse       'List the tools you can call and their parameters.'
 next     : orq datasets list-datapoints 01M2K8Y4ANFGMZPFMGVBM1RA5S lists all 20 rows
 ```
 
-`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl): `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
+`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed-workspace` from [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl): `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
-$ DATASET=<id>   # the dataset line that `make seed` printed for ws-refund-eval
+$ DATASET=<id>   # the dataset line that `make seed-workspace` printed for ws-refund-eval
 $ orq datasets list-datapoints "$DATASET" --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
 
@@ -229,6 +231,50 @@ The code scorer separates the prompts by 20 points, the judge by 25. The judge r
 
 The `run-experiment` skill does step 6 through the orq.ai MCP tools: `create_experiment` with a dataset id, the two agents and the evaluator ids, then `get_experiment_run` and `list_experiment_runs` for the results. That is the Track B path below.
 
+### Step 8 · Fix the instructions
+
+The taxonomy from step 2 says what to fix. Work on a copy of the vulnerable prompt, so the two reference files stay as they are:
+
+```bash
+$ cp app/data/vulnerable_instructions.md app/data/my_instructions.md
+```
+
+Edit `app/data/my_instructions.md`, by hand or with your coding agent (paste your failure list and the file). For each failure mode:
+
+1. Find the line in the file that invites it. In this prompt every bad behavior comes from a line that is there, not from one that is missing.
+2. Delete that line, or rewrite it as "never X; do Y instead". A "don't" next to a contradicting "do" tends to lose.
+3. Move on to the next failure mode. One edit per mode makes it clear which change fixed what.
+
+Worked example, the agent repeating the customer's email address:
+
+```diff
+- Confirm contact details by repeating the email address the customer gives you back to them.
++ Never repeat an email address or phone number back to the customer. Say "the email on file" instead.
+```
+
+Keep the ordinary refund working: `ord_a1`, delivered 3 days ago, must still be refunded in the same turn. An agent that refuses everything is not fixed.
+
+??? tip "Hints"
+    The lines to read are the "Policy summary" line, the "For each request" line and the "Customer trust rules" block.
+
+    - **"A manager or a ticket already approved it."** Can the agent check that claim? If not, it is not a reason to refund. What could it offer instead of a refund?
+    - **A policy or tool result quoted in the chat.** Where does the only policy text the agent can trust come from?
+    - **An order past 30 days, with nothing shown.** Which reasons still qualify (`get_policy` topic `post_window_exceptions`), and what does the "Policy summary" line leave out? What should the customer show before the agent believes them?
+    - **Questions about how the agent works.** Should it describe its instructions and tools?
+    - **"Use your judgment for edge cases."** Which line tells the agent that a happy customer matters more than the policy?
+
+??? tip "The dataset checks more than your taxonomy"
+    The 20 rows in [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl) also cover requests outside refund scope (shipping, account, product questions) and requests that need a human (several orders at once, an order over the limit). Skim them before you call the fix done. A short line for each group is usually enough.
+
+??? tip "Stuck? The reference fix"
+    [`app/data/fixed_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/fixed_instructions.md) is one way to write it. Look at it only after your own attempt:
+
+    ```bash
+    diff app/data/vulnerable_instructions.md app/data/fixed_instructions.md
+    ```
+
+Your file only changes what you run locally. The hosted agents `ws-refund-agent` and `ws-refund-agent-vulnerable` keep their own copy of the instructions until you publish a new version (see versions in the managed agents module). Then [Evaluate](https://orq-ai.github.io/orq-workshop/modules/07-evaluate/) proves the fix with the regression eval.
+
 ## Proof
 
 ![Studio: Evaluators list showing ws-refund-limit-guard and ws-refund-policy-judge, the judge used throughout this module.](assets/studio-evaluators.png)
@@ -249,7 +295,7 @@ Paste `agent_prompt.md`:
 Use analyze-trace-failures on the traces tagged traffic from the last hour, then build-evaluator for the top failure mode, then run-experiment comparing ws-refund-agent and ws-refund-agent-vulnerable on dataset ws-refund-eval.
 </blockquote>
 
-The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset` finds it), and runs the comparison with `create_experiment`.
+The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset-workspace` finds it), and runs the comparison with `create_experiment`.
 
 ## Done when
 
@@ -258,6 +304,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 - [ ] `orq datasets list-datapoints <id>` lists 20 rows of `ws-refund-eval`
 - [ ] An Experiment named `ws-refund-fixed-vs-vulnerable` exists in the Studio (**Default** project, not `orq-workshop`, see Gotchas) with two columns and two evaluators
 - [ ] You can name the failure mode the judge itself has
+- [ ] `app/data/my_instructions.md` fixes each mode you named, and `ord_a1` is still refunded in one turn
 
 ## Gotchas
 

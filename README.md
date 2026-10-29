@@ -20,10 +20,10 @@ orq auth login
 git clone https://github.com/orq-ai/orq-workshop && cd orq-workshop
 orq setup --local --capability gateway            # mints ORQ_API_KEY into ./.env
 make setup                                        # uv sync, .env from the example
-make doctor && make smoke                         # green checks + your first trace
+make orq-doctor && make gateway-check                         # green checks + your first trace
 ```
 
-Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed` creates every entity a module expects, so you can start anywhere. `make reset` deletes them all.
+Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
 
 ## The sections
 

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1368" width="1920" height="1368" role="img" aria-labelledby="error-analysis-loop-title error-analysis-loop-desc">
+  <title id="error-analysis-loop-title">Error analysis loop: traces to taxonomy to evaluators to experiment</title>
+  <desc id="error-analysis-loop-desc">Loop diagram showing six clockwise steps, from real traces through open and axial coding to one binary evaluator per failure mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces, with every step writing back to a shared failure taxonomy.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1368" class="bg"/>
+  <!-- Ring flow (clockwise arcs), then write-back spokes, then labels, then stations, then hub -->
+  <path d="M 1120 171.45 A 480 480 0 0 1 1329.94 318.15" class="arrow"/>
+  <path d="M 1406.57 448 A 480 480 0 0 1 1407.44 797.76" class="arrow"/>
+  <path d="M 1331.46 928 A 480 480 0 0 1 1122.26 1075.74" class="arrow"/>
+  <path d="M 800 1076.55 A 480 480 0 0 1 590.06 929.85" class="arrow"/>
+  <path d="M 513.43 800 A 480 480 0 0 1 512.56 450.24" class="arrow"/>
+  <path d="M 588.54 320 A 480 480 0 0 1 797.74 172.26" class="arrow"/>
+  <path d="M 960 208 L 960 508" class="mute dash"/>
+  <path d="M 1265.15 448 L 1150.53 514" class="mute dash"/>
+  <path d="M 1265.15 800 L 1150.53 734" class="mute dash"/>
+  <path d="M 960 1040 L 960 740" class="mute dash"/>
+  <path d="M 654.85 800 L 769.47 734" class="mute dash"/>
+  <path d="M 654.85 448 L 769.47 514" class="mute dash"/>
+  <rect x="1232" y="464" width="76" height="24" rx="4" class="mask"/>
+  <text x="1240" y="482" class="lbl t-mute">NOTES</text>
+  <rect x="1232" y="752" width="76" height="24" rx="4" class="mask"/>
+  <text x="1240" y="770" class="lbl t-mute">MODES</text>
+  <rect x="984" y="872" width="136" height="24" rx="4" class="mask"/>
+  <text x="992" y="890" class="lbl t-mute">1 PER MODE</text>
+  <rect x="800" y="80" width="320" height="128" rx="16" class="mask"/>
+  <rect x="800" y="80" width="320" height="128" rx="16" class="node"/>
+  <text x="960" y="148" text-anchor="middle" class="name">Traces</text>
+  <text x="960" y="180" text-anchor="middle" class="sub fit-s">make generate-traffic · 20 chats</text>
+  <rect x="1216" y="320" width="320" height="128" rx="16" class="mask"/>
+  <rect x="1216" y="320" width="320" height="128" rx="16" class="focal"/>
+  <text x="1376" y="388" text-anchor="middle" class="name">Open coding</text>
+  <text x="1376" y="420" text-anchor="middle" class="sub">one note per trace</text>
+  <rect x="1216" y="800" width="320" height="128" rx="16" class="mask"/>
+  <rect x="1216" y="800" width="320" height="128" rx="16" class="node"/>
+  <text x="1376" y="868" text-anchor="middle" class="name">Axial coding</text>
+  <text x="1376" y="900" text-anchor="middle" class="sub">2–8 named modes</text>
+  <rect x="800" y="1040" width="320" height="128" rx="16" class="mask"/>
+  <rect x="800" y="1040" width="320" height="128" rx="16" class="node"/>
+  <text x="960" y="1108" text-anchor="middle" class="name">Evaluators</text>
+  <text x="960" y="1140" text-anchor="middle" class="sub">one binary per mode</text>
+  <rect x="384" y="800" width="320" height="128" rx="16" class="mask"/>
+  <rect x="384" y="800" width="320" height="128" rx="16" class="node"/>
+  <text x="544" y="868" text-anchor="middle" class="name">Experiment</text>
+  <text x="544" y="900" text-anchor="middle" class="sub">fixed vs vulnerable</text>
+  <rect x="384" y="320" width="320" height="128" rx="16" class="mask"/>
+  <rect x="384" y="320" width="320" height="128" rx="16" class="node"/>
+  <text x="544" y="388" text-anchor="middle" class="name">Prompt change</text>
+  <text x="544" y="420" text-anchor="middle" class="sub">own your prompts</text>
+  <rect x="760" y="520" width="400" height="208" rx="20" class="ink-fill"/>
+  <text x="960" y="620" text-anchor="middle" class="name t-inv">Failure taxonomy</text>
+  <text x="960" y="652" text-anchor="middle" class="sub t-inv">named modes · Pass/Fail each</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="1248" x2="1840" y2="1248" class="hair"/>
+  <text x="80" y="1280" class="legend-title">LEGEND</text>
+  <rect x="80" y="1312" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1328" class="msg">Do this first</text>
+  <rect x="320" y="1312" width="28" height="20" rx="4" class="node"/>
+  <text x="360" y="1328" class="msg">Step in the loop</text>
+  <rect x="600" y="1312" width="28" height="20" rx="4" class="ink-fill"/>
+  <text x="640" y="1328" class="msg">Shared state</text>
+  <line x1="840" y1="1324" x2="896" y2="1324" class="arrow"/>
+  <text x="912" y="1328" class="msg">Next step, clockwise</text>
+  <line x1="1200" y1="1324" x2="1256" y2="1324" class="mute dash"/>
+  <text x="1272" y="1328" class="msg">Writes back to the taxonomy</text>
+    
+</svg>

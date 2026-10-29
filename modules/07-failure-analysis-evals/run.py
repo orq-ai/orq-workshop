@@ -1,7 +1,7 @@
 """Module 07 starter: failure analysis by hand, then evaluators, a dataset and an experiment.
 
 Evaluators built before you read traces measure the failures you imagined, not the ones you
-have. Run `make traffic` first: this script reads those traces, labels them with your taxonomy,
+have. Run `make generate-traffic` first: this script reads those traces, labels them with your taxonomy,
 invokes the two seeded evaluators, lists the `ws-refund-eval` dataset and runs an experiment
 comparing the fixed and the vulnerable instructions. Steps are numbered 2, 4, 5 and 6 to match
 the README (steps 1 and 3 are not code).
@@ -45,7 +45,7 @@ TRACES_URL = f"{settings.base_url}/traces"
 
 
 def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
-    """The last `make traffic` batch as one row per router trace, oldest first.
+    """The last `make generate-traffic` batch as one row per router trace, oldest first.
 
     Same body as `orq.traces.search(from_=, to=, filters=, limit=)`, sent raw because the SDK
     model (SDK 4.17) drops the `attributes` block that holds the tool calls and the answer.
@@ -94,12 +94,12 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
             "answer": answer,
         })
 
-    newest_batch = rows[0]["batch"] if rows else None  # newest first: keep the last `make traffic` only
+    newest_batch = rows[0]["batch"] if rows else None  # newest first: keep the last `make generate-traffic` only
     return sorted((row for row in rows if row["batch"] == newest_batch), key=lambda row: row["started_at"])
 
 
 def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Group the calls of one conversation by thread_id (`make traffic` sets one per row).
+    """Group the calls of one conversation by thread_id (`make generate-traffic` sets one per row).
 
     A conversation is 1 to 3 model calls in one thread: tool calls in order, the last call holds the answer.
     """
@@ -244,7 +244,7 @@ def step_4_evaluators() -> None:
 
 
 # ── Step 5 · Datasets ──
-# ws-refund-eval is created by `make seed` from app/data/dataset.jsonl. The first three rows show
+# ws-refund-eval is created by `make seed-workspace` from app/data/dataset.jsonl. The first three rows show
 # the shape an experiment reads: inputs.message and inputs.expected_decision.
 def step_5_dataset() -> str:
     print("── Step 5 · Datasets ──────────────────────────────────")

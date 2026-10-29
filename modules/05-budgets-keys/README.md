@@ -62,7 +62,7 @@ $ orq api-keys create --example
 }
 ```
 
-A key is either all-projects or single-project (`project_scope`), and either `PERMISSION_MODE_ALL`, `READ_ONLY` or `RESTRICTED` with a per-domain `access` map (`chat_completions`, `dataset`, `eval`, `agent`, ... at `ACCESS_LEVEL_READ` or `WRITE`). A CI runner that runs `make eval` needs to call models and read datasets and evaluators, nothing else. The solution asks for exactly that:
+A key is either all-projects or single-project (`project_scope`), and either `PERMISSION_MODE_ALL`, `READ_ONLY` or `RESTRICTED` with a per-domain `access` map (`chat_completions`, `dataset`, `eval`, `agent`, ... at `ACCESS_LEVEL_READ` or `WRITE`). A CI runner that runs `make regression-eval` needs to call models and read datasets and evaluators, nothing else. The solution asks for exactly that:
 
 ```text
 ── Step 1 · A key for the CI runner ───────────────────
@@ -169,7 +169,7 @@ budget   : 01M2KN2X93C1596AZ6S0ZDRHZG deleted, HTTP 200
 budget   : 01M2KN34G84MJ5ZN4FPX7VF2VH deleted, HTTP 200
 api key  : 01M2KN2VDP7M39J71WJJ0S08E3 deleted, HTTP 204
 mgmt key : 01M2KN042GQQTW3DZJFYVGT8RT not deleted, HTTP 400 managementkeys: a management key cannot modify or delete itself
-next     : orq management-keys delete 01M2KN042GQQTW3DZJFYVGT8RT --force, then unset ORQ_MANAGEMENT_KEY. `make reset` has nothing to do for this module.
+next     : orq management-keys delete 01M2KN042GQQTW3DZJFYVGT8RT --force, then unset ORQ_MANAGEMENT_KEY. `make reset-workspace` has nothing to do for this module.
 ```
 
 ```console

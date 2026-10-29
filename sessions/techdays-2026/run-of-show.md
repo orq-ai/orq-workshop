@@ -5,11 +5,11 @@
 | Clock | Min | Block | You run | You leave with |
 |---|---|---|---|---|
 | 09:00 | 5 | Welcome, how this session works |  |  |
-| 09:05 | 20 | [Get your key and set up](../../modules/00-setup/README.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
-| 09:25 | 15 | [1 · The refund agent](../../modules/08-managed-agents/README.md) | `make seed` | your smoke trace open in the Studio |
+| 09:05 | 20 | [Get your key and set up](../../modules/00-setup/README.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
+| 09:25 | 15 | [1 · The refund agent](../../modules/08-managed-agents/README.md) | `make seed-workspace` | your smoke trace open in the Studio |
 | 09:40 | 35 | [2 · Simulate customers](../../modules/11-simulation/README.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
 | 10:15 | 25 | [3 · Read the traces](../../modules/18-trace-insights/README.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
-| 10:40 | 12 | [4 · From insight to eval](../../modules/07-failure-analysis-evals/README.md) | `make eval && make eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 10:40 | 12 | [4 · From insight to eval](../../modules/07-failure-analysis-evals/README.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 10:52 | 8 | Take home, questions |  |  |
 
 Ends 11:00 (120 min).
