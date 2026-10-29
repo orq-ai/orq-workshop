@@ -23,9 +23,9 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     ---
 
-    Fallbacks and cache, smart routing and routing rules, guardrails and PII, budgets, keys and identities, MCP servers and the MCP Gateway.
+    Fallbacks and cache, smart routing and routing rules, guardrails and PII, MCP servers and the MCP Gateway.
 
-    [:octicons-arrow-right-24: Gateway, routing, guardrails, budgets, MCP](modules/01.md)
+    [:octicons-arrow-right-24: Gateway, routing, guardrails, MCP](modules/01.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
 
@@ -35,7 +35,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     [:octicons-arrow-right-24: Tracing, alerts, annotation queues](modules/02.md)
 
--   :material-robot:{ .lg .middle } **Agents**
+-   :material-robot:{ .lg .middle } **Managed agents**
 
     ---
 
@@ -58,6 +58,14 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
     evaluatorq and orq-arena, failure analysis to evaluators to experiments, agent simulation, red teaming, and the whole thing gated in CI.
 
     [:octicons-arrow-right-24: evaluatorq](reference/evaluatorq.md)
+
+-   :material-shield-key:{ .lg .middle } **Administration**
+
+    ---
+
+    Budgets per identity, keys and Management Keys, and the Terraform provider that declares them.
+
+    [:octicons-arrow-right-24: Budgets and keys](modules/05.md)
 
 -   :material-book-open-variant:{ .lg .middle } **Reference**
 

@@ -17,9 +17,19 @@ This workshop drives orq.ai from the terminal. The `orq` CLI is how we do it: it
 
 `orq` the CLI is not a wrapper around the API. It is the thing that signs you in, mints the project-scoped key your code uses, and connects the coding agents already on your machine (Claude Code, OpenCode, Pi, Codex, Kimi, Kilo) to the gateway, the orq.ai MCP server and the orq.ai skills. Every entity in the workspace is a subcommand you can script. Learn it once, use it in every module.
 
-It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is catalogd in the [CLI reference](https://docs.orq.ai/reference/cli).
+It is open source: the binary you install below is built from [orq-ai/orq-cli](https://github.com/orq-ai/orq-cli), and every command is cataloged in the [CLI reference](https://docs.orq.ai/reference/cli).
 
 ## Steps
+
+<div class="steps" markdown>
+
+1. Install the CLI and sign in.
+2. Pick a project and mint a key into this repo.
+3. Install the dependencies and run the four health checks.
+4. Look at the trace your first call left.
+5. Meet the sample app.
+
+</div>
 
 ### Step 1 · Install the CLI and sign in
 
