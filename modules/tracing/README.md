@@ -49,8 +49,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 === "Studio"
 
-    1. Open **Traces**. The newest rows are this run's model calls, each with cost and latency.
-    2. Filter **Name** = `refund-turn`. Before the change the filter is empty; after it, this run's calls are there.
+    ![Studio: the Traces list searched for refund-turn, with the Traces entry in the sidebar marked 1 and the search box marked 2](assets/studio-step-1.png)
+
+    1. Open **Observability › Traces**. The newest rows are this run's model calls, each with duration and tokens.
+    2. Type `refund-turn` in the search box. Before the change nothing matches; after it, this run's calls are there.
 
 === "Code"
 
@@ -104,9 +106,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 === "Studio"
 
-    1. Open **Traces** and filter **Thread ID** on the `ws-thread-…` id the step printed.
-    2. Both turns line up as one conversation; the **Identity** column names the customer.
-    3. Open turn 2 and read the conversation panel: the first turn is there as history.
+    ![Studio: the Traces list searched for one ws-thread id, five refund-turn traces of one conversation](assets/studio-step-2.png)
+
+    1. Paste the `ws-thread-…` id step 2 printed into the search box.
+    2. Every model call of both turns lines up as one conversation; open one and switch to **Thread** to read it as a chat.
 
 === "Code"
 
@@ -142,8 +145,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 === "Studio"
 
-    1. Open the trace id step 3 printed.
-    2. The tree reads `refund_turn` → model → `lookup_order` → model → … Click a tool span: its input and output are on the right.
+    ![Studio: the refund_turn trace open, with the root span marked 1 and the lookup_order tool span marked 2](assets/studio-step-3.png)
+
+    1. Open the trace id step 3 printed: the root span is `refund_turn`.
+    2. Below it the model calls and the tool spans alternate. Click `lookup_order`: its input and output are on the right.
 
 === "Code"
 
@@ -176,8 +181,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 === "Studio"
 
-    1. Filter **Name** = `refund_langgraph` and open the newest trace.
-    2. Switch to the graph view: agent → tools → agent, drawn from the spans.
+    ![Studio: the refund_langgraph trace, its name marked 1 and the Graph panel marked 2 showing Start, agent, tools and End](assets/studio-step-4.png)
+
+    1. Search `refund_langgraph` and open the trace: every node of the graph is a span.
+    2. The **Graph** panel draws it: start, agent, tools, agent, end, with how many times each ran.
 
 === "Code"
 
@@ -204,8 +211,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 === "Studio"
 
+    ![Studio: a model span of the refund_turn trace, scrolled to the Rating annotation with good selected, marked 1](assets/studio-step-5.png)
+
     1. Open step 3's trace and select the last model span.
-    2. In **Annotations**, set `rating` to `good`. This is the same write as the code, without the code.
+    2. Scroll the right panel to **Rating** and click **good**. This is the same write as the code, without the code.
 
 === "Code"
 

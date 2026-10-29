@@ -101,3 +101,13 @@ def test_solution_differs_by_the_changes_only():
     changed = [line for line in difflib.unified_diff(code(starter), code(RUN.read_text()), lineterm="", n=0) if line[:1] in "+-" and not line.startswith(("+++", "---"))]
     assert len(changed) == 10, changed
     assert all("# CHANGE:" in line for line in changed), changed
+
+
+def test_studio_tabs_have_screenshot():
+    for block in readme_steps():
+        studio = tab(block, "Studio")
+        shots = re.findall(r"!\[Studio: [^\]]+\]\((assets/[^)]+\.png)\)", studio)
+        assert shots, block[:40]
+        for shot in shots:
+            assert (RUN.parent / shot).exists(), shot
+        assert len(re.findall(r"^\s+\d+\. ", studio, re.M)) >= 2, block[:40]
