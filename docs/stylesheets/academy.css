@@ -98,3 +98,14 @@
 [data-md-color-scheme="slate"] .md-typeset .log-line { background: rgb(255 255 255 / 5%); }
 [data-md-color-scheme="slate"] .md-typeset .academy-btn.is-primary { background: #00d2b5; border-color: #00d2b5; color: #0a0e0d; }
 .md-typeset .explainer .span-output.is-hot { background: var(--orq-terminal-bg) !important; color: #d7efe9; box-shadow: 0 0 0 3px var(--orq-primary); }
+
+/* --- Symptom finder: tick symptoms, the loop lights up ---------------------------- */
+.md-typeset .symptom-finder { border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius); background: var(--orq-surface); padding: 1rem; margin: 1rem 0; }
+.md-typeset .symptom-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0.4rem 1rem; margin-bottom: 0.9rem; }
+.md-typeset .symptom-option { display: flex; gap: 0.55rem; align-items: flex-start; padding: 0.4rem 0.5rem; border-radius: var(--orq-radius-sm); font-size: 0.875rem; line-height: 1.35rem; cursor: pointer; }
+.md-typeset .symptom-option:hover { background: var(--orq-primary-tint); }
+.md-typeset .symptom-option input { margin-top: 0.25rem; accent-color: var(--orq-primary); }
+.md-typeset .symptom-finder .loop-stage { transition: all 0.3s; }
+.md-typeset .symptom-finder .loop-stage.is-lit { border: 2px solid var(--orq-primary); background: var(--orq-primary-tint); color: var(--orq-primary); box-shadow: 0 0 0 4px var(--orq-primary-tint); }
+.md-typeset .symptom-result { min-height: 1rem; font-size: 0.9375rem; }
+.md-typeset .symptom-result ol { margin-top: 0.25rem; }

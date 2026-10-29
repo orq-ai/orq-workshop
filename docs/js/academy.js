@@ -123,7 +123,46 @@
     });
   }
 
+  // Ticked symptoms light their stages; the result lists the lit stages in loop order.
+  function initSymptomFinder(root) {
+    if (root.dataset.bound) return;
+    root.dataset.bound = "1";
+    var stages = root.querySelectorAll(".loop-stage");
+    var result = root.querySelector(".symptom-result");
+    function render() {
+      var count = {};
+      root.querySelectorAll("input[data-stage]:checked").forEach(function (box) {
+        count[box.dataset.stage] = (count[box.dataset.stage] || 0) + 1;
+      });
+      var lit = [];
+      stages.forEach(function (s) {
+        var on = !!count[s.dataset.stage];
+        s.classList.toggle("is-lit", on);
+        if (on) lit.push(s);
+      });
+      if (!result) return;
+      result.innerHTML = "";
+      if (!lit.length) return;
+      var head = document.createElement("p");
+      head.innerHTML = "<strong>Start here, in this order:</strong>";
+      var list = document.createElement("ol");
+      lit.forEach(function (s) {
+        var li = document.createElement("li");
+        var a = document.createElement("a");
+        a.href = s.getAttribute("href");
+        a.textContent = s.textContent;
+        var n = count[s.dataset.stage];
+        li.append(a, document.createTextNode(" (" + n + (n === 1 ? " symptom)" : " symptoms)")));
+        list.appendChild(li);
+      });
+      result.append(head, list);
+    }
+    root.addEventListener("change", render);
+    render();
+  }
+
   document$.subscribe(function () {
+    document.querySelectorAll("[data-symptom-finder]").forEach(initSymptomFinder);
     document.querySelectorAll(".loop-map").forEach(initLoopMap);
     document.querySelectorAll("[data-explainer]").forEach(initExplainer);
     document.querySelectorAll("[data-chooser]").forEach(initChooser);

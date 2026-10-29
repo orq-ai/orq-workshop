@@ -119,3 +119,32 @@ def test_widgets_bind_on_document_subscription():
     js = (ROOT / "docs/js/academy.js").read_text()
     assert "document$.subscribe" in js
     assert "DOMContentLoaded" not in js
+
+
+def _academy_home():
+    return (ROOT / "docs/academy/index.md").read_text()
+
+
+def test_symptom_finder_covers_every_stage():
+    import re
+    stages = re.findall(r'<input type="checkbox" data-stage="([a-z-]+)"', _academy_home())
+    assert 18 <= len(stages) <= 24, len(stages)
+    for stage in STAGES:
+        assert stages.count(stage) >= 3, stage
+
+
+def test_symptom_options_have_valid_stage():
+    import re
+    for stage in re.findall(r'data-stage="([a-z-]+)"', _academy_home()):
+        assert stage in STAGES, stage
+
+
+def test_symptom_result_has_noscript_fallback():
+    text = _academy_home()
+    assert "data-symptom-finder" in text
+    assert all(f"({s}.md)" in text for s in STAGES), "a static list must link all six stage pages"
+
+
+def test_symptom_finder_binds(pages):
+    js = (ROOT / "docs/js/academy.js").read_text()
+    assert "initSymptomFinder" in js and "[data-symptom-finder]" in js
