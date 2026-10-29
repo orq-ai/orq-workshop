@@ -15,7 +15,7 @@
 #
 # `setup()` installs a global LangChain callback handler. From then on every graph node, tool
 # call and LLM call that LangChain runs becomes a span under one trace, shipped to the same
-# `/v2/otel` endpoint module 02 used. The order matters: import and call `setup()` **before**
+# `/v2/otel` endpoint the tracing module used. The order matters: import and call `setup()` **before**
 # the LangChain classes that will be traced, so nothing is constructed without the handler.
 
 # %%
@@ -96,7 +96,7 @@ llm = ChatOpenAI(
 #
 # `create_react_agent` wires the classic loop: model → tool calls → tool results → model, until
 # the model answers without calling a tool. `run_name` becomes the **trace name**, which is how
-# you will find it in the Studio and with `traces.search` below. Compare with module 02, where
+# you will find it in the Studio and with `traces.search` below. Compare with the tracing module, where
 # the name came from `@traced(name="refund_turn")`.
 
 # %%
@@ -128,7 +128,7 @@ print("next     : the trace is named refund_langgraph; step 5 searches it by tha
 # | `span.chat_completion` | one model call, one per loop iteration |
 # | `span.tool` | one tool call, so three here: lookup, policy, refund |
 #
-# Module 02 got the same picture with `@traced`, one span per decorated function. Here the
+# The tracing module got the same picture with `@traced`, one span per decorated function. Here the
 # framework decides the granularity, which is why the count is ~30 instead of 5.
 
 # %%
@@ -161,7 +161,7 @@ else:
 #
 # - One `setup()` call traces a whole LangGraph app; no decorators, no manual spans.
 # - The trace name comes from `run_name`. Identity and thread are not set: the handler traces
-#   what LangChain runs, it does not know who the customer is. That is the part module 02 did by
+#   what LangChain runs, it does not know who the customer is. That is the part the tracing module did by
 #   hand and the part you still own with a framework.
 # - The trade-off: the framework picks the span granularity. When you need exactly one span per
-#   business step, `@traced` (module 02) is the tool; when you want everything, `setup()` is.
+#   business step, `@traced` (the tracing module) is the tool; when you want everything, `setup()` is.

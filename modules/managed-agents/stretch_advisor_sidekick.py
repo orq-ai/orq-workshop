@@ -11,7 +11,7 @@
 # `sidekick` > `chat gpt-5.4-nano`.
 #
 # Run it with `uv run python modules/managed-agents/stretch_advisor_sidekick.py`. It
-# imports `run_agent` from `run.py`, and that import runs the module 08 solution first.
+# imports `run_agent` from `run.py`, and that import runs the managed-agents solution first.
 
 # %%
 from __future__ import annotations
@@ -24,7 +24,7 @@ from app.refund_agent.config import settings
 from app.refund_agent.entities import agent_payload, ensure_code_tools
 
 sys.path.insert(0, str(Path(__file__).parent))
-from run import run_agent  # noqa: E402  the same loop as run.py
+from run import run_agent
 
 AGENT = settings.key("refund-agent-delegating")
 orq = make_orq()
