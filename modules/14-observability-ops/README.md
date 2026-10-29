@@ -32,7 +32,7 @@ Two facts shape what you can alert on. Alerts are project-scoped, and only succe
 
 ## Steps
 
-Open `modules/14-observability-ops/run.py`. Every step has a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/14-observability-ops/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/14-observability-ops/run.py). Every step has a `TODO`. The solution is in `solution/run.py`.
 
 ### Step 1 · The number: Reporting API
 
@@ -44,7 +44,7 @@ $ uv run python modules/14-observability-ops/solution/run.py
 
 ```text
 ── Step 1 · The number: Reporting API ─────────────────
-window   : last hour, project Bauke
+window   : last hour, project orq-workshop
 cost     : $1.0637
 errors   : rate 0.031 (genai.error_rate)
 top      : last 24 hours by model
@@ -86,7 +86,7 @@ Newest first. An empty list means this run's burst has not been evaluated yet: r
 
 ### Step 3 · The hook: a webhook into your own system
 
-Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. `app/edge.py` serves that endpoint (`/<WS_PREFIX>`): it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
+Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) serves that endpoint (`/<WS_PREFIX>`): it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
 
 Three terminals:
 
@@ -130,7 +130,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Query the Reporting API for the last 24 hours grouped by model and give me a table. Read `ws-cost-alert` and its triggers and tell me whether it has an open incident and at what peak. Then propose one more alert, latency or cost, with a threshold you justify from those numbers, and create it with `orq alerts create` using the `ws-` prefix and the notifier `ws-alert-notifier`.
+<blockquote class="agent-prompt-frame" markdown>
+Query the Reporting API for the last 24 hours grouped by model and give me a table. Read `ws-cost-alert` and its triggers and tell me whether it has an open incident and at what peak. Then propose one more alert, latency or cost, with a threshold you justify from those numbers, and create it with `orq alerts create` using the `ws-` prefix and the notifier `ws-alert-notifier`.
+</blockquote>
 
 ## Done when
 
@@ -161,4 +163,11 @@ Alerts on Reporting API metrics with triggers and notifiers, the Reporting API's
 
 - Add a second alert on `genai.latency.p95` with a threshold read from step 1, and a Slack notifier (`NOTIFIER_TYPE_SLACK_WEBHOOK`).
 - Subscribe the webhook to `llm.chat_completion` as well and write the receiver's events to a file: that is a trace export with no polling.
-- Docs: [Reporting API](https://docs.orq.ai/docs/ai-studio/observability/reporting-api), [Alerts](https://docs.orq.ai/docs/ai-studio/observability/alerts), [Webhooks](https://docs.orq.ai/docs/ai-studio/organization/webhooks), [Notifiers API](https://docs.orq.ai/reference/notifiers/create-a-notifier), [Observability quickstart](https://docs.orq.ai/docs/ai-studio/observability/quickstart).
+
+## Official docs
+
+- [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api)
+- [Alerts](https://docs.orq.ai/ai-studio/observability/alerts)
+- [Webhooks](https://docs.orq.ai/ai-studio/organization/webhooks)
+- [Notifiers API](https://docs.orq.ai/reference/notifiers/create-a-notifier)
+- [Observability quickstart](https://docs.orq.ai/ai-studio/observability/quickstart)

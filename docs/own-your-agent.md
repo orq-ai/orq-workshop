@@ -10,7 +10,7 @@ One question, one set of instructions, one set of three tools, one gateway. Only
 
 ### 1 · Your loop: the raw orq.ai SDK
 
-`chat()` is the workshop's own agent: an explicit tool-calling loop over the Responses API, in `app/refund_agent/agent.py`, and you can read all of it.
+`chat()` is the workshop's own agent: an explicit tool-calling loop over the Responses API, in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), and you can read all of it.
 
 ```python
 from app.refund_agent.agent import chat
@@ -152,7 +152,7 @@ Everything the client of this workshop asked for maps to one of four seams. None
 
 **Prompts.** Today all three legs read `INSTRUCTIONS` from a repo file, which is why that row of the table is the same in all three columns and answers nothing yet. Moving it into an orq.ai Deployment is what makes the third column different: a prompt you can version and change without shipping code. That step is not in the workshop yet.
 
-**Routing.** One base URL. `https://my.orq.ai/v3/router` is a drop-in for the OpenAI endpoint, which is why leg 2 needed no orq.ai-specific code at all: `ChatOpenAI(base_url=...)` and the call is routed, budgeted, cached and traced. Fallbacks, smart routing and routing rules apply to all three legs equally ([module 01](modules/01.md), [module 03](modules/03.md)).
+**Routing.** One base URL. `https://my.orq.ai/v3/router` is a drop-in for the OpenAI endpoint, which is why leg 2 needed no orq.ai-specific code at all: `ChatOpenAI(base_url=...)` and the call is routed, budgeted, cached and traced. Fallbacks, smart routing and routing rules apply to all three legs equally ([Gateway](modules/01.md), [Smart routing](modules/03.md)).
 
 **Tracing.** Three methods, in ascending order of effort:
 
@@ -178,10 +178,16 @@ orq.ai's own guidance is to *pick the callback handler unless you have a specifi
 - **A framework** when the graph is worth having and you want the ecosystem. One line of setup and orq.ai observes it.
 - **A managed agent** when the agent is configuration rather than code, and you want prompts, tools and versions changeable without a deploy, at the cost of the loop running somewhere you cannot step through.
 
-The three are not exclusive. A managed agent can call tools your service exposes over MCP ([module 10](modules/10.md)); a framework agent can read a knowledge base orq.ai hosts ([module 09](modules/09.md)); all three land in the same traces, the same budgets and the same evaluations.
+The three are not exclusive. A managed agent can call tools your service exposes over MCP ([MCP servers and gateway](modules/10.md)); a framework agent can read a knowledge base orq.ai hosts ([Knowledge base and RAG](modules/09.md)); all three land in the same traces, the same budgets and the same evaluations.
 
 ## Related
 
 - [`examples/own-your-agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/examples/own-your-agent.py): the script behind this page
 - [Managed agents](modules/08.md) · [Tracing](modules/02.md) · [How retrieval works](reference/rag.md)
 - [orq.ai · Tracing LangGraph](https://orq.ai/blog/tracing-langgraph-orq-ai) · [Building a LangGraph agent on orq.ai](https://orq.ai/blog/langgraph-agent-orq-ai)
+
+## Official docs
+
+- [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
+- [Responses API](https://docs.orq.ai/ai-gateway/features/responses-api)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)

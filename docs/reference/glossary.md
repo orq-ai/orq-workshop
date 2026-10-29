@@ -1,45 +1,45 @@
 # Glossary
 
-**AI Gateway / router.** The OpenAI-compatible endpoint at `/v3/router`. Any OpenAI SDK, framework or coding agent points its base URL there and gets tracing, fallbacks, cache, routing rules, guardrails and budgets without code changes. Anthropic-compatible at `/v3/anthropic`. [Docs](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api)
+**AI Gateway / router.** The OpenAI-compatible endpoint at `/v3/router`. Any OpenAI SDK, framework or coding agent points its base URL there and gets tracing, fallbacks, cache, routing rules, guardrails and budgets without code changes. Anthropic-compatible at `/v3/anthropic`. [Docs](https://docs.orq.ai/ai-gateway/features/openai-compatible-api)
 
-**Smart Router.** A workspace entity with a pool of 2 to 50 models and a profile (quality, balanced, cost). Called like a model: `<workspace>@orq/<key>`. Picks a model per request from an intelligence index. [Docs](https://docs.orq.ai/docs/ai-gateway/smart-router)
+**Smart Router.** A workspace entity with a pool of 2 to 50 models and a profile (quality, balanced, cost). Called like a model: `<workspace>@orq/<key>`. Picks a model per request from an intelligence index. [Docs](https://docs.orq.ai/ai-gateway/smart-router)
 
-**Routing rule.** A CEL expression over request attributes that replaces the requested model, fallbacks or load balancer at the gateway. Applies to any caller. [Docs](https://docs.orq.ai/docs/ai-gateway/configuration/routing-rules)
+**Routing rule.** A CEL expression over request attributes that replaces the requested model, fallbacks or load balancer at the gateway. Applies to any caller. [Docs](https://docs.orq.ai/ai-gateway/configuration/routing-rules)
 
-**Guardrail.** An evaluator (LLM or Python) with a pass condition, run on input or output of a gateway call or agent turn. A failed guardrail blocks with HTTP 422. **System guardrails** are the built-in PII Detection and Secret Detection. **Guardrail rule** attaches guardrails and plugins to matching requests. [Docs](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails)
+**Guardrail.** An evaluator (LLM or Python) with a pass condition, run on input or output of a gateway call or agent turn. A failed guardrail blocks with HTTP 422. **System guardrails** are the built-in PII Detection and Secret Detection. **Guardrail rule** attaches guardrails and plugins to matching requests. [Docs](https://docs.orq.ai/ai-gateway/configuration/guardrails)
 
-**PII redaction plugin.** Request-scoped plugin that swaps detected PII for placeholders before the provider sees the text and restores the originals in the response. Different from the PII Detection guardrail, which blocks instead of rewriting. [Docs](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction)
+**PII redaction plugin.** Request-scoped plugin that swaps detected PII for placeholders before the provider sees the text and restores the originals in the response. Different from the PII Detection guardrail, which blocks instead of rewriting. [Docs](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction)
 
-**Budget.** Cost, token or requests-per-minute limit on a workspace, project, identity, API key, provider or model. Managed with a Management Key. [Docs](https://docs.orq.ai/docs/ai-gateway/budgets)
+**Budget.** Cost, token or requests-per-minute limit on a workspace, project, identity, API key, provider or model. Managed with a Management Key. [Docs](https://docs.orq.ai/ai-gateway/budgets)
 
-**Identity.** The end user behind a request. Attach `orq.identity.id` on a call so traces, annotations and budgets can be scoped to a person. [Docs](https://docs.orq.ai/docs/ai-studio/observability/identities)
+**Identity.** The end user behind a request. Attach `orq.identity.id` on a call so traces, annotations and budgets can be scoped to a person. [Docs](https://docs.orq.ai/ai-studio/observability/identities)
 
-**Thread.** A conversation id. Attach `orq.thread.id` so multi-turn traces group into one thread view. [Docs](https://docs.orq.ai/docs/ai-gateway/thread-management)
+**Thread.** A conversation id. Attach `orq.thread.id` so multi-turn traces group into one thread view. [Docs](https://docs.orq.ai/ai-gateway/thread-management)
 
-**Reporting API.** `POST /v2/reporting`. Usage, cost, latency, error, evaluator and guardrail metrics from the trace data, sliced by model, provider, project, identity or entity. What the Studio charts and what alerts evaluate. [Docs](https://docs.orq.ai/docs/ai-studio/observability/reporting-api)
+**Reporting API.** `POST /v2/reporting`. Usage, cost, latency, error, evaluator and guardrail metrics from the trace data, sliced by model, provider, project, identity or entity. What the Studio charts and what alerts evaluate. [Docs](https://docs.orq.ai/ai-studio/observability/reporting-api)
 
-**Alert.** A Reporting API metric with a threshold, a window and a check frequency, scoped to one project. A breach opens a **trigger** that stays open until the value recovers; each open and resolve notifies the alert's **notifiers** (email, Slack, generic webhook). [Docs](https://docs.orq.ai/docs/ai-studio/observability/alerts)
+**Alert.** A Reporting API metric with a threshold, a window and a check frequency, scoped to one project. A breach opens a **trigger** that stays open until the value recovers; each open and resolve notifies the alert's **notifiers** (email, Slack, generic webhook). [Docs](https://docs.orq.ai/ai-studio/observability/alerts)
 
-**Webhook.** A workspace subscription that POSTs chosen events (`llm.response`, `llm.chat_completion`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, signed with `X-Orq-Signature` (HMAC-SHA256 of the body). Different from a **notifier**, which is where alerts and budgets send their notifications. [Docs](https://docs.orq.ai/docs/ai-studio/organization/webhooks)
+**Webhook.** A workspace subscription that POSTs chosen events (`llm.response`, `llm.chat_completion`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, signed with `X-Orq-Signature` (HMAC-SHA256 of the body). Different from a **notifier**, which is where alerts and budgets send their notifications. [Docs](https://docs.orq.ai/ai-studio/organization/webhooks)
 
-**Trace automation.** A Studio rule over future traces: a filter, a sampling rate, and an action, add to a dataset or to an **annotation queue**. Studio-only; the queue itself has an API. [Docs](https://docs.orq.ai/docs/ai-studio/observability/automations)
+**Trace automation.** A Studio rule over future traces: a filter, a sampling rate, and an action, add to a dataset or to an **annotation queue**. Studio-only; the queue itself has an API. [Docs](https://docs.orq.ai/ai-studio/observability/automations)
 
-**Managed agent.** An agent hosted by orq.ai: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions and environments. Invoked through the Responses API as `model="agent/<key>"`. [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents)
+**Managed agent.** An agent hosted by orq.ai: instructions, model, tools (function, HTTP, built-in, MCP), knowledge bases, memory stores, versions and environments. Invoked through the Responses API as `model="agent/<key>"`. [Docs](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
 
-**Advisor / Sidekick.** Built-in agent tools. Advisor: ask a second model for guidance on the conversation so far. Sidekick: delegate a discrete task with its own instructions and get only the result. On the gateway's server tools these are `orq:advisor` and `orq:subagent`. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
+**Advisor / Sidekick.** Built-in agent tools. Advisor: ask a second model for guidance on the conversation so far. Sidekick: delegate a discrete task with its own instructions and get only the result. On the gateway's server tools these are `orq:advisor` and `orq:subagent`. [Docs](https://docs.orq.ai/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
 
-**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [How retrieval works](rag.md) · [Docs](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
+**Knowledge base.** Chunked documents with embeddings and hybrid search plus rerank and optional agentic RAG. **External knowledge base** is your own search endpoint that implements the `/search` contract. [How retrieval works](rag.md) · [Docs](https://docs.orq.ai/ai-studio/ai-engineering/knowledge-bases)
 
-**orq.ai MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp)
+**orq.ai MCP server.** `https://my.orq.ai/v2/mcp`. The MCP server coding agents connect to for workspace administration: agents, datasets, evaluators, experiments, traces, docs search. Wired by `orq launch` and `orq connect mcp`. [Docs](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-mcp)
 
-**MCP Portal.** The area of the AI Gateway where upstream **MCP Servers** are registered (URL, auth, discovered tools) and **MCP Gateways** bundle them. [Docs](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers)
+**MCP Portal.** The area of the AI Gateway where upstream **MCP Servers** are registered (URL, auth, discovered tools) and **MCP Gateways** bundle them. [Docs](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-servers)
 
-**MCP Gateway.** One client-facing MCP endpoint at `/v3/mcp/<key>` fronting several MCP Servers, with per-server tool exposure, read-only filters, naming rules and an audit log of every call. Consumed by coding agents and managed agents alike. [Docs](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways)
+**MCP Gateway.** One client-facing MCP endpoint at `/v3/mcp/<key>` fronting several MCP Servers, with per-server tool exposure, read-only filters, naming rules and an audit log of every call. Consumed by coding agents and managed agents alike. [Docs](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-gateways)
 
 **orq.ai CLI.** `orq`. Signs in, mints keys, manages every entity, and wires coding agents: `orq setup`, `orq connect`, `orq launch`, `orq doctor`. [Docs](https://docs.orq.ai/reference/cli)
 
-**orq.ai skills.** Agent-skills-standard workflows (`build-agent`, `analyze-trace-failures`, `build-evaluator`, `run-experiment`, `red-team`, `simulate-agent`, ...) shipped inside the CLI binary, sourced from `orq-ai/assistant-plugins`. Not the same as **Skills** the platform entity (reusable prompt snippets referenced as `{{skill.key}}`). [Docs](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills)
+**orq.ai skills.** Agent-skills-standard workflows (`build-agent`, `analyze-trace-failures`, `build-evaluator`, `run-experiment`, `red-team`, `simulate-agent`, ...) shipped inside the CLI binary, sourced from `orq-ai/assistant-plugins`. Not the same as **Skills** the platform entity (reusable prompt snippets referenced as `{{skill.key}}`). [Docs](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-skills)
 
 **orqi.** The orq.ai terminal helper agent. Embeds the pi coding agent, routes through the gateway, ships the orq.ai MCP tools, the orq.ai skills and seven troubleshooting skills of its own. Alpha.
 
-**evaluatorq.** Python and TypeScript evaluation framework from orq.ai. Runs jobs over datasets with evaluators, exits non-zero on failure, uploads results as Experiment runs. Also does agent simulation and red teaming. [Docs](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)
+**evaluatorq.** Python and TypeScript evaluation framework from orq.ai. Runs jobs over datasets with evaluators, exits non-zero on failure, uploads results as Experiment runs. Also does agent simulation and red teaming. [Docs](https://docs.orq.ai/ai-studio/cookbooks/evaluation-safety/evaluator-q)

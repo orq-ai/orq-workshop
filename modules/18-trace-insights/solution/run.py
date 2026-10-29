@@ -108,7 +108,7 @@ def step_2_insights() -> None:
     print(f"command  : {' '.join(command)}")
     subprocess.run(command, check=True)
     print(f"run      : {RUN_JSON.relative_to(ROOT)}")
-    print("next     : `uv run eq dashboard`, open Insights, pick the run; read the failure clusters and open an example trace")
+    print("next     : `make evaluatorq-dashboard`, open Insights, pick the run; read the failure clusters and open an example trace")
 
 
 async def main() -> None:

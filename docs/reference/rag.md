@@ -1,6 +1,6 @@
 # How retrieval works
 
-A knowledge base answers one question: *which chunks match this query?* Everything else (the model call, the answer, the trace) happens around that. This page explains the machinery so the numbers in [module 09](../modules/09.md) read as evidence rather than magic.
+A knowledge base answers one question: *which chunks match this query?* Everything else (the model call, the answer, the trace) happens around that. This page explains the machinery so the numbers in [Knowledge base and RAG](../modules/09.md) read as evidence rather than magic.
 
 ## The pipeline
 
@@ -114,10 +114,10 @@ The same knowledge base is reachable from four places, and the choice decides wh
 
 [Knowledge base and RAG](../modules/09.md) runs all four against the same four policy files and prints the prompt-token count for each, which is the cheapest way to see what actually reached the model.
 
-## Related
+## Official docs
 
 - [Knowledge base and RAG](../modules/09.md): the hands-on version
 - [Glossary](glossary.md): one-line definitions
-- [orq.ai docs · Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases)
-- [orq.ai docs · External knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/external-knowledge-bases)
+- [orq.ai docs · Knowledge bases](https://docs.orq.ai/ai-studio/ai-engineering/knowledge-bases)
+- [orq.ai docs · External knowledge bases](https://docs.orq.ai/ai-studio/ai-engineering/external-knowledge-bases)
 - [orq.ai docs · Search API](https://docs.orq.ai/reference/knowledge-bases/search-knowledge-base)

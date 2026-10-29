@@ -41,6 +41,10 @@ eval-vulnerable: ## Same gate against the vulnerable instructions. The gate must
 	@$(RUN) python -m evals.regression --instructions app/data/vulnerable_instructions.md --out evals/results/vulnerable.json; ec=$$?; \
 	  echo "gate exit code: $$ec (expected 1)"; test $$ec -eq 1
 
+evaluatorq-dashboard: ## Simulation and red-team results in the browser (eq dashboard), with the key from .env
+	@test -f .env || { echo "No .env yet: run make setup and fill ORQ_API_KEY."; exit 1; }
+	@set -a; source .env; set +a; $(RUN) eq dashboard $(if $(PORT),--port $(PORT))
+
 redteam-gate: ## Security regression gate with evaluatorq static red team. Used by CI.
 	$(RUN) python -m evals.redteam_gate
 
@@ -104,4 +108,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+.PHONY: evaluatorq-dashboard help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules

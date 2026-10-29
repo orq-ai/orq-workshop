@@ -41,7 +41,7 @@ The instructions matter more than the configuration. A tool the instructions nev
 
 ## Steps
 
-Open `modules/15-advisor-sidekick/run.py`. Steps 3, 4 and 5 are `TODO`s. The solution is in `solution/run.py`.
+Open [`modules/15-advisor-sidekick/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/15-advisor-sidekick/run.py). Steps 3, 4 and 5 are `TODO`s. The solution is in `solution/run.py`.
 
 ### Step 1 · Inspect the delegating agent
 
@@ -64,7 +64,7 @@ next     : Agents > wsvE-refund-agent-delegating > Tools in the Studio: the two 
 
 The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
 
-`make seed` built it from the fixed refund agent (`app/refund_agent/entities.py`, `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
+`make seed` built it from the fixed refund agent ([`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py), `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
 
 ### Step 2 · Run a refund the agent has to refuse
 
@@ -154,7 +154,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the build-agent skill to create an agent `ws-refund-agent-triage`, a copy of `ws-refund-agent-delegating` with the `advisor` on `anthropic/claude-sonnet-5` and `max_uses` 1. Invoke both agents with "Refund ord_a6 please, the frame arrived scratched.", execute the `function_call` items with `app.refund_agent.tools.dispatch`, and give me a two-row table from the traces: advisor model, advisor span cost, agent's own cost, total, and whether the advice changed the decision.
+<blockquote class="agent-prompt-frame" markdown>
+Use the build-agent skill to create an agent `ws-refund-agent-triage`, a copy of `ws-refund-agent-delegating` with the `advisor` on `anthropic/claude-sonnet-5` and `max_uses` 1. Invoke both agents with "Refund ord_a6 please, the frame arrived scratched.", execute the `function_call` items with `app.refund_agent.tools.dispatch`, and give me a two-row table from the traces: advisor model, advisor span cost, agent's own cost, total, and whether the advice changed the decision.
+</blockquote>
 
 ## Done when
 
@@ -179,4 +181,9 @@ Advisor and Sidekick tools on Agents, metered separately with their own spans. 4
 
 - Give the sidekick a structured `output_format` (a JSON schema in prose) and parse the artifact in your loop instead of returning it verbatim.
 - Swap the advisor to a reasoning model and compare the cost split; the transcript cap (`max_transcript_tokens`) is what keeps that affordable.
-- Docs: [Advisor and Sidekick cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/common-architecture/advisor-and-sidekick), [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces).
+
+## Official docs
+
+- [Advisor and Sidekick cookbook](https://docs.orq.ai/ai-studio/cookbooks/common-architecture/advisor-and-sidekick)
+- [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)

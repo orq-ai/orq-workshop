@@ -1,4 +1,4 @@
-"""make traffic: 20 conversations through the gateway, so Traces has something to analyse.
+"""make traffic: 20 conversations through the gateway, so Traces has something to analyze.
 
 What: every row of `app/data/dataset.jsonl` (or the first N) sent as one refund turn.
 Why: failure analysis (module 07) needs real policy violations to find. Even rows run with the

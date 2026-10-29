@@ -4,7 +4,7 @@
 
 | Clock | Min | Block | You run | You leave with |
 |---|---|---|---|---|
-| 09:00 | 5 | Welcome, how today works |  |  |
+| 09:00 | 5 | Welcome, how this session works |  |  |
 | 09:05 | 20 | [Get your key and set up](../../modules/00-setup/README.md) | `make setup && make doctor && make smoke` | a green orq doctor and one trace |
 | 09:25 | 15 | [1 · The refund agent](../../modules/08-managed-agents/README.md) | `make seed` | your smoke trace open in the Studio |
 | 09:40 | 35 | [2 · Simulate customers](../../modules/11-simulation/README.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |

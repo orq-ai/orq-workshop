@@ -27,4 +27,9 @@ Adoption does not require starting over. Every managed resource can be imported,
 
 A key with permission mode `ALL` manages every supported resource, including further API keys and Management Keys; a `RESTRICTED` key manages only the domains it was granted. This workshop does not run Terraform: the entities are created through the SDK so every module stays runnable from one `.env`. If your platform team keeps workspaces in code, the module 05 budget, the module 03 routing rule and the module 04 guardrail rule are the first three resources to move.
 
-Docs: [Terraform](https://docs.orq.ai/reference/terraform), [Quickstart](https://docs.orq.ai/reference/terraform/quickstart), [Supported resources](https://docs.orq.ai/reference/terraform/resources), [GitHub](https://github.com/orq-ai/terraform-provider-orq).
+## Official docs
+
+- [Terraform](https://docs.orq.ai/reference/terraform)
+- [Quickstart](https://docs.orq.ai/reference/terraform/quickstart)
+- [Supported resources](https://docs.orq.ai/reference/terraform/resources)
+- [GitHub](https://github.com/orq-ai/terraform-provider-orq)

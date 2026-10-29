@@ -192,6 +192,9 @@ def main(argv: list[str] | None = None) -> int:
     # The mean per scorer is the number under test. A scorer is "failed" when its mean is
     # below the bar, and one failed scorer is enough to fail the gate.
     rows = rows_detail(results)
+    if not rows:
+        print("verdict  : no rows were scored. Run `make seed` so the dataset and judge exist, then try again (exit 1)")
+        return 1
     scores = means(rows)
     url = url_out[0] if url_out else ""
     failed = [scorer for scorer, threshold in THRESHOLDS.items() if scores.get(scorer, 0.0) < threshold]

@@ -65,8 +65,8 @@ They sit either side of one decision and answer different questions:
 
 The usual order is arena first, evaluatorq forever after: pick the model with a tournament, then keep it honest with a regression gate. The pairwise data also feeds model selection for [smart routing](../modules/03.md): a strong model and an economical one, chosen with evidence rather than vibes.
 
-## Where to go next
+## Official docs
 
 - The repo: [orq-ai/orq-arena](https://github.com/orq-ai/orq-arena)
 - The docs: [orq-ai.github.io/orq-arena](https://orq-ai.github.io/orq-arena/)
-- In this workshop: [module 03](../modules/03.md) routes between models once you have picked them, and [module 07](../modules/07.md) turns a chosen model's failures into evaluators.
+- In this workshop: [Smart routing](../modules/03.md) routes between models once you have picked them, and [Failure analysis to experiments](../modules/07.md) turns a chosen model's failures into evaluators.

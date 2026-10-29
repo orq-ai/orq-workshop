@@ -1,4 +1,4 @@
-# MCP Gateway
+# MCP servers and gateway
 
 !!! abstract "One set of tools, three callers, one allow-list"
     The three refund tools return the same JSON whether the local loop, an MCP client or a managed agent calls them. The gateway decides which of them a given client is allowed to see. A small agent gets `lookup_order` and `get_policy`; nobody outside gets `issue_refund`.
@@ -17,7 +17,7 @@ Tools leak. A coding agent that can look up orders can also refund them if both 
 
 ## The one concept to understand first
 
-Three entities, one direction of trust ([MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers), [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways)).
+Three entities, one direction of trust ([MCP Servers](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-servers), [MCP Gateways](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-gateways)).
 
 ![Diagram: the MCP trust chain. An MCP client calls the MCP Gateway with a bearer key; the gateway exposes two of the three tools synced from the MCP Server, which fronts app/mcp_server.py over HTTPS; a managed agent attaches to the MCP Server directly by tool id.](assets/mcp-trust-chain.png)
 
@@ -32,7 +32,7 @@ $ make mcp-server
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
-`app/mcp_server.py` is 50 lines: an `MCPServer("lumen-refunds")`, one module-level `OrderStore`, three `@server.tool()` functions that call `app.refund_agent.tools`, and `server.run(transport="streamable-http", port=PORT, streamable_http_path="/mcp")`.
+[`app/mcp_server.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/mcp_server.py) is 50 lines: an `MCPServer("lumen-refunds")`, one module-level `OrderStore`, three `@server.tool()` functions that call `app.refund_agent.tools`, and `server.run(transport="streamable-http", port=PORT, streamable_http_path="/mcp")`.
 
 ### Step 1 · Call the local server with an MCP client
 
@@ -156,8 +156,8 @@ The solution creates `ws-refund-agent-mcp` as a copy so `ws-refund-agent` stays 
 
 ### Step 6 · Direct mode vs Code mode, and keys that cannot reach a gateway
 
-- **Direct mode** exposes each upstream tool as its own MCP tool. Clients see `lookup_order` and `get_policy` directly. Best for small catalogues and for agents that need the schemas in context.
-- **Code mode** exposes one gateway tool that does discovery and execution internally. Clients call it with code; the tool catalogue does not enter the model context. Best for gateways bundling dozens of servers.
+- **Direct mode** exposes each upstream tool as its own MCP tool. Clients see `lookup_order` and `get_policy` directly. Best for small catalogs and for agents that need the schemas in context.
+- **Code mode** exposes one gateway tool that does discovery and execution internally. Clients call it with code; the tool catalog does not enter the model context. Best for gateways bundling dozens of servers.
 - Switch in **Settings** on the gateway or with `orq.mcp_gateways.update(id=, mode=...)`. Tool naming (`MCP_TOOL_NAMING_PREFIX_WITH_SERVER_KEY` or `PREFIX_ON_COLLISION`) decides whether the alias prefixes every tool name.
 - An API key can be pinned to gateways: `mcp_access={"allowed_mcp_gateway_ids": ["mcp_gateway_..."]}` allows only those, `mcp_access={"deny_all": True}` blocks every gateway, and `toolset_ids` narrows the key to a named toolset. Set it on `orq api-keys create` or `update`; this needs a Management Key, so treat it as an instructor demo.
 
@@ -169,6 +169,12 @@ $ uv run python modules/10-mcp-gateway/solution/run.py --cleanup
 
 Deletes `ws-refund-gateway`, `ws-refund-mcp` and `ws-refund-agent-mcp`. Keep them until you have done the coding-agent step.
 
+## Proof
+
+![Studio: MCP Portal Gateways, filtered to `ws-`, showing ws-refund-gateway with 2 exposed tools and its public URL.](assets/studio-mcp-gateways.png)
+
+![Studio: MCP Portal Servers tab, filtered to `ws-`, showing the upstream server backing the gateway.](assets/studio-mcp-servers.png)
+
 ## With your coding agent
 
 ```bash
@@ -177,15 +183,11 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Connect the `ws-refund-gateway` MCP gateway to this coding-agent session and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
+<blockquote class="agent-prompt-frame" markdown>
+Connect the `ws-refund-gateway` MCP gateway to this coding-agent session and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
+</blockquote>
 
 With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_contents` instead; ask it about `ask_question`. Either way the answer to "why" is the same: the client only gets the allow-list.
-
-## Proof
-
-![Studio: MCP Portal Gateways, filtered to `ws-`, showing ws-refund-gateway with 2 exposed tools and its public URL.](assets/studio-mcp-gateways.png)
-
-![Studio: MCP Portal Servers tab, filtered to `ws-`, showing the upstream server backing the gateway.](assets/studio-mcp-servers.png)
 
 ## Done when
 
@@ -213,4 +215,9 @@ The MCP Portal is new in 4.14: MCP Servers and MCP Gateway share one area, the o
 
 Create a **Toolset** on the gateway (a named subset of tools across servers) and bind an API key to it with `mcp_access.toolset_ids`. The key then sees only the intersection of what the gateway exposes and what the toolset contains, which is how one gateway serves several teams.
 
-Docs: [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers), [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways), [API keys (MCP access)](https://docs.orq.ai/docs/ai-studio/organization/api-keys), [MCP cookbook](https://docs.orq.ai/docs/ai-studio/cookbooks/chatbots/insurance-claims-mcp-cookbook).
+## Official docs
+
+- [MCP Servers](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-servers)
+- [MCP Gateways](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-gateways)
+- [API keys (MCP access)](https://docs.orq.ai/ai-studio/organization/api-keys)
+- [MCP cookbook](https://docs.orq.ai/ai-studio/cookbooks/chatbots/insurance-claims-mcp-cookbook)

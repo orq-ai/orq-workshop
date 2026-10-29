@@ -8,7 +8,6 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 [Start with Setup](modules/00.md){ .md-button .md-button--primary }
 [See the agenda](agenda.md){ .md-button }
-[TechDays, 15 Oct](sessions/techdays-2026.md){ .md-button }
 
 <div class="grid cards" markdown>
 
@@ -18,7 +17,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     The orq CLI and your keys, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
 
-    [:octicons-arrow-right-24: Modules 00, 06, 13](modules/00.md)
+    [:octicons-arrow-right-24: Setup, orqi troubleshooting, coding agents](modules/00.md)
 
 -   :material-router:{ .lg .middle } **AI Gateway**
 
@@ -26,7 +25,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     Fallbacks and cache, smart routing and routing rules, guardrails and PII, budgets, keys and identities, MCP servers and the MCP Gateway.
 
-    [:octicons-arrow-right-24: Modules 01, 03, 04, 05, 10](modules/01.md)
+    [:octicons-arrow-right-24: Gateway, routing, guardrails, budgets, MCP](modules/01.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
 
@@ -34,7 +33,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     Tracing across your code and the gateway, alerts and webhooks, annotation queues and trace automations.
 
-    [:octicons-arrow-right-24: Modules 02, 14, 17](modules/02.md)
+    [:octicons-arrow-right-24: Tracing, alerts, annotation queues](modules/02.md)
 
 -   :material-robot:{ .lg .middle } **Agents**
 
@@ -80,6 +79,6 @@ One credential opens every door: your code and your coding agent both go through
 
 Each module has a `README.md` (the lesson), a `run.py` (the starter), a `solution/` (the finished exercise) and an `agent_prompt.md` (the same exercise handed to a coding agent). Every module ends with a **Done when** checklist that you can verify in the Studio. Each module closes with links to the matching pages on [docs.orq.ai](https://docs.orq.ai); the [cheat sheet](reference/cheat-sheet.md) collects them. Modules build on each other, but `make seed` creates every prerequisite entity so you can jump in anywhere.
 
-Prefer a notebook? `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list, 12 modules today): the solution split into steps, explanation above each cell. The generated files carry no saved output; run a cell to see its result. They are generated from `solution/run.py`, so they never drift from the script.
+Prefer a notebook? `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list): the solution split into steps, explanation above each cell. The generated files carry no saved output; run a cell to see its result. They are generated from `solution/run.py`, so they never drift from the script.
 
 Two ways to work, side by side. **By hand**: the SDK, the CLI, the Studio. **With your coding agent**: `orq launch claude` (or `opencode`, `pi`, `codex`) and paste the prompt. Both leave the same traces.

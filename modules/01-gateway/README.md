@@ -15,7 +15,7 @@ Most teams start with orq.ai as a proxy: point the OpenAI SDK at `https://my.orq
 
 ## The one concept to understand first
 
-Everything in this module is a field in `extra_body` ([retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing)). The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The same fields work on `/chat/completions` and on `/responses`; the app uses the latter.
+Everything in this module is a field in `extra_body` ([retries and fallbacks](https://docs.orq.ai/ai-gateway/features/retries), [timeouts](https://docs.orq.ai/ai-gateway/features/timeouts), [cache](https://docs.orq.ai/ai-gateway/features/cache), [load balancing](https://docs.orq.ai/ai-gateway/features/load-balancing)). The OpenAI SDK forwards unknown fields untouched, so `fallbacks`, `retry`, `timeout`, `cache`, `load_balancer`, `guardrails`, `plugins` and `orq` travel with the request and the gateway acts on them. The same fields work on `/chat/completions` and on `/responses`; the app uses the latter.
 
 ```python
 client.responses.create(
@@ -35,7 +35,7 @@ client.responses.create(
 
 ## Steps
 
-Open `modules/01-gateway/run.py`. Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
+Open [`modules/01-gateway/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/01-gateway/run.py). Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
 
 ### Step 1 · A plain call, and the trace it leaves
 
@@ -124,7 +124,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+<blockquote class="agent-prompt-frame" markdown>
+Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+</blockquote>
 
 ## Done when
 
@@ -154,4 +156,10 @@ orq.router.chat.completions.create(model=..., messages=..., fallbacks=[{"model":
 
 Pick one client per code base. Frameworks (LangGraph, Strands, CrewAI) already speak OpenAI, so for them the gateway URL is the integration.
 
-Docs: [Retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries), [Timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts), [Cache](https://docs.orq.ai/docs/ai-gateway/features/cache), [Load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing), [OpenAI-compatible API](https://docs.orq.ai/docs/ai-gateway/features/openai-compatible-api).
+## Official docs
+
+- [Retries and fallbacks](https://docs.orq.ai/ai-gateway/features/retries)
+- [Timeouts](https://docs.orq.ai/ai-gateway/features/timeouts)
+- [Cache](https://docs.orq.ai/ai-gateway/features/cache)
+- [Load balancing](https://docs.orq.ai/ai-gateway/features/load-balancing)
+- [OpenAI-compatible API](https://docs.orq.ai/ai-gateway/features/openai-compatible-api)

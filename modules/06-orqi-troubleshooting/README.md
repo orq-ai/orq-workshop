@@ -19,7 +19,7 @@ orqi has the same 43 `orq_` tools and the same skills your coding agent gets in 
 
 ## Steps
 
-`modules/06-orqi-troubleshooting/run.py` scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
+[`modules/06-orqi-troubleshooting/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/06-orqi-troubleshooting/run.py) scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
 
 ### Step 1 · Four troubleshooting prompts
 
@@ -165,8 +165,8 @@ Enable it as a workspace admin:
 1. Go to **Settings → Plugins**.
 2. Find **PII Redaction** and turn it on.
 3. Click the settings icon next to the toggle to configure: detection language, PII entity types, detection threshold, failure behavior (`on_failure`)
-This applies automatically to every Router request and Agent call that does not already supply a `pii_redaction` plugin. Per-request configuration cannot disable or weaken the workspace policy—it can only be stricter.
-Documentation: [Workspace-level PII redaction](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction)
+This applies automatically to every Router request and Agent call that does not already supply a `pii_redaction` plugin. Per-request configuration cannot disable or weaken the workspace policy. It can only be stricter.
+Documentation: [Workspace-level PII redaction](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction)
 ```
 
 The `platform-guide` skill refuses to answer from memory: it calls `search_docs` and links the page. Module 04 did the same thing per request with `extra_body={"plugins": [...]}`.
@@ -209,7 +209,9 @@ $ set -a; source .env; set +a; orqi
 
 Paste `agent_prompt.md`:
 
-> Use orqi to find the most expensive trace of the last 24 hours and explain why it cost that much.
+<blockquote class="agent-prompt-frame" markdown>
+Use orqi to find the most expensive trace of the last 24 hours and explain why it cost that much.
+</blockquote>
 
 `orq launch claude` answers the same prompt with the same MCP tools, at a higher price per turn.
 
@@ -239,4 +241,8 @@ Paste `agent_prompt.md`:
 
 `orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
 
-Docs: [orq.ai CLI reference](https://docs.orq.ai/reference/cli), [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Search traces API](https://docs.orq.ai/reference/traces/search-traces).
+## Official docs
+
+- [orq.ai CLI reference](https://docs.orq.ai/reference/cli)
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)
+- [Search traces API](https://docs.orq.ai/reference/traces/search-traces)

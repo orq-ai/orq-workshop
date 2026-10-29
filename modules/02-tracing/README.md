@@ -17,7 +17,7 @@ Module 01 left traces behind without a line of code. This module makes them your
 
 Three things decide what a trace looks like, and all three are in your hands:
 
-1. **Request fields.** On `/v3/router/responses` (and on `/chat/completions`), `name`, `identity`, `thread` and `metadata` are top-level fields of the request body. The OpenAI SDK forwards them through `extra_body`. They become filters in the Studio and in `orq.traces.search` ([request metadata](https://docs.orq.ai/docs/ai-gateway/request-metadata), [thread management](https://docs.orq.ai/docs/ai-gateway/thread-management)).
+1. **Request fields.** On `/v3/router/responses` (and on `/chat/completions`), `name`, `identity`, `thread` and `metadata` are top-level fields of the request body. The OpenAI SDK forwards them through `extra_body`. They become filters in the Studio and in `orq.traces.search` ([request metadata](https://docs.orq.ai/ai-gateway/request-metadata), [thread management](https://docs.orq.ai/ai-gateway/thread-management)).
 2. **The W3C `traceparent` header.** When a gateway call carries it, the gateway continues your trace instead of starting its own. `run_turn` adds it from the active `@traced` span (via `orq_ai_sdk.traced.propagation_headers()`).
 3. **`@traced` spans.** `@traced(type="agent")` and `@traced(type="tool")` from `orq_ai_sdk.traced` add the spans the gateway cannot see. With `TRACING=otel` the app's `setup_otel()` exports them over OTLP to `https://my.orq.ai/v2/otel`.
 
@@ -34,7 +34,7 @@ def refund_turn(text):
 
 ## Steps
 
-Open `modules/02-tracing/run.py`. Each step is a function with a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/02-tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/02-tracing/run.py). Each step is a function with a `TODO`. The solution is in `solution/run.py`.
 
 ### Step 1 · The traces you already have
 
@@ -194,7 +194,11 @@ next     : open https://my.orq.ai/traces and search the trace id; the graph pane
 
 The trace can take about 45 s to index, so `trace : not indexed yet` on the first try is expected: rerun the script after a few seconds.
 
-One `setup()` from `orq_ai_sdk.langchain` before the graph is built, and every node, tool and model call is a span; the Studio draws the graph next to the trace. Strands agents get the same treatment through OpenTelemetry: [docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands](https://docs.orq.ai/docs/ai-studio/integrations/frameworks/aws-strands).
+One `setup()` from `orq_ai_sdk.langchain` before the graph is built, and every node, tool and model call is a span; the Studio draws the graph next to the trace. Strands agents get the same treatment through OpenTelemetry: [docs.orq.ai/ai-studio/integrations/frameworks/aws-strands](https://docs.orq.ai/ai-studio/integrations/frameworks/aws-strands).
+
+## Proof
+
+![Studio: Traces list for the orq-workshop project, showing ws-refund-agent runs with duration, tokens and cost per request.](assets/studio-traces.png)
 
 ## With your coding agent
 
@@ -204,11 +208,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
-
-## Proof
-
-![Studio: Traces list for the orq-workshop project, showing ws-refund-agent runs with duration, tokens and cost per request.](assets/studio-traces.png)
+<blockquote class="agent-prompt-frame" markdown>
+Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
+</blockquote>
 
 ## Done when
 
@@ -233,6 +235,15 @@ Every trace span now shows guardrail and evaluator indicators, the Traces view h
 
 ## Go further
 
-Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarisess across a time range.
+Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
 
-Docs: [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces), [Observability quickstart (OTLP)](https://docs.orq.ai/docs/ai-studio/observability/quickstart), [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes), [Request metadata](https://docs.orq.ai/docs/ai-gateway/request-metadata), [Thread management](https://docs.orq.ai/docs/ai-gateway/thread-management), [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities), [Annotations](https://docs.orq.ai/docs/ai-studio/observability/annotations), [LangGraph integration](https://docs.orq.ai/docs/ai-studio/integrations/frameworks/langgraph).
+## Official docs
+
+- [Traces](https://docs.orq.ai/ai-studio/observability/traces)
+- [Observability quickstart (OTLP)](https://docs.orq.ai/ai-studio/observability/quickstart)
+- [Span attributes](https://docs.orq.ai/ai-studio/observability/span-attributes)
+- [Request metadata](https://docs.orq.ai/ai-gateway/request-metadata)
+- [Thread management](https://docs.orq.ai/ai-gateway/thread-management)
+- [Identities](https://docs.orq.ai/ai-studio/observability/identities)
+- [Annotations](https://docs.orq.ai/ai-studio/observability/annotations)
+- [LangGraph integration](https://docs.orq.ai/ai-studio/integrations/frameworks/langgraph)
