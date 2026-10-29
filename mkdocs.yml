@@ -14,7 +14,7 @@ copyright: "© 2026 orq.ai · MIT License"
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/orq-mark-white.svg
+  logo: assets/orq-symbol-dark.svg
   favicon: assets/orq-favicon.svg
   font: false
   features:
@@ -32,14 +32,18 @@ theme:
     - toc.follow
     - search.highlight
   palette:
-    - scheme: default
+    - media: "(prefers-color-scheme)"
+      toggle: { icon: material/brightness-auto, name: "Switch to light mode" }
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: custom
       accent: custom
-      toggle: { icon: material/brightness-7, name: Switch dark mode }
-    - scheme: slate
+      toggle: { icon: material/brightness-7, name: "Switch to dark mode" }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       primary: custom
       accent: custom
-      toggle: { icon: material/brightness-4, name: Switch light mode }
+      toggle: { icon: material/brightness-4, name: "Switch to system preference" }
 
 extra_css:
   - stylesheets/extra.css
@@ -71,6 +75,7 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.keys
   - pymdownx.snippets:
@@ -104,14 +109,12 @@ nav:
       - Gateway: modules/01.md
       - Smart routing and routing rules: modules/03.md
       - Guardrails: modules/04.md
-      - Budgets and keys: modules/05.md
       - MCP servers and gateway: modules/10.md
-      - Terraform: reference/terraform.md
   - AI Observability:
       - Tracing: modules/02.md
       - Alerts and webhooks: modules/14.md
       - Annotation queues and automations: modules/17.md
-  - Agents:
+  - Managed agents:
       - own-your-agent.md
       - Managed agents: modules/08.md
       - Advisor and sidekick: modules/15.md
@@ -128,6 +131,9 @@ nav:
       - Failure analysis to experiments: modules/07.md
   - Past sessions:
       - TechDays 15 Oct: sessions/techdays-2026.md
+  - Administration:
+      - Budgets and keys: modules/05.md
+      - Terraform: reference/terraform.md
   - Reference:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md

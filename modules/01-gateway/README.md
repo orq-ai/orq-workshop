@@ -35,6 +35,16 @@ client.responses.create(
 
 ## Steps
 
+<div class="steps" markdown>
+
+1. A plain call, and the trace it leaves.
+2. Force a fallback.
+3. Cache an identical request.
+4. Split traffic between two models.
+5. The same thing from the CLI.
+
+</div>
+
 Open [`modules/01-gateway/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/01-gateway/run.py). Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
 
 ### Step 1 · A plain call, and the trace it leaves

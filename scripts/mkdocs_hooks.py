@@ -12,6 +12,8 @@ Two things break when a page is assembled that way, and this hook fixes both:
   README. Lowering its priority runs it after snippets.
 """
 
+import html
+import re
 from pathlib import Path
 
 import termynal.markdown
@@ -23,6 +25,33 @@ ROOT = Path(__file__).resolve().parents[1]
 # termynal's preprocessor runs at priority 35, before pymdownx.snippets (32), so a
 # `<!-- termynal -->` fence inside a snippet-included README is never seen. Run it after.
 termynal.markdown.TERMYNAL_PREPROCESSOR_PRIORITY = 30
+
+
+def on_page_content(content, **kwargs):
+    """Keep commands outside Termynal's animation so copying also works during typing."""
+
+    def add_copy(match):
+        terminal = match.group(0)
+        # Keep Termynal's page-load auto-initializer from starting this block
+        # before it is visible; docs/js/keyboard.js initializes it on entry.
+        terminal = terminal.replace('class="termy"', 'class="terminal-animation"', 1)
+        inputs = re.findall(r'<span\b[^>]*data-ty="input"[^>]*>(.*?)</span>', terminal, re.S)
+        commands = []
+        for value in inputs:
+            value = re.sub(r'<br\s*/?>', '\n', value)
+            commands.append(html.unescape(re.sub(r'<[^>]+>', '', value)).strip())
+        if not commands:
+            return terminal
+        command = html.escape('\n'.join(commands), quote=True)
+        return (
+            f'<div class="terminal-session" data-terminal-command="{command}">'
+            '<button class="md-code__button terminal-copy" type="button" '
+            'title="Copy command" aria-label="Copy command"></button>'
+            '<span class="terminal-copy-status" role="status"></span>'
+            f'{terminal}</div>'
+        )
+
+    return re.sub(r'<div\b[^>]*class="termy"[^>]*>.*?</div>', add_copy, content, flags=re.S)
 
 
 def on_files(files, config):
