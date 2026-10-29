@@ -148,3 +148,20 @@ def test_symptom_result_has_noscript_fallback():
 def test_symptom_finder_binds(pages):
     js = (ROOT / "docs/js/academy.js").read_text()
     assert "initSymptomFinder" in js and "[data-symptom-finder]" in js
+
+
+def test_group_labels_hidden_until_grouped_even_without_js():
+    """Without JS the rows stay in time order, so a customer label between them would mislabel the next rows."""
+    css = (ROOT / "docs/stylesheets/academy.css").read_text()
+    assert "[data-group-by]:not(.is-grouped) .log-group-label { display: none; }" in css
+    assert ".is-interactive [data-group-by]:not(.is-grouped) .log-group-label" not in css
+
+
+def test_chooser_reasons_are_visible_text(pages):
+    for name, root in pages.items():
+        for chooser in find(root, lambda n: "data-chooser" in n.attrs):
+            for opt in find(chooser, lambda n: "data-lights" in n.attrs):
+                reasons = find(opt, lambda n: "chooser-reason" in n.classes())
+                assert reasons and reasons[0].all_text().strip(), name
+            why = find(chooser, lambda n: "chooser-why" in n.classes())
+            assert why and why[0].attrs.get("aria-live") == "polite", name

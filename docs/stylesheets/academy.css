@@ -47,7 +47,7 @@
 .md-typeset [data-group-by] { display: flex; flex-direction: column; gap: 0.3rem; font-family: var(--md-code-font-family); font-size: 0.75rem; }
 .md-typeset .log-line { padding: 0.3rem 0.6rem; border-radius: 0.4rem; background: rgb(10 14 13 / 4%); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .md-typeset .log-group-label { font-family: var(--md-text-font-family); font-weight: 600; font-size: 0.8125rem; color: var(--orq-heading); margin-top: 0.4rem; }
-.md-typeset .explainer.is-interactive [data-group-by]:not(.is-grouped) .log-group-label { display: none; }
+.md-typeset [data-group-by]:not(.is-grouped) .log-group-label { display: none; }
 .md-typeset [data-group-by].is-grouped > * { order: var(--group-order); }
 .md-typeset [data-group-by].is-grouped .log-line { margin-left: 0.9rem; }
 .md-typeset .is-grouped .log-line[data-customer="a"] { background: var(--orq-primary-tint); }
@@ -109,3 +109,7 @@
 .md-typeset .symptom-finder .loop-stage.is-lit { border: 2px solid var(--orq-primary); background: var(--orq-primary-tint); color: var(--orq-primary); box-shadow: 0 0 0 4px var(--orq-primary-tint); }
 .md-typeset .symptom-result { min-height: 1rem; font-size: 0.9375rem; }
 .md-typeset .symptom-result ol { margin-top: 0.25rem; }
+
+/* chooser reasons: plain text without JS, copied into the why box by JS */
+.md-typeset .chooser-reason { display: block; margin-top: 0.35rem; font-size: 0.8125rem; color: var(--orq-body); }
+.md-typeset .chooser.is-interactive .chooser-reason { display: none; }

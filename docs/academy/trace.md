@@ -90,17 +90,17 @@ Which one fits depends on how your app talks to models today. Most teams combine
 
 <div class="chooser" data-chooser>
 <div class="chooser-options">
-<button type="button" data-lights="way-gateway" data-why="Change the base URL and every model call is traced, with cost, latency and the full prompt. Add an identity and a thread so calls group by customer and conversation.">We call model providers from our own code, and changing the base URL is fine.</button>
-<button type="button" data-lights="way-gateway way-sdk" data-why="The gateway traces the model calls; the orq.ai SDK adds your own steps, the agent turn and each tool, around them, and both land in one tree. This is what the Workshop builds.">We run our own agent loop and want to see our tools, not only the model calls.</button>
-<button type="button" data-lights="way-otel" data-why="Keep your framework and your provider. The framework sends OpenTelemetry to orq.ai, so the traces read the same. orq.ai has setup guides for LangGraph, the OpenAI Agents SDK and many others.">We use a framework such as LangGraph, or must keep calling providers directly.</button>
-<button type="button" data-lights="way-hosted" data-why="Agents hosted on orq.ai are traced end to end, every tool call included, without any instrumentation on your side.">We would rather orq.ai runs the agent for us.</button>
+<button type="button" data-lights="way-gateway" data-why="Change the base URL and every model call is traced, with cost, latency and the full prompt. Add an identity and a thread so calls group by customer and conversation.">We call model providers from our own code, and changing the base URL is fine.<span class="chooser-reason">Change the base URL and every model call is traced, with cost, latency and the full prompt. Add an identity and a thread so calls group by customer and conversation.</span></button>
+<button type="button" data-lights="way-gateway way-sdk" data-why="The gateway traces the model calls; the orq.ai SDK adds your own steps, the agent turn and each tool, around them, and both land in one tree. This is what the Workshop builds.">We run our own agent loop and want to see our tools, not only the model calls.<span class="chooser-reason">The gateway traces the model calls; the orq.ai SDK adds your own steps, the agent turn and each tool, around them, and both land in one tree. This is what the Workshop builds.</span></button>
+<button type="button" data-lights="way-otel" data-why="Keep your framework and your provider. The framework sends OpenTelemetry to orq.ai, so the traces read the same. orq.ai has setup guides for LangGraph, the OpenAI Agents SDK and many others.">We use a framework such as LangGraph, or must keep calling providers directly.<span class="chooser-reason">Keep your framework and your provider. The framework sends OpenTelemetry to orq.ai, so the traces read the same. orq.ai has setup guides for LangGraph, the OpenAI Agents SDK and many others.</span></button>
+<button type="button" data-lights="way-hosted" data-why="Agents hosted on orq.ai are traced end to end, every tool call included, without any instrumentation on your side.">We would rather orq.ai runs the agent for us.<span class="chooser-reason">Agents hosted on orq.ai are traced end to end, every tool call included, without any instrumentation on your side.</span></button>
 </div>
 <div class="chooser-ways">
 <div class="chooser-way" id="way-gateway"><strong>AI Gateway</strong>No instrumentation: route your calls through orq.ai. Sees every model call.</div>
 <div class="chooser-way" id="way-sdk"><strong>orq.ai SDK</strong>Mark your own functions as agent or tool steps. Sees your steps, nested with the gateway's.</div>
 <div class="chooser-way" id="way-otel"><strong>OpenTelemetry</strong>The open standard: your framework exports to orq.ai. Sees whatever your framework records.</div>
 <div class="chooser-way" id="way-hosted"><strong>Hosted agents</strong>The agent runs on orq.ai. Sees everything, by default.</div>
-<div class="chooser-why">Pick the situation that sounds like your team.</div>
+<div class="chooser-why" aria-live="polite">Pick the situation that sounds like your team.</div>
 </div>
 </div>
 

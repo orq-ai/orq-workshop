@@ -73,6 +73,16 @@ def _branch() -> str:
     return subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
 
+def _starter_source(refs: list[str]) -> str | None:
+    """The starter run.py from the first ref that has the exercise version (with # CHANGE: lines), or None."""
+    import subprocess
+    for ref in refs:
+        shown = subprocess.run(["git", "show", f"{ref}:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True)
+        if shown.returncode == 0 and "# CHANGE:" in shown.stdout:
+            return shown.stdout
+    return None
+
+
 def test_solution_differs_by_the_changes_only():
     """On the solution branch the finished run.py is the starter plus the five CHANGE lines (and notebook cells)."""
     import difflib
@@ -82,9 +92,9 @@ def test_solution_differs_by_the_changes_only():
 
     if _branch() != "solution":
         pytest.skip("runs on the solution branch")
-    starter = subprocess.run(["git", "show", "main:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True).stdout
-    if not starter or "# CHANGE:" not in starter:
-        starter = subprocess.run(["git", "show", "arianpasquali/academy-slice:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True).stdout
+    starter = _starter_source(["origin/main", "main", "arianpasquali/academy-slice"])
+    if starter is None:
+        pytest.skip("no starter ref in this checkout (shallow clone); fetch main to run it")
 
     def code(text: str) -> list[str]:
         out, in_markdown = [], False
@@ -111,3 +121,25 @@ def test_studio_tabs_have_screenshot():
         for shot in shots:
             assert (RUN.parent / shot).exists(), shot
         assert len(re.findall(r"^\s+\d+\. ", studio, re.M)) >= 2, block[:40]
+
+
+def test_runner_import_fails_cleanly_without_the_extra(monkeypatch):
+    """Flipping step 4 before `uv sync --extra langgraph` must land in run.py's ImportError hint, not a traceback."""
+    import importlib
+    import importlib.util
+    import sys
+
+    import pytest
+
+    real = importlib.util.find_spec
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name, *a: None if name.startswith(("langchain", "langgraph")) else real(name, *a))
+    monkeypatch.syspath_prepend(str(RUN.parent))
+    sys.modules.pop("langgraph_runner", None)
+    with pytest.raises(ImportError):
+        importlib.import_module("langgraph_runner")
+    sys.modules.pop("langgraph_runner", None)
+
+
+def test_starter_source_is_none_when_no_ref_resolves():
+    """A shallow CI checkout has no main or slice ref; the diff test must skip, not compare against nothing."""
+    assert _starter_source(["no-such-ref-a", "no-such-ref-b"]) is None

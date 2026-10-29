@@ -67,3 +67,8 @@ def test_labels_match_done_when():
 def test_unknown_module_exits_nonzero_with_list(capsys):
     assert checks.run("nope", fake()) == 1
     assert "tracing" in capsys.readouterr().out
+
+
+def test_done_when_points_at_make_check():
+    text = (ROOT / "modules/tracing/README.md").read_text().split("## Done when", 1)[1].split("\n## ", 1)[0]
+    assert "make check M=tracing" in text
