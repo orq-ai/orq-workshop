@@ -16,6 +16,21 @@ One agent, one loop, about four hours. Every step below runs with a participant 
 
 </div>
 
+## What each module needs
+
+Every core-path module runs with the participant key from Setup. The electives below need more; their restricted steps are marked **Instructor demo** in the module, so a room without that access can still follow.
+
+| Module | Needs | Restricted part |
+|---|---|---|
+| [Smart routing](../modules/smart-routing.md) | admin key | the routing-rule steps |
+| [Guardrails](../modules/guardrails.md) | admin key | the guardrail-rule step |
+| [Budgets and keys](../modules/budgets-and-keys.md) | Management Key | the whole module |
+| [MCP servers and gateway](../modules/mcp-gateway.md) | workspace-wide key | creating the MCP server and gateway |
+| [Knowledge base and RAG](../modules/knowledge-base.md) | public tunnel | the external knowledge base step only |
+| [Alerts and webhooks](../modules/alerts-and-webhooks.md) | public tunnel | the webhook receiver step only |
+
+Everything else needs only the participant key and `make seed-workspace`.
+
 ## Electives by stage
 
 The rest of the modules, grouped by the stage of the loop they belong to. Take them in any order after their Starting point is met.
@@ -72,7 +87,7 @@ The rest of the modules, grouped by the stage of the loop they belong to. Take t
 | Module | You leave with |
 |---|---|
 | [Coding agents](../modules/coding-agents.md) | your coding agent wired to orq, applied to your own repo |
-| [orqi harness](../start/orqi.md) | orqi installed, signed in with the repo key, and a header line that shows `43 tools` |
+| [orqi harness](orqi.md) | orqi installed, signed in with the repo key, and a header line that shows `43 tools` |
 | [Troubleshooting with orqi](../modules/orqi.md) | a root cause found by an agent, not by you |
 
 ## Live sessions

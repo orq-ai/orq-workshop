@@ -1,3 +1,5 @@
+<p class="stage-chip">Academy · the idea, no code · <a href="../">all six stages</a></p>
+
 # Gate and monitor
 
 ## The problem

@@ -25,7 +25,7 @@ This is a training repo for orq.ai. Participants run it with Claude Code, OpenCo
 - Name the platform "orq.ai" in prose. Plain `orq` is only for the CLI, identifiers and URLs.
 - No em dashes. American English ("summarize", not "summarise").
 - Modules are referred to by name (`the tracing module`, or a link). Folders, URLs, Make targets and prose carry no number.
-- No day or hour framing ("Day 1", clock times). Sessions are described in minutes.
+- No day or hour framing ("Day 1", clock times) on Academy and Workshop pages; sessions there are described in minutes. Onboarding pages and `sessions/*/session.yml` may use days and clock times.
 - Module READMEs are included into the docs via snippets, so links inside them are absolute URLs (relative links break the build).
 - Lesson pages before the simulation must not name the behaviors the simulation is meant to find.
 

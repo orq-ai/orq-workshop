@@ -84,6 +84,6 @@ make regression-eval-vulnerable   # v1: exits 1
 
 ## Take home
 
-- [The core path](../start/core-path.md), and the electives by stage.
+- [The core path](../workshop/index.md), and the electives by stage.
 - [Red teaming](../modules/red-teaming.md) and [annotation queues](../modules/annotation-queues.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.

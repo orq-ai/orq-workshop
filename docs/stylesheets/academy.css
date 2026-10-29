@@ -1,0 +1,111 @@
+/* Academy widgets (docs/js/academy.js) and page blocks. Tokens come from extra.css only. */
+
+/* --- Loop map: six stages, production or development, current one highlighted ---- */
+.md-typeset .loop-map { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 1.25rem; }
+.md-typeset .loop-stage {
+  flex: 1 1 7.5rem; display: block; padding: 0.45rem 0.7rem; border: 1px solid var(--orq-hairline);
+  border-radius: var(--orq-radius-sm); background: var(--orq-surface); color: var(--orq-heading);
+  font-size: 0.8125rem; font-weight: 600; line-height: 1.25; text-decoration: none;
+}
+.md-typeset .loop-stage::before {
+  content: attr(data-mode); display: block; font-size: 0.625rem; font-weight: 500; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--orq-body); opacity: 0.8;
+}
+.md-typeset .loop-stage:hover { border-color: var(--orq-primary); }
+.md-typeset .loop-stage.is-current { border: 2px solid var(--orq-primary); background: var(--orq-primary-tint); color: var(--orq-primary); }
+
+/* --- Symptom cards ---------------------------------------------------------------- */
+.md-typeset .symptoms { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.75rem; margin: 0.75rem 0 1rem; }
+.md-typeset .symptom {
+  margin: 0; padding: 0.9rem 1rem; border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius);
+  background: var(--orq-surface); font-size: 1rem; line-height: 1.5rem;
+}
+.md-typeset .symptom::before { content: "\201C"; color: var(--orq-primary); font-size: 1.6rem; line-height: 0; vertical-align: -0.6rem; margin-right: 0.15rem; }
+
+/* --- Explainer: illustration + steps; JS adds the bar, caption and hides future steps */
+.md-typeset .explainer { border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius); background: var(--orq-surface); padding: 1rem; margin: 1rem 0; }
+.md-typeset .explainer-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.md-typeset .academy-btn {
+  border: 1px solid var(--orq-hairline); background: var(--orq-bg); color: var(--orq-heading); border-radius: 999px;
+  padding: 0.3rem 0.9rem; font: inherit; font-size: 0.8125rem; cursor: pointer;
+}
+.md-typeset .academy-btn.is-primary { background: var(--orq-primary); border-color: var(--orq-primary); color: #fff; }
+.md-typeset .academy-btn:disabled { opacity: 0.4; cursor: default; }
+.md-typeset .explainer-dots { display: flex; gap: 0.3rem; margin-left: auto; }
+.md-typeset .explainer-dots span { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--orq-hairline); }
+.md-typeset .explainer-dots span.is-on { background: var(--orq-primary); }
+.md-typeset .explainer-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 60em) { .md-typeset .explainer-stage { grid-template-columns: 1fr; } }
+.md-typeset .explainer-caption { margin-top: 0.75rem; min-height: 3rem; padding: 0.6rem 0.9rem; border-radius: var(--orq-radius-sm); background: var(--orq-primary-tint); color: var(--orq-heading); font-size: 1rem; line-height: 1.5rem; }
+.md-typeset .explainer.is-interactive .explainer-steps { display: none; }
+.md-typeset .explainer [id] { transition: opacity 0.35s, border-color 0.35s, background 0.35s, box-shadow 0.35s; }
+.md-typeset .explainer .is-hidden { opacity: 0.12; }
+.md-typeset .explainer .is-hot { border-color: var(--orq-primary) !important; background: var(--orq-primary-tint) !important; box-shadow: 0 0 0 3px var(--orq-primary-tint); }
+.md-typeset .explainer .is-bad { border-color: #b45309 !important; background: rgb(180 83 9 / 10%) !important; color: #b45309; }
+
+/* log lines that regroup by customer */
+.md-typeset [data-group-by] { display: flex; flex-direction: column; gap: 0.3rem; font-family: var(--md-code-font-family); font-size: 0.75rem; }
+.md-typeset .log-line { padding: 0.3rem 0.6rem; border-radius: 0.4rem; background: rgb(10 14 13 / 4%); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.md-typeset .log-group-label { font-family: var(--md-text-font-family); font-weight: 600; font-size: 0.8125rem; color: var(--orq-heading); margin-top: 0.4rem; }
+.md-typeset .explainer.is-interactive [data-group-by]:not(.is-grouped) .log-group-label { display: none; }
+.md-typeset [data-group-by].is-grouped > * { order: var(--group-order); }
+.md-typeset [data-group-by].is-grouped .log-line { margin-left: 0.9rem; }
+.md-typeset .is-grouped .log-line[data-customer="a"] { background: var(--orq-primary-tint); }
+.md-typeset .is-grouped .log-line[data-customer="b"] { background: rgb(79 91 213 / 9%); }
+.md-typeset .is-grouped .log-line[data-customer="c"] { background: rgb(183 121 31 / 10%); }
+
+/* the trace tree */
+.md-typeset .span-tree { border-left: 1px solid var(--orq-hairline); padding-left: 0.9rem; font-size: 0.8125rem; }
+.md-typeset .span-turn { margin: 0 0 0.75rem; font-weight: 600; color: var(--orq-body); }
+.md-typeset .span { display: flex; gap: 0.5rem; align-items: center; margin: 0.3rem 0; padding: 0.35rem 0.6rem; border: 1px solid var(--orq-hairline); border-radius: 0.5rem; background: var(--orq-bg); font-weight: 400; color: var(--orq-heading); }
+.md-typeset .span.child { margin-left: 1.25rem; }
+.md-typeset .span-kind { font-family: var(--md-code-font-family); font-size: 0.6875rem; text-transform: uppercase; width: 3rem; color: var(--orq-body); }
+.md-typeset .span-meta { margin-left: auto; font-family: var(--md-code-font-family); font-size: 0.6875rem; color: var(--orq-body); }
+.md-typeset .span-gap { margin: 0.3rem 0 0.3rem 1.25rem; padding: 0.35rem 0.6rem; border: 1.5px dashed #b45309; border-radius: 0.5rem; color: #b45309; font-weight: 400; }
+.md-typeset .span-output { margin: 0.2rem 0 0.4rem 2.5rem; padding: 0.4rem 0.6rem; border-radius: 0.4rem; background: var(--orq-terminal-bg); color: #d7efe9; font-family: var(--md-code-font-family); font-size: 0.6875rem; font-weight: 400; white-space: pre-wrap; }
+
+/* --- Chooser: situations on the left, ways in on the right ------------------------ */
+.md-typeset .chooser { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 1rem; margin: 1rem 0; }
+@media (max-width: 60em) { .md-typeset .chooser { grid-template-columns: 1fr; } }
+.md-typeset .chooser-options { display: grid; gap: 0.5rem; align-content: start; }
+.md-typeset .chooser-options button {
+  text-align: left; border: 1px solid var(--orq-hairline); background: var(--orq-surface); color: var(--orq-body);
+  border-radius: var(--orq-radius-sm); padding: 0.6rem 0.8rem; font: inherit; font-size: 0.875rem; line-height: 1.35rem; cursor: pointer;
+}
+.md-typeset .chooser-options button.is-on { border: 2px solid var(--orq-primary); background: var(--orq-primary-tint); color: var(--orq-heading); }
+.md-typeset .chooser-ways { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; align-content: start; }
+.md-typeset .chooser-way { padding: 0.7rem 0.9rem; border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius-sm); background: var(--orq-surface); font-size: 0.8125rem; line-height: 1.25rem; transition: all 0.3s; }
+.md-typeset .chooser-way strong { display: block; color: var(--orq-heading); font-size: 0.9375rem; }
+.md-typeset .chooser.is-interactive .chooser-way { opacity: 0.45; }
+.md-typeset .chooser.is-interactive .chooser-way.is-lit { opacity: 1; border: 2px solid var(--orq-primary); box-shadow: 0 0 0 4px var(--orq-primary-tint); }
+.md-typeset .chooser-why { grid-column: 1 / -1; min-height: 2.5rem; padding: 0.6rem 0.9rem; border-radius: var(--orq-radius-sm); background: var(--orq-primary-tint); color: var(--orq-heading); font-size: 0.9375rem; }
+
+/* --- Storyboard placeholder: where an approved clip will go ----------------------- */
+.md-typeset .storyboard { margin: 1rem 0; padding: 0.9rem 1rem; border: 2px dashed #b7791f; border-radius: var(--orq-radius); background: rgb(183 121 31 / 5%); }
+.md-typeset .storyboard h4 { margin: 0 0 0.4rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+.md-typeset .storyboard[data-status]::before {
+  content: "Storyboard · " attr(data-status); display: inline-block; margin-bottom: 0.5rem; padding: 0.1rem 0.6rem;
+  border-radius: 999px; background: #b7791f; color: #fff; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+}
+.md-typeset .storyboard-meta { margin: 0.3rem 0 0.6rem; padding-left: 1rem; font-size: 0.8125rem; }
+
+/* --- Takes, checklist, next ------------------------------------------------------- */
+.md-typeset .takes { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0.75rem; margin: 0.75rem 0; }
+.md-typeset .take { padding: 0.8rem 1rem; border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius); background: var(--orq-surface); font-size: 0.9375rem; line-height: 1.4rem; }
+.md-typeset .take strong { display: block; font-size: 1.125rem; color: var(--orq-heading); margin: 0.1rem 0 0.25rem; }
+.md-typeset .take em { font-style: normal; font-size: 0.6875rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--orq-body); }
+
+[data-md-color-scheme="slate"] .md-typeset .log-line { background: rgb(255 255 255 / 5%); }
+[data-md-color-scheme="slate"] .md-typeset .academy-btn.is-primary { background: #00d2b5; border-color: #00d2b5; color: #0a0e0d; }
+.md-typeset .explainer .span-output.is-hot { background: var(--orq-terminal-bg) !important; color: #d7efe9; box-shadow: 0 0 0 3px var(--orq-primary); }
+
+/* --- Symptom finder: tick symptoms, the loop lights up ---------------------------- */
+.md-typeset .symptom-finder { border: 1px solid var(--orq-hairline); border-radius: var(--orq-radius); background: var(--orq-surface); padding: 1rem; margin: 1rem 0; }
+.md-typeset .symptom-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 0.4rem 1rem; margin-bottom: 0.9rem; }
+.md-typeset .symptom-option { display: flex; gap: 0.55rem; align-items: flex-start; padding: 0.4rem 0.5rem; border-radius: var(--orq-radius-sm); font-size: 0.875rem; line-height: 1.35rem; cursor: pointer; }
+.md-typeset .symptom-option:hover { background: var(--orq-primary-tint); }
+.md-typeset .symptom-option input { margin-top: 0.25rem; accent-color: var(--orq-primary); }
+.md-typeset .symptom-finder .loop-stage { transition: all 0.3s; }
+.md-typeset .symptom-finder .loop-stage.is-lit { border: 2px solid var(--orq-primary); background: var(--orq-primary-tint); color: var(--orq-primary); box-shadow: 0 0 0 4px var(--orq-primary-tint); }
+.md-typeset .symptom-result { min-height: 1rem; font-size: 0.9375rem; }
+.md-typeset .symptom-result ol { margin-top: 0.25rem; }
