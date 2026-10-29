@@ -82,7 +82,7 @@
 
 /* --- Storyboard placeholder: where an approved clip will go ----------------------- */
 .md-typeset .storyboard { margin: 1rem 0; padding: 0.9rem 1rem; border: 2px dashed #b7791f; border-radius: var(--orq-radius); background: rgb(183 121 31 / 5%); }
-.md-typeset .storyboard h4 { margin: 0 0 0.4rem; display: flex; justify-content: space-between; gap: 0.5rem; }
+.md-typeset .storyboard .storyboard-title { margin: 0 0 0.4rem; font-size: 1rem; color: var(--orq-heading); }
 .md-typeset .storyboard[data-status]::before {
   content: "Storyboard · " attr(data-status); display: inline-block; margin-bottom: 0.5rem; padding: 0.1rem 0.6rem;
   border-radius: 999px; background: #b7791f; color: #fff; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;

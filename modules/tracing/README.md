@@ -42,10 +42,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 ### Step 1 · Name the traces you already have
 
 !!! example "Change · Run · Watch"
-    **Change** `trace_name = None` → `trace_name = "refund-turn"` in `step_1_name`.
-    **Run** the script.
-    **Watch** the newest traces in the list: named `refund-turn` instead of after the endpoint.
-    **Why it matters** a name is the first filter anyone uses: "show me the refund turns of the last hour".
+    - **Change** `trace_name = None` → `trace_name = "refund-turn"` in `step_1_name`.
+    - **Run** the script.
+    - **Watch** the newest traces in the list: named `refund-turn` instead of after the endpoint.
+    - **Why it matters** a name is the first filter anyone uses: "show me the refund turns of the last hour".
 
 === "Studio"
 
@@ -71,13 +71,36 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
     > Run `modules/tracing/run.py`, find the `# CHANGE:` line of step 1, make that change, rerun, and show me the names of the last five traces.
 
+<section class="storyboard" data-clip="t1" data-status="awaiting" markdown>
+
+<p class="storyboard-title"><strong>Clip T1 · One changed line, a named trace</strong></p>
+
+<ul class="storyboard-meta">
+<li><strong>Audience:</strong> engineers, step 1 of the tracing module</li>
+<li><strong>Point it makes:</strong> one line in the code, and the trace has a name you can filter on</li>
+<li><strong>Length:</strong> about 30 seconds, captions only, terminal recorded with vhs</li>
+<li><strong>Source:</strong> this repo, project orq-academy</li>
+<li><strong>Also on screen:</strong> the terminal only; no key, no shell prompt with a user name</li>
+</ul>
+
+| # | Time | On screen | Caption |
+|---|---|---|---|
+| 1 | 0:00-0:08 | `uv run python modules/tracing/run.py`, step 1 output with the `CHANGE :` hint | The script tells you which line to change. |
+| 2 | 0:08-0:15 | The editor: `trace_name = None` becomes `trace_name = "refund-turn"` | One value. |
+| 3 | 0:15-0:25 | The rerun: the recent list shows `refund-turn` at the top | The trace now has a name. |
+| 4 | 0:25-0:30 | `orq traces search --from now-10m --to now` shows the same name | Same result from the CLI. |
+
+**To approve:** say "approve clip T1", or change any row.
+
+</section>
+
 ### Step 2 · Group by customer and conversation
 
 !!! example "Change · Run · Watch"
-    **Change** `customer = None` → `customer = settings.identity_id` in `step_2_conversation`.
-    **Run** the script.
-    **Watch** `search` in the step's output: 0 traces before the change, every model call of both turns after it.
-    **Why it matters** "show me everything this customer was told" becomes one filter instead of an afternoon in the logs.
+    - **Change** `customer = None` → `customer = settings.identity_id` in `step_2_conversation`.
+    - **Run** the script.
+    - **Watch** `search` in the step's output: 0 traces before the change, every model call of both turns after it.
+    - **Why it matters** "show me everything this customer was told" becomes one filter instead of an afternoon in the logs.
 
 === "Studio"
 
@@ -112,10 +135,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 ### Step 3 · Your own steps with the orq.ai SDK
 
 !!! example "Change · Run · Watch"
-    **Change** `trace_my_steps = False` → `trace_my_steps = True` in `step_3_sdk`.
-    **Run** the script.
-    **Watch** the span table: one flat model call before the change; after it, a root `refund_turn` with the tool calls nested between the model calls.
-    **Why it matters** the gateway sees the model; only your code sees your tools. Now the order lookup and its result are in the trace, which is where most bugs hide.
+    - **Change** `trace_my_steps = False` → `trace_my_steps = True` in `step_3_sdk`.
+    - **Run** the script.
+    - **Watch** the span table: one flat model call before the change; after it, a root `refund_turn` with the tool calls nested between the model calls.
+    - **Why it matters** the gateway sees the model; only your code sees your tools. Now the order lookup and its result are in the trace, which is where most bugs hide.
 
 === "Studio"
 
@@ -146,10 +169,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 ### Step 4 · A framework over OpenTelemetry
 
 !!! example "Change · Run · Watch"
-    **Change** `otel_export = False` → `otel_export = True` in `step_4_framework`.
-    **Run** `uv sync --extra langgraph` once, then the script.
-    **Watch** one trace named `refund_langgraph` with every node, tool and model call of the graph in it.
-    **Why it matters** a team already on a framework keeps it: one setup call and the traces read the same as yours.
+    - **Change** `otel_export = False` → `otel_export = True` in `step_4_framework`.
+    - **Run** `uv sync --extra langgraph` once, then the script.
+    - **Watch** one trace named `refund_langgraph` with every node, tool and model call of the graph in it.
+    - **Why it matters** a team already on a framework keeps it: one setup call and the traces read the same as yours.
 
 === "Studio"
 
@@ -174,10 +197,10 @@ The finished file is at the same path on the [`solution` branch](https://github.
 ### Step 5 · Annotate the answer
 
 !!! example "Change · Run · Watch"
-    **Change** `rating = None` → `rating = "good"` in `step_5_annotation`.
-    **Run** the script.
-    **Watch** `verdict : written`, then the rating on the span in the Studio.
-    **Why it matters** a human verdict on a real answer is the first row of a dataset; the annotation-queues module collects them at scale.
+    - **Change** `rating = None` → `rating = "good"` in `step_5_annotation`.
+    - **Run** the script.
+    - **Watch** `verdict : written`, then the rating on the span in the Studio.
+    - **Why it matters** a human verdict on a real answer is the first row of a dataset; the annotation-queues module collects them at scale.
 
 === "Studio"
 

@@ -31,6 +31,9 @@ seed-insurance: ## Create the insurance claims demo (agents, evaluators, 15 test
 generate-traffic: ## Generate 20 mixed good/bad conversations so traces exist for failure analysis
 	$(RUN) python -m app.traffic
 
+generate-recording-traffic: ## Send the scripted conversations the recordings show (use ORQ_ENV_FILE=.env.academy)
+	$(RUN) python -m app.recording_traffic
+
 reset-workspace: ## Delete every entity this repo created (by WS_PREFIX)
 	$(RUN) python -m app.refund_agent.entities reset
 
@@ -116,7 +119,7 @@ m%:
 	@slug=$$(echo "$(OLD_NUMBERS)" | tr ' ' '\n' | sed -n 's/^$*=//p'); test -n "$$slug" || { echo "no module $*"; exit 1; }; \
 	echo "make m$* is now: make module M=$$slug"; $(MAKE) --no-print-directory module M=$$slug
 
-.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules module check
+.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic generate-recording-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules module check
 
 # ponytail: old target names, kept because private run-of-shows and printed handouts still say them.
 # Drop after the next client run. Hidden from `make help` (no `##`).

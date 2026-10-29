@@ -106,7 +106,7 @@ Which one fits depends on how your app talks to models today. Most teams combine
 
 <section class="storyboard" data-clip="3" data-status="awaiting" markdown>
 
-#### Clip 3 · From a complaint to the cause
+<p class="storyboard-title"><strong>Clip 3 · From a complaint to the cause</strong></p>
 
 <ul class="storyboard-meta">
 <li><strong>Audience:</strong> team leaders, in the stage walk of the leaders' session</li>
