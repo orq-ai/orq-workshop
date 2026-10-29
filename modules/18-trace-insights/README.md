@@ -27,8 +27,8 @@ The population is what you filter it to. `--agent` keeps only the managed agent'
 ## Steps
 
 ```bash
-$ uv run python modules/18-trace-insights/solution/run.py           # simulate, then insights (about 3 minutes)
-$ uv run python modules/18-trace-insights/solution/run.py --only=2  # insights again on the traces you have
+$ uv run python modules/18-trace-insights/run.py           # simulate, then insights (about 3 minutes)
+$ uv run python modules/18-trace-insights/run.py --only=2  # insights again on the traces you have
 ```
 
 ### Step 1 · Simulate the managed v1 agent

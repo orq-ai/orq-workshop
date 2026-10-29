@@ -48,7 +48,7 @@ Open [`modules/04-guardrails/run.py`](https://github.com/orq-ai/orq-workshop/blo
 The note on `ord_a5` holds an email and a phone number. `orq.pii.detect`, `orq.pii.redact` and `orq.pii.restore` are the same three calls the plugin makes for you.
 
 ```bash
-$ make m04      # the solution; the starter prints the same block once its TODOs are filled in
+$ make m04      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
 ```
 
 Expected output:
@@ -165,7 +165,7 @@ answer   : Your refund of €24.99 has been issued to the original payment metho
 
 This is the hand-off. The model produced the forbidden sentence, the gateway refused to deliver it, and the app's `except` branch is where the human enters: the trace id goes on a review ticket, the customer gets "a colleague will confirm". No answer, no apology written by the model, no retry loop. The `failures` array names the evaluator, the stage and the outcome, so the ticket can say why.
 
-On the router the block arrives as `openai.BadRequestError` (400). Agents and deployments return `422`, so `solution/run.py` catches both.
+On the router the block arrives as `openai.BadRequestError` (400). Agents and deployments return `422`, so the solution catches both.
 
 One detail in the code: these three calls pass `api="chat"`, so `run_turn` sends them to `/chat/completions` instead of the Responses endpoint the rest of the app uses. In 4.14.17 the gateway accepts a request-level `guardrails` field on `/responses` and ignores it: the same request that is blocked here returns 200 with the forbidden sentence. Guardrail **rules** (step 4) are enforced on both endpoints, which is one more reason to prefer them.
 

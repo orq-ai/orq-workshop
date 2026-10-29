@@ -34,8 +34,8 @@ The judge reads the transcript text. It does not see tool calls made inside a ca
 ## Steps
 
 ```bash
-$ uv run python modules/11-simulation/solution/run.py           # all 3 steps
-$ uv run python modules/11-simulation/solution/run.py --only=3  # just step 3
+$ uv run python modules/11-simulation/run.py           # all 3 steps
+$ uv run python modules/11-simulation/run.py --only=3  # just step 3
 ```
 
 One command, three simulations, three different questions:
@@ -237,7 +237,7 @@ With no argument it scans **both** local stores: `.evaluatorq/sim-runs/` (this m
 ![Screenshot: the evaluatorq dashboard home. Twenty-eight jobs run, split red team 86% and agent sim 14%, with average cost per job, total spend and token usage, and a recent-runs table listing the four ws-sim runs this module just produced.](assets/11-dashboard-home.png)
 
 !!! warning "A run only shows up if it was saved"
-    The `eq sim` CLI auto-saves; the Python SDK does not. `simulate()` and `generate_and_simulate()` default to `save=False`, so a script that omits it uploads to Experiments and leaves nothing on disk. `eq dashboard` then shows an empty Agent Sim. Every call in `solution/run.py` passes `save=True` for exactly this reason.
+    The `eq sim` CLI auto-saves; the Python SDK does not. `simulate()` and `generate_and_simulate()` default to `save=False`, so a script that omits it uploads to Experiments and leaves nothing on disk. `eq dashboard` then shows an empty Agent Sim. Every call in the finished `run.py` passes `save=True` for exactly this reason.
 
 **Agent Sim** lists the four runs, each with the target it drove, the score, the number of conversations and what it cost:
 

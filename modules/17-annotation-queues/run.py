@@ -7,7 +7,7 @@ ws-review-dataset (empty). Four steps: fill the queue by API, let an automation 
 items by API, promote the bad ones to the dataset.
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is in solution/run.py. Run it with `uv run python modules/17-annotation-queues/run.py`.
+The solution is on the `solution` branch. Run it with `uv run python modules/17-annotation-queues/run.py`.
 """
 
 from __future__ import annotations

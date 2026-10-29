@@ -32,14 +32,14 @@ Two facts shape what you can alert on. Alerts are project-scoped, and only succe
 
 ## Steps
 
-Open [`modules/14-observability-ops/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/14-observability-ops/run.py). Every step has a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/14-observability-ops/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/14-observability-ops/run.py). Every step has a `TODO`. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/14-observability-ops/run.py).
 
 ### Step 1 · The number: Telemetry API
 
 `POST /v3/telemetry/query` on the traces source. `mode: scalar` aggregates the window into one row; `group_by` turns it into a top list (one `compute` per grouped query). The SDK's `orq.telemetry.query` rejects the response in SDK 4.17 (it echoes `sort: ""`), so `entities.telemetry_query` posts the same body over REST. The older [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api) still works for existing callers.
 
 ```bash
-$ uv run python modules/14-observability-ops/solution/run.py
+$ uv run python modules/14-observability-ops/run.py
 ```
 
 ```text
@@ -91,7 +91,7 @@ Three terminals:
 $ orq webhooks generate-secret -o json | jq -r .secret        # -> WS_WEBHOOK_SECRET in .env
 $ make edge                                                  # terminal 1: http://127.0.0.1:8001 (app/edge.py, also module 09's external KB)
 $ npx localtunnel --port 8001                                # terminal 2 -> https://<random>.loca.lt, into WS_EDGE_URL in .env
-$ uv run python modules/14-observability-ops/solution/run.py          # terminal 3
+$ uv run python modules/14-observability-ops/run.py          # terminal 3
 ```
 
 The step creates `ws-events-webhook` on `llm.response` and `agent.updated`, then fires one of each: a call to the refund agent, and a description touch on `ws-refund-agent-delegating`. Then it asks the receiver what came in.

@@ -67,10 +67,10 @@ diagrams: ## Re-export the diagram SVGs (modules/*/assets, docs/assets/diagrams)
 	$(UV) run --with playwright python scripts/export_diagrams.py
 
 # Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.
-NB_SOURCES := $(shell grep -l "^\# %%" modules/*/solution/run.py 2>/dev/null)
+NB_SOURCES := $(shell grep -l "^\# %%" modules/*/run.py 2>/dev/null)
 
-notebooks: ## Generate modules/NN-*/notebook.ipynb from every percent-format solution
-	@for src in $(NB_SOURCES); do dir=$${src%/solution/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
+notebooks: ## Generate modules/NN-*/notebook.ipynb from every percent-format run.py (on the solution branch)
+	@for src in $(NB_SOURCES); do dir=$${src%/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
 
 lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
 	$(RUN) jupyter lab
@@ -99,14 +99,14 @@ handout: ## Build slides/handout.html (QR codes, commands; A4, white) and open i
 modules: ## List modules
 	@printf '  %s\n' $(MODULES)
 
-# m00 .. m17: run a module's solution, e.g. `make m01`
-m%: ## Run the solution of module NN (e.g. make m03)
+# m00 .. m18: run a module's run.py, e.g. `make m01` (the starter on main, the finished file on the solution branch)
+m%: ## Run run.py of module NN (e.g. make m03)
 	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; \
 	echo "Module dir:  $$dir"; \
-	echo "Source file: $$dir/solution/run.py"; \
-	echo "Full command: $(RUN) python $$dir/solution/run.py"; \
+	echo "Source file: $$dir/run.py"; \
+	echo "Full command: $(RUN) python $$dir/run.py"; \
 	echo; \
-	$(RUN) python $$dir/solution/run.py
+	$(RUN) python $$dir/run.py
 
 .PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules
 

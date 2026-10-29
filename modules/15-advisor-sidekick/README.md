@@ -41,13 +41,13 @@ The instructions matter more than the configuration. A tool the instructions nev
 
 ## Steps
 
-Open [`modules/15-advisor-sidekick/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/15-advisor-sidekick/run.py). Steps 3, 4 and 5 are `TODO`s. The solution is in `solution/run.py`.
+Open [`modules/15-advisor-sidekick/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/15-advisor-sidekick/run.py). Steps 3, 4 and 5 are `TODO`s. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/15-advisor-sidekick/run.py).
 
 ### Step 1 · Inspect the delegating agent
 
 ```bash
 $ orq agents retrieve ws-refund-agent-delegating -o json | jq '.settings.tools[] | select(.action_type == "advisor" or .action_type == "sidekick") | {action_type, configuration}'
-$ uv run python modules/15-advisor-sidekick/solution/run.py
+$ uv run python modules/15-advisor-sidekick/run.py
 ```
 
 Expected output:

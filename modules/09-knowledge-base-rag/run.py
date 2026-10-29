@@ -8,7 +8,7 @@ front of the model without a tool round-trip (step 5), let a model rewrite a vag
 and front a search endpoint of your own (step 7).
 
 Fill in the TODOs. The script runs as is; a step with an empty body prints what is missing.
-Run it with `uv run python modules/09-knowledge-base-rag/run.py`. The solution is in `solution/run.py`.
+Run it with `uv run python modules/09-knowledge-base-rag/run.py`. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

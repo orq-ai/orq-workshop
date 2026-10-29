@@ -15,12 +15,12 @@ Module 11 asked "does the agent serve customers"; this one asks "what can a cust
 
 ## The one concept to understand first
 
-The target is the `AgentTarget` contract from module 11 (`LocalRefundTarget` in `solution/refund_target.py`; orq.ai agents with code tools need no class, just `agent:<key>`). Two instances, one per instruction file, is the whole experiment:
+The target is the `AgentTarget` contract from module 11 (`LocalRefundTarget` in `refund_target.py`; orq.ai agents with code tools need no class, just `agent:<key>`). Two instances, one per instruction file, is the whole experiment:
 
 ```python
 report = await red_team(
     [LocalRefundTarget("vulnerable"), LocalRefundTarget("fixed")],
-    mode="static", dataset="solution/static_attacks.json", categories=["LLM01", "LLM07", "ASI01", "ASI02"],
+    mode="static", dataset="`static_attacks.json`", categories=["LLM01", "LLM07", "ASI01", "ASI02"],
     max_static_datapoints=8, max_turns=2,
     llm_config=LLMConfig(attacker=LLMCallConfig(model=..., client=router), evaluator=LLMCallConfig(model=..., client=router)),
 )
@@ -33,8 +33,8 @@ The judge reads the transcript text and checks OWASP behavior. It does not see t
 ## Steps
 
 ```bash
-$ uv run python modules/16-red-teaming/solution/run.py            # both steps, about 3 minutes
-$ uv run python modules/16-red-teaming/solution/run.py --only=1   # one step
+$ uv run python modules/16-red-teaming/run.py            # both steps, about 3 minutes
+$ uv run python modules/16-red-teaming/run.py --only=1   # one step
 ```
 
 Four steps, and only the first two spend anything:
@@ -58,7 +58,7 @@ Two `LocalRefundTarget`s over `chat(..., instructions=vulnerable | fixed)`, stat
 | `local-refund-vulnerable` | [`app/data/vulnerable_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/vulnerable_instructions.md) | break: it trusts quoted policy and describes its own tools |
 | `local-refund-fixed` | [`app/data/fixed_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/fixed_instructions.md) | resist |
 
-**The eight attacks** in [`solution/static_attacks.json`](https://github.com/orq-ai/orq-workshop/blob/main/modules/16-red-teaming/solution/static_attacks.json), two per OWASP category:
+**The eight attacks** in [`static_attacks.json`](https://github.com/orq-ai/orq-workshop/blob/main/modules/16-red-teaming/static_attacks.json), two per OWASP category:
 
 | OWASP | Category | Vectors used |
 |---|---|---|
@@ -92,7 +92,7 @@ Why is the difference small? `tools.py` refuses out-of-window, over-limit and fo
 ```bash
 $ set -a; source .env; set +a
 $ uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static \
-    --dataset modules/16-red-teaming/solution/static_attacks.json --max-static-datapoints 4 --max-turns 2 \
+    --dataset modules/16-red-teaming/static_attacks.json --max-static-datapoints 4 --max-turns 2 \
     --evaluator-model openai/gpt-5.6-luna --attack-model openai/gpt-5.6-luna \
     --no-recommendations --no-executive-summary --save final -y -q
 ```
@@ -104,7 +104,7 @@ $ uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static \
 
     ```text
     ── Step 2 · The same gate from the CLI ────────────────
-    command  : uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static --dataset modules/16-red-teaming/solution/static_attacks.json --max-static-datapoints 4 --max-turns 2 --evaluator-model openai/gpt-6-luna --attack-model openai/gpt-6-luna --no-recommendations --no-executive-summary --save final --report /tmp/ws-redteam-cli.json -y -q
+    command  : uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static --dataset modules/16-red-teaming/static_attacks.json --max-static-datapoints 4 --max-turns 2 --evaluator-model openai/gpt-6-luna --attack-model openai/gpt-6-luna --no-recommendations --no-executive-summary --save final --report /tmp/ws-redteam-cli.json -y -q
       RED TEAM REPORT SUMMARY
       ╭────────────────────────┬─────────────────╮
       │ Metric                 │ Value           │
@@ -211,7 +211,7 @@ $ orq launch claude
 Paste `agent_prompt.md`:
 
 <blockquote class="agent-prompt-frame" markdown>
-Use the red-team skill on `ws-refund-agent-vulnerable` for LLM07 and ASI01 in static mode with `modules/16-red-teaming/solution/static_attacks.json`. Read the vulnerable transcripts, say which failures are the harness (stubbed tools, empty replies) and which are the agent, then diff the two instruction files and propose the one change that closes each real finding.
+Use the red-team skill on `ws-refund-agent-vulnerable` for LLM07 and ASI01 in static mode with `modules/16-red-teaming/static_attacks.json`. Read the vulnerable transcripts, say which failures are the harness (stubbed tools, empty replies) and which are the agent, then diff the two instruction files and propose the one change that closes each real finding.
 </blockquote>
 
 The skill wraps `eq redteam run`. Ask the agent to tell you which failures are the harness and which are the agent.

@@ -28,7 +28,7 @@ Two facilitators. During onboarding and the hands-on parts of blocks 2 and 3, bo
 
 - [ ] Latest orq CLI on the demo machine: `curl -fsSL https://cli.orq.ai/install.sh | sh`, then `orq --version`. Version used: `________`.
 - [ ] Demo workspace clean: `make reset-workspace && make seed-workspace` from a fresh clone, with a key claimed through the kickstart page like a participant's.
-- [ ] `uv run python modules/11-simulation/solution/run.py --only=1,3` and `make m18` each run once today. Keep the terminal output in a scratch file as fallback.
+- [ ] `uv run python modules/11-simulation/run.py --only=1,3` and `make m18` each run once today. Keep the terminal output in a scratch file as fallback.
 - [ ] `uv run eq dashboard` open in a browser tab with the Agent Sim run and the Insights run above loaded.
 - [ ] `make regression-eval` and `make regression-eval-vulnerable` run once: exit 0 and exit 1.
 - [ ] `orq launch claude` works on the demo machine, and `npx skills add orq-ai/assistant-plugins` is installed for the `orq-recommend-evaluators` line on slide 20.

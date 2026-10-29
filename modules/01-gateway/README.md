@@ -45,7 +45,7 @@ client.responses.create(
 
 </div>
 
-Open [`modules/01-gateway/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/01-gateway/run.py). Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
+Open [`modules/01-gateway/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/01-gateway/run.py). Each step is a function with a `TODO` where the `extra_body` goes. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/01-gateway/run.py).
 
 ### Step 1 · A plain call, and the trace it leaves
 

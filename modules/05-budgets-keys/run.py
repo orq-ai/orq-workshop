@@ -13,7 +13,7 @@ Needs a Management Key in the shell (never in .env):
 
 Fill in the two TODOs (the budget bodies). Without them the script still runs, creates and
 deletes the key, and prints what is missing. The `try/finally` in `main()` is what deletes the
-key and the budgets when a step fails: `make reset-workspace` cannot find them. Solution in solution/run.py.
+key and the budgets when a step fails: `make reset-workspace` cannot find them. Solution: the `solution` branch.
 """
 
 from __future__ import annotations
