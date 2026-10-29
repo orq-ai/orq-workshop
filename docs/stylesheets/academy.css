@@ -97,3 +97,4 @@
 
 [data-md-color-scheme="slate"] .md-typeset .log-line { background: rgb(255 255 255 / 5%); }
 [data-md-color-scheme="slate"] .md-typeset .academy-btn.is-primary { background: #00d2b5; border-color: #00d2b5; color: #0a0e0d; }
+.md-typeset .explainer .span-output.is-hot { background: var(--orq-terminal-bg) !important; color: #d7efe9; box-shadow: 0 0 0 3px var(--orq-primary); }

@@ -1,60 +1,176 @@
-<p class="stage-chip">Academy · the idea, no code · <a href="../">all six stages</a></p>
+<p class="stage-chip">Academy · stage 3 of 6 · 8 min read · <a href="../">all six stages</a></p>
+
+<nav class="loop-map" data-current="trace">
+<a class="loop-stage" data-stage="build" data-mode="development" href="../build/">Build</a>
+<a class="loop-stage" data-stage="route" data-mode="production" href="../route/">Route and protect</a>
+<a class="loop-stage" data-stage="trace" data-mode="production" href="../trace/">Trace</a>
+<a class="loop-stage" data-stage="find-failures" data-mode="development" href="../find-failures/">Find failures</a>
+<a class="loop-stage" data-stage="evaluate" data-mode="development" href="../evaluate/">Evaluate</a>
+<a class="loop-stage" data-stage="gate" data-mode="production" href="../gate/">Gate and monitor</a>
+</nav>
 
 # Trace
 
-## The problem
+See exactly what your AI did, for any customer, after the fact. With orq.ai every call your agent makes is recorded as one readable story, and every later stage of the loop reads from those stories.
 
-A customer writes to Lumen Goods on Thursday: "Your chat said my refund for ord_a3 was approved, then the next message said it was refused. Which is it?" Support opens the ticket and finds the customer's name and nothing else. The refund agent logs each model call as a line in the application log: a timestamp, a token count, a status code. There are nine lines from that hour. Nobody can say which three belong to this customer, in which order, or what the order lookup returned before the agent changed its mind.
+## You need this when…
 
-An engineer spends the afternoon on it. She reconstructs the conversation from the chat database, guesses which model calls match by timestamp, and still cannot see the tool results, because the tools run in the application and never logged their output. The agent was probably right to refuse: ord_a3 is outside the 30-day window and the customer gave no evidence. But "probably" is the whole problem. The team cannot defend a decision it cannot replay.
+<div class="symptoms">
+<p class="symptom">A customer complains about an answer, and nobody on the team can show what the agent saw or did.</p>
+<p class="symptom">The team argues about whether a problem is the model, the prompt or your own data, and there is no way to settle it.</p>
+<p class="symptom">Finance asks what one conversation costs, and the answer is the monthly invoice.</p>
+<p class="symptom">You are about to put an agent in front of customers and cannot say how you would investigate its first incident.</p>
+</div>
 
-## The idea
+## What's going on
 
-A trace is the full record of one unit of work, as a tree. The root is the customer turn. Under it are the spans: the agent's reasoning step, each tool call with its input and output, and each model call with the prompt, the answer, the model that answered, the tokens and the cost. Read top to bottom it is the story of that turn; read across many turns it is the data the next three stages run on. Logs are lines; traces are trees with timing and parentage.
+An agent does not make one call. It makes a chain of them: it reads the message, decides, asks your systems for an order or a policy, reads the answer, and replies. An application log records each call on its own line, with a time, a token count and a status. Nothing ties the lines of one conversation together, and the answers your own systems gave the agent are usually not there at all.
 
-| | A log line | A trace |
+A trace keeps the chain together. Below are nine log lines from one hour of support chat for Lumen Goods, the shop the refund agent works for. One of them belongs to a customer who complained: the chat told her the refund for her order was approved, then said it was refused. Step through it.
+
+<div class="explainer" data-explainer>
+<div class="explainer-stage">
+<div data-group-by="customer">
+<div class="log-group-label" data-customer="a">Ana · order ord_a3 · the complaint</div>
+<div class="log-line" data-customer="a">10:02:11 · gpt-6-luna · 412 tok · 200</div>
+<div class="log-group-label" data-customer="b">Ben · order ord_b1</div>
+<div class="log-line" data-customer="b">10:02:19 · gpt-6-luna · 388 tok · 200</div>
+<div class="log-group-label" data-customer="c">Chloé · order ord_b3</div>
+<div class="log-line" data-customer="c">10:02:40 · gpt-6-luna · 455 tok · 200</div>
+<div class="log-line" data-customer="b">10:03:02 · gpt-6-luna · 301 tok · 200</div>
+<div class="log-line" data-customer="a">10:04:05 · gpt-6-luna · 290 tok · 200</div>
+<div class="log-line" data-customer="c">10:04:31 · gpt-6-luna · 512 tok · 200</div>
+<div class="log-line" data-customer="a">10:04:33 · gpt-6-luna · 604 tok · 200</div>
+<div class="log-line" data-customer="b">10:05:12 · gpt-6-luna · 277 tok · 200</div>
+<div class="log-line" data-customer="c">10:05:40 · gpt-6-luna · 340 tok · 200</div>
+</div>
+<div class="span-tree">
+<p class="span-turn" id="t1">Turn 1 · "Can I get a refund for ord_a3?"</p>
+<div class="span" id="s1"><span class="span-kind">agent</span>refund agent</div>
+<div class="span-gap" id="g1">No order lookup: the agent answered without checking the order</div>
+<div class="span child" id="s2"><span class="span-kind">model</span>answers: "approved"</div>
+<p class="span-turn" id="t2">Turn 2 · "So the refund is approved?"</p>
+<div class="span" id="s3"><span class="span-kind">agent</span>refund agent</div>
+<div class="span child" id="s4"><span class="span-kind">model</span>decides to look the order up</div>
+<div class="span child" id="s5"><span class="span-kind">tool</span>lookup_order(ord_a3)</div>
+<div class="span-output" id="o5">{"ok": true, "order": {"id": "ord_a3", "item": "Cable organiser set", "amount": 42.5, "delivered_days_ago": 45, "within_standard_window": false}}</div>
+<div class="span child" id="s6"><span class="span-kind">model</span>answers: outside the 30-day window</div>
+</div>
+</div>
+<ol class="explainer-steps">
+<li data-show="">Nine log lines from one hour of support chat. Each is one model call: a time, a token count, a status. Which ones belong to the customer who complained?</li>
+<li data-show="" data-group>The same nine calls, grouped by customer and conversation. Ana's three calls are now together. That grouping is what a trace gives you.</li>
+<li data-show="t1 s1 s2" data-hot="s1 s2">Ana's first turn. The agent answered "approved". Two steps: the agent, then the model. Something is missing.</li>
+<li data-show="g1" data-bad="s2 g1">There is no order lookup. The agent promised a refund without checking the order. In a log, a missing step is invisible. In a trace, it is a gap in the tree.</li>
+<li data-show="t2 s3 s4 s5 o5" data-hot="s5 o5">Ana's second turn. This time the agent looked the order up, and your own system answered: delivered 45 days ago, outside the standard window.</li>
+<li data-show="s6" data-hot="s6">So the second answer was right, and the cause is the first turn skipping the lookup. Found in under a minute, with the cost and duration of every step on the same screen.</li>
+</ol>
+</div>
+
+## Logs versus traces
+
+| Question you will be asked | Application logs | Traces |
 |---|---|---|
-| Unit | one event | one turn, with everything inside it |
-| Shows | that something happened | what was asked, what came back, and what it cost |
-| Linked by | a timestamp, by luck | a trace id and a parent span |
-| Answers | "did the call fail?" | "why did the agent refuse this customer?" |
+| What did the agent tell this customer, and why? | Rebuilt by hand from timestamps | Open the conversation |
+| What did your own systems return to the agent? | Usually not recorded | Every tool call and its result |
+| Was it the model, the prompt or your data? | Opinion | Visible step by step |
+| What does one conversation cost? | The monthly invoice, divided by a guess | Per conversation and per step |
+| Can you test the fix on the real case? | No | The trace becomes a test case in the next stage |
 
-The question underneath every tracing setup is who produces which span. The gateway sees every model call that passes through it, so those spans come for free: prompt, answer, model, cost. The gateway cannot see what it never receives: the tool that looked the order up, the policy text that was read, the step that decided to refuse. Those spans come from your code, or from the framework if it emits them, and they are the ones that explain a decision.
+## What orq.ai does
 
-![Diagram: who produces which span. The application emits the root span for the refund turn and its three tool spans; the gateway emits one trace per model call, nested under the root because the application passes the trace context along with the request; the request's name, identity, thread and metadata become filters in the traces view.](../modules/tracing/assets/span-ownership.png)
+- **Traced by default.** Every call that goes through the orq.ai AI Gateway is traced, with the prompt, the answer, cost, tokens and latency. Agents hosted on orq.ai are traced the same way.
+- **The whole chain in one tree.** Agent, model and tool steps nest in one trace, with the inputs and outputs of each step.
+- **Grouped by customer and conversation.** Tag calls with who they were for (an identity) and which conversation they belong to (a thread), and the orq.ai Studio groups and filters on both.
+- **Your existing stack too.** Frameworks such as LangGraph or the OpenAI Agents SDK send their traces to orq.ai over OpenTelemetry, the open standard for traces.
 
-Two mechanisms join the halves. The application opens the root span and passes its context to the gateway on every model call, so the gateway's spans nest under it instead of starting a new trace. And the request carries a few fields that become filters later: a name for the operation, an identity for the customer, a thread for the conversation, and free metadata such as the customer's plan. With those four fields, "show me every turn of this customer this week, grouped by conversation" is a filter, not an investigation.
+## Four ways to get traces into orq.ai
 
-Instrumentation effort comes in three sizes. Nothing: route calls through the gateway and you have the model spans. One line: a framework callback that turns every node and tool into a span. A few decorators: wrap your agent step and your tools yourself, and export over the open telemetry standard if you already run it. Pick the smallest size that shows the decision you will need to defend.
+Which one fits depends on how your app talks to models today. Most teams combine two. Pick the situation that sounds like your team.
+
+<div class="chooser" data-chooser>
+<div class="chooser-options">
+<button type="button" data-lights="way-gateway" data-why="Change the base URL and every model call is traced, with cost, latency and the full prompt. Add an identity and a thread so calls group by customer and conversation.">We call model providers from our own code, and changing the base URL is fine.</button>
+<button type="button" data-lights="way-gateway way-sdk" data-why="The gateway traces the model calls; the orq.ai SDK adds your own steps, the agent turn and each tool, around them, and both land in one tree. This is what the Workshop builds.">We run our own agent loop and want to see our tools, not only the model calls.</button>
+<button type="button" data-lights="way-otel" data-why="Keep your framework and your provider. The framework sends OpenTelemetry to orq.ai, so the traces read the same. orq.ai has setup guides for LangGraph, the OpenAI Agents SDK and many others.">We use a framework such as LangGraph, or must keep calling providers directly.</button>
+<button type="button" data-lights="way-hosted" data-why="Agents hosted on orq.ai are traced end to end, every tool call included, without any instrumentation on your side.">We would rather orq.ai runs the agent for us.</button>
+</div>
+<div class="chooser-ways">
+<div class="chooser-way" id="way-gateway"><strong>AI Gateway</strong>No instrumentation: route your calls through orq.ai. Sees every model call.</div>
+<div class="chooser-way" id="way-sdk"><strong>orq.ai SDK</strong>Mark your own functions as agent or tool steps. Sees your steps, nested with the gateway's.</div>
+<div class="chooser-way" id="way-otel"><strong>OpenTelemetry</strong>The open standard: your framework exports to orq.ai. Sees whatever your framework records.</div>
+<div class="chooser-way" id="way-hosted"><strong>Hosted agents</strong>The agent runs on orq.ai. Sees everything, by default.</div>
+<div class="chooser-why">Pick the situation that sounds like your team.</div>
+</div>
+</div>
+
+<section class="storyboard" data-clip="3" data-status="awaiting" markdown>
+
+#### Clip 3 · From a complaint to the cause
+
+<ul class="storyboard-meta">
+<li><strong>Audience:</strong> team leaders, in the stage walk of the leaders' session</li>
+<li><strong>Point it makes:</strong> one complaint, the full conversation, the exact cause, in under a minute</li>
+<li><strong>Length:</strong> about 90 seconds, captions only</li>
+<li><strong>Source:</strong> the orq.ai Studio, project orq-academy, scripted traffic</li>
+<li><strong>Also on screen:</strong> project switcher closed; the workspace name is visible in the header</li>
+</ul>
+
+| # | Time | On screen | Caption |
+|---|---|---|---|
+| 1 | 0:00-0:08 | The complaint: "Your chat said my refund for ord_a3 was approved, then it said refused." | A customer complains. Which answer was right, and why did it change? |
+| 2 | 0:08-0:20 | Studio, Traces, filtered on the customer's identity: one conversation, two turns | Every conversation is recorded, grouped by customer. |
+| 3 | 0:20-0:40 | Turn 1 opened: the agent span and one model span, no tool span | The first answer came without looking at the order. |
+| 4 | 0:40-0:58 | Turn 2 opened: the `lookup_order` tool span and its output, zoomed on `delivered_days_ago: 45` | The order is outside the 30-day window. The second answer was right. |
+| 5 | 0:58-1:15 | Back to turn 1, the gap highlighted | The bug: turn 1 skipped the lookup. Found in under a minute. |
+| 6 | 1:15-1:30 | Cost and latency in the trace header; end card "Workshop: tracing" | Cost and speed come with every trace. Engineers build this in the tracing module. |
+
+**To approve:** say "approve clip 3", or change any row. Nothing is recorded before that.
+
+</section>
+
+## What it takes
+
+<div class="takes">
+<div class="take"><em>Who</em><strong>One engineer</strong>No change to how the rest of the team works.</div>
+<div class="take"><em>How long</em><strong>Half a day</strong>Point the app at the gateway, add identity and thread. Thirty minutes in the Workshop.</div>
+<div class="take"><em>First</em><strong>Calls go through orq.ai</strong>Route and protect comes before this, or an OpenTelemetry exporter if you keep your own client.</div>
+</div>
+
+## When you don't need it yet
+
+A prototype that only your own team uses, where you read every conversation yourselves. Turn tracing on the day the first outside user arrives: it is cheap to add then, and the first incident is never the moment to add it.
 
 ## What good looks like
 
-- [ ] One trace per customer turn, with the tool inputs and outputs inside it, not only the model calls.
-- [ ] Every trace carries the customer identity and the conversation id, so one complaint is one filter.
-- [ ] Cost and latency per turn are read from the trace, not estimated from the invoice.
-- [ ] The trace you look at from a bug report is the same trace the evaluation stage reads.
-- [ ] A new engineer can find the trace behind a complaint within a minute, without asking anyone.
+- Anyone on support can find the full conversation behind a complaint in under a minute.
+- Every trace names a customer and a conversation.
+- Tool results are in the trace, not only the model's words.
+- Cost per conversation is a number the team knows.
 
-## Where teams start
+Leaders score this list at the readout at the end of the first week.
 
-Let's assume you have nothing yet. Route the model calls through the gateway and open one trace in the viewer. Then add the identity and thread fields to the request; that alone turns a pile of calls into conversations per customer. Add tool spans when the first "why did it do that" question arrives, which will be soon.
+## Next
 
-Let's assume you have an app in production with logging and maybe an observability stack. Keep the stack: export the agent spans over the open standard and let the gateway's spans nest under them by passing the trace context. The goal is one tree per turn, not a second dashboard. Then delete the log lines that the trace now covers.
+<div class="grid cards" markdown>
 
-## On orq.ai
+-   **Workshop · for engineers**
 
-On orq.ai every call through the AI Gateway is a trace in the Studio's Traces view, with the model, prompt, answer, tokens and cost. The request body fields `name`, `identity`, `thread` and `metadata` become filters in the Studio and in the traces search API. The W3C `traceparent` header tells the gateway to continue your trace instead of starting its own. Spans the gateway cannot see come from the `traced` decorator in the Python SDK, typed as agent or tool, or from a one-line LangChain callback; both can export over OTLP to the orq.ai OpenTelemetry endpoint. Threads group the turns of one conversation, and the same trace later feeds Insights, annotation queues, evaluators and alerts. Read [Traces](https://docs.orq.ai/ai-studio/observability/traces).
+    ---
 
-## Practice it
+    [Tracing](../modules/tracing.md), 30 minutes: agent, tool and model steps with identity and thread, on the refund agent, then on your own app.
 
-- [Tracing](../modules/tracing.md) (core path)
+-   **Academy · stage 4**
 
-## For leaders
+    ---
 
-**Cost.** Hours, not days: the gateway traces model calls for free, and tool spans are a few decorators.
+    [Find failures](find-failures.md): thousands of traces, a handful of ways the agent goes wrong.
 
-**Risk.** Without traces every complaint is an investigation, and every quality claim is an opinion.
+</div>
 
-**Owner.** The team that owns the agent; the observability team owns where the spans are exported.
-
-**Ask your team.** Can you show me the full conversation behind one complaint, within a minute?
+!!! info "Terms on this page"
+    - **Trace:** the full record of one unit of work, such as one customer turn, as a tree of steps.
+    - **Span:** one step in that tree: a model call, a tool call, the agent itself.
+    - **Identity:** who the call was for: a customer, a team, a client.
+    - **Thread:** which conversation a call belongs to, across turns.
+    - **Tool call:** the agent asking your systems for something: an order, a policy, a refund.
