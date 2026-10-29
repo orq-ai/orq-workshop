@@ -5,7 +5,7 @@ provider, and a refund promise the policy forbids on its way to the customer. Bo
 the gateway. Factor 7: a blocked guardrail is the hand-off to a human. Catch it, do not retry it.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/04-guardrails/run.py`. The solution is `solution/run.py` (`make m04`).
+Run it with `uv run python modules/04-guardrails/run.py`. The solution is on the `solution` branch (`make m04`).
 """
 
 from __future__ import annotations
@@ -161,7 +161,7 @@ def step_4_system_guardrails_and_rule() -> None:
 
     print("── Step 4b · A guardrail rule ─────────────────────────")
     if not CEL:
-        print("TODO     : fill in CEL, create the rule with POST /v2/guardrail-rules (see solution/run.py), then rerun")
+        print("TODO     : fill in CEL, create the rule with POST /v2/guardrail-rules (see the `solution` branch), then rerun")
         return
     # TODO: create the rule (project_id from orq.projects.list, guardrails=[{"id": "orq_pii_detection", "execute_on": "input"}]),
     #       call chat(..., extra_body={"metadata": {"channel": "ws-guardrails"}}) with an email in the text, then disable and

@@ -34,7 +34,7 @@ orq.routing_rules.create(display_name="ws-route-mini-to-nano", project_id=PROJEC
 
 ## Steps
 
-Open [`modules/03-smart-routing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/03-smart-routing/run.py). Fill the `TODO`s; the solution is in `solution/run.py`.
+Open [`modules/03-smart-routing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/03-smart-routing/run.py). Fill the `TODO`s; the solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/03-smart-routing/run.py).
 
 ### Step 1 · Create the router and watch it pick
 

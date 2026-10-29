@@ -6,7 +6,7 @@ so it finds failures you did not write a criterion for. Two steps: simulate modu
 and scenarios against the managed v1 agent (vulnerable prompt), so the traces carry its agent
 name; then run `eq insights` on exactly those traces and open the result in `eq dashboard`.
 
-Run it with `uv run python modules/18-trace-insights/solution/run.py` (or `make m18`), about
+Run it with `uv run python modules/18-trace-insights/run.py` (or `make m18`), about
 three minutes; `--only=2` re-runs insights on the traces you already have.
 """
 
@@ -27,7 +27,7 @@ from app.refund_agent.config import ROOT, settings  # .env wins over the shell, 
 from evaluatorq.simulation import simulate
 from evaluatorq.simulation.contracts import CommunicationStyle, Criterion, Persona, Scenario, StartingEmotion
 
-M11 = ROOT / "modules" / "11-simulation" / "solution"
+M11 = ROOT / "modules" / "11-simulation"
 sys.path.insert(0, str(M11))
 
 # Module 11's personas, scenarios and judge config, loaded by path: both files are named run.py.

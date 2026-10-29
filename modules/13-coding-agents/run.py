@@ -5,7 +5,7 @@ A coding agent is one more traced, budgeted client of your workspace. Nothing he
 ~/.orq, ~/.claude or an agent config: every connect/launch call is --dry-run, and keys are redacted.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/13-coding-agents/run.py`. The solution is in solution/run.py.
+Run it with `uv run python modules/13-coding-agents/run.py`. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

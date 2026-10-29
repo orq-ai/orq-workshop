@@ -6,8 +6,8 @@ attack file, so the attack side is deterministic. Two steps: red_team() the vuln
 fixed local agent, then the same red team from the CLI.
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is in solution/run.py; the attack file is solution/static_attacks.json; the
-The AgentTarget comes from modules/11-simulation/solution/refund_target.py.
+The solution is on the `solution` branch; the attack file is `static_attacks.json`; the
+The AgentTarget comes from modules/11-simulation/refund_target.py.
 Run it with `uv run python modules/16-red-teaming/run.py`.
 """
 
@@ -29,10 +29,10 @@ from evaluatorq.redteam import red_team
 from evaluatorq.redteam.contracts import LLMConfig
 from openai import AsyncOpenAI
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "11-simulation" / "solution"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "11-simulation"))
 from refund_target import LocalRefundTarget
 
-DATASET = Path(__file__).parent / "solution" / "static_attacks.json"
+DATASET = Path(__file__).parent / "static_attacks.json"
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
 LLM = LLMConfig(
     attacker=LLMCallConfig(model=settings.model, client=ROUTER),  # writes the attack turns

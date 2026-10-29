@@ -39,9 +39,9 @@ Setup first, then the same three sections as docs.orq.ai. Module numbers are the
 | | | | 15 Advisor and sidekick |
 | | | | 16 Red teaming |
 
-Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs), a `solution/` and an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
+Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs; the finished file is at the same path on the [`solution` branch](https://github.com/orq-ai/orq-workshop/tree/solution)), an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
 
-**Prefer a notebook?** `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list, 12 modules today). Each is the solution split into steps: a cell of explanation, then a cell that does one thing. The generated files carry no saved output; run a cell to see its result. The notebooks are generated from `solution/run.py`, so they never drift from the script `make mNN` runs.
+**Prefer a notebook?** Check out the `solution` branch (`git checkout solution`), then `make lab` opens JupyterLab with one notebook for every module whose `run.py` is written in Jupytext percent format (`make notebooks` prints the list). Each is the finished module split into steps: a cell of explanation, then a cell that does one thing. The generated files carry no saved output; run a cell to see its result. On `main` the starters are plain scripts, so `make notebooks` finds nothing there.
 
 ## Two ways to work
 
@@ -54,7 +54,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 ```text
 app/refund_agent/   the sample app (never changes across modules)
 app/data/           orders, policy docs, dataset, agent instructions
-modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)
+modules/NN-name/    README.md · run.py · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)
 evals/              CI regression gate (evaluatorq) and red-team gate
 .github/workflows/  evals.yml · nightly-triage.yml · pr-failure-analysis.yml · docs.yml
 docs/               MkDocs site (module pages include the module READMEs)

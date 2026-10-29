@@ -43,7 +43,7 @@ Today, one refund agent, four steps:
 
 - **First 20 minutes**: everyone gets a key and a green `make gateway-check`. Two of us walk the room.
 - **One sample app**, a customer-support refund agent. We do not change it; we measure it.
-- **Each block**: a short concept, then your hands on the keyboard. TODOs in the module's `run.py`, the finished version in `solution/`.
+- **Each block**: a short concept, then your hands on the keyboard. TODOs in the module's `run.py`, the finished version on the `solution` branch.
 - **Two ways to follow**: run the commands yourself, or watch and read the expected output in each module README.
 - **Your coding agent can do every step**: `orq launch claude` (or `opencode`, `codex`) wires it to orq with the orq skills.
 - **Questions**: park them on the wall; the last 8 minutes are Q&A.
@@ -200,7 +200,7 @@ The judge reads the transcript text only, not the tool calls. Write criteria the
 
 ```bash
 $ uv run python modules/11-simulation/run.py                     # your turn: the TODOs
-$ uv run python modules/11-simulation/solution/run.py --only=1   # finished step 1, v1
+$ uv run python modules/11-simulation/run.py --only=1   # finished step 1, v1
 $ uv run eq dashboard                                            # http://127.0.0.1:8080
 ```
 
@@ -529,7 +529,7 @@ Four things this workshop's own runs showed:
 An attacker is a simulated user with a worse goal: same loop as block 2, OWASP categories instead of criteria.
 
 ```bash
-$ uv run python modules/16-red-teaming/solution/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
+$ uv run python modules/16-red-teaming/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
 ```
 
 | Target | Judged vulnerable | Resistance |

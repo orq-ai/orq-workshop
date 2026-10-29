@@ -8,7 +8,7 @@ known attacks than the bar. CI runs the same two commands on every pull request.
     uv run python modules/12-evals-in-ci/run.py --limit 8   # fewer dataset rows
 
 Step 1 works as is. Fill in steps 2 and 3 (see the TODO lines); an unfilled step says so in its
-output block. The solution is in solution/run.py.
+output block. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

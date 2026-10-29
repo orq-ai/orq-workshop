@@ -7,7 +7,7 @@ Agents surface: variables and metadata, a second user turn, tool_choice, memory,
 solution adds step 2b, the hybrid alternative with function tools that your own code runs.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/08-managed-agents/run.py`. The solution is in solution/run.py.
+Run it with `uv run python modules/08-managed-agents/run.py`. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

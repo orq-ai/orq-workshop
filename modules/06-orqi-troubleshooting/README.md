@@ -107,7 +107,7 @@ That is the `investigate-root-cause` skill: it walked the span tree with `list_s
 
 ### Step 2 · A failure orqi cannot see in Traces
 
-A wrong `ORQ_BASE_URL` never reaches the gateway, so there is no trace to read. The solution reproduces it without touching `.env`: the repo `.env` overrides the shell on purpose (`load_dotenv(override=True)`), so a broken copy exported in the shell would be ignored. Instead `solution/run.py` builds the same OpenAI client the app uses, with `base_url=f"{settings.base_url}/broken"` and `max_retries=0`, and passes it to `chat(..., client=broken)`:
+A wrong `ORQ_BASE_URL` never reaches the gateway, so there is no trace to read. The solution reproduces it without touching `.env`: the repo `.env` overrides the shell on purpose (`load_dotenv(override=True)`), so a broken copy exported in the shell would be ignored. Instead the solution builds the same OpenAI client the app uses, with `base_url=f"{settings.base_url}/broken"` and `max_retries=0`, and passes it to `chat(..., client=broken)`:
 
 ```bash
 $ make m06      # steps 1 and 2 print before the orqi calls start

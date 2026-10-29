@@ -5,7 +5,7 @@ trace with the CLI, reproduce a client-side failure without touching `.env`, and
 as one-shot prompts.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/06-orqi-troubleshooting/run.py`. The solution is in solution/run.py.
+Run it with `uv run python modules/06-orqi-troubleshooting/run.py`. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

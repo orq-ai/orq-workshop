@@ -8,7 +8,7 @@ generate_and_simulate() personas from a one-line description, and simulate() the
 twice with the built-in "agent:<key>" target (function tools, then hosted code tools).
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is in solution/run.py (with refund_target.py, the AgentTarget for the local agent).
+The solution is on the `solution` branch (with refund_target.py, the AgentTarget for the local agent).
 Run it with `uv run python modules/11-simulation/run.py`.
 """
 

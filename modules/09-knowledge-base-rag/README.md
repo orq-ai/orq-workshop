@@ -30,7 +30,7 @@ client.chat.completions.create(model=..., messages=[{"role": "system", "content"
 
 ## Steps
 
-Open [`modules/09-knowledge-base-rag/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/09-knowledge-base-rag/run.py). The solution is in `solution/run.py`.
+Open [`modules/09-knowledge-base-rag/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/09-knowledge-base-rag/run.py). The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/09-knowledge-base-rag/run.py).
 
 ### Step 1 · Inspect the seeded knowledge base
 

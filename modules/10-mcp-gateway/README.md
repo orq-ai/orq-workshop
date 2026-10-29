@@ -37,7 +37,7 @@ INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ### Step 1 · Call the local server with an MCP client
 
 ```bash
-$ uv run python modules/10-mcp-gateway/solution/run.py
+$ uv run python modules/10-mcp-gateway/run.py
 ```
 
 Expected output (first block):
@@ -164,7 +164,7 @@ The solution creates `ws-refund-agent-mcp` as a copy so `ws-refund-agent` stays 
 ### Cleanup
 
 ```bash
-$ uv run python modules/10-mcp-gateway/solution/run.py --cleanup
+$ uv run python modules/10-mcp-gateway/run.py --cleanup
 ```
 
 Deletes `ws-refund-gateway`, `ws-refund-mcp` and `ws-refund-agent-mcp`. Keep them until you have done the coding-agent step.

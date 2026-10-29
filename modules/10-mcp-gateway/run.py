@@ -8,7 +8,7 @@ consume the gateway with a Bearer key.
 
 Fill in the TODOs. The script runs as is; a step with an empty body prints what is missing.
 Start the local server first (`make mcp-server`, app/mcp_server.py on http://127.0.0.1:8000/mcp),
-then run `uv run python modules/10-mcp-gateway/run.py`. The solution is in `solution/run.py`.
+then run `uv run python modules/10-mcp-gateway/run.py`. The solution is on the `solution` branch.
 """
 
 from __future__ import annotations

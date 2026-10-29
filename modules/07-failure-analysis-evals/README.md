@@ -56,7 +56,7 @@ Twenty dataset rows, even rows on the fixed instructions, odd rows on the vulner
 Open [`modules/07-failure-analysis-evals/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/07-failure-analysis-evals/run.py). `traffic_traces()` pulls the last traces, `classify()` is where the taxonomy lives.
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/solution/run.py 2
+$ uv run python modules/07-failure-analysis-evals/run.py 2
 ```
 
 Expected output (solution):
@@ -126,7 +126,7 @@ The skill (`~/.orq/snapshot/gen-*/orq-analyze-trace-failures/SKILL.md`) runs six
 ### Step 4 · Evaluators
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/solution/run.py 4
+$ uv run python modules/07-failure-analysis-evals/run.py 4
 ```
 
 ```text
@@ -175,7 +175,7 @@ This judge would not pass that bar today. Run it on a correct in-window "change 
 ### Step 5 · Datasets
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/solution/run.py 5
+$ uv run python modules/07-failure-analysis-evals/run.py 5
 ```
 
 ```text
@@ -201,7 +201,7 @@ Twenty rows cover four decisions and every trap in `orders.json`. When the taxon
 ### Step 6 · Experiment: fixed vs vulnerable
 
 ```bash
-$ uv run python modules/07-failure-analysis-evals/solution/run.py 6
+$ uv run python modules/07-failure-analysis-evals/run.py 6
 ```
 
 ```text

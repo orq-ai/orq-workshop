@@ -34,7 +34,7 @@ def refund_turn(text):
 
 ## Steps
 
-Open [`modules/02-tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/02-tracing/run.py). Each step is a function with a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/02-tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/02-tracing/run.py). Each step is a function with a `TODO`. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/02-tracing/run.py).
 
 ### Step 1 · The traces you already have
 
@@ -176,7 +176,7 @@ If you get that for `rating`, create it in the Studio: **Optimization > Annotati
 ### Step 5 · Stretch: a framework does this for you
 
 ```bash
-$ uv run python modules/02-tracing/solution/stretch_langgraph.py
+$ git checkout solution && uv run python modules/02-tracing/stretch_langgraph.py
 ```
 
 ```text

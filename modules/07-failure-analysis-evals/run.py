@@ -7,7 +7,7 @@ comparing the fixed and the vulnerable instructions. Steps are numbered 2, 4, 5 
 the README (steps 1 and 3 are not code).
 
 Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is in solution/run.py.
+The solution is on the `solution` branch.
 
     uv run python modules/07-failure-analysis-evals/run.py            # all steps
     uv run python modules/07-failure-analysis-evals/run.py 2 4        # only steps 2 and 4

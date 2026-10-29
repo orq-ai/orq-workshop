@@ -48,13 +48,13 @@ Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`
 
 ## Steps
 
-Open [`modules/08-managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/08-managed-agents/run.py). `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
+Open [`modules/08-managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/08-managed-agents/run.py). `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/08-managed-agents/run.py). The steps follow the [Run Agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
 
 ### Step 1 · Inspect the agent
 
 ```bash
 $ orq agents retrieve ws-refund-agent -o json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
-$ make m08      # the solution; the starter prints the same block once its TODOs are filled in
+$ make m08      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
 ```
 
 Expected output:
@@ -342,7 +342,7 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 - Step 5 failed on 2026-10-29 against orq.ai API 4.17.17: the `previous_response_id` follow-up after a turn that used the agent's code tools answered `400 No tool output found for function call`, in three runs. It worked when this module's output was captured.
 - `orq agents get` does not exist; it is `orq agents retrieve <key>`.
 - Each `responses.create` is a new trace, also with `previous_response_id`. Search by agent name, or pass `thread={"id": ...}` to group them in the thread view.
-- `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See `solution/stretch_factor7.py`.
+- `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/08-managed-agents/stretch_factor7.py).
 - The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
@@ -355,7 +355,7 @@ MCP servers are their own section in the Agent builder instead of a tool type, a
 ## Go further
 
 - Module 15: advisor and sidekick on a copy of this agent, with the nested spans (`advisor` > `chat gpt-5.6-sol`, `sidekick` > `chat gpt-5.4-nano`) and what each costs.
-- `solution/stretch_factor7.py`: a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
+- [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/08-managed-agents/stretch_factor7.py): a human gate in the tool loop plus an `escalate_to_human` tool, on `ws-refund-agent-approval`. Above the limit the agent opens ticket `HR-ord_a6-0001` instead of writing "we will route you".
 
 ## Official docs
 

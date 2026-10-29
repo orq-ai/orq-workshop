@@ -29,7 +29,7 @@ orq.datasets.create_datapoint(dataset_id=DATASET, request_body=[{"inputs": {"mes
 
 ## Steps
 
-Open [`modules/17-annotation-queues/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/17-annotation-queues/run.py). Every step has a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/17-annotation-queues/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/17-annotation-queues/run.py). Every step has a `TODO`. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/17-annotation-queues/run.py).
 
 ### Step 1 · Fill the queue by API
 
