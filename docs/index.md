@@ -62,6 +62,12 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 </div>
 
+## The loop
+
+One agent goes around the loop; every stage reads what the previous one left. The core path visits each stage once, in this order, in about four hours.
+
+![Diagram: the orq.ai loop, six stages around the refund agent: Build, Route and protect, Trace, Find failures, Evaluate, Gate and monitor, and back to Build.](assets/diagrams/orq-loop.png)
+
 ## How the pieces fit
 
 One credential opens every door: your code and your coding agent both go through the AI Gateway, the managed agent hands its tool calls back to your code, and everything lands as traces in the Studio.

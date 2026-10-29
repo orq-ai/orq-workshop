@@ -13,3 +13,11 @@ def test_nav_is_the_loop():
     assert tabs == ["Home", "Start here", "Build", "Route and protect", "Trace", "Find failures", "Evaluate", "Gate and monitor", "Reference"]
     for stage in STAGES:
         assert f"{stage}/index.md" in text, stage
+
+
+def test_every_module_wrapper_names_its_stage():
+    for p in (ROOT / "docs/modules").glob("*.md"):
+        text = p.read_text()
+        assert 'class="stage-chip"' in text, p
+        assert re.search(r'Stage: <a href="\.\./\.\./(build|route|trace|find-failures|evaluate|gate|start)/">', text), p
+        assert ("core path" in text) != ("elective" in text), p
