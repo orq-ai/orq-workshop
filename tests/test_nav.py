@@ -21,3 +21,18 @@ def test_every_module_wrapper_names_its_stage():
         assert 'class="stage-chip"' in text, p
         assert re.search(r'Stage: <a href="\.\./\.\./(build|route|trace|find-failures|evaluate|gate|start)/">', text), p
         assert ("core path" in text) != ("elective" in text), p
+
+
+CORE_PATH = ["setup", "gateway", "tracing", "managed-agents", "failure-analysis", "simulation", "evals-in-ci"]
+
+
+def test_audience_pages_link_every_stage_or_module():
+    leaders = (ROOT / "docs/start/for-leaders.md").read_text()
+    assert all(f"../{s}/index.md" in leaders for s in STAGES), "leaders page must link every stage"
+    engineers = (ROOT / "docs/start/for-engineers.md").read_text()
+    for slug in CORE_PATH:
+        assert f"../modules/{slug}.md" in engineers, slug
+    already = (ROOT / "docs/start/already-on-orq.md").read_text()
+    all_slugs = {d.name for d in (ROOT / "modules").iterdir() if d.is_dir()}
+    for slug in all_slugs - set(CORE_PATH):
+        assert f"../modules/{slug}.md" in already, slug
