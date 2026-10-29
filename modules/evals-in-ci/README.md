@@ -263,7 +263,8 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
 - orqi writes reports to a file in the working directory unless the prompt says "print the report as your final answer, do not create any files".
 - `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behavior in CI.
-- Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.17
 

@@ -205,11 +205,12 @@ With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_c
 
 ## Gotchas
 
-- `orq_ai_sdk 4.17` MCP models expect `id` but the API returns `_id`, so `orq.mcp_servers.create(...).mcp_server.id` and every tool `id` after `sync` are `None`. The solution reads the raw records with one `GET /v2/mcp-servers/<id>`. The CLI shows `_id` correctly.
 - A server link without `"enabled": True` is stored disabled and exposes zero tools. The create call succeeds, `exposed_tools_count` is `0`.
 - `tool_exposure.read_only: true` keeps only tools that carry a `readOnlyHint` annotation. DeepWiki's tools have none, so `read_only` alone hides everything. Use `tool_ids`.
 - The upstream URL must be public. `ssh -R`, `cloudflared` or `ngrok` in front of `make mcp-server` work; loopback and RFC 1918 hosts are rejected by the API.
 - Agents reference MCP tools by the server key plus a tool id, not by the gateway. Unverified: whether a gateway can be attached to an agent at all; the API has no field for it.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.17
 

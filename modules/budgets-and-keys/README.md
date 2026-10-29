@@ -211,7 +211,8 @@ Use the orq.ai MCP tool `query_analytics` to break down spend by model for the l
 - `POST /v2/api-keys` accepted `permission_mode`, `access` and `project_scope` and stored `permission_mode: all`, `project_scope: all`; a write with that key succeeded. The documented `project_scope: {"single": ...}` shape is rejected as an unknown field; `{"mode": "single", "project_id": ...}` is accepted but not stored. Keys minted by `orq setup --local` do show `mode: single`, so treat restricted keys as Studio-or-CLI-login territory until the API catches up, and put the real limit in a budget.
 - A management key cannot modify or delete itself. Grant it `management-key` write and it can manage other management keys; deleting its own record is the CLI's job.
 - Requests-per-minute is a rolling 60 s window independent of the period. The `x-ratelimit-*` headers show a budget's values only on the `429` it raises; on a `200` they show the platform limit.
-- SDK 4.14: `mgmt.budgets.list()` fails on an empty list (`data` missing) and `api_keys.create()` rejects the documented `single` scope. The solution uses `httpx` against `/v2/budgets` and `/v2/api-keys`.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 to 4.17
 

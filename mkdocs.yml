@@ -182,6 +182,7 @@ nav:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md
       - Glossary: reference/glossary.md
+      - Known issues: reference/known-issues.md
       - Terraform: reference/terraform.md
       - evaluatorq: reference/evaluatorq.md
       - orq-arena: reference/orq-arena.md

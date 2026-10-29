@@ -342,14 +342,14 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 
 ## Gotchas
 
-- Step 5 failed on 2026-10-29 against orq.ai API 4.17.17: the `previous_response_id` follow-up after a turn that used the agent's code tools answered `400 No tool output found for function call`, in three runs. It worked when this module's output was captured.
 - `orq agents get` does not exist; it is `orq agents retrieve <key>`.
 - Each `responses.create` is a new trace, also with `previous_response_id`. Search by agent name, or pass `thread={"id": ...}` to group them in the thread view.
 - `tool_approval_required` and `requires_approval` exist on the agent, but through the Responses API they change nothing: function tools always come back to you (you are the approval), and code tools simply run, and a server-side tool with `requires_approval: true` still ran in our test. See [`stretch_factor7.py`](https://github.com/orq-ai/orq-workshop/blob/solution/modules/managed-agents/stretch_factor7.py).
 - The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
-- SDK 4.14 (not retested on 4.17) rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 

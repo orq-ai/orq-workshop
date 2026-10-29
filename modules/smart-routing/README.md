@@ -216,9 +216,8 @@ Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the
 - New rules and updates take a few seconds to reach the gateway; the solution waits 10 s before calling.
 - A matching rule replaces `model`, `load_balancer` and `fallbacks` from the request; it does not merge with them.
 - `anthropic/claude-haiku-4-5` shows `enabled: false` while the dated id `anthropic/claude-haiku-4-5-20251001` is enabled, and the router never picked it: the OpenAI 5.x bands cover both ends. Test a model with `orq chat create` before putting it in a pool.
-- `gpt-5.4-nano` and `gpt-5.6-luna` cost the same; the COST profile still prefers nano for easy questions because the bands rank by intelligence index, not by price alone.
-- Routing rule list items dump as `_id`; create and update responses as `id`.
-- Since orq.ai API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.17
 

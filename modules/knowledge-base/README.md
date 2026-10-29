@@ -232,10 +232,11 @@ Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent
 ## Gotchas
 
 - Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset-workspace && make seed-workspace`.
-- `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it (SDK 4.14, not retested).
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
 - `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.16 and 4.17
 

@@ -256,10 +256,9 @@ Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `
 - In this run only top-level body `metadata` fed rule matching. `X-ORQ-METADATA-*` headers and `orq.metadata` reached the trace but did not match the rule.
 - A workspace-wide rule with an empty expression matches every request in the workspace, and system guardrails fail closed. A detector outage then blocks all traffic. Always scope to a project or gate on metadata.
 - The seeded regex guard blocks any sentence with "refund" and an amount above 500, including a refusal that names the amount. Wording decides. A judge with the policy text, or a check on the `issue_refund` tool result, is the better guard.
-- `orq.guardrail_rules.list()` in SDK 4.14 fails on the `_id` field the API returns. The solution uses `GET /v2/guardrail-rules`. Project rules only appear when you pass `project_id`.
 - Output guardrails do not run on streaming responses. Keep the refund agent non-streaming where enforcement matters.
-- Request-level `guardrails` are ignored on `/v3/router/responses` (accepted, not enforced, no error) as of 4.14.17. Step 3 uses `api="chat"` for that reason; rules apply to both endpoints.
-- Since orq.ai API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 

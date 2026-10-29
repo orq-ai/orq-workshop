@@ -307,7 +307,8 @@ While it thinks, run `make module M=coding-agents` in another terminal: the sess
 - `orq traces search` and `query-oql` need both `--from` and `--to`; relative values (`24h`, `now`) work.
 - `orq traces conversation <id>` may omit message bodies for Claude Code turns: the gateway stores the Messages request without them. Use `list-spans` or the Studio for the content.
 - The 401 warning in `orq launch opencode --dry-run` (`Could not fetch enabled models`) means the shell's `ORQ_API_KEY` belongs to another workspace. `launch` falls back to a default model and still runs.
-- `orq skills` (platform Skill entities) and `orq connect skills` (files for agents) are different nouns.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 

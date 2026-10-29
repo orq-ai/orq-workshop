@@ -235,7 +235,8 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 - One-shot answers take 15 s to 2 min; the `GOAL:` and `[x]` lines are progress, the answer is what follows.
 - `orq traces search` needs `--from` and `--to`; `--from 3h` alone is a 400.
 - The shell export from `orq setup` may belong to another workspace. `orq launch` prints `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is expected here: the repo key decides where traces land.
-- `.env` overrides the shell by design, which is why Step 2 breaks the client in code rather than through a temp env file.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 

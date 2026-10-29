@@ -144,18 +144,14 @@ Query the Telemetry API (`POST /v3/telemetry/query`) for the last 24 hours group
 
 ## Gotchas
 
-- `orq.telemetry.query` and `orq.alerts.list` raise `ResponseValidationError` in SDK 4.17 (the API echoes `sort: ""`, and an evaluated alert has `severity: ""`). `entities.telemetry_query`, `list_alerts` and `alert_triggers` use REST for those.
 - `alerts.create` and `alerts.get` wrap the entity (`{"alert": {...}}`); `alerts.list` does not.
 - Alerts are project-scoped and error traces carry no project, so pick a metric successful traces produce: cost, latency, guardrail pass rate.
 - Telemetry shows the last complete minutes with a delay of a few minutes. A query for "the last 30 seconds" is empty.
 - Plan limits: Free, Team and Consumption plans allow 2 alerts checked hourly; Growth, Pro and Custom allow 5-minute checks. Saving below the plan minimum returns `evaluation interval 5m is below your plan's minimum of 1h`.
 - A webhook's secret has to exist before the webhook does, and the receiver needs the same one. Generate it, put it in `.env`, start the receiver, then run the step. With `WS_WEBHOOK_SECRET` empty the step generates one and prints it, and the receiver reports `signature_valid=None`.
 - Webhook deliveries take 3 to 30 seconds. The step polls for 30; orq.ai retries failed deliveries later.
-- A new tunnel means a new URL. `make module M=alerts-and-webhooks` re-points `ws-events-webhook` and `ws-alert-notifier` to the current `WS_WEBHOOK_URL`; nothing is recreated.
-- orq.ai switches a webhook off after 10 failed deliveries (`enabled: false`, `failure_count: 10`); a dead tunnel gets there in minutes and nothing arrives afterwards even once the URL is right. `ensure_webhook` PATCHes `enabled: true` on every run; `orq webhooks list` shows both fields, the SDK's `get` hides `enabled`.
-- SDK 4.14's `webhooks.update` returns 200 and changes nothing (it sends an empty body); `PATCH /v2/webhooks/<id>` over REST works, and `ensure_webhook` uses it to re-point the URL. `webhooks.get` returns `failure_count` as `None`, so a target that stores nothing (httpbin) gives no signal at all.
-- Notifiers and webhooks are different things: a notifier is where alerts and budgets send their notifications; a webhook is a subscription to workspace events. Both can point at the same URL.
-- `make reset-workspace` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 to 4.17
 
