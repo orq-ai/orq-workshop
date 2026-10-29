@@ -1,8 +1,8 @@
 # %% [markdown]
 # # 06 · Troubleshooting with orqi
 #
-# orqi is the orq helper agent: it operates the platform, it does not build your app. Modules 01
-# to 05 left timeouts, bad model ids and guardrail blocks in the workspace; this module finds them
+# orqi is the orq helper agent: it operates the platform, it does not build your app. The gateway
+# to budgets modules left timeouts, bad model ids and guardrail blocks in the workspace; this module finds them
 # and hands them to orqi. Three steps: find a failed trace with the `orq` CLI, reproduce a
 # client-side failure without touching `.env`, and ask orqi about both as one-shot prompts.
 #
