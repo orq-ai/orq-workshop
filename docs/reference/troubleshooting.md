@@ -12,7 +12,7 @@
 | `/v2/routing-rules` or `/v2/guardrail-rules` returns `403 not authorized for this endpoint` | the repo's legacy workspace key cannot reach those endpoints since API 4.14.17 | `orq auth login`; `entities.rules_api` then replays the call through `orq request` with the shell's `ORQ_API_KEY` |
 | annotation returns 404 | annotation key does not exist in the workspace | create `rating` and `defects` annotations in the Studio first |
 | `analyze-trace-failures` finds too few traces | fewer than ~10 traces | `make traffic` |
-| MCP server create rejects the URL | loopback or private host | deploy `app/mcp_server.py` publicly or use a tunnel |
+| MCP server create rejects the URL | loopback or private host | deploy [`app/mcp_server.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/mcp_server.py) publicly or use a tunnel |
 | cannot delete a smart router | referenced by an experiment | delete the experiment first |
 | spans missing from short scripts | batch exporter did not flush | call `tracing.flush()` before exit |
 | red team says `NO VERDICT`, every attack 401 | stale `ORQ_API_KEY` exported in the shell; `uv run --env-file` does not override it | `unset ORQ_API_KEY` or `set -a; source .env; set +a` |

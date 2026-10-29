@@ -35,7 +35,7 @@ client.responses.create(
 
 ## Steps
 
-Open `modules/01-gateway/run.py`. Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
+Open [`modules/01-gateway/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/01-gateway/run.py). Each step is a function with a `TODO` where the `extra_body` goes. The solution is in `solution/run.py`.
 
 ### Step 1 · A plain call, and the trace it leaves
 
@@ -124,7 +124,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+<blockquote class="agent-prompt-frame" markdown>
+Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/run.py` without changing `app/`. Run it, then use the orq.ai MCP tools to fetch the spans of the fallback trace and tell me which model actually answered and what it cost.
+</blockquote>
 
 ## Done when
 

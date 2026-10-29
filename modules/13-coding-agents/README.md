@@ -29,7 +29,7 @@ Every module ends with "With your coding agent". This one explains what that lin
 
 ## Steps
 
-`modules/13-coding-agents/run.py` runs every command below with `--dry-run` and redacts the key. `make m13` runs the solution. Nothing in this module writes to `~/.orq`, `~/.claude` or an agent config unless you drop `--dry-run` yourself.
+[`modules/13-coding-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/13-coding-agents/run.py) runs every command below with `--dry-run` and redacts the key. `make m13` runs the solution. Nothing in this module writes to `~/.orq`, `~/.claude` or an agent config unless you drop `--dry-run` yourself.
 
 ### Step 1 · What is wired, and what `--local` would change
 
@@ -280,7 +280,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Read AGENTS.md. Run `orq connect --status`. Then use the setup-observability skill on this repo and tell me the three changes you would make, without applying them.
+<blockquote class="agent-prompt-frame" markdown>
+Read AGENTS.md. Run `orq connect --status`. Then use the setup-observability skill on this repo and tell me the three changes you would make, without applying them.
+</blockquote>
 
 While it thinks, run `make m13` in another terminal: the session you are in should appear as a new session id in step 4.
 

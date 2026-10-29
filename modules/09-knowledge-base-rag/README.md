@@ -30,7 +30,7 @@ client.chat.completions.create(model=..., messages=[{"role": "system", "content"
 
 ## Steps
 
-Open `modules/09-knowledge-base-rag/run.py`. The solution is in `solution/run.py`.
+Open [`modules/09-knowledge-base-rag/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/09-knowledge-base-rag/run.py). The solution is in `solution/run.py`.
 
 ### Step 1 · Inspect the seeded knowledge base
 
@@ -158,7 +158,7 @@ next     : the orq:* output items are the tools the agent used; open the trace t
 
 - 5a is the documented gateway feature: `extra_body={"orq": {"knowledge_bases": [{"knowledge_id": ..., "top_k": 3, "search_type": "hybrid_search"}]}}` on a plain `chat.completions` call. In this workspace it injected nothing: 25 prompt tokens, a generic answer, no retrieval span. We tried `orq.knowledge_bases`, top-level `knowledge_bases`, `/v2` and `/v3`, two knowledge bases; a control prompt that must answer `NO CONTEXT` without context answered `NO CONTEXT` every time.
 - 5b is five lines of code and works everywhere: search, then a system message. 599 prompt tokens, an answer that quotes the policy.
-- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in `app/refund_agent/entities.py`), which is why the step calls `agent/ws-refund-agent` and the output items show what it used. When it searches the knowledge base an `orq:query_knowledge_base` item appears, carrying the query the agent wrote, the chunk, the file name and the score; in the run above it answered through its `get_policy` tool instead, so the items read `orq:ws-get_policy`. Either way the agent decides, so ask a question the four files cannot answer to see the search. An agent with the knowledge base attached but without those two tools never searches it.
+- 5c is the managed version. A knowledge base attached to an agent is only searched if the agent also has the `retrieve_knowledge_bases` and `query_knowledge_base` server tools. `make seed` gives `ws-refund-agent` both (see `agent_payload` in [`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py)), which is why the step calls `agent/ws-refund-agent` and the output items show what it used. When it searches the knowledge base an `orq:query_knowledge_base` item appears, carrying the query the agent wrote, the chunk, the file name and the score; in the run above it answered through its `get_policy` tool instead, so the items read `orq:ws-get_policy`. Either way the agent decides, so ask a question the four files cannot answer to see the search. An agent with the knowledge base attached but without those two tools never searches it.
 
 ### Step 6 · Agentic RAG
 
@@ -174,7 +174,7 @@ next     : the response keys are still just 'matches'; the refined query is not 
 
 ### Step 7 · An external knowledge base
 
-orq.ai can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq.ai POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. `app/edge.py` implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
+orq.ai can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq.ai POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
 
 ![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq.ai post the query to your own /search endpoint and wait for matches with scores. orq.ai then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.ai.](assets/09-step7-external-kb.png)
 
@@ -209,7 +209,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
+<blockquote class="agent-prompt-frame" markdown>
+Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent.client.make_orq`): write a short policy doc `modules/09-knowledge-base-rag/warranty.md` (Lumen Goods gives a 24-month warranty on tech accessories and 12 months on lighting, claims go through support, not refunds), add it as a new datasource `warranty.md` to the knowledge base `ws-refund-policy` using `orq.chunking.parse` (recursive, chunk_size 300, chunk_overlap 40) and `orq.knowledge.create_chunks` with `metadata={"topic": "warranty"}`, poll `orq.knowledge.retrieve_processing_status` until `total_queued` is 0, then run `orq.knowledge.search` for "warranty length" with `search_type="hybrid_search"` and `search_options={"include_scores": True, "include_metadata": True}` and show me the top match with its score and metadata.
+</blockquote>
 
 ## Proof
 

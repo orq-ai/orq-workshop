@@ -13,11 +13,11 @@ Commands and names here write the default prefix `ws-`. Your entities carry your
 
 ## Why
 
-Modules 01 to 07 kept the agent loop in `app/refund_agent/agent.py`. This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
+Modules 01 to 07 kept the agent loop in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py). This module moves the loop to orq.ai: instructions, model, tool schemas, iteration and time limits, knowledge base and memory are one entity with versions. The app shrinks to one Responses call. That is what the Studio, the CLI and the coding-agent skills operate on.
 
 ## The one concept to understand first
 
-Who runs the tools? The refund tools are **code tools**: Python registered in orq (`make seed` generates it from `app/refund_agent/tools.py`). When the agent decides to call `lookup_order`, orq runs the code, feeds the result to the model and loops until it has an answer. One call, one finished response:
+Who runs the tools? The refund tools are **code tools**: Python registered in orq (`make seed` generates it from [`app/refund_agent/tools.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/tools.py)). When the agent decides to call `lookup_order`, orq runs the code, feeds the result to the model and loops until it has an answer. One call, one finished response:
 
 ```python
 from orq_ai_sdk import Orq
@@ -46,7 +46,7 @@ Match on `call_id`, not `id`. Server-side tools (memory, advisor, `current_date`
 
 ## Steps
 
-Open `modules/08-managed-agents/run.py`. `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
+Open [`modules/08-managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/08-managed-agents/run.py). `run_agent` has one `TODO`, and steps 3 to 8 one each. Step 2b (function tools) is in the solution only. The solution is in `solution/run.py`. The steps follow the [Run Agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) docs page: every call is shown in Python, and where it fits, as curl and as the `orq` CLI, all three against the same `POST /v3/router/responses`.
 
 ### Step 1 · Inspect the agent
 
@@ -316,7 +316,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces conversation <trace_id>`.
+<blockquote class="agent-prompt-frame" markdown>
+Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-workshop/workshop` with the same instructions, model and function tools as `ws-refund-agent-function` (tools by key: `ws-lookup-order`, `ws-get-policy`, `ws-issue-refund`), plus the existing function tool `ws-escalate-to-human`. Add one line to the instructions: above the EUR 500 limit, call `escalate_to_human(order_id, reason)` and give the customer the ticket id. Then invoke it through the Responses API with `model="agent/ws-refund-agent-v2"` and input "refund ord_a6", execute the `function_call` items with `app.refund_agent.tools.dispatch` (answer `escalate_to_human` with a fake ticket id), continue with `previous_response_id` until the agent answers, and show me the trace with `orq traces conversation <trace_id>`.
+</blockquote>
 
 ## Proof
 

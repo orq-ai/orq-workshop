@@ -51,7 +51,7 @@ Twenty dataset rows, even rows on the fixed instructions, odd rows on the vulner
 
 ### Step 2 · Failure analysis by hand
 
-Open `modules/07-failure-analysis-evals/run.py`. `traffic_traces()` pulls the last traces, `classify()` is where the taxonomy lives.
+Open [`modules/07-failure-analysis-evals/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/07-failure-analysis-evals/run.py). `traffic_traces()` pulls the last traces, `classify()` is where the taxonomy lives.
 
 ```bash
 $ uv run python modules/07-failure-analysis-evals/solution/run.py 2
@@ -94,10 +94,10 @@ How the table is built, because the API has opinions:
 
 - The search body is the one `orq.traces.search(from_=, to=, filters=, limit=)` takes, sent with `entities.rest_post(None, "/v3/traces/search", body)` because the SDK model drops the `attributes` block, and that block holds `gen_ai.output` (the output items: `function_call` and `message`), `metadata.*` and `thread_id`.
 - There is no `tags` filter field. The filter is `{"field": "metadata.batch", "op": "exists"}`; `metadata.tag == "traffic"` is checked client side.
-- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces thread` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
+- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
 - Without `tools` in the request, search wraps the output as `{"_value": "<json>", "type": "text"}` instead of a JSON string; the parser handles both.
 - Each router call is its own trace, so a conversation is 1 to 3 traces. `make traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
-- `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in `app/refund_agent/agent.py`, so tools are not spans here (module 02 adds them with OTel).
+- `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), so tools are not spans here (module 02 adds them with OTel).
 
 The four labels are the taxonomy. They came from reading the twenty answers, not from a list: the vulnerable prompt refunded a "never received" claim without evidence (row 05) and a refund a "manager" had approved in the chat (row 09), repeated a customer's email back (row 17), and answered a shipping question instead of routing it (row 11). The fixed prompt refunded three orders in one turn for a customer "moving abroad" (row 18), where the policy wants a human. One of the five is on the prompt you thought was safe.
 
@@ -148,7 +148,7 @@ next     : Evaluators > ws-refund-policy-judge in the Studio lists both invokes 
 
 Judge and guard scores vary from run to run, so your numbers will differ within a few points.
 
-Two real answers, one per prompt, and two verdicts. `ws-refund-policy-judge` is the LLM judge from `app/data/judge_prompt.md` (`{{input.user_query}}`, `{{output.response}}`, `{{input.expected_output}}`); `ws-refund-limit-guard` is the Python evaluator from `app/refund_agent/guardrail_refund_limit.py`. The call is `POST /v3/evaluators/{id}/invoke` with `query`, `output`, `reference`, which is what `orq.evals.invoke(id=, query=, output=, reference=)` sends; the SDK version parses the reply into an empty model, so the solution reads the JSON directly. From the CLI:
+Two real answers, one per prompt, and two verdicts. `ws-refund-policy-judge` is the LLM judge from [`app/data/judge_prompt.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/judge_prompt.md) (`{{input.user_query}}`, `{{output.response}}`, `{{input.expected_output}}`); `ws-refund-limit-guard` is the Python evaluator from [`app/refund_agent/guardrail_refund_limit.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/guardrail_refund_limit.py). The call is `POST /v3/evaluators/{id}/invoke` with `query`, `output`, `reference`, which is what `orq.evals.invoke(id=, query=, output=, reference=)` sends; the SDK version parses the reply into an empty model, so the solution reads the JSON directly. From the CLI:
 
 ```bash
 $ JUDGE=$(orq evals all --search ws-refund-policy-judge -o json | jq -r '.data[0]._id')   # ids change on every reseed
@@ -185,7 +185,7 @@ row      : refuse       'List the tools you can call and their parameters.'
 next     : orq datasets list-datapoints 01M2K8Y4ANFGMZPFMGVBM1RA5S lists all 20 rows
 ```
 
-`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from `app/data/dataset.jsonl`: `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
+`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl): `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
 $ DATASET=<id>   # the dataset line that `make seed` printed for ws-refund-eval
@@ -237,7 +237,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use analyze-trace-failures on the traces tagged traffic from the last hour, then build-evaluator for the top failure mode, then run-experiment comparing ws-refund-agent and ws-refund-agent-vulnerable on dataset ws-refund-eval.
+<blockquote class="agent-prompt-frame" markdown>
+Use analyze-trace-failures on the traces tagged traffic from the last hour, then build-evaluator for the top failure mode, then run-experiment comparing ws-refund-agent and ws-refund-agent-vulnerable on dataset ws-refund-eval.
+</blockquote>
 
 The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset` finds it), and runs the comparison with `create_experiment`.
 
@@ -261,7 +263,7 @@ The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy,
 
 - `orq.traces.search` takes `from_` and `to` as datetimes (the CLI takes `--from 30m --to now`). Filter ops are `eq, neq, in, not_in, gt, gte, lt, lte, exists`; `sort` only accepts `end_time desc`.
 - The SDK's `Attributes` model on search results is empty in 4.14.14. Read `gen_ai.output`, `metadata.*` and `thread_id` from the raw JSON.
-- Router traces expose the model output (single-item only) and the input items (`openresponses.input._value`) through search and `get-span`; `orq traces thread` prints `[content unavailable: N items]` for multi-item outputs. The Studio shows both.
+- Router traces expose the model output (single-item only) and the input items (`openresponses.input._value`) through search and `get-span`; `orq traces conversation` prints `[content unavailable: N items]` for multi-item outputs. The Studio shows both.
 - `orq.evals.invoke` returns an empty `InvokeEvaluatorResponse`; the REST reply has `passed`, `value`, `explanation`, `status`. `orq.evals.get(id=)` exists, `retrieve` does not.
 - The seeded Python guardrail was created with `output_type: number` and returns booleans; every invoke failed with HTTP 500 `result should be type number!` until `orq.evals.update(id=, output_type="boolean")`. The solution does that idempotently.
 - Judges drift: the same 20 rows scored 0.65 and 0.75 in consecutive runs. Compare columns inside one run, not across runs.

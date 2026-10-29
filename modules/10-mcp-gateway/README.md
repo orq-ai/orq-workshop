@@ -32,7 +32,7 @@ $ make mcp-server
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
-`app/mcp_server.py` is 50 lines: an `MCPServer("lumen-refunds")`, one module-level `OrderStore`, three `@server.tool()` functions that call `app.refund_agent.tools`, and `server.run(transport="streamable-http", port=PORT, streamable_http_path="/mcp")`.
+[`app/mcp_server.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/mcp_server.py) is 50 lines: an `MCPServer("lumen-refunds")`, one module-level `OrderStore`, three `@server.tool()` functions that call `app.refund_agent.tools`, and `server.run(transport="streamable-http", port=PORT, streamable_http_path="/mcp")`.
 
 ### Step 1 · Call the local server with an MCP client
 
@@ -177,7 +177,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Connect the `ws-refund-gateway` MCP gateway to this coding-agent session and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
+<blockquote class="agent-prompt-frame" markdown>
+Connect the `ws-refund-gateway` MCP gateway to this coding-agent session and use its `lookup_order` tool to check `ord_a2`. Then tell me which tools the gateway hides from you and why that is the point.
+</blockquote>
 
 With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_contents` instead; ask it about `ask_question`. Either way the answer to "why" is the same: the client only gets the allow-list.
 

@@ -35,13 +35,13 @@ client.responses.create(
 )
 ```
 
-`GUARD_ID` is the id of the evaluator `ws-refund-limit-guard`, resolved by key with `ensure_python_guardrail(orq)` from `app/refund_agent/entities.py`. Ids change on every reseed; never paste one into code.
+`GUARD_ID` is the id of the evaluator `ws-refund-limit-guard`, resolved by key with `ensure_python_guardrail(orq)` from [`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py). Ids change on every reseed; never paste one into code.
 
 `app/` does not change in this module. `run_turn` already forwards `extra_body` and `extra_headers`.
 
 ## Steps
 
-Open `modules/04-guardrails/run.py`. Each step has a `TODO`. The complete version is `solution/run.py` (`make m04`).
+Open [`modules/04-guardrails/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/04-guardrails/run.py). Each step has a `TODO`. The complete version is `solution/run.py` (`make m04`).
 
 ### Step 1 · PII detection and redaction as an API
 
@@ -130,7 +130,7 @@ next     : nothing in this question is on the allowlist, so the model reads the 
 
 ### Step 3 · A Python guardrail on the output
 
-`make seed` created the evaluator `ws-refund-limit-guard` (code in `app/refund_agent/guardrail_refund_limit.py`; the run looks its id up by key, `orq evals all --search ws-` shows it). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
+`make seed` created the evaluator `ws-refund-limit-guard` (code in [`app/refund_agent/guardrail_refund_limit.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/guardrail_refund_limit.py); the run looks its id up by key, `orq evals all --search ws-` shows it). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
 
 ```text
 ── Step 3a · Vulnerable instructions, output guardrail ───
@@ -229,7 +229,9 @@ $ orq launch claude
 
 Paste the prompt from `agent_prompt.md` in this module directory:
 
-> Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
+<blockquote class="agent-prompt-frame" markdown>
+Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `evaluate(log)` returns False when `log["output"]` contains an email address, with guardrail config enabled. Attach it as an output guardrail on the agent `ws-refund-agent` with `update_agent`, keeping its tools and knowledge base. Invoke the agent with "My email is jane.doe@example.com, what email do you have on file?" and show me the 422 body and the trace id. Do not change anything under `app/`.
+</blockquote>
 
 ## Proof
 

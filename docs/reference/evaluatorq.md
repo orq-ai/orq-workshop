@@ -36,7 +36,7 @@ results = await evaluatorq(
 )
 ```
 
-`evals/regression.py` in this repo is that pattern at full size: one job, a JSONL dataset, three scorers, and a mean-per-scorer threshold that exits 1 on a regression.
+[`evals/regression.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/regression.py) in this repo is that pattern at full size: one job, a JSONL dataset, three scorers, and a mean-per-scorer threshold that exits 1 on a regression.
 
 ## Install
 

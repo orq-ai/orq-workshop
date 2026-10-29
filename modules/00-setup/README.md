@@ -141,7 +141,7 @@ uv run pytest -q
 $ make smoke
 ```
 
-Runs `app/smoke.py`: the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq.ai Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq.ai, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
+Runs [`app/smoke.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/smoke.py): the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq.ai Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq.ai, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
 
 ```text
 ── Step 1 · One refund turn through the gateway ───────
@@ -200,7 +200,7 @@ app/data/
   kb/*.md      the refund policy, later a knowledge base
 ```
 
-Read `app/refund_agent/agent.py`. It is 90 lines. It is the whole agent.
+Read [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py). It is 90 lines. It is the whole agent.
 
 ### Optional · Chat with it in a browser
 
@@ -208,7 +208,7 @@ Read `app/refund_agent/agent.py`. It is 90 lines. It is the whole agent.
 $ make chat        # http://127.0.0.1:8002
 ```
 
-`app/web.py` puts the same `chat()` behind `POST /api/chat`, and `web/index.html` is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Models / Agents** toggle chooses which list the dropdown shows. The model dropdown switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq.ai code tools, so orq.ai runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation. A tool the policy refused shows as a `DECLINED` or `NOT FOUND` chip. The **Guardrails** dropdown picks `PII · input`, `Refund limit · output` or `Both`; each tags the request so one gateway rule (`<prefix>-guardrail-rule-chat-pii`, `-refund`, `-chat`, created by `make seed`, which needs an admin key) blocks personal data on input and/or refund promises over EUR 500 on output; a block shows as its own message with the guardrail and the reason, and the trace link. The rule matches on request metadata because request-level `guardrails` are ignored on Responses. Leave `ORQ_API_KEY` empty and the chat uses your `orq auth login` session instead (tokens last an hour; the link then opens the CLI's active workspace).
+[`app/web.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/web.py) puts the same `chat()` behind `POST /api/chat`, and [`web/index.html`](https://github.com/orq-ai/orq-workshop/blob/main/web/index.html) is the page: the transcript, the tools each answer called as chips, the model and seconds per answer, and a **trace** link per answer. **Try these** holds prompts that walk into each policy rule (window, limit, already refunded, out of scope, fake approvals, PII); a click sends one. The **Models / Agents** toggle chooses which list the dropdown shows. The model dropdown switches the model per turn, so you can replay the same prompt on `gpt-5.4-nano` and compare. After `make seed` it also lists `agent/<prefix>-refund-agent-hosted`: the same agent with its three tools as orq.ai code tools, so orq.ai runs the loop and the tools and your machine makes one call per turn (module 08 has the managed agent whose tools still run on your side). The browser sends the full history back every turn, as the rest of the repo does; each conversation gets its own in-memory order store, so a refund stays refunded until **New conversation** or a server restart. Set `ORQ_WORKSPACE` in `.env` to your workspace key (`active_workspace_key` in `orq doctor`) and the link opens that trace; unset, it opens Traces, where you search the trace id. Every turn is traced as `refund-chat`, with a `ws-chat-…` thread per conversation. A tool the policy refused shows as a `DECLINED` or `NOT FOUND` chip. The **Guardrails** dropdown picks `PII · input`, `Refund limit · output` or `Both`; each tags the request so one gateway rule (`<prefix>-guardrail-rule-chat-pii`, `-refund`, `-chat`, created by `make seed`, which needs an admin key) blocks personal data on input and/or refund promises over EUR 500 on output; a block shows as its own message with the guardrail and the reason, and the trace link. The rule matches on request metadata because request-level `guardrails` are ignored on Responses. Leave `ORQ_API_KEY` empty and the chat uses your `orq auth login` session instead (tokens last an hour; the link then opens the CLI's active workspace).
 
 ## With your coding agent
 
@@ -219,7 +219,9 @@ $ orq launch claude               # or: orq launch opencode / orq launch pi
 
 Paste `agent_prompt.md`:
 
-> Read AGENTS.md and app/refund_agent/agent.py. Run `make smoke`. Explain in five lines what happened, which tool calls the model made, and where the trace id came from.
+<blockquote class="agent-prompt-frame" markdown>
+Read AGENTS.md and app/refund_agent/agent.py. Run `make smoke`. Explain in five lines what happened, which tool calls the model made, and where the trace id came from.
+</blockquote>
 
 The agent's own model calls go through the gateway too. Look for them in Traces afterwards.
 

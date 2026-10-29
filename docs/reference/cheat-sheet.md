@@ -20,7 +20,7 @@ orq doctor                     # health check
 orq status / orq switch        # active workspace and project
 orq launch claude|opencode|pi|codex [-p "prompt"]   # agent through the gateway, session only
 orq connect --local [--dry-run|--status]            # permanent wiring for this project
-orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"hi"}]'
+orq chat create --model "$MODEL" --messages '[{"role":"user","content":"hi"}]'
 orq traces search --from 1h --to now   # recent traces; add `-o json`
 orq traces conversation <trace_id>   # readable transcript
 orq agents list | retrieve <key> | invoke <key>
@@ -42,7 +42,7 @@ orq orqi "why did my agent fail today?"
 from openai import OpenAI
 client = OpenAI(api_key=ORQ_API_KEY, base_url="https://my.orq.ai/v3/router")
 client.responses.create(                      # /v3/router/responses; chat.completions works too (GPT-5.x: reasoning_effort "none" with tools)
-    model="openai/gpt-5.6-luna",
+    model=MODEL,
     instructions="...", input=[...], tools=[...], store=False,
     extra_body={
         "fallbacks": [{"model": "anthropic/claude-haiku-4-5"}],

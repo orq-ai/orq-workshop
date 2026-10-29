@@ -57,7 +57,7 @@ Open `modules/11-simulation/run.py` and fill in the TODOs: a second persona, and
 
 ```bash
 uv run python modules/11-simulation/run.py
-uv run eq dashboard
+make evaluatorq-dashboard
 ```
 
 Done when at least one `ord_a3` row shows a broken rule and you can say why. The judge reads words, not tool calls: write criteria the transcript can show.
@@ -68,7 +68,7 @@ Criteria check what you expected. Insights reads your traces, summarises and clu
 
 ```bash
 make m18
-uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
+make evaluatorq-dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 
 Done when you have one Pass/Fail sentence for the failure the cluster names.

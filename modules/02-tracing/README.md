@@ -34,7 +34,7 @@ def refund_turn(text):
 
 ## Steps
 
-Open `modules/02-tracing/run.py`. Each step is a function with a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/02-tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/02-tracing/run.py). Each step is a function with a `TODO`. The solution is in `solution/run.py`.
 
 ### Step 1 · The traces you already have
 
@@ -204,7 +204,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
+<blockquote class="agent-prompt-frame" markdown>
+Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
+</blockquote>
 
 ## Proof
 

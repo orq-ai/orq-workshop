@@ -15,7 +15,7 @@ Module 07 measured the refund agent once. Nobody re-runs a notebook before mergi
 
 ## The one concept to understand first
 
-A gate is three things ([evaluatorq](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)): a fixed input set, a scorer per failure mode, and a threshold on the mean. `evals/regression.py` runs the local agent over `app/data/dataset.jsonl`, scores every row with the three scorers in `evals/scorers.py`, and exits 1 when a mean drops below its threshold. `evals/redteam_gate.py` does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
+A gate is three things ([evaluatorq](https://docs.orq.ai/docs/ai-studio/cookbooks/evaluation-safety/evaluator-q)): a fixed input set, a scorer per failure mode, and a threshold on the mean. [`evals/regression.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/regression.py) runs the local agent over [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl), scores every row with the three scorers in [`evals/scorers.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/scorers.py), and exits 1 when a mean drops below its threshold. [`evals/redteam_gate.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_gate.py) does the same with `evaluatorq.red_team` in static mode: a fixed file of known attacks, a resistance rate, a bar. Both write JSON under `evals/results/` (gitignored, uploaded as an artifact) and a markdown table into `$GITHUB_STEP_SUMMARY`.
 
 ```python
 THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.70}   # evals/regression.py
@@ -118,7 +118,7 @@ next     : the Experiment run URL is in the log above; each attack is one row wi
 
 Exit code 0, about a minute. Read the `evaluated` line before the `resist` line: the gate counts attempted, evaluated and errored attacks separately, and anything short of a full clean run exits 1. An earlier version passed a run in which one attack errored (the gateway answered 400 to that payload) because the resistance rate only covered the seven attacks the judge could evaluate; a gate that passes when the judge is down is not a gate. Three things to know about this gate:
 
-- **Static mode** replays `evals/redteam_static.json`, ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
+- **Static mode** replays [`evals/redteam_static.json`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_static.json), ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
 - **Tools really run.** The target is `agent:ws-refund-agent`, evaluatorq's built-in target on the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). A function-tool agent such as `ws-refund-agent-function` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed` creates the agent.
 - **The judge is generic.** The same run against `ws-refund-agent-vulnerable` scored 88% once and 100% once: the OWASP judge does not know the EUR 500 limit or the 30-day window. Policy laxity is the quality gate's job (step 2). This gate catches injection, leakage and agency, the classes the public dataset covers.
 
@@ -234,7 +234,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Open a pull request from a new branch that swaps the contents of `app/data/fixed_instructions.md` for the contents of `app/data/vulnerable_instructions.md` (keep the file name, the CI gate reads that path). The run waits for a deployment approval on the `evals` environment: approve it in the Actions tab (or ask the instructor), then watch `.github/workflows/evals.yml` with `gh run watch` and wait for the `quality` job to fail. Then read the job summary, quote the scorer table, and explain in five lines which scorer means dropped, why the vulnerable instructions cause exactly those drops, and why the `security` job may still pass. Do not merge the PR; close it when done.
+<blockquote class="agent-prompt-frame" markdown>
+Open a pull request from a new branch that swaps the contents of [`app/data/fixed_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/fixed_instructions.md) for the contents of [`app/data/vulnerable_instructions.md`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/vulnerable_instructions.md) (keep the file name, the CI gate reads that path). The run waits for a deployment approval on the `evals` environment: approve it in the Actions tab (or ask the instructor), then watch `.github/workflows/evals.yml` with `gh run watch` and wait for the `quality` job to fail. Then read the job summary, quote the scorer table, and explain in five lines which scorer means dropped, why the vulnerable instructions cause exactly those drops, and why the `security` job may still pass. Do not merge the PR; close it when done.
+</blockquote>
 
 ## Proof
 

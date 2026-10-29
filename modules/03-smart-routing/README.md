@@ -34,7 +34,7 @@ orq.routing_rules.create(display_name="ws-route-mini-to-nano", project_id=PROJEC
 
 ## Steps
 
-Open `modules/03-smart-routing/run.py`. Fill the `TODO`s; the solution is in `solution/run.py`.
+Open [`modules/03-smart-routing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/03-smart-routing/run.py). Fill the `TODO`s; the solution is in `solution/run.py`.
 
 ### Step 1 · Create the router and watch it pick
 
@@ -187,7 +187,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the `orq smart-routers` CLI over `openai/gpt-5.6-luna`, `openai/gpt-5.4-nano`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-5.6-sol`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
+<blockquote class="agent-prompt-frame" markdown>
+Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the `orq smart-routers` CLI over `openai/gpt-5.6-luna`, `openai/gpt-5.4-nano`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-sol` and `anthropic/claude-haiku-4-5-20251001` with the COST profile. Send 5 refund questions of mixed difficulty to its `model_ref`, then use `query_analytics` to compare the cost of those 5 calls against 5 identical calls sent straight to `openai/gpt-5.6-sol`. Report cost per call, which model the router picked for each, and whether COST or QUALITY is the right profile for a refund desk.
+</blockquote>
 
 ## Proof
 

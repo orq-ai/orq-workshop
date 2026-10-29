@@ -188,7 +188,9 @@ $ orq launch claude
 
 Paste the prompt from `agent_prompt.md` in this module directory:
 
-> Use the orq.ai MCP tool `query_analytics` to break down spend by model for the last 24 hours in this workspace. Give me a table with model, requests and cost, name the most expensive model, and propose one budget for it: scope, period, amount and a requests-per-minute value, with the exact `orq budgets create` command. Do not create it.
+<blockquote class="agent-prompt-frame" markdown>
+Use the orq.ai MCP tool `query_analytics` to break down spend by model for the last 24 hours in this workspace. Give me a table with model, requests and cost, name the most expensive model, and propose one budget for it: scope, period, amount and a requests-per-minute value, with the exact `orq budgets create` command. Do not create it.
+</blockquote>
 
 ## Done when
 

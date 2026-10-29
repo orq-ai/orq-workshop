@@ -19,7 +19,7 @@ orqi has the same 43 `orq_` tools and the same skills your coding agent gets in 
 
 ## Steps
 
-`modules/06-orqi-troubleshooting/run.py` scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
+[`modules/06-orqi-troubleshooting/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/06-orqi-troubleshooting/run.py) scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
 
 ### Step 1 · Four troubleshooting prompts
 
@@ -209,7 +209,9 @@ $ set -a; source .env; set +a; orqi
 
 Paste `agent_prompt.md`:
 
-> Use orqi to find the most expensive trace of the last 24 hours and explain why it cost that much.
+<blockquote class="agent-prompt-frame" markdown>
+Use orqi to find the most expensive trace of the last 24 hours and explain why it cost that much.
+</blockquote>
 
 `orq launch claude` answers the same prompt with the same MCP tools, at a higher price per turn.
 

@@ -10,7 +10,7 @@ One question, one set of instructions, one set of three tools, one gateway. Only
 
 ### 1 · Your loop: the raw orq.ai SDK
 
-`chat()` is the workshop's own agent: an explicit tool-calling loop over the Responses API, in `app/refund_agent/agent.py`, and you can read all of it.
+`chat()` is the workshop's own agent: an explicit tool-calling loop over the Responses API, in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), and you can read all of it.
 
 ```python
 from app.refund_agent.agent import chat

@@ -29,7 +29,7 @@ orq.datasets.create_datapoint(dataset_id=DATASET, request_body=[{"inputs": {"mes
 
 ## Steps
 
-Open `modules/17-annotation-queues/run.py`. Every step has a `TODO`. The solution is in `solution/run.py`.
+Open [`modules/17-annotation-queues/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/17-annotation-queues/run.py). Every step has a `TODO`. The solution is in `solution/run.py`.
 
 ### Step 1 · Fill the queue by API
 
@@ -117,7 +117,9 @@ $ orq launch claude
 
 Paste `agent_prompt.md`:
 
-> List the items of `ws-review-queue` with the orq.ai MCP tools. For each one without a review, read the customer message and the answer, decide `rating` good or bad against the refund policy in `app/data/kb/*.md`, add a `defects` value from the workspace's fixed list where one fits, apply the annotations with the Annotations API, and give me a table: trace id, rating, defect, one-line reason. Do not remove anything from the queue and do not touch the dataset.
+<blockquote class="agent-prompt-frame" markdown>
+List the items of `ws-review-queue` with the orq.ai MCP tools. For each one without a review, read the customer message and the answer, decide `rating` good or bad against the refund policy in `app/data/kb/*.md`, add a `defects` value from the workspace's fixed list where one fits, apply the annotations with the Annotations API, and give me a table: trace id, rating, defect, one-line reason. Do not remove anything from the queue and do not touch the dataset.
+</blockquote>
 
 The agent is a better reviewer than the rule in step 3, and slower than a human with `J`/`K`. Compare its table with your own verdicts.
 

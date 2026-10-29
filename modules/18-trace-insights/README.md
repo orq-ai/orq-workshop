@@ -100,7 +100,7 @@ The log says `dimension failure skipped: only 3 traces have signal (need at leas
 ### Step 3 · Read it in the dashboard
 
 ```bash
-$ uv run eq dashboard
+$ make evaluatorq-dashboard
 ```
 
 Open **Insights**, pick the run, open the biggest cluster and two example traces. Then the same traces in the Studio: **Traces**, filter on the agent name (orq.ai 4.16 filters on any attribute and keeps the filter in the URL), or read one as a conversation with `orq traces conversation <trace_id>`.
