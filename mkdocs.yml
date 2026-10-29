@@ -54,6 +54,33 @@ hooks:
 
 plugins:
   - search
+  - redirects:
+      redirect_maps:
+        modules/00.md: modules/setup.md
+        modules/01.md: modules/gateway.md
+        modules/02.md: modules/tracing.md
+        modules/03.md: modules/smart-routing.md
+        modules/04.md: modules/guardrails.md
+        modules/05.md: modules/budgets-and-keys.md
+        modules/06.md: modules/orqi.md
+        modules/07.md: modules/failure-analysis.md
+        modules/08.md: modules/managed-agents.md
+        modules/09.md: modules/knowledge-base.md
+        modules/10.md: modules/mcp-gateway.md
+        modules/11.md: modules/simulation.md
+        modules/12.md: modules/evals-in-ci.md
+        modules/13.md: modules/coding-agents.md
+        modules/14.md: modules/alerts-and-webhooks.md
+        modules/15.md: modules/advisor-and-sidekick.md
+        modules/16.md: modules/red-teaming.md
+        modules/17.md: modules/annotation-queues.md
+        modules/18.md: modules/trace-insights.md
+        modules/07-concepts.md: modules/failure-analysis/concepts.md
+        modules/08-concepts.md: modules/managed-agents/concepts.md
+        modules/11-concepts.md: modules/simulation/concepts.md
+        modules/08-logic.md: modules/managed-agents/logic.md
+        modules/08-solution-design.md: modules/managed-agents/solution-design.md
+        modules/07-evaluate.md: modules/failure-analysis/evaluate.md
   - glightbox:
       touchNavigation: true
       zoomable: true

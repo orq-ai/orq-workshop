@@ -35,7 +35,7 @@ def run_of_show(folder: Path, docs: bool = False, day: int | None = None) -> str
         info.update({k: v for k, v in b.items() if k in ("title", "command", "leave_with")})
         link = info["title"]
         if "module" in b:
-            href = f"../modules/{b['module'][:2]}.md" if docs else f"../../modules/{b['module']}/README.md"
+            href = f"../modules/{b['module']}.md" if docs else f"../../modules/{b['module']}/README.md"
             link = f"[{link}]({href})"
         cmd = f"`{info['command']}`" if info.get("command") else ""
         at = "" if docs else f"{(start + clock).strftime('%H:%M')} | "  # the public page frames a session in minutes, no clock
