@@ -1,0 +1,1 @@
+--8<-- "modules/gateway/README.md"

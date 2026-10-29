@@ -55,10 +55,12 @@ def on_page_content(content, **kwargs):
 
 
 def on_files(files, config):
-    """Add module images (PNG and SVG) to the build as `modules/assets/<name>` (MkDocs `on_files` event)."""
+    """Add module images (PNG and SVG) to the build as `modules/assets/<name>` and `modules/<slug>/assets/<name>` (MkDocs `on_files` event)."""
     for asset in sorted(ROOT.glob("modules/*/assets/*")):
         if asset.suffix.lower() in {".png", ".svg"}:
             files.append(File.generated(config, f"modules/assets/{asset.name}", abs_src_path=str(asset)))
+            # concept pages live one level down (docs/modules/<slug>/concepts.md) and resolve `assets/` from there
+            files.append(File.generated(config, f"modules/{asset.parent.parent.name}/assets/{asset.name}", abs_src_path=str(asset)))
     # public sessions: serve the compiled deck next to the generated page docs/sessions/<name>.md
     for cfg in sorted(ROOT.glob("sessions/*/session.yml")):
         if yaml.safe_load(cfg.read_text()).get("public"):

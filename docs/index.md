@@ -6,7 +6,7 @@ hide: [navigation]
 
 Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app, a customer-support refund agent, grows module by module: through the AI Gateway, behind guardrails, into traces, under evaluation, as a managed agent with a knowledge base and MCP tools, attacked by simulated users and red teams, gated in CI, and driven by coding agents.
 
-[Start with Setup](modules/00.md){ .md-button .md-button--primary }
+[Start with Setup](modules/setup.md){ .md-button .md-button--primary }
 [See the agenda](agenda.md){ .md-button }
 
 <div class="grid cards" markdown>
@@ -17,7 +17,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     The orq CLI and your keys, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
 
-    [:octicons-arrow-right-24: Setup, orqi troubleshooting, coding agents](modules/00.md)
+    [:octicons-arrow-right-24: Setup, orqi troubleshooting, coding agents](modules/setup.md)
 
 -   :material-router:{ .lg .middle } **AI Gateway**
 
@@ -25,7 +25,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     Fallbacks and cache, smart routing and routing rules, guardrails and PII, MCP servers and the MCP Gateway.
 
-    [:octicons-arrow-right-24: Gateway, routing, guardrails, MCP](modules/01.md)
+    [:octicons-arrow-right-24: Gateway, routing, guardrails, MCP](modules/gateway.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
 
@@ -33,7 +33,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     Tracing across your code and the gateway, alerts and webhooks, annotation queues and trace automations.
 
-    [:octicons-arrow-right-24: Tracing, alerts, annotation queues](modules/02.md)
+    [:octicons-arrow-right-24: Tracing, alerts, annotation queues](modules/tracing.md)
 
 -   :material-robot:{ .lg .middle } **Managed agents**
 
@@ -65,7 +65,7 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
     Budgets per identity, keys and Management Keys, and the Terraform provider that declares them.
 
-    [:octicons-arrow-right-24: Budgets and keys](modules/05.md)
+    [:octicons-arrow-right-24: Budgets and keys](modules/budgets-and-keys.md)
 
 -   :material-book-open-variant:{ .lg .middle } **Reference**
 

@@ -23,7 +23,7 @@ make setup                                        # uv sync, .env from the examp
 make orq-doctor && make gateway-check                         # green checks + your first trace
 ```
 
-Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
+Then open `modules/setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
 
 ## The sections
 

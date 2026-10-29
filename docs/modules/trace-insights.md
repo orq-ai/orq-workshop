@@ -1,0 +1,1 @@
+--8<-- "modules/trace-insights/README.md"

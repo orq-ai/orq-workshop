@@ -4,9 +4,9 @@ start: "09:00"
 public: true
 blocks:
   - {title: "Welcome, how this session works", minutes: 5}
-  - {module: 00-setup, title: Get your key and set up, minutes: 20, command: "make setup && make orq-doctor && make gateway-check", leave_with: a green orq doctor and one trace}
-  - {module: 08-managed-agents, title: "1 · The refund agent", minutes: 15, command: "make seed-workspace", leave_with: your smoke trace open in the Studio, with its tool calls}
-  - {module: 11-simulation, title: "2 · Simulate customers", minutes: 35, command: "uv run python modules/11-simulation/run.py", leave_with: an ord_a3 row that broke a rule, and why}
-  - {module: 18-trace-insights, title: "3 · Read the traces", minutes: 25, command: "make m18", leave_with: one Pass/Fail sentence for the failure the cluster names}
-  - {module: 07-failure-analysis-evals, title: "4 · From insight to eval", minutes: 12, command: "make regression-eval && make regression-eval-vulnerable", leave_with: a gate that exits 0 on the fixed prompt and 1 on v1}
+  - {module: setup, title: Get your key and set up, minutes: 20, command: "make setup && make orq-doctor && make gateway-check", leave_with: a green orq doctor and one trace}
+  - {module: managed-agents, title: "1 · The refund agent", minutes: 15, command: "make seed-workspace", leave_with: your smoke trace open in the Studio, with its tool calls}
+  - {module: simulation, title: "2 · Simulate customers", minutes: 35, command: "uv run python modules/simulation/run.py", leave_with: an ord_a3 row that broke a rule, and why}
+  - {module: trace-insights, title: "3 · Read the traces", minutes: 25, command: "make m18", leave_with: one Pass/Fail sentence for the failure the cluster names}
+  - {module: failure-analysis, title: "4 · From insight to eval", minutes: 12, command: "make regression-eval && make regression-eval-vulnerable", leave_with: a gate that exits 0 on the fixed prompt and 1 on v1}
   - {title: "Take home, questions", minutes: 8}

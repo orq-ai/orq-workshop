@@ -1,0 +1,1 @@
+--8<-- "modules/red-teaming/README.md"

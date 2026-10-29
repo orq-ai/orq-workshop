@@ -214,7 +214,7 @@ Function tools come back as `function_call` items. **Your code executes them** a
 
 ## 2 · One turn, in one picture
 
-![w:1000](../../../modules/08-managed-agents/assets/responses-tool-loop.png)
+![w:1000](../../../modules/managed-agents/assets/responses-tool-loop.png)
 
 <!-- Match on call_id, not id. A server tool (memory, advisor) also emits a function_call, then an orq:<tool> item with the result; that one is not yours to answer. -->
 
@@ -353,7 +353,7 @@ The gateway is where "small, focused agents" becomes a setting: the refund agent
 
 ## 4 · The trust chain
 
-![w:1000](../../../modules/10-mcp-gateway/assets/mcp-trust-chain.png)
+![w:1000](../../../modules/mcp-gateway/assets/mcp-trust-chain.png)
 
 <!-- The upstream URL must be reachable from orq: loopback and private addresses are rejected. The hidden tool is not forbidden, it is absent; tools/list never returns it. -->
 
@@ -800,7 +800,7 @@ Watch for: `span.fallback_selected` · cached span with zero cost · `orq.auto_r
 
 ## A · You try · Done when
 
-Open `modules/01-gateway/run.py`, fill the three `TODO`s, run it.
+Open `modules/gateway/run.py`, fill the three `TODO`s, run it.
 
 - [ ] A trace with a `span.fallback_selected` span
 - [ ] A second identical request served from cache

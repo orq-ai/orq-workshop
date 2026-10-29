@@ -1,1 +1,0 @@
---8<-- "modules/08-managed-agents/solution_design.md"

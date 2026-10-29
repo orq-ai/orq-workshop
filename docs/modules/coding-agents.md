@@ -1,0 +1,1 @@
+--8<-- "modules/coding-agents/README.md"

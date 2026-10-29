@@ -144,7 +144,7 @@ There is a fourth owner the comparison misses: a **coding-agent harness**. `orq 
 
 What orq.ai supplies here is not the loop and not the agent: it is the four seams underneath one: the **model** (routed, traced, budgeted like any other call), the **tools** (the orq.ai MCP server), the **skills** that teach it your platform workflows, and the **spend controls** that apply because the traffic is ordinary gateway traffic.
 
-That makes it the strongest version of this page's argument. You can bring a loop you wrote, a loop a framework wrote, a loop orq.ai runs, or a loop a vendor shipped in a binary, and the seams do not change. [Coding agents](modules/13.md) wires this one up for real.
+That makes it the strongest version of this page's argument. You can bring a loop you wrote, a loop a framework wrote, a loop orq.ai runs, or a loop a vendor shipped in a binary, and the seams do not change. [Coding agents](modules/coding-agents.md) wires this one up for real.
 
 ## The four connection points
 
@@ -152,7 +152,7 @@ Everything the client of this workshop asked for maps to one of four seams. None
 
 **Prompts.** Today all three legs read `INSTRUCTIONS` from a repo file, which is why that row of the table is the same in all three columns and answers nothing yet. Moving it into an orq.ai Deployment is what makes the third column different: a prompt you can version and change without shipping code. That step is not in the workshop yet.
 
-**Routing.** One base URL. `https://my.orq.ai/v3/router` is a drop-in for the OpenAI endpoint, which is why leg 2 needed no orq.ai-specific code at all: `ChatOpenAI(base_url=...)` and the call is routed, budgeted, cached and traced. Fallbacks, smart routing and routing rules apply to all three legs equally ([Gateway](modules/01.md), [Smart routing](modules/03.md)).
+**Routing.** One base URL. `https://my.orq.ai/v3/router` is a drop-in for the OpenAI endpoint, which is why leg 2 needed no orq.ai-specific code at all: `ChatOpenAI(base_url=...)` and the call is routed, budgeted, cached and traced. Fallbacks, smart routing and routing rules apply to all three legs equally ([Gateway](modules/gateway.md), [Smart routing](modules/smart-routing.md)).
 
 **Tracing.** Three methods, in ascending order of effort:
 
@@ -162,7 +162,7 @@ Everything the client of this workshop asked for maps to one of four seams. None
 | Framework callback | `orq_ai_sdk.langchain.setup()`, one line | you use LangChain or LangGraph |
 | OpenTelemetry + `@traced` | `TRACING=otel`, decorators, `traceparent` | you already run OTEL, or want custom spans |
 
-orq.ai's own guidance is to *pick the callback handler unless you have a specific reason not to*, and reach for OpenTelemetry when you have existing OTEL infrastructure or need control over span attributes. [Tracing](modules/02.md) runs all three.
+orq.ai's own guidance is to *pick the callback handler unless you have a specific reason not to*, and reach for OpenTelemetry when you have existing OTEL infrastructure or need control over span attributes. [Tracing](modules/tracing.md) runs all three.
 
 **Tool tracing.** In legs 1 and 2 the tools run in your process, so what the trace shows is what you instrument: the gateway sees the model calls, and a tool span appears only if the framework emits one (LangGraph does) or you decorate the dispatch yourself (module 02, step 3). A managed agent is the exception: orq.ai executes server-side tools, and the retrieval or delegation lands in the trace without you doing anything.
 
@@ -178,12 +178,12 @@ orq.ai's own guidance is to *pick the callback handler unless you have a specifi
 - **A framework** when the graph is worth having and you want the ecosystem. One line of setup and orq.ai observes it.
 - **A managed agent** when the agent is configuration rather than code, and you want prompts, tools and versions changeable without a deploy, at the cost of the loop running somewhere you cannot step through.
 
-The three are not exclusive. A managed agent can call tools your service exposes over MCP ([MCP servers and gateway](modules/10.md)); a framework agent can read a knowledge base orq.ai hosts ([Knowledge base and RAG](modules/09.md)); all three land in the same traces, the same budgets and the same evaluations.
+The three are not exclusive. A managed agent can call tools your service exposes over MCP ([MCP servers and gateway](modules/mcp-gateway.md)); a framework agent can read a knowledge base orq.ai hosts ([Knowledge base and RAG](modules/knowledge-base.md)); all three land in the same traces, the same budgets and the same evaluations.
 
 ## Related
 
 - [`examples/own-your-agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/examples/own-your-agent.py): the script behind this page
-- [Managed agents](modules/08.md) · [Tracing](modules/02.md) · [How retrieval works](reference/rag.md)
+- [Managed agents](modules/managed-agents.md) · [Tracing](modules/tracing.md) · [How retrieval works](reference/rag.md)
 - [orq.ai · Tracing LangGraph](https://orq.ai/blog/tracing-langgraph-orq-ai) · [Building a LangGraph agent on orq.ai](https://orq.ai/blog/langgraph-agent-orq-ai)
 
 ## Official docs

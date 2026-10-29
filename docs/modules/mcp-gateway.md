@@ -1,0 +1,1 @@
+--8<-- "modules/mcp-gateway/README.md"
