@@ -207,7 +207,15 @@ body { font-family: var(--md-text-font-family); }
     padding: 0.35rem 0.75rem;
     border-radius: var(--orq-radius-sm);
   }
-  .md-nav--primary .md-nav__link:hover { color: var(--orq-heading); background: var(--orq-primary-tint); }
+  /* A section whose label is itself a page (navigation.indexes) gets the same pill as its children. */
+  .md-nav--primary .md-nav__item--section > .md-nav__container { display: flex; }
+  .md-nav--primary .md-nav__item--section > .md-nav__container > a.md-nav__link {
+    padding: 0.35rem 0.75rem;
+    margin-left: -0.75rem;
+    border-radius: var(--orq-radius-sm);
+  }
+  .md-nav--primary .md-nav__item--section > .md-nav__container > label.md-nav__link { display: none; }
+  .md-nav--primary a.md-nav__link:hover { color: var(--orq-heading); background: var(--orq-primary-tint); }
   .md-nav--primary .md-nav__link--active {
     color: var(--orq-primary);
     background: var(--orq-primary-tint);
