@@ -82,7 +82,8 @@ plugins:
         modules/11-concepts.md: modules/simulation/concepts.md
         modules/08-logic.md: modules/managed-agents/logic.md
         modules/08-solution-design.md: modules/managed-agents/solution-design.md
-        modules/07-evaluate.md: modules/failure-analysis/evaluate.md
+        modules/07-evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
+        modules/failure-analysis/evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
         own-your-agent.md: build/index.md
   - glightbox:
       touchNavigation: true
@@ -170,7 +171,9 @@ nav:
       - Annotation queues and automations: modules/annotation-queues.md
   - Evaluate:
       - evaluate/index.md
-      - Evaluators and experiments: modules/evaluators-and-experiments.md
+      - Evaluators and experiments:
+          - Run: modules/evaluators-and-experiments.md
+          - Prove your fix: modules/evaluators-and-experiments/prove-your-fix.md
       - Agent simulation:
           - Concepts: modules/simulation/concepts.md
           - Run: modules/simulation.md

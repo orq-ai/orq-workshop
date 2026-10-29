@@ -1,8 +1,8 @@
-# Evaluate
+# Prove your fix
 
-Part B of the failure analysis module: prove the fix with an eval. Why a fixed set of scored rows beats rereading a few conversations is on the [Evaluate](https://orq-ai.github.io/orq-workshop/evaluate/) stage page; the scorers and thresholds are on the [Concepts](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/concepts/) page.
+The regression eval on the instructions you fixed in the failure-analysis module. Why a fixed set of scored rows beats rereading a few conversations is on the [Evaluate](https://orq-ai.github.io/orq-workshop/evaluate/) stage page; the scorers and thresholds are on the [Concepts](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/concepts/) page.
 
-**Prerequisites:** Part A done, so `app/data/my_instructions.md` exists and `make seed-workspace` has run. **You will have:** a regression eval that passes your fixed instructions and fails the vulnerable ones, with its Experiment runs in the Studio.
+**Prerequisites:** the [Failure analysis](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/) module done, so `app/data/my_instructions.md` exists and `make seed-workspace` has run. **You will have:** a regression eval that passes your fixed instructions and fails the vulnerable ones.
 
 ## Steps
 
@@ -27,7 +27,7 @@ $ make regression-eval              # fixed_instructions.md: should exit 0
 $ make regression-eval-vulnerable   # vulnerable_instructions.md: the gate must exit 1
 ```
 
-A fix near the fixed instructions is good; one that still fails `decision_matches` or `no_pii_leak` sends you back to Part A. LLM judges drift: compare means within one run.
+A fix near the fixed instructions is good; one that still fails `decision_matches` or `no_pii_leak` sends you back to the failure-analysis module. LLM judges drift: compare means within one run.
 
 ### Step 4 · Read the red cells
 
@@ -37,7 +37,7 @@ Open the Experiment of a failing run and read the failed rows before you change 
 
 Start your coding agent, then paste:
 
-> Read `AGENTS.md` and `modules/failure-analysis/evaluate.md`. Run `uv run python -m evals.regression --instructions app/data/my_instructions.md --out evals/results/mine.json`, then `make regression-eval-vulnerable`. Report each scorer against its threshold, and for every failing row of my run, the message, the tool calls and what the scorer said.
+> Read `AGENTS.md` and `modules/evaluators-and-experiments/prove-your-fix.md`. Run `uv run python -m evals.regression --instructions app/data/my_instructions.md --out evals/results/mine.json`, then `make regression-eval-vulnerable`. Report each scorer against its threshold, and for every failing row of my run, the message, the tool calls and what the scorer said.
 
 ## Done when
 
