@@ -272,7 +272,7 @@ Before you trust a red number, check who ran the tools. Block 3 uses the adapter
 - So it finds failures you did not write a criterion for.
 
 ```bash
-$ make m18
+$ make module M=trace-insights
 # 1. module 11's customers against the managed v1 agent, ws<NN>-refund-agent-vulnerable
 # 2. eq insights --agent ws<NN>-refund-agent-vulnerable \
 #      --dimension failure --dimension intent --label made_errors
@@ -291,7 +291,7 @@ $ make m18
 ## 3 · Live demo · You try
 
 ```bash
-$ make m18                             # simulate, then insights on your own traces
+$ make module M=trace-insights                             # simulate, then insights on your own traces
 $ uv run eq dashboard                  # Insights tab: clusters, and the traces in each
 $ orq traces conversation <trace_id>   # one trace, read as a conversation
 ```
@@ -477,7 +477,7 @@ $ uv run python modules/failure-analysis/run.py 2     # your turn: the TODO is i
 ## Module 07 · You try
 
 ```bash
-$ make m07       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
+$ make module M=failure-analysis       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
 ```
 
 Watch for: the experiment URL · per-row answers, verdicts and the judge's explanation · the fixed prompt's one miss.

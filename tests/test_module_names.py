@@ -18,3 +18,10 @@ def test_docs_wrappers_match_module_slugs():
     slugs = {d.name for d in (ROOT / "modules").iterdir() if d.is_dir()}
     wrappers = {p.stem for p in (ROOT / "docs/modules").glob("*.md")}
     assert slugs <= wrappers, slugs - wrappers
+
+
+def test_makefile_runs_modules_by_slug():
+    out = subprocess.run(["make", "-n", "module", "M=tracing"], cwd=ROOT, capture_output=True, text=True).stdout
+    assert "modules/tracing/run.py" in out
+    out = subprocess.run(["make", "-n", "m02"], cwd=ROOT, capture_output=True, text=True).stdout
+    assert "modules/tracing/run.py" in out  # the old number still works as an alias

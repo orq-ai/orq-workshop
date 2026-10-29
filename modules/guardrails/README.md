@@ -41,14 +41,14 @@ client.responses.create(
 
 ## Steps
 
-Open [`modules/guardrails/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/guardrails/run.py). Each step has a `TODO`. The complete version is `solution/run.py` (`make m04`).
+Open [`modules/guardrails/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/guardrails/run.py). Each step has a `TODO`. The complete version is `solution/run.py` (`make module M=guardrails`).
 
 ### Step 1 · PII detection and redaction as an API
 
 The note on `ord_a5` holds an email and a phone number. `orq.pii.detect`, `orq.pii.redact` and `orq.pii.restore` are the same three calls the plugin makes for you.
 
 ```bash
-$ make m04      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
+$ make module M=guardrails      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
 ```
 
 Expected output:

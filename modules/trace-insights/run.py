@@ -6,7 +6,7 @@ so it finds failures you did not write a criterion for. Two steps: simulate modu
 and scenarios against the managed v1 agent (vulnerable prompt), so the traces carry its agent
 name; then run `eq insights` on exactly those traces and open the result in `eq dashboard`.
 
-Run it with `uv run python modules/trace-insights/run.py` (or `make m18`), about
+Run it with `uv run python modules/trace-insights/run.py` (or `make module M=trace-insights`), about
 three minutes; `--only=2` re-runs insights on the traces you already have.
 """
 

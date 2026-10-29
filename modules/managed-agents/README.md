@@ -54,7 +54,7 @@ Open [`modules/managed-agents/run.py`](https://github.com/orq-ai/orq-workshop/bl
 
 ```bash
 $ orq agents retrieve ws-refund-agent -o json | jq '{key, version, model: .model.id, settings: {max_iterations: .settings.max_iterations, max_execution_time: .settings.max_execution_time, tool_approval_required: .settings.tool_approval_required, tools: [.settings.tools[] | {action_type, key, requires_approval}]}, knowledge_bases}'
-$ make m08      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
+$ make module M=managed-agents      # runs run.py: the starter prints this block once its TODOs are filled in, the `solution` branch has it done
 ```
 
 Expected output:

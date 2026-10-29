@@ -113,7 +113,7 @@ The five variables that matter in this workshop. The [README](https://github.com
 | `ORQ_SERVER` | API base URL (default `https://api.orq.ai`), and so which login session the CLI resolves |
 | `ORQ_PROFILE` | Which API-key profile the orq.ai CLI authenticates with; orqi follows it |
 | `ORQI_MODEL` | Router model (default `openai/gpt-5.6-terra`) |
-| `CI` | Any value suppresses the daily update check; use it in scripts and in `make m06` |
+| `CI` | Any value suppresses the daily update check; use it in scripts and in `make module M=orqi` |
 
 orqi keeps its own agent dir (`~/.orqi/agent`) and never touches `~/.pi`.
 

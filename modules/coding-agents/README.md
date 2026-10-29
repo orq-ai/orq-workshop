@@ -29,7 +29,7 @@ Every module ends with "With your coding agent". This one explains what that lin
 
 ## Steps
 
-[`modules/coding-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/coding-agents/run.py) runs every command below with `--dry-run` and redacts the key. `make m13` runs the solution. Nothing in this module writes to `~/.orq`, `~/.claude` or an agent config unless you drop `--dry-run` yourself.
+[`modules/coding-agents/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/coding-agents/run.py) runs every command below with `--dry-run` and redacts the key. `make module M=coding-agents` runs the solution. Nothing in this module writes to `~/.orq`, `~/.claude` or an agent config unless you drop `--dry-run` yourself.
 
 ### Step 1 · What is wired, and what `--local` would change
 
@@ -151,7 +151,7 @@ Either way, every model call the agent makes is a trace with tokens, latency and
 `orq doctor -o json` reports the skills bundle (`"id": "skills"`, `"version": "415edd51..."`). The files are materialized under `~/.orq/snapshot/gen-<fingerprint>/` and symlinked into each agent's skills directory; `~/.orq/materialized-skills.json` records every link.
 
 ```bash
-$ make m13     # step 3 lists them from the snapshot
+$ make module M=coding-agents     # step 3 lists them from the snapshot
 ```
 
 ```text
@@ -232,7 +232,7 @@ This is orq.ai's own MCP server, the one coding assistants talk to. It is not th
 This workspace already has one: a headless run from module 06, `orq launch claude -- -p "run orq doctor and summarise in three lines"`. Find it by session id:
 
 ```bash
-$ make m13     # step 4
+$ make module M=coding-agents     # step 4
 ```
 
 ```text
@@ -284,14 +284,14 @@ Paste `agent_prompt.md`:
 Read AGENTS.md. Run `orq connect --status`. Then use the setup-observability skill on this repo and tell me the three changes you would make, without applying them.
 </blockquote>
 
-While it thinks, run `make m13` in another terminal: the session you are in should appear as a new session id in step 4.
+While it thinks, run `make module M=coding-agents` in another terminal: the session you are in should appear as a new session id in step 4.
 
 ## Done when
 
 - [ ] `orq connect --status` lists at least one agent, and you can say which file `--local` would write for it
 - [ ] `orq launch claude --dry-run` shows `ANTHROPIC_BASE_URL=https://my.orq.ai/v3/anthropic` and an empty `ANTHROPIC_API_KEY`
 - [ ] You can name the fourteen bundled skills and the skill you would paste first in a new repo
-- [ ] `make m13` step 4 shows a session id per run with its calls and a cost
+- [ ] `make module M=coding-agents` step 4 shows a session id per run with its calls and a cost
 - [ ] You can explain the difference between the orq.ai MCP server and the MCP Gateway of module 10
 
 ## Gotchas

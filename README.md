@@ -27,7 +27,7 @@ Then open `modules/setup/README.md` or the docs site and go module by module. `m
 
 ## The sections
 
-Setup first, then the same three sections as docs.orq.ai. Module numbers are the build order (`make m01` … `make m17`); sections are the topic.
+Setup first, then one section per stage of the loop. `make module M=<name>` runs any module; `make modules` lists them.
 
 | Setup | AI Gateway | AI Observability | Managed Agents |
 |---|---|---|---|

@@ -15,11 +15,11 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | Min | Block | You run | You leave with |
 |---|---|---|---|
 | 5 | Welcome, how this session works |  |  |
-| 20 | [Get your key and set up](../modules/setup.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
-| 15 | [1 · The refund agent](../modules/managed-agents.md) | `make seed-workspace` | your smoke trace open in the Studio |
-| 35 | [2 · Simulate customers](../modules/simulation.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
-| 25 | [3 · Read the traces](../modules/trace-insights.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
-| 12 | [4 · From insight to eval](../modules/failure-analysis.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 20 | [Get your key and set up](../modules/se.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
+| 15 | [1 · The refund agent](../modules/ma.md) | `make seed-workspace` | your smoke trace open in the Studio |
+| 35 | [2 · Simulate customers](../modules/si.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
+| 25 | [3 · Read the traces](../modules/tr.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
+| 12 | [4 · From insight to eval](../modules/fa.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 8 | Take home, questions |  |  |
 
 Total: 120 min.
@@ -67,7 +67,7 @@ Done when at least one `ord_a3` row shows a broken rule and you can say why. The
 Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
-make m18
+make module M=trace-insights
 uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 

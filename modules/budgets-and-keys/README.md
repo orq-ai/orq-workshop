@@ -39,7 +39,7 @@ $ orq management-keys create --name ws-mgmt-key \
     --permission-mode MANAGEMENT_PERMISSION_MODE_RESTRICTED \
     --access budget=ACCESS_LEVEL_WRITE --access api-key=ACCESS_LEVEL_WRITE --access management-key=ACCESS_LEVEL_WRITE -o json
 $ export ORQ_MANAGEMENT_KEY=<the "token" from that response>
-$ make m05
+$ make module M=budgets-and-keys
 ```
 
 ### Step 1 · API keys, and a key for the CI runner

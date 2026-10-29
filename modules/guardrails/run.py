@@ -5,7 +5,7 @@ provider, and a refund promise the policy forbids on its way to the customer. Bo
 the gateway. Factor 7: a blocked guardrail is the hand-off to a human. Catch it, do not retry it.
 
 Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/guardrails/run.py`. The solution is on the `solution` branch (`make m04`).
+Run it with `uv run python modules/guardrails/run.py`. The solution is on the `solution` branch (`make module M=guardrails`).
 """
 
 from __future__ import annotations

@@ -19,7 +19,7 @@ orqi has the same 43 `orq_` tools and the same skills your coding agent gets in 
 
 ## Steps
 
-[`modules/orqi/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/orqi/run.py) scripts steps 1 and 2 with `subprocess`; `make m06` runs the solution. Everything below also works typed by hand.
+[`modules/orqi/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/orqi/run.py) scripts steps 1 and 2 with `subprocess`; `make module M=orqi` runs the solution. Everything below also works typed by hand.
 
 ### Step 1 · Four troubleshooting prompts
 
@@ -110,7 +110,7 @@ That is the `investigate-root-cause` skill: it walked the span tree with `list_s
 A wrong `ORQ_BASE_URL` never reaches the gateway, so there is no trace to read. The solution reproduces it without touching `.env`: the repo `.env` overrides the shell on purpose (`load_dotenv(override=True)`), so a broken copy exported in the shell would be ignored. Instead the solution builds the same OpenAI client the app uses, with `base_url=f"{settings.base_url}/broken"` and `max_retries=0`, and passes it to `chat(..., client=broken)`:
 
 ```bash
-$ make m06      # steps 1 and 2 print before the orqi calls start
+$ make module M=orqi      # steps 1 and 2 print before the orqi calls start
 ```
 
 ```text

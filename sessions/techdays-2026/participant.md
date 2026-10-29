@@ -53,7 +53,7 @@ Done when at least one `ord_a3` row shows a broken rule and you can say why. The
 Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
-make m18
+make module M=trace-insights
 uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 

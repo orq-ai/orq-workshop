@@ -123,7 +123,7 @@ Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators
 
 ## Gotchas
 
-- `eq` reads `ORQ_API_KEY` from the environment. A stale key exported in your shell wins over `.env` when you call `eq` yourself (401 "API key is not valid for this workspace"); the script loads `.env` first, so `make m18` does not have this problem. Outside the script: `unset ORQ_API_KEY`.
+- `eq` reads `ORQ_API_KEY` from the environment. A stale key exported in your shell wins over `.env` when you call `eq` yourself (401 "API key is not valid for this workspace"); the script loads `.env` first, so `make module M=trace-insights` does not have this problem. Outside the script: `unset ORQ_API_KEY`.
 - evaluatorq's default smart model is `openai/gpt-6-sol`. If your workspace has not enabled it, the summaries fail; the `EVALUATORQ_SMART_MODEL` line in `.env` picks a model that is enabled.
 - Without `--agent`, the population includes the simulator and judge calls (they share your key), and every other trace in the window.
 - Local-agent traces (module 11 step 1) are one per model call, without an agent name: insights still runs on them, but summaries of single tool rounds read as "pending lookup_order call, no user message". Use the managed agent for this module.

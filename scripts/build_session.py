@@ -19,7 +19,7 @@ def module_info(name: str) -> dict:
     readme = (ROOT / "modules" / name / "README.md").read_text()
     title = re.search(r"^# (.+)$", readme, re.MULTILINE).group(1)
     leave = re.search(r"^\| \*\*You will have\*\* \| (.+) \|$", readme, re.MULTILINE)
-    return {"title": title, "command": f"make m{name[:2]}", "leave_with": leave.group(1) if leave else ""}
+    return {"title": title, "command": f"make module M={name}", "leave_with": leave.group(1) if leave else ""}
 
 
 def run_of_show(folder: Path, docs: bool = False, day: int | None = None) -> str:

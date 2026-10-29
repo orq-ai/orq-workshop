@@ -8,10 +8,10 @@
 | 09:12 | 15 | The map: picture, refund agent |  |  |
 | 09:27 | 3 | What you asked for |  |  |
 | 09:30 | 30 | Block 1 · Own your agent | `uv run python examples/own-your-agent.py` | your own framework with orq as the infrastructure layer |
-| 10:00 | 30 | [Block 2 · Managed agents](../../modules/managed-agents/README.md) | `make m08` | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
+| 10:00 | 30 | [Block 2 · Managed agents](../../modules/managed-agents/README.md) | `make module M=managed-agents` | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
 | 10:30 | 12 | Checkpoint and break |  |  |
-| 10:42 | 35 | [Block 3 · Knowledge base and RAG](../../modules/knowledge-base/README.md) | `make m09` | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
-| 11:17 | 25 | [Block 4 · MCP servers and the MCP Gateway](../../modules/mcp-gateway/README.md) | `make m10` | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
+| 10:42 | 35 | [Block 3 · Knowledge base and RAG](../../modules/knowledge-base/README.md) | `make module M=knowledge-base` | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
+| 11:17 | 25 | [Block 4 · MCP servers and the MCP Gateway](../../modules/mcp-gateway/README.md) | `make module M=mcp-gateway` | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
 | 11:42 | 18 | Wrap-up |  |  |
 
 Ends 12:00 (180 min).
