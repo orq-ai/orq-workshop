@@ -495,3 +495,7 @@ body { font-family: var(--md-text-font-family); }
   font-weight: 500;
 }
 .md-typeset .stage-chip a { text-decoration: none; font-weight: 600; }
+
+/* --- Instructor demo: a step a participant key cannot run ---------------------- */
+.md-typeset .admonition.instructor, .md-typeset details.instructor { --adm: 107 114 128; }
+.md-typeset .admonition.instructor > .admonition-title::before { -webkit-mask-image: var(--md-admonition-icon--info); mask-image: var(--md-admonition-icon--info); }

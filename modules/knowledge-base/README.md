@@ -178,6 +178,9 @@ next     : the response keys are still just 'matches'; the refined query is not 
 
 ### Step 7 · An external knowledge base
 
+!!! instructor "Instructor demo: needs a public tunnel"
+    orq.ai has to reach your `/search` endpoint, so this step needs `make edge` exposed through a tunnel (or the instance the instructor hosts). The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 orq.ai can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq.ai POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
 
 ![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq.ai post the query to your own /search endpoint and wait for matches with scores. orq.ai then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.ai.](assets/step7-external-kb.png)

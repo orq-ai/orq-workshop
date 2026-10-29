@@ -121,6 +121,9 @@ The practical consequence: **a band with one model is not a routing decision.** 
 
 ### Step 3 · Pin traffic with a routing rule
 
+!!! instructor "Instructor demo: needs an admin key"
+    Routing rules are workspace administration: `/v2/routing-rules` answers 403 to a participant key. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 Steps 1 and 2 let the platform pick the model. A routing rule is you overriding that pick with a CEL expression over the request: model, metadata, identity, project. Same gateway, opposite direction.
 
 | Use | When | Example |

@@ -88,6 +88,9 @@ Newest first. An empty list means this run's burst has not been evaluated yet: r
 
 ### Step 3 · The hook: a webhook into your own system
 
+!!! instructor "Instructor demo: needs a public tunnel"
+    Deliveries go to a URL orq.ai can reach; without one the step posts to httpbin and the receiver output is the instructor's. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) serves that endpoint (`/<WS_PREFIX>`): it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
 
 Three terminals:

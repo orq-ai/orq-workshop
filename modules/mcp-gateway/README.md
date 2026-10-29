@@ -63,6 +63,9 @@ The client is the `mcp` package: `streamable_http_client(url)` gives the streams
 
 ### Step 2 · Register the upstream server in the MCP Portal
 
+!!! instructor "Instructor demo: needs a workspace-wide key"
+    MCP servers and gateways answer 403 to a project-scoped key; steps 2 and 3 create them, steps 4 to 6 use what the instructor created. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 ```text
 ── Step 2 · Register the upstream server in the MCP Portal ──
 server   : ws-refund-mcp → https://mcp.deepwiki.com/mcp

@@ -13,6 +13,9 @@ Command: `make module M=setup`. Time: 15 min.
 A purpose-built API key, an identity for one customer, two budgets that block the third call in a minute, and a clean workspace at the end.
 
 
+!!! instructor "Instructor demo: needs a Management Key"
+    Every step administers keys and budgets, which a participant key cannot do. Follow along on the instructor's screen; the Done when list is what you would check with your own Management Key.
+
 ## Why
 
 The refund agent will run in CI and in production under different keys, and it will serve many customers under one key. A budget on the CI key stops a runaway test from burning the month's credits; a budget on a customer identity stops one abusive user from doing the same. Both are one API call, both are enforced before the provider is called, and both give the caller a `429` it can read.

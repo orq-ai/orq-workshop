@@ -175,6 +175,9 @@ One detail in the code: these three calls pass `api="chat"`, so `run_turn` sends
 
 ### Step 4 · System guardrails and a rule that needs no request changes
 
+!!! instructor "Instructor demo: needs an admin key"
+    Guardrail rules are workspace administration: `/v2/guardrail-rules` answers 403 to a participant key. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 `orq_secret_detection` and `orq_pii_detection` ship with the workspace. No evaluator to create:
 
 ```text
