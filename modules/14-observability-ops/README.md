@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Prerequisites** | module 02, `make seed`, a public URL for the receiver (see step 3) |
+| **Prerequisites** | module 02, `make seed-workspace`, a public URL for the receiver (see step 3) |
 | **You will have** | a cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
@@ -57,7 +57,7 @@ The error rate counts failed spans inside successful traces, such as module 01's
 
 ### Step 2 · The watcher: an alert on spend
 
-`make seed` created `ws-cost-alert` (`genai.cost > $0.002` over 5 minutes, checked every 5 minutes, the fastest the plan allows) and `ws-alert-notifier`, a webhook notifier pointing at `WS_WEBHOOK_URL`. The burst is a runaway loop in miniature: refund turns until the window's spend passes the threshold with margin, fifteen at most.
+`make seed-workspace` created `ws-cost-alert` (`genai.cost > $0.002` over 5 minutes, checked every 5 minutes, the fastest the plan allows) and `ws-alert-notifier`, a webhook notifier pointing at `WS_WEBHOOK_URL`. The burst is a runaway loop in miniature: refund turns until the window's spend passes the threshold with margin, fifteen at most.
 
 ```text
 ── Step 2 · The watcher: an alert on spend ────────────
@@ -150,7 +150,7 @@ Query the Telemetry API (`POST /v3/telemetry/query`) for the last 24 hours group
 - orq.ai switches a webhook off after 10 failed deliveries (`enabled: false`, `failure_count: 10`); a dead tunnel gets there in minutes and nothing arrives afterwards even once the URL is right. `ensure_webhook` PATCHes `enabled: true` on every run; `orq webhooks list` shows both fields, the SDK's `get` hides `enabled`.
 - SDK 4.14's `webhooks.update` returns 200 and changes nothing (it sends an empty body); `PATCH /v2/webhooks/<id>` over REST works, and `ensure_webhook` uses it to re-point the URL. `webhooks.get` returns `failure_count` as `None`, so a target that stores nothing (httpbin) gives no signal at all.
 - Notifiers and webhooks are different things: a notifier is where alerts and budgets send their notifications; a webhook is a subscription to workspace events. Both can point at the same URL.
-- `make reset` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
+- `make reset-workspace` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
 
 ## New in orq.ai 4.15 to 4.17
 

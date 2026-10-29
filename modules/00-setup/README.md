@@ -95,10 +95,10 @@ Checked 188 packages in 107ms
 
 The first run downloads packages and takes a minute; every later run is the two lines above. If it created `.env`, open it and check `ORQ_API_KEY` is filled (step 2 did that with `orq setup --local`).
 
-#### 3b · `make doctor`: the CLI, your login, your wiring
+#### 3b · `make orq-doctor`: the CLI, your login, your wiring
 
 ```bash
-$ make doctor
+$ make orq-doctor
 ```
 
 Runs `orq doctor`, the CLI's self-check. It does not touch this repo: it reads your `orq` session, calls the orq.ai API and inspects the coding agents installed on the machine. The output is YAML: `auth` (who you are, which workspace), `binary` (CLI and API versions), `checks[N]` (one entry per check, each with a `status` of `pass`, `warn`, `info` or `fail` and a message), then `config`, `output` and `runtime`.
@@ -145,13 +145,13 @@ uv run pytest -q
 24 passed in 0.9s
 ```
 
-#### 3d · `make smoke`: one real turn through the gateway
+#### 3d · `make gateway-check`: one real turn through the gateway
 
 ```bash
-$ make smoke
+$ make gateway-check
 ```
 
-Runs [`app/smoke.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/smoke.py): the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq.ai Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq.ai, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
+Runs [`app/gateway_check.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/gateway_check.py): the same `chat()` the whole workshop uses, once, with "Hi, I want a refund for order ord_a1, I changed my mind." The OpenAI client points at `https://my.orq.ai/v3/router` with your key and uses the Responses API, so the call goes through the orq.ai Gateway: the model calls `lookup_order` and `get_policy`, the app executes each tool locally, the in-window order is refunded with `issue_refund` (some runs stop to ask the customer to confirm first, and the refund follows on the next turn), and the gateway returns an `x-orq-trace-id` header on every model call. The script then asserts two things: a trace id came back (the call went through orq.ai, not straight to OpenAI) and `lookup_order` was called (the model used the tools).
 
 ```text
 ── Step 1 · One refund turn through the gateway ───────
@@ -174,13 +174,13 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 | `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
 | `400 ... reasoning_effort` on a tools call | a GPT-5.x model on `/chat/completions` | the app uses `/responses`; on chat completions set `reasoning_effort: "none"` |
 
-#### 3e · `make seed`: every entity the modules expect
+#### 3e · `make seed-workspace`: every entity the modules expect
 
 ```bash
-$ make seed
+$ make seed-workspace
 ```
 
-Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset` deletes everything with the prefix, and refuses the bare shared `ws`.
+Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed-workspace` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset-workspace` deletes everything with the prefix, and refuses the bare shared `ws`.
 
 ```text
 uv run python -m app.refund_agent.entities seed
@@ -215,7 +215,7 @@ Read [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/m
 ### Optional · Chat with it in a browser
 
 ```bash
-$ make chat        # http://127.0.0.1:8002
+$ make agent-chat-ui        # http://127.0.0.1:8002
 ```
 
 [`app/web.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/web.py) puts the same `chat()` behind `POST /api/chat`; [`web/index.html`](https://github.com/orq-ai/orq-workshop/blob/main/web/index.html) is the page. Transcript, tool chips, model per turn and a **trace** link per answer. [All its features](https://github.com/orq-ai/orq-workshop/blob/main/web/README.md).
@@ -230,7 +230,7 @@ $ orq launch claude               # or: orq launch opencode / orq launch pi
 Paste `agent_prompt.md`:
 
 <blockquote class="agent-prompt-frame" markdown>
-Read AGENTS.md and app/refund_agent/agent.py. Run `make smoke`. Explain in five lines what happened, which tool calls the model made, and where the trace id came from.
+Read AGENTS.md and app/refund_agent/agent.py. Run `make gateway-check`. Explain in five lines what happened, which tool calls the model made, and where the trace id came from.
 </blockquote>
 
 The agent's own model calls go through the gateway too. Look for them in Traces afterwards.
@@ -238,14 +238,14 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 ## Done when
 
 - [ ] `orq doctor` shows every check green
-- [ ] `make smoke` prints `OK` and a trace id
+- [ ] `make gateway-check` prints `OK` and a trace id
 - [ ] You found that trace in the Studio
 - [ ] You can say what `run_turn` returns
 
 ## Gotchas
 
 - Model ids are `provider/model`. `gpt-6-luna` alone returns `400 invalid model format`.
-- The repo `.env` overrides a stale `ORQ_API_KEY` exported in your shell. If `make smoke` says "API key is not valid for this workspace", the key belongs to another workspace.
+- The repo `.env` overrides a stale `ORQ_API_KEY` exported in your shell. If `make gateway-check` says "API key is not valid for this workspace", the key belongs to another workspace.
 - `orq launch` without `ORQ_API_KEY` mints a one-hour token that cannot refresh mid-session. `source .env` first for long sessions.
 
 ## New in orq.ai 4.15 and 4.17

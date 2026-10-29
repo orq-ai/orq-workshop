@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Prerequisites** | modules 00 and 07, `make seed` |
+| **Prerequisites** | modules 00 and 07, `make seed-workspace` |
 | **You will have** | four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges. |
 
 ## Why

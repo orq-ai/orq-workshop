@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | module 00, `make seed` |
+# | **Prerequisites** | module 00, `make seed-workspace` |
 # | **You will have** | PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all |
 #
 # This file is both the solution script (`make m04`) and the notebook source
@@ -51,13 +51,13 @@ client = OpenAI(api_key=settings.api_key, base_url=settings.router_url, timeout=
 
 
 def guardrail_id(name: str = "refund-limit-guard") -> str:
-    """Id of the evaluator `make seed` created. Ids change on every reseed, so look it up by key."""
+    """Id of the evaluator `make seed-workspace` created. Ids change on every reseed, so look it up by key."""
     key = settings.key(name)
     for evaluator in orq.evals.all(limit=50, search=key).data or []:
         fields = evaluator.model_dump()
         if fields.get("key") == key:
             return fields.get("id") or fields.get("_id")
-    raise SystemExit(f"evaluator {key} not found, run `make seed`")
+    raise SystemExit(f"evaluator {key} not found, run `make seed-workspace`")
 
 
 def project_id() -> str:
@@ -224,7 +224,7 @@ print("next     : nothing in this question is on the allowlist, so the model rea
 # %% [markdown]
 # ## Step 3 · A Python guardrail on the output
 #
-# `make seed` created the evaluator `ws-refund-limit-guard` (code in
+# `make seed-workspace` created the evaluator `ws-refund-limit-guard` (code in
 # `app/refund_agent/guardrail_refund_limit.py`). It returns `False` when the answer commits to a
 # refund above EUR 500. Attach it per request and social-engineer the vulnerable instructions into
 # promising EUR 620 on `ord_a6`.

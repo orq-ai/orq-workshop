@@ -1,11 +1,11 @@
 """Module 07: failure analysis by hand, then evaluators, a dataset and an experiment.
 
 Evaluators built before you read traces measure the failures you imagined, not the ones you
-have. This script starts where `make traffic` left off (20 conversations, half on the vulnerable
+have. This script starts where `make generate-traffic` left off (20 conversations, half on the vulnerable
 instructions): it reads the traces, builds a small failure taxonomy from what is actually there,
 invokes the two seeded evaluators, lists the `ws-refund-eval` dataset, and runs an evaluatorq
 experiment that compares the fixed and the vulnerable instructions with a code scorer and the
-LLM judge. Steps 1 and 3 are not code (`make traffic`, and the same analysis with a skill), so
+LLM judge. Steps 1 and 3 are not code (`make generate-traffic`, and the same analysis with a skill), so
 the script numbers its steps 2, 4, 5 and 6 to match the README.
 
 Run it with `uv run python modules/07-failure-analysis-evals/solution/run.py` (or `make m07`);
@@ -47,7 +47,7 @@ TRACES_URL = f"{settings.base_url}/traces"
 
 
 def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
-    """The last `make traffic` batch as one row per router trace, oldest first.
+    """The last `make generate-traffic` batch as one row per router trace, oldest first.
 
     Same body as `orq.traces.search(from_=, to=, filters=, limit=)`, sent raw: the SDK model
     (SDK 4.17) drops the `attributes` block, and that is where the tool calls and the answer live.
@@ -59,7 +59,7 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     body = {
         "from": (now - timedelta(hours=hours)).isoformat(),
         "to": now.isoformat(),
-        "filters": [{"field": "metadata.batch", "op": "exists"}],  # make traffic sets metadata.batch
+        "filters": [{"field": "metadata.batch", "op": "exists"}],  # make generate-traffic sets metadata.batch
         "limit": limit,  # newest first; `sort` only accepts end_time desc, which is the default
     }
     response = rest_post(None, "/v3/traces/search", body)
@@ -101,12 +101,12 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
             "answer": answer,
         })
 
-    newest_batch = rows[0]["batch"] if rows else None  # newest first: keep the last `make traffic` only
+    newest_batch = rows[0]["batch"] if rows else None  # newest first: keep the last `make generate-traffic` only
     return sorted((row for row in rows if row["batch"] == newest_batch), key=lambda row: row["started_at"])
 
 
 def conversations(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Group the calls of one conversation by thread_id (`make traffic` sets one per row).
+    """Group the calls of one conversation by thread_id (`make generate-traffic` sets one per row).
 
     A conversation is 1 to 3 model calls in one thread: tool calls in order, the last call holds the answer.
     """
@@ -279,7 +279,7 @@ def step_4_evaluators() -> None:
 
 
 # ── Step 5 · Datasets ──
-# ws-refund-eval is created by `make seed` from app/data/dataset.jsonl. ensure_dataset() returns
+# ws-refund-eval is created by `make seed-workspace` from app/data/dataset.jsonl. ensure_dataset() returns
 # its id; the first three rows show the shape an experiment reads: inputs.message and
 # inputs.expected_decision.
 def step_5_dataset() -> str:

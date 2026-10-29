@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | 09:00 | 10 | Welcome, goals, the 4 days |  |  |
 | 09:10 | 35 | Platform overview: Studio, CLI and evaluatorq, and the components the Studio is built from |  | a map of how Studio, CLI, evaluatorq and the gateway relate, and where each lives in the Orqflow |
-| 09:45 | 30 | [Set up: workspace, API key, CLI (orq setup), make seed under your own prefix](../../modules/00-setup/README.md) | `make m00` | a working `.env`, a green `orq doctor`, one traced call in your workspace. |
+| 09:45 | 30 | [Set up: workspace, API key, CLI (orq setup), make seed-workspace under your own prefix](../../modules/00-setup/README.md) | `make m00` | a working `.env`, a green `orq doctor`, one traced call in your workspace. |
 | 10:15 | 15 | Break |  |  |
 | 10:30 | 15 | Platform options: SaaS, VPC or on-prem (Helm), what runs where, who operates what |  | which deployment October Insurance runs, and what the IT team operates versus orq.ai |
 | 10:45 | 35 | Agent basics: LLM vs agent, tools, the agent loop, MCP, model parameters |  | the difference between an LLM call, a workflow and an agent, and what temperature, top-p and max tokens change |

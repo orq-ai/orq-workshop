@@ -1,6 +1,6 @@
 # Terraform
 
-Everything the workshop creates by hand or with `make seed` can also be declared as code. The official [orq.ai Terraform provider](https://registry.terraform.io/providers/orq-ai/orq/latest/docs) manages projects, model access, credentials, budgets, guardrails, evaluators and routing rules, with Terraform or OpenTofu. It is the Admin track's "day 2": module 05 mints the Management Key the provider authenticates with.
+Everything the workshop creates by hand or with `make seed-workspace` can also be declared as code. The official [orq.ai Terraform provider](https://registry.terraform.io/providers/orq-ai/orq/latest/docs) manages projects, model access, credentials, budgets, guardrails, evaluators and routing rules, with Terraform or OpenTofu. It is the Admin track's "day 2": module 05 mints the Management Key the provider authenticates with.
 
 ```hcl
 terraform {

@@ -2,7 +2,7 @@
 
 Seven sections, the same seven as the tabs of this site, in the order a team usually needs them. **Setup** installs the three harnesses you will work from: the orq.ai CLI, your coding agent, and orqi. **AI Gateway** puts the control plane under your hands: every call goes through orq.ai, and you decide what it may cost, route to, redact and block, and who pays for it. **AI Observability** turns the traces that produces into evidence, with alerts and webhooks that push them to you and a review queue that collects what a human should read. **Managed agents** moves the agent from your loop to a framework's to orq.ai's, then adds delegation. **RAG and Retrieval** gives it knowledge. **Evaluation** attacks and measures it: simulation, failure analysis, evaluators, CI and red teaming. **Administration** covers budgets, keys and Terraform.
 
-Modules build on each other, but `make seed` creates every prerequisite entity, so a room can start anywhere or skip a module. Take a break between any two modules. The instructor notes in the repo (`instructor/`) say what to cut when a room runs slow.
+Modules build on each other, but `make seed-workspace` creates every prerequisite entity, so a room can start anywhere or skip a module. Take a break between any two modules. The instructor notes in the repo (`instructor/`) say what to cut when a room runs slow.
 
 ## Setup
 

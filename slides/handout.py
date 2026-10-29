@@ -42,12 +42,12 @@ git clone https://github.com/orq-ai/orq-workshop
 cd orq-workshop
 orq setup --local --capability gateway
 make setup
-make doctor && make smoke</pre>
+make orq-doctor && make gateway-check</pre>
 <h3>Main commands</h3><pre>make help       list every target
-make seed       create module entities
-make traffic    generate traces to analyse
-make eval       quality regression gate
-make reset      delete what you created
+make seed-workspace       create module entities
+make generate-traffic    generate traces to analyse
+make regression-eval       quality regression gate
+make reset-workspace      delete what you created
 orq doctor      CLI self-check</pre></div><div>
 <h3>Slides</h3><pre>make deck D=october-insurance
 open http://localhost:8000</pre>

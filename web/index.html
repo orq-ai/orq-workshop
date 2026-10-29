@@ -518,7 +518,7 @@
     $("demo-insurance").title = insuranceDefault ? "Chat with the claims agents from the insurance claims cookbook"
       : "No claims agent in this workspace yet: run make seed-insurance to create them";
     $("kind-agents").disabled = !data.agents.length;
-    if (!data.agents.length) $("kind-agents").title = "No agent in this workspace yet: run make seed to create it";
+    if (!data.agents.length) $("kind-agents").title = "No agent in this workspace yet: run make seed-workspace to create it";
     showKind("models");
   }).catch(() => {});
 

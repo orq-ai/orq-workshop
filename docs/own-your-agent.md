@@ -6,7 +6,7 @@ The answer is yes, and this page is the proof: the same refund turn, run three w
 
 ## The same turn, three ways
 
-One question, one set of instructions, one set of three tools, one gateway. Only the owner of the loop changes. Run it yourself with `uv run python examples/own-your-agent.py`, after `make seed`.
+One question, one set of instructions, one set of three tools, one gateway. Only the owner of the loop changes. Run it yourself with `uv run python examples/own-your-agent.py`, after `make seed-workspace`.
 
 ### 1 · Your loop: the raw orq.ai SDK
 

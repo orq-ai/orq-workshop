@@ -24,14 +24,14 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 4. In the repo: `cp .env.example .env`, paste the block over it, then:
 
 ```bash
-make setup && make doctor && make smoke
+make setup && make orq-doctor && make gateway-check
 ```
 
-Done when `make smoke` prints an answer, the tools it called and a trace id. Nothing in `.env` needs editing by hand; every model comes from it.
+Done when `make gateway-check` prints an answer, the tools it called and a trace id. Nothing in `.env` needs editing by hand; every model comes from it.
 
 ## 1 · The refund agent (0:25)
 
-Three tools, one loop, your code; every model call goes through the orq gateway, so every turn is a trace. `make seed` creates the managed copies you need later: `ws<NN>-refund-agent` (the fixed prompt) and `ws<NN>-refund-agent-vulnerable` (v1, the one we test today).
+Three tools, one loop, your code; every model call goes through the orq gateway, so every turn is a trace. `make seed-workspace` creates the managed copies you need later: `ws<NN>-refund-agent` (the fixed prompt) and `ws<NN>-refund-agent-vulnerable` (v1, the one we test today).
 
 Done when you have opened your smoke trace in the Studio and can point at its tool calls.
 
@@ -64,8 +64,8 @@ Done when you have one Pass/Fail sentence for the failure the cluster names.
 The sentence becomes one binary evaluator. Swap to the fixed prompt, re-run, and gate on it:
 
 ```bash
-make eval              # fixed prompt: exits 0
-make eval-vulnerable   # v1: exits 1
+make regression-eval              # fixed prompt: exits 0
+make regression-eval-vulnerable   # v1: exits 1
 ```
 
 ## Take home

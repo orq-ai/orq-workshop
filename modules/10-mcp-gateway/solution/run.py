@@ -242,7 +242,7 @@ def step_5_agent_copy(server: Any) -> None:
     try:
         base = orq.agents.retrieve(agent_key=settings.key("refund-agent"))
     except Exception as exc:
-        print(f"skipped  : base agent missing ({type(exc).__name__}); run make seed")
+        print(f"skipped  : base agent missing ({type(exc).__name__}); run make seed-workspace")
         return
     # retrieve() returns tools with `action_type`; create/update want `{"type": ..., "key": ...}`
     tools = [{"type": tool.action_type, "key": tool.key} for tool in (base.settings.tools or [])] if base.settings else []

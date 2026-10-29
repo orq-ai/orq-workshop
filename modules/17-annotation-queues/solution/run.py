@@ -9,7 +9,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | modules 02 and 07, `make seed` |
+# | **Prerequisites** | modules 02 and 07, `make seed-workspace` |
 # | **You will have** | `ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset` |
 #
 # This file is both the solution script (`make m17`) and the notebook source (`make notebooks`).
@@ -78,7 +78,7 @@ def has_answer(trace: dict) -> bool:
 # %%
 now = datetime.now(UTC)
 queued = {item["trace_id"] for item in queue_items()}
-recent = [  # the filter takes one name; make traffic names its traces refund-traffic
+recent = [  # the filter takes one name; make generate-traffic names its traces refund-traffic
     trace
     for name in (AGENT, "refund-traffic")
     for trace in orq.traces.search(

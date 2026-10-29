@@ -2,7 +2,7 @@
 
 Evaluators score at scale; humans score what evaluators cannot yet. A queue collects the traces
 worth a look, an automation fills it without you, a reviewer scores each one, and the bad ones
-become dataset rows the next experiment runs on. `make seed` created ws-review-queue (empty) and
+become dataset rows the next experiment runs on. `make seed-workspace` created ws-review-queue (empty) and
 ws-review-dataset (empty). Four steps: fill the queue by API, let an automation fill it, review
 items by API, promote the bad ones to the dataset.
 

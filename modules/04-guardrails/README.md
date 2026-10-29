@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Prerequisites** | module 00, `make seed` |
+| **Prerequisites** | module 00, `make seed-workspace` |
 | **You will have** | PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all. |
 
 ## Why
@@ -130,7 +130,7 @@ next     : nothing in this question is on the allowlist, so the model reads the 
 
 ### Step 3 · A Python guardrail on the output
 
-`make seed` created the evaluator `ws-refund-limit-guard` (code in [`app/refund_agent/guardrail_refund_limit.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/guardrail_refund_limit.py); the run looks its id up by key, `orq evals all --search ws-` shows it). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
+`make seed-workspace` created the evaluator `ws-refund-limit-guard` (code in [`app/refund_agent/guardrail_refund_limit.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/guardrail_refund_limit.py); the run looks its id up by key, `orq evals all --search ws-` shows it). It returns `False` when the answer commits to a refund above EUR 500. Attach it per request and make the model promise EUR 620 on `ord_a6` with the vulnerable instructions:
 
 ```text
 ── Step 3a · Vulnerable instructions, output guardrail ───

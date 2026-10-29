@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Prerequisites** | module 11, `make seed` |
+| **Prerequisites** | module 11, `make seed-workspace` |
 | **You will have** | an Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07. |
 
 ## Why
@@ -33,7 +33,7 @@ $ uv run python modules/18-trace-insights/solution/run.py --only=2  # insights a
 
 ### Step 1 · Simulate the managed v1 agent
 
-Module 11's two personas and two scenarios plus one more of each (a confident business buyer and an above-limit refund, `ord_a6`), nine conversations in all, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
+Module 11's two personas and two scenarios plus one more of each (a confident business buyer and an above-limit refund, `ord_a6`), nine conversations in all, against `ws-refund-agent-vulnerable`, the managed copy of the v1 prompt that `make seed-workspace` created, with its tools as orq.ai code tools. evaluatorq's built-in `agent:` target drives it as is (module 11 step 3 shows why the function-tool agent needs more), so every agent response is a trace tagged with the agent's name.
 
 ```text
 ── Step 1 · Simulate the managed v1 agent ─────────────

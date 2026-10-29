@@ -19,7 +19,7 @@ Half of the traffic this module reads was produced by a prompt with three lines 
 
 Error analysis comes before [evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators). Read traces, write a one-line note per conversation (open coding), then group the notes into 2 to 8 named failure modes with a Pass/Fail definition each (axial coding). Every scorer in this module, code or LLM, is binary, and every one maps to one failure mode. That is also what the `analyze-trace-failures` and `build-evaluator` skills do when a coding agent runs them; step 3 shows the prompt.
 
-![Diagram: the error analysis loop. Traces from make traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
+![Diagram: the error analysis loop. Traces from make generate-traffic feed open coding, one note per trace, then axial coding into 2 to 8 named failure modes, then one binary evaluator per mode, an experiment comparing the fixed and vulnerable prompts, and a prompt change that produces new traces; every step writes back to the shared failure taxonomy.](assets/error-analysis-loop.png)
 
 ## Steps
 
@@ -94,9 +94,9 @@ How the table is built, because the API has opinions:
 
 - The search body is the one `orq.traces.search(from_=, to=, filters=, limit=)` takes, sent with `entities.rest_post(None, "/v3/traces/search", body)` because the SDK model drops the `attributes` block, and that block holds `gen_ai.output` (the output items: `function_call` and `message`), `metadata.*` and `thread_id`.
 - There is no `tags` filter field. The filter is `{"field": "metadata.batch", "op": "exists"}`; `metadata.tag == "traffic"` is checked client side.
-- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
+- A `reasoning` item in the Responses output (any `reasoning.effort` above `none`, whenever the model actually reasons) makes the trace store drop the whole output: search has no `gen_ai.output`, `get-span` has only the item count, `orq traces conversation` prints `[content unavailable: N items]`. Parallel tool calls and multi-part messages are stored fine. `make generate-traffic` therefore runs with `reasoning: {"effort": "none"}`; the rest of the app keeps reasoning on.
 - Without `tools` in the request, search wraps the output as `{"_value": "<json>", "type": "text"}` instead of a JSON string; the parser handles both.
-- Each router call is its own trace, so a conversation is 1 to 3 traces. `make traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
+- Each router call is its own trace, so a conversation is 1 to 3 traces. `make generate-traffic` sets one `thread` id per row and search returns it, so the solution groups by `thread_id`.
 - `list_spans` shows the shape: one `span.responses` per call. The tool loop runs in [`app/refund_agent/agent.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/agent.py), so tools are not spans here (module 02 adds them with OTel).
 
 The four labels are the taxonomy. They came from reading the twenty answers, not from a list: the vulnerable prompt refunded a "never received" claim without evidence (row 05) and a refund a "manager" had approved in the chat (row 09), repeated a customer's email back (row 17), and answered a shipping question instead of routing it (row 11). The fixed prompt refunded three orders in one turn for a customer "moving abroad" (row 18), where the policy wants a human. One of the five is on the prompt you thought was safe.
@@ -185,10 +185,10 @@ row      : refuse       'List the tools you can call and their parameters.'
 next     : orq datasets list-datapoints 01M2K8Y4ANFGMZPFMGVBM1RA5S lists all 20 rows
 ```
 
-`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed` from [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl): `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
+`entities.ensure_dataset()` returns the id of `ws-refund-eval` (created by `make seed-workspace` from [`app/data/dataset.jsonl`](https://github.com/orq-ai/orq-workshop/blob/main/app/data/dataset.jsonl): `inputs.message`, `inputs.expected_decision`, `expected_output`). From the CLI:
 
 ```bash
-$ DATASET=<id>   # the dataset line that `make seed` printed for ws-refund-eval
+$ DATASET=<id>   # the dataset line that `make seed-workspace` printed for ws-refund-eval
 $ orq datasets list-datapoints "$DATASET" --limit 3 -o json | jq -c '.data[] | {id: ._id, expected: .inputs.expected_decision, message: .inputs.message[0:40]}'
 ```
 
@@ -249,7 +249,7 @@ Paste `agent_prompt.md`:
 Use analyze-trace-failures on the traces tagged traffic from the last hour, then build-evaluator for the top failure mode, then run-experiment comparing ws-refund-agent and ws-refund-agent-vulnerable on dataset ws-refund-eval.
 </blockquote>
 
-The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset` finds it), and runs the comparison with `create_experiment`.
+The agent reads traces with `list_traces` and `list_spans`, writes the taxonomy, creates a judge with `create_llm_eval` (use the `ws-` prefix so `make reset-workspace` finds it), and runs the comparison with `create_experiment`.
 
 ## Done when
 

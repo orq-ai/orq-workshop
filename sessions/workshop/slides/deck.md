@@ -34,7 +34,7 @@ Everything shown lives in the repo. Every block ends with "you try" and a "Done 
 
 <span class="tag">repo</span> `github.com/orq-ai/orq-workshop` · <span class="tag">docs</span> `orq-ai.github.io/orq-workshop`
 
-<!-- 0:03. Point at the parking lot. Ask everyone to have the repo cloned and `make smoke` green before we start block 1. -->
+<!-- 0:03. Point at the parking lot. Ask everyone to have the repo cloned and `make gateway-check` green before we start block 1. -->
 
 ---
 
@@ -424,9 +424,9 @@ Things we skipped, questions we could not answer, requests for a follow-up.
 
 ## Next steps
 
-1. **Today**: `make setup && make smoke` in this repo. Every block you missed is a module with a solution.
+1. **Today**: `make setup && make gateway-check` in this repo. Every block you missed is a module with a solution.
 2. **This week**: `orq connect --local` in your own repo. Paste the `setup-observability` prompt. Get one real trace.
-3. **Next week**: `make traffic`-style volume on your own app, then `analyze-trace-failures`. One evaluator per failure mode.
+3. **Next week**: `make generate-traffic`-style volume on your own app, then `analyze-trace-failures`. One evaluator per failure mode.
 4. **Before the next release**: `evals.yml` in your CI. Static red team on the agents that hold tools.
 5. **Follow-up session**: the parking lot decides.
 
@@ -536,7 +536,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | module 00, `make seed` |
+| **Needs** | module 00, `make seed-workspace` |
 | **You will have** | PII placeholders before the provider, an over-limit refund turned into a hand-off, a gateway rule for unguarded calls |
 
 `make m04` · <span class="tag">docs</span> `modules/04` · <span class="tag orange">block B</span>
@@ -568,7 +568,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 15 min |
-| **Needs** | module 00, orqi installed, traffic from modules 01 to 04 (or `make traffic`) |
+| **Needs** | module 00, orqi installed, traffic from modules 01 to 04 (or `make generate-traffic`) |
 | **You will have** | four real answers about your workspace, a seeded client-side failure diagnosed, when to use orqi vs `orq launch` |
 
 `make m06` · <span class="tag">docs</span> `modules/06` · <span class="tag orange">block C</span>
@@ -600,7 +600,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 40 min |
-| **Needs** | modules 00 to 02, `make seed` |
+| **Needs** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the refund agent over the Responses API with a local tool loop, streamed, with memory, pinned by `@version` |
 
 `make m08` · <span class="tag">docs</span> `modules/08` · <span class="tag orange">blocks 1 and 2</span>
@@ -616,7 +616,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 35 min |
-| **Needs** | modules 00 to 02, `make seed` |
+| **Needs** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the policy searched three ways, re-chunked two ways, wired in place of `get_policy`, pre-fetched, and searched by a managed agent |
 
 `make m09` · <span class="tag">docs</span> `modules/09` · <span class="tag orange">block 3</span>
@@ -632,7 +632,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 00, `make seed` |
+| **Needs** | module 00, `make seed-workspace` |
 | **You will have** | the tools as an MCP server, `ws-refund-gateway` exposing two of three, an MCP client and a coding agent on it, a managed-agent MCP span |
 
 `make m10` · <span class="tag">docs</span> `modules/10` · <span class="tag orange">block 4</span>
@@ -648,7 +648,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | modules 00 and 07, `make seed` |
+| **Needs** | modules 00 and 07, `make seed-workspace` |
 | **You will have** | four simulation runs as Experiments and in the local dashboard, a managed-agent adapter, one surprise about judges |
 
 `make m11` · <span class="tag">docs</span> `modules/11` · <span class="tag orange">block H</span>
@@ -665,7 +665,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 |---|---|
 | **Time** | 35 min |
 | **Needs** | modules 00, 07 and 16 |
-| **You will have** | `make eval` green then red, a static red-team gate, three GitHub workflows, two headless agent runs |
+| **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, two headless agent runs |
 
 `make m12` · <span class="tag">docs</span> `modules/12` · <span class="tag orange">block I</span>
 
@@ -696,7 +696,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 02, `make seed`, a public URL for the receiver |
+| **Needs** | module 02, `make seed-workspace`, a public URL for the receiver |
 | **You will have** | a cost alert that opened a trigger on your burst, signed events at a receiver you run |
 
 `make m14` · <span class="tag">docs</span> `modules/14` · <span class="tag orange">block C</span>
@@ -712,7 +712,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | module 08, `make seed` |
+| **Needs** | module 08, `make seed-workspace` |
 | **You will have** | an agent that consults `gpt-5.6-sol` before a refusal and delegates the closing note to `gpt-5.4-nano`, cost read off one trace |
 
 `make m15` · <span class="tag">docs</span> `modules/15` · <span class="tag orange">block 2</span>
@@ -728,7 +728,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Needs** | modules 07 and 11, `make seed` |
+| **Needs** | modules 07 and 11, `make seed-workspace` |
 | **You will have** | two red-team runs as Experiments, a per-target resistance rate, a CLI gate that exits 0 or 1 |
 
 `make m16` · <span class="tag">docs</span> `modules/16` · <span class="tag orange">block H</span>
@@ -744,7 +744,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | | |
 |---|---|
 | **Time** | 25 min |
-| **Needs** | modules 02 and 07, `make seed` |
+| **Needs** | modules 02 and 07, `make seed-workspace` |
 | **You will have** | `ws-review-queue` filled by hand and by automation, items annotated by API, bad ones promoted to `ws-review-dataset` |
 
 `make m17` · <span class="tag">docs</span> `modules/17` · <span class="tag orange">block C</span>
@@ -956,7 +956,7 @@ The orq skills encode exactly this: `analyze-trace-failures` → `build-evaluato
 ## D · Live demo
 
 ```bash
-$ make traffic    # 20 conversations, half with the vulnerable instructions
+$ make generate-traffic    # 20 conversations, half with the vulnerable instructions
 $ make m07        # taxonomy from real traces, judge invoked, evaluatorq experiment fixed vs vulnerable
 ```
 
@@ -1060,7 +1060,7 @@ jobs:
 ## I · Live demo
 
 ```bash
-$ make eval                                   # green with fixed instructions
+$ make regression-eval                                   # green with fixed instructions
 $ uv run python -m evals.regression --instructions app/data/vulnerable_instructions.md   # red
 $ make redteam-gate
 $ CI=1 orqi "list the traces with errors from the last 24 hours, group by root cause, markdown"
@@ -1076,7 +1076,7 @@ Watch for: exit codes · the step-summary markdown · the triage report and its 
 
 ## I · You try · Done when
 
-- [ ] `make eval` exits 0 on fixed and 1 on vulnerable instructions
+- [ ] `make regression-eval` exits 0 on fixed and 1 on vulnerable instructions
 - [ ] The workflow file makes sense line by line: secrets, fork PRs, concurrency, summary
 - [ ] A nightly triage run produced a markdown report
 

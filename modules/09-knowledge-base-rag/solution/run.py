@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 35 min |
-# | **Prerequisites** | modules 00 to 02, `make seed` |
+# | **Prerequisites** | modules 00 to 02, `make seed-workspace` |
 # | **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools |
 #
 # This file is both the solution script (`make m09`) and the notebook source
@@ -60,7 +60,7 @@ def first_line(match: dict, width: int = 26) -> str:
 # %% [markdown]
 # ## Step 1 · Inspect the seeded knowledge base
 #
-# `make seed` embedded the four policy files. One chunk per file: `chunk_size` 300 is in tokens and
+# `make seed-workspace` embedded the four policy files. One chunk per file: `chunk_size` 300 is in tokens and
 # each file is under 300 tokens. In the Studio: **Knowledge Bases** > `ws-refund-policy` >
 # **Retrieval playground**.
 

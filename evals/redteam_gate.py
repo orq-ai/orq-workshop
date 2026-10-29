@@ -19,7 +19,7 @@ successful attack really issues a refund (in memory, inside the tool). CLI equiv
 
     eq redteam run -t agent:ws-refund-agent --mode static --dataset evals/redteam_static.json -y
 
-Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed` once
+Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed-workspace` once
 first: it creates the hosted agent.
 """
 

@@ -6,12 +6,12 @@
 | | |
 |---|---|
 | **Time** | 15 min |
-| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make traffic`) |
+| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make generate-traffic`) |
 | **You will have** | four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`. |
 
 ## Why
 
-Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 400 guardrail blocks (`make traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
+Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 400 guardrail blocks (`make generate-traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
 
 ## The one concept to understand first
 
@@ -134,7 +134,7 @@ Step 1 counts by HTTP status. In this run every failure in the window was a 400 
 Paste that text into the prompt:
 
 ```bash
-$ orqi "make smoke in my repo fails with this error, diagnose it and tell me what to fix: openai.NotFoundError: Error code: 404 on POST https://my.orq.ai/broken/responses, empty body, no x-orq-trace-id header. The app uses the OpenAI SDK with base_url built from ORQ_BASE_URL in .env."
+$ orqi "make gateway-check in my repo fails with this error, diagnose it and tell me what to fix: openai.NotFoundError: Error code: 404 on POST https://my.orq.ai/broken/responses, empty body, no x-orq-trace-id header. The app uses the OpenAI SDK with base_url built from ORQ_BASE_URL in .env."
 ```
 
 Expected output (trimmed, 31 s):
@@ -146,11 +146,11 @@ So the expected final endpoint is: https://my.orq.ai/v3/router/responses
 Your failing endpoint was:         https://my.orq.ai/broken/responses
 **What to fix**  Set the repo's `.env` to the origin only:  ORQ_BASE_URL=https://my.orq.ai
 I checked the current repo configuration, and it now resolves correctly: router_url: https://my.orq.ai/v3/router
-I also ran `make smoke`; it passed and returned a gateway trace ID: f281610f09b7eeeb7d6c42f3f6478965
+I also ran `make gateway-check`; it passed and returned a gateway trace ID: f281610f09b7eeeb7d6c42f3f6478965
 The lack of an `x-orq-trace-id` in the failed request is expected: the request reached a nonexistent route and never made it through the gateway.
 ```
 
-Note the last two lines: orqi has `Bash` and `Read`, and it used them in your working directory. It read `config.py` and ran `make smoke` on its own. Run it from the repo you want it to look at, and nowhere you would not run a coding agent.
+Note the last two lines: orqi has `Bash` and `Read`, and it used them in your working directory. It read `config.py` and ran `make gateway-check` on its own. Run it from the repo you want it to look at, and nowhere you would not run a coding agent.
 
 ### Step 3 · Platform questions go to the docs
 
@@ -227,7 +227,7 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 
 - Alpha. Pin the release with `ORQI_VERSION=<tag>` for `install.sh` and `orqi update`; `ORQI_UPDATE_CHECK=0` or `CI=1` silences the daily check. `ORQI_SKILLS_UPDATE=0` pins the upstream skills, which otherwise refresh daily (the header went from `22 skills` to `25 skills` during this session).
 - Without `ORQ_API_KEY`, orqi and `orq launch` use the login session; `launch` mints a one-hour token that cannot refresh mid-session. Export the key for anything longer.
-- orqi runs shell commands in your current directory. It ran `make smoke` on its own in Step 2.
+- orqi runs shell commands in your current directory. It ran `make gateway-check` on its own in Step 2.
 - One-shot answers take 15 s to 2 min; the `GOAL:` and `[x]` lines are progress, the answer is what follows.
 - `orq traces search` needs `--from` and `--to`; `--from 3h` alone is a 400.
 - The shell export from `orq setup` may belong to another workspace. `orq launch` prints `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is expected here: the repo key decides where traces land.
@@ -239,7 +239,7 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 
 ## Go further
 
-`orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
+`orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make generate-traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
 
 ## Official docs
 

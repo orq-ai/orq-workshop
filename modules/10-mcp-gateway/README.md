@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Prerequisites** | module 00, `make seed`, an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys) |
+| **Prerequisites** | module 00, `make seed-workspace`, an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys) |
 | **You will have** | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.

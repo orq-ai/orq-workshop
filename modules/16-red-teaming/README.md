@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 30 min |
-| **Prerequisites** | modules 07 and 11, `make seed` |
+| **Prerequisites** | modules 07 and 11, `make seed-workspace` |
 | **You will have** | two red-team runs as Experiments in your workspace, a per-target resistance rate, a CLI gate that exits 0 or 1, and one honest surprise about judges. |
 
 ## Why
@@ -142,7 +142,7 @@ $ uv run eq redteam run -t agent:ws-refund-agent-vulnerable --mode static \
     next     : read Eval Coverage before ASR; the full report is in /tmp/ws-redteam-cli.json
     ```
 
-`--max-static-datapoints 4` takes the first four rows of the file, so only LLM01 and LLM07 ran. The target is `agent:ws-refund-agent-vulnerable`, whose tools are orq.ai code tools created by `make seed`: orq.ai executes them, so every attack gets a real answer and the judge scores all of them (`Eval Coverage 100%`). Here none of the four succeeded, 0% ASR, while the local run in step 1 found two on the same prompt: the attack rows differ (four of eight), the model is not deterministic, and the hosted agent's instructions end with a line naming its tools. Read `Eval Coverage` before the ASR; the run exits 1 when coverage drops below 80%, which is the right default for CI. `make redteam-gate` ([`evals/redteam_gate.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_gate.py)) is the CI form with a threshold.
+`--max-static-datapoints 4` takes the first four rows of the file, so only LLM01 and LLM07 ran. The target is `agent:ws-refund-agent-vulnerable`, whose tools are orq.ai code tools created by `make seed-workspace`: orq.ai executes them, so every attack gets a real answer and the judge scores all of them (`Eval Coverage 100%`). Here none of the four succeeded, 0% ASR, while the local run in step 1 found two on the same prompt: the attack rows differ (four of eight), the model is not deterministic, and the hosted agent's instructions end with a line naming its tools. Read `Eval Coverage` before the ASR; the run exits 1 when coverage drops below 80%, which is the right default for CI. `make redteam-gate` ([`evals/redteam_gate.py`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_gate.py)) is the CI form with a threshold.
 
 ### Step 3 · Read the report
 

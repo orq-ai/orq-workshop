@@ -11,7 +11,7 @@ days:
     blocks:
       - {title: "Welcome, goals, the 4 days", minutes: 10}
       - {title: "Platform overview: Studio, CLI and evaluatorq, and the components the Studio is built from", minutes: 35, leave_with: "a map of how Studio, CLI, evaluatorq and the gateway relate, and where each lives in the Orqflow"}
-      - {module: 00-setup, minutes: 30, title: "Set up: workspace, API key, CLI (orq setup), make seed under your own prefix"}
+      - {module: 00-setup, minutes: 30, title: "Set up: workspace, API key, CLI (orq setup), make seed-workspace under your own prefix"}
       - {title: Break, minutes: 15}
       - {title: "Platform options: SaaS, VPC or on-prem (Helm), what runs where, who operates what", minutes: 15, leave_with: "which deployment October Insurance runs, and what the IT team operates versus orq.ai"}
       - {title: "Agent basics: LLM vs agent, tools, the agent loop, MCP, model parameters", minutes: 35, leave_with: "the difference between an LLM call, a workflow and an agent, and what temperature, top-p and max tokens change"}

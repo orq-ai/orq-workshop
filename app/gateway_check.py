@@ -1,9 +1,9 @@
-"""make smoke: one refund turn through the orq gateway. The first thing a learner runs.
+"""make gateway-check: one refund turn through the orq gateway. The first thing a learner runs.
 
 What: the same `chat()` every module uses, called once with a change-of-mind refund request.
 Why: if this passes, the environment, the key in `.env`, the app and the gateway all work. The
 trace id is the proof that the call went through orq and not straight to a provider.
-How: `make smoke` (or `uv run python -m app.smoke`). Exits non-zero when a check fails.
+How: `make gateway-check` (or `uv run python -m app.gateway_check`). Exits non-zero when a check fails.
 """
 
 from app.refund_agent.agent import chat

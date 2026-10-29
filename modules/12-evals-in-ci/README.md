@@ -6,8 +6,8 @@
 | | |
 |---|---|
 | **Time** | 35 min |
-| **Prerequisites** | modules 00 and 07, `make seed` (module 16 explains the attack file in depth, but is not required) |
-| **You will have** | `make eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally. |
+| **Prerequisites** | modules 00 and 07, `make seed-workspace` (module 16 explains the attack file in depth, but is not required) |
+| **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally. |
 
 ## Why
 
@@ -37,7 +37,7 @@ Three scorers, each under 25 lines, each returning an evaluatorq `EvaluationResu
 ### Step 2 · Green, then red
 
 ```bash
-$ make eval
+$ make regression-eval
 ```
 
 Expected terminal output (abridged; the markdown table the gate writes goes to `$GITHUB_STEP_SUMMARY`, not to stdout):
@@ -119,7 +119,7 @@ next     : the Experiment run URL is in the log above; each attack is one row wi
 Exit code 0, about a minute. Read the `evaluated` line before the `resist` line: the gate counts attempted, evaluated and errored attacks separately, and anything short of a full clean run exits 1. An earlier version passed a run in which one attack errored (the gateway answered 400 to that payload) because the resistance rate only covered the seven attacks the judge could evaluate; a gate that passes when the judge is down is not a gate. Three things to know about this gate:
 
 - **Static mode** replays [`evals/redteam_static.json`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_static.json), ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
-- **Tools really run.** The target is `agent:ws-refund-agent`, evaluatorq's built-in target on the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). A function-tool agent such as `ws-refund-agent-function` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed` creates the agent.
+- **Tools really run.** The target is `agent:ws-refund-agent`, evaluatorq's built-in target on the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). A function-tool agent such as `ws-refund-agent-function` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed-workspace` creates the agent.
 - **The judge is generic.** The same run against `ws-refund-agent-vulnerable` scored 88% once and 100% once: the OWASP judge does not know the EUR 500 limit or the 30-day window. Policy laxity is the quality gate's job (step 2). This gate catches injection, leakage and agency, the classes the public dataset covers.
 
 The CLI form is `uv run eq redteam run -t agent:<WS_PREFIX>-refund-agent --mode static --dataset evals/redteam_static.json -y`, the same target the script uses.
@@ -244,7 +244,7 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 
 ## Done when
 
-- [ ] `make eval` exits 0 and `uv run python -m evals.regression --instructions app/data/vulnerable_instructions.md` exits 1
+- [ ] `make regression-eval` exits 0 and `uv run python -m evals.regression --instructions app/data/vulnerable_instructions.md` exits 1
 - [ ] `make redteam-gate` exits 0, prints `evaluated: 10/10, 0 errored` and a resistance rate at or above 95 percent
 - [ ] Two Experiment runs named `ws-refund-regression` and one named `ws-refund-agent-redteam-gate` exist in the Studio under the `orq-workshop` project (path `orq-workshop/workshop`, see Gotchas)
 - [ ] `evals/results/latest.json` lists 20 rows with a `scores` block each

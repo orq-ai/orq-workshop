@@ -37,7 +37,7 @@ env:
 
 jobs:
   quality:
-    name: quality regression (make eval)
+    name: quality regression (make regression-eval)
     # Secrets are not available to pull requests from forks. Skip rather than fail.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -78,7 +78,7 @@ jobs:
       - name: Install
         run: uv sync --frozen
       - name: Red-team gate
-        # Static mode only: replays every attack in evals/redteam_static.json against ws-refund-agent (make seed creates it).
+        # Static mode only: replays every attack in evals/redteam_static.json against ws-refund-agent (make seed-workspace creates it).
         # Any error or unevaluated attack fails the job. Dynamic (LLM-generated) attacks cost more
         # and are not deterministic; keep them in module 16.
         env:

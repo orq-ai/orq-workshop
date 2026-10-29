@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 40 min |
-| **Prerequisites** | modules 00 to 02, `make seed` |
+| **Prerequisites** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the refund agent invoked through the Responses API from Python, curl and the CLI, with orq running its tools, a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version`. |
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
@@ -17,7 +17,7 @@ Modules 01 to 07 kept the agent loop in [`app/refund_agent/agent.py`](https://gi
 
 ## The one concept to understand first
 
-Who runs the tools? The refund tools are **code tools**: Python registered in orq (`make seed` generates it from [`app/refund_agent/tools.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/tools.py)). When the agent decides to call `lookup_order`, orq runs the code, feeds the result to the model and loops until it has an answer. One call, one finished response:
+Who runs the tools? The refund tools are **code tools**: Python registered in orq (`make seed-workspace` generates it from [`app/refund_agent/tools.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/tools.py)). When the agent decides to call `lookup_order`, orq runs the code, feeds the result to the model and loops until it has an answer. One call, one finished response:
 
 ```python
 from orq_ai_sdk import Orq

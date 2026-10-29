@@ -102,7 +102,7 @@ else:
 # Four one-shot prompts: workspace health, errors grouped by root cause, the trace from step 1, and
 # the client error from step 2. orqi picks the skill for each (`workspace-health-check`,
 # `investigate-root-cause`, ...) and prints its plan as it goes; `orqi()` keeps only the answer.
-# orqi can also run shell commands in the current directory: in step 3d it may run `make smoke`.
+# orqi can also run shell commands in the current directory: in step 3d it may run `make gateway-check`.
 
 # %%
 prompts = [
@@ -112,7 +112,7 @@ prompts = [
 if trace_id:
     prompts.append(f"why did trace {trace_id} fail?")
 prompts.append(
-    "make smoke in my repo fails with this error, diagnose it and tell me what to fix: "
+    "make gateway-check in my repo fails with this error, diagnose it and tell me what to fix: "
     f"{error_text}. The app uses the OpenAI SDK with base_url built from ORQ_BASE_URL in .env."
 )
 

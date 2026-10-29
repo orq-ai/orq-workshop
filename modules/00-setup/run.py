@@ -1,6 +1,6 @@
 """Module 00 starter: one refund turn through the gateway, spelled out.
 
-Nothing to code in this module: `make smoke` is the exercise, and this file is the same as the
+Nothing to code in this module: `make gateway-check` is the exercise, and this file is the same as the
 solution. It makes the call without the checks, so you can read the three things every later
 module relies on: the answer, the tools the model called, and the trace id the gateway sent back.
 

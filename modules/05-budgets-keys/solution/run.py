@@ -14,7 +14,7 @@ Needs a Management Key in the shell (never in .env):
     uv run python modules/05-budgets-keys/solution/run.py
 
 This stays a plain script on purpose: the `try/finally` in `__main__` is the only thing that
-deletes the API key and the budgets when a step fails half way. `make reset` cannot find them,
+deletes the API key and the budgets when a step fails half way. `make reset-workspace` cannot find them,
 because keys and budgets carry no `ws-` path. Every entity this run creates is deleted at the end:
 two budgets, the API key, and (from the CLI) the management key.
 """
@@ -136,7 +136,7 @@ def call(client: OpenAI, text: str, **kwargs: Any) -> tuple[int, dict[str, Any],
 
 
 # ── Step 1 · A key for the CI runner ───────────────────────────────────────────────────────────
-# A CI runner that runs `make eval` needs to call models and read datasets and evaluators,
+# A CI runner that runs `make regression-eval` needs to call models and read datasets and evaluators,
 # nothing else. Ask for exactly that: single project, restricted mode, three access levels. The
 # token comes back once, in the create response; the list endpoint never returns it.
 
@@ -312,7 +312,7 @@ def step_5_cleanup(budget_ids: list[str], api_key_id: str) -> None:
         for key in get("/v2/management-keys", limit=100).get("data", [])
         if key.get("name") == MGMT_KEY_NAME
     ]
-    next_step = "unset ORQ_MANAGEMENT_KEY. `make reset` has nothing to do for this module."
+    next_step = "unset ORQ_MANAGEMENT_KEY. `make reset-workspace` has nothing to do for this module."
     for key in mine:
         mgmt_key_id = key.get("management_key_id") or key.get("id")
         response = httpx.delete(

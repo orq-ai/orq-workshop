@@ -2,7 +2,7 @@
 
 `get_policy(topic)` works because the policy is four short files. A knowledge base turns
 "which file" into "which chunks match this question". The KB `ws-refund-policy` already
-exists (`make seed`). Fill in the searches, compare chunking strategies, then swap
+exists (`make seed-workspace`). Fill in the searches, compare chunking strategies, then swap
 `get_policy` for a knowledge base search without touching the tool schema. Then put the policy in
 front of the model without a tool round-trip (step 5), let a model rewrite a vague query (step 6)
 and front a search endpoint of your own (step 7).

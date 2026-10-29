@@ -10,7 +10,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | module 00 (`make setup`, `make smoke` green) |
+# | **Prerequisites** | module 00 (`make setup`, `make gateway-check` green) |
 # | **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span |
 #
 # This file is both the solution script (`make m01`) and the notebook source

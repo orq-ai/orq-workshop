@@ -31,7 +31,7 @@ Local sources (gitignored, in `.context/`): `october-insurance-prep-notes.md` (c
 - [ ] Participant roles per day received from the customer contact (5 technical carry over to days 3 and 4, plus 5 business)
 - [ ] 10 Studio accounts exist (EUR 35/user; the customer contact aligns with finance)
 - [ ] EU location and ZDR filters set on the workspace before Monday (SOW Part B ii)
-- [ ] Each technical participant ran `make doctor && make smoke` on their own laptop (SOW Part B v); each runs `make seed` under their own `WS_PREFIX` in module 00 (`make reset` refuses the bare prefix)
+- [ ] Each technical participant ran `make orq-doctor && make gateway-check` on their own laptop (SOW Part B v); each runs `make seed-workspace` under their own `WS_PREFIX` in module 00 (`make reset-workspace` refuses the bare prefix)
 - [ ] Trainer has workspace admin; participants who do module 05 need it too
 - [ ] Day 1 click-path for roles, SSO, audit logs written (no module backs it): create a restricted key in the Studio, attempt a write, open the audit-log entry (see the dry-run item below)
 - [ ] Budget threshold alert to the notifier set in the Studio and seen firing once (SOW Part B iv; module 05 does not create it)

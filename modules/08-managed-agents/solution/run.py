@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 40 min |
-# | **Prerequisites** | modules 00 to 02, `make seed` |
+# | **Prerequisites** | modules 00 to 02, `make seed-workspace` |
 # | **You will have** | the refund agent invoked through the Responses API (orq runs its tools), a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version` |
 #
 # This file is both the solution script (`make m08`) and the notebook source
@@ -43,7 +43,7 @@ orq = make_orq()
 # %% [markdown]
 # ## Step 1 · Inspect the agent
 #
-# `make seed` created `ws-refund-agent` with the three refund tools as code tools: small Python
+# `make seed-workspace` created `ws-refund-agent` with the three refund tools as code tools: small Python
 # functions registered in orq (`orq tools create`) that orq executes itself. Reads and writes have
 # different shapes: a GET returns tools as `{action_type, id, key, requires_approval}`; a create or
 # update wants `{"type": "code", "key": "ws-lookup_order"}`. PATCHing a GET body back is

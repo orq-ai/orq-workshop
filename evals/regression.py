@@ -1,4 +1,4 @@
-"""Quality regression gate: `uv run python -m evals.regression` (also `make eval`).
+"""Quality regression gate: `uv run python -m evals.regression` (also `make regression-eval`).
 
 What it does: runs the local refund agent (`app.refund_agent.agent.chat`) over every row of
 app/data/dataset.jsonl with evaluatorq, scores each row with the three scorers in
@@ -193,7 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     # below the bar, and one failed scorer is enough to fail the gate.
     rows = rows_detail(results)
     if not rows:
-        print("verdict  : no rows were scored. Run `make seed` so the dataset and judge exist, then try again (exit 1)")
+        print("verdict  : no rows were scored. Run `make seed-workspace` so the dataset and judge exist, then try again (exit 1)")
         return 1
     scores = means(rows)
     url = url_out[0] if url_out else ""
