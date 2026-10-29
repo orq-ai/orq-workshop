@@ -3,11 +3,15 @@
 !!! abstract "Two decisions you can read in a trace"
     The model turns "refund ord_a2" into a `lookup_order` call. The gateway turns "the provider is down" into a fallback, without a line of app code. Both are structured decisions you can read in a trace.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 00 |
-| **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Command: `make module M=setup`. Time: 25 min.
+
+## Goal
+
+Fallbacks, retry, cache and load balancing on the refund agent, each visible as a span.
+
 
 ## Why
 
@@ -165,6 +169,10 @@ orq.router.chat.completions.create(model=..., messages=..., fallbacks=[{"model":
 ```
 
 Pick one client per code base. Frameworks (LangGraph, Strands, CrewAI) already speak OpenAI, so for them the gateway URL is the integration.
+
+## End state
+
+Fallbacks, retry, cache and load balancing on the refund agent, each visible as a span, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
 
 ## Official docs
 

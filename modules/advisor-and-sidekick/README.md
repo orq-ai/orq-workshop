@@ -3,11 +3,15 @@
 !!! abstract "Hand one step to a second model"
     One agent on one model runs every step. The `advisor` and `sidekick` tools hand single steps to a second model configured at design time, each metered on its own span. Neither is a sub-agent: one call, no tools, no memory of its own.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 08, `make seed-workspace` |
-| **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace. |
+## Starting point
+
+Done: [Managed agents](https://orq-ai.github.io/orq-workshop/modules/managed-agents/).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+A refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -181,6 +185,10 @@ Use the build-agent skill to create an agent `ws-refund-agent-triage`, a copy of
 
 - Give the sidekick a structured `output_format` (a JSON schema in prose) and parse the artifact in your loop instead of returning it verbatim.
 - Swap the advisor to a reasoning model and compare the cost split; the transcript cap (`max_transcript_tokens`) is what keeps that affordable.
+
+## End state
+
+A refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

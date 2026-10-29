@@ -3,13 +3,16 @@
 !!! abstract "Testing an agent is cheap when the agent is a function"
     `run_turn(messages) -> messages` has no hidden state, so a simulated customer can replay the transcript into it as often as it likes. Testing an agent is cheap when the agent is a function.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | modules 00 and 07, `make seed-workspace` |
-| **You will have** | four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges. |
+## Starting point
 
-**Read first:** [Simulation concepts](https://orq-ai.github.io/orq-workshop/modules/simulation/concepts/) (personas, scenarios, criteria, how a run ends). This page is the tutorial.
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+Four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges.
+
+
 
 ## Why
 
@@ -286,6 +289,10 @@ Evaluators skip Agent runs that ended in an error, so scores reflect completed r
 ## Go further
 
 Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim simulate --input cases.jsonl` after every prompt change: that is the regression test module 12 puts in CI. Module 16 turns the same targets against an attacker.
+
+## End state
+
+Four simulation runs as Experiments and in the local dashboard, a managed agent the built-in target can test (and a replay of one saved case against it), and one honest surprise about judges, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Evals and agents in CI](https://orq-ai.github.io/orq-workshop/modules/evals-in-ci/).
 
 ## Official docs
 

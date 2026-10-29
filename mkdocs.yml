@@ -54,6 +54,37 @@ hooks:
 
 plugins:
   - search
+  - redirects:
+      redirect_maps:
+        modules/00.md: modules/setup.md
+        agenda.md: start/core-path.md
+        setup/orqi.md: start/orqi.md
+        modules/01.md: modules/gateway.md
+        modules/02.md: modules/tracing.md
+        modules/03.md: modules/smart-routing.md
+        modules/04.md: modules/guardrails.md
+        modules/05.md: modules/budgets-and-keys.md
+        modules/06.md: modules/orqi.md
+        modules/07.md: modules/failure-analysis.md
+        modules/08.md: modules/managed-agents.md
+        modules/09.md: modules/knowledge-base.md
+        modules/10.md: modules/mcp-gateway.md
+        modules/11.md: modules/simulation.md
+        modules/12.md: modules/evals-in-ci.md
+        modules/13.md: modules/coding-agents.md
+        modules/14.md: modules/alerts-and-webhooks.md
+        modules/15.md: modules/advisor-and-sidekick.md
+        modules/16.md: modules/red-teaming.md
+        modules/17.md: modules/annotation-queues.md
+        modules/18.md: modules/trace-insights.md
+        modules/07-concepts.md: modules/failure-analysis/concepts.md
+        modules/08-concepts.md: modules/managed-agents/concepts.md
+        modules/11-concepts.md: modules/simulation/concepts.md
+        modules/08-logic.md: modules/managed-agents/logic.md
+        modules/08-solution-design.md: modules/managed-agents/solution-design.md
+        modules/07-evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
+        modules/failure-analysis/evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
+        own-your-agent.md: build/index.md
   - glightbox:
       touchNavigation: true
       zoomable: true
@@ -99,51 +130,64 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Start here:
-      - Agenda: agenda.md
-  - Setup:
-      - Setup CLI: modules/setup.md
-      - Coding agents: modules/coding-agents.md
-      - orqi harness: setup/orqi.md
-      - Troubleshooting with orqi: modules/orqi.md
-  - AI Gateway:
-      - Gateway: modules/gateway.md
-      - Smart routing and routing rules: modules/smart-routing.md
-      - Guardrails: modules/guardrails.md
-      - MCP servers and gateway: modules/mcp-gateway.md
-  - AI Observability:
-      - Tracing: modules/tracing.md
-      - Alerts and webhooks: modules/alerts-and-webhooks.md
-      - Annotation queues and automations: modules/annotation-queues.md
-  - Managed agents:
-      - own-your-agent.md
+      - start/index.md
+      - For leaders: start/for-leaders.md
+      - For engineers: start/for-engineers.md
+      - Already on orq.ai: start/already-on-orq.md
+      - Setup: modules/setup.md
+      - The core path: start/core-path.md
+      - Harnesses:
+          - Coding agents: modules/coding-agents.md
+          - orqi harness: start/orqi.md
+          - Troubleshooting with orqi: modules/orqi.md
+      - Wrap-up: start/wrap-up.md
+      - Past sessions:
+          - TechDays 15 Oct: sessions/techdays-2026.md
+  - Build:
+      - build/index.md
       - Managed agents:
           - Foundations: modules/managed-agents/concepts.md
           - Use case: modules/managed-agents/logic.md
           - Agent design: modules/managed-agents/solution-design.md
           - Build: modules/managed-agents.md
-      - Advisor and sidekick: modules/advisor-and-sidekick.md
-  - RAG and Retrieval:
-      - reference/rag.md
       - Knowledge base and RAG: modules/knowledge-base.md
-  - Evaluation:
-      - reference/evaluatorq.md
-      - reference/orq-arena.md
-      - Evals and agents in CI: modules/evals-in-ci.md
+      - MCP servers and gateway: modules/mcp-gateway.md
+      - Advisor and sidekick: modules/advisor-and-sidekick.md
+  - Route and protect:
+      - route/index.md
+      - Gateway: modules/gateway.md
+      - Smart routing and routing rules: modules/smart-routing.md
+      - Guardrails: modules/guardrails.md
+      - Budgets and keys: modules/budgets-and-keys.md
+  - Trace:
+      - trace/index.md
+      - Tracing: modules/tracing.md
+  - Find failures:
+      - find-failures/index.md
+      - Failure analysis:
+          - Concepts: modules/failure-analysis/concepts.md
+          - Find and fix: modules/failure-analysis.md
+      - Trace insights: modules/trace-insights.md
+      - Annotation queues and automations: modules/annotation-queues.md
+  - Evaluate:
+      - evaluate/index.md
+      - Evaluators and experiments:
+          - Run: modules/evaluators-and-experiments.md
+          - Prove your fix: modules/evaluators-and-experiments/prove-your-fix.md
       - Agent simulation:
           - Concepts: modules/simulation/concepts.md
           - Run: modules/simulation.md
-      - Trace insights: modules/trace-insights.md
       - Red teaming: modules/red-teaming.md
-      - Failure analysis to experiments:
-          - Concepts: modules/failure-analysis/concepts.md
-          - Find and fix: modules/failure-analysis.md
-          - Evaluate: modules/failure-analysis/evaluate.md
-  - Past sessions:
-      - TechDays 15 Oct: sessions/techdays-2026.md
-  - Administration:
-      - Budgets and keys: modules/budgets-and-keys.md
-      - Terraform: reference/terraform.md
+  - Gate and monitor:
+      - gate/index.md
+      - Evals and agents in CI: modules/evals-in-ci.md
+      - Alerts and webhooks: modules/alerts-and-webhooks.md
   - Reference:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md
       - Glossary: reference/glossary.md
+      - Known issues: reference/known-issues.md
+      - Terraform: reference/terraform.md
+      - evaluatorq: reference/evaluatorq.md
+      - orq-arena: reference/orq-arena.md
+      - How retrieval works: reference/rag.md

@@ -1,13 +1,18 @@
 # Coding agents
 
-!!! abstract "Your workspace from a coding agent, and the wrap-up"
+!!! abstract "Your workspace from a coding agent"
     The same gateway, MCP server and skills you used from Python all day are one command away from Claude Code, OpenCode, Pi and Codex. A coding-agent session is just another traced, budgeted client of your workspace.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 00; at least one of Claude Code, OpenCode, Pi or Codex installed |
-| **You will have** | a dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Also: At least one of Claude Code, OpenCode, Pi or Codex installed.
+Command: `make module M=setup`. Time: 25 min.
+
+## Goal
+
+A dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo.
+
 
 ## Why
 
@@ -267,10 +272,7 @@ Codex works the same way by design: it sends a stable session id with each Respo
 
 ### Step 6 · Apply it to your own repo
 
-1. In your repo: `orq connect --local --dry-run`, read the file list, then `orq connect --local`. Commit `.mcp.json` or `opencode.json` if the team should share the wiring; keep `.claude/skills` and `.agents/skills` out of git (they are symlinks into `~/.orq/snapshot`).
-2. Launch the agent and paste the setup-observability prompt: "Use the setup-observability skill on this repo. Detect the framework, prefer the AI Router mode, set `service.name`, and stop after the baseline trace is verified." The skill refuses to add enrichment before a baseline trace exists.
-3. A good first trace has a model span with `provider/model`, tokens and cost filled in, a name you would search for (`chat.openai`, not `trace-1`), and the request `route`. If you send identity, thread and metadata (module 02), they show on the same span.
-4. After a week of traffic: "Use the analyze-trace-failures skill on the last 7 days of traces for project X" and let it build the failure taxonomy before you write an evaluator (module 07).
+The [wrap-up page](https://orq-ai.github.io/orq-workshop/start/wrap-up/) takes your own repository around the loop once, with the skills you just listed doing most of the work. It starts with `orq connect --local --dry-run` in that repo.
 
 ## With your coding agent
 
@@ -302,7 +304,8 @@ While it thinks, run `make module M=coding-agents` in another terminal: the sess
 - `orq traces search` and `query-oql` need both `--from` and `--to`; relative values (`24h`, `now`) work.
 - `orq traces conversation <id>` may omit message bodies for Claude Code turns: the gateway stores the Messages request without them. Use `list-spans` or the Studio for the content.
 - The 401 warning in `orq launch opencode --dry-run` (`Could not fetch enabled models`) means the shell's `ORQ_API_KEY` belongs to another workspace. `launch` falls back to a default model and still runs.
-- `orq skills` (platform Skill entities) and `orq connect skills` (files for agents) are different nouns.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 
@@ -311,6 +314,10 @@ Eight coding agents (Claude Code, Codex, OpenCode, Kimi Code, Kilo, Pi, GitHub C
 ## Go further
 
 `ANTHROPIC_CUSTOM_HEADERS=$'X-ORQ-METADATA-REPO: acme-api\nX-ORQ-METADATA-TICKET: PROJ-123'` tags every Claude Code request with metadata, since the agent cannot change the request body. Combine it with a per-identity budget from module 05 and you have a spend cap per developer.
+
+## End state
+
+A dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Troubleshooting with orqi](https://orq-ai.github.io/orq-workshop/modules/orqi/).
 
 ## Official docs
 

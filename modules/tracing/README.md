@@ -3,11 +3,15 @@
 !!! abstract "The context window, readable after the fact"
     The trace is the context window you can read after the fact: every model call, every tool result, in order. Identity, thread and metadata ride on the same request, so who asked, in which conversation, on which plan, is on the trace and not in a side table.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 01 |
-| **You will have** | traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it. |
+## Starting point
+
+Done: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
+Command: `make module M=gateway`. Time: 30 min.
+
+## Goal
+
+Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it.
+
 
 ## Why
 
@@ -225,9 +229,10 @@ Use the `setup-observability` skill against this repository. Do not change anyth
 - On both router endpoints, `identity`, `thread` and `metadata` worked as top-level body fields here. Nested under `orq` (the shape the request-metadata docs describe for this endpoint) they were silently ignored: `identity_id` and `thread_id` stayed empty.
 - The SDK's automatic `traceparent` injection (a patch on `httpx.Client.send`) did not reach the OpenAI client (openai 3.9, httpx 0.28), so `run_turn` merges `propagation_headers()` into the request headers itself. If you call the gateway from your own code inside a `@traced` function, pass `extra_headers=propagation_headers()`.
 - `orq traces search` needs `--from` and `--to`; relative values are `now-10m` and `now`. Without `ORQ_API_KEY` in the shell the CLI searches the project of your `orq` session, which is not necessarily this one.
-- `orq.traces.get` and `get_span` return the metadata block empty in SDK 4.17. `orq request GET /v3/traces/<id> -o json | jq .body.trace.attributes.metadata` shows it.
 - `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes. Gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions; filter on both.
 - Reasoning items in `orq traces conversation` show as `[encrypted]`; the text, tool calls and tool results render in full.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 to 4.17
 
@@ -236,6 +241,10 @@ The Traces page was rebuilt: filter on any attribute or metadata field, write th
 ## Go further
 
 Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice module 05 puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
+
+## End state
+
+Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Managed agents](https://orq-ai.github.io/orq-workshop/modules/managed-agents/).
 
 ## Official docs
 

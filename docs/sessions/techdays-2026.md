@@ -15,11 +15,11 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | Min | Block | You run | You leave with |
 |---|---|---|---|
 | 5 | Welcome, how this session works |  |  |
-| 20 | [Get your key and set up](../modules/se.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
-| 15 | [1 · The refund agent](../modules/ma.md) | `make seed-workspace` | your smoke trace open in the Studio |
-| 35 | [2 · Simulate customers](../modules/si.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
-| 25 | [3 · Read the traces](../modules/tr.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
-| 12 | [4 · From insight to eval](../modules/fa.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 20 | [Get your key and set up](../modules/setup.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
+| 15 | [1 · The refund agent](../modules/managed-agents.md) | `make seed-workspace` | your smoke trace open in the Studio |
+| 35 | [2 · Simulate customers](../modules/simulation.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
+| 25 | [3 · Read the traces](../modules/trace-insights.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
+| 12 | [4 · From insight to eval](../modules/evaluators-and-experiments.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 8 | Take home, questions |  |  |
 
 Total: 120 min.
@@ -84,6 +84,6 @@ make regression-eval-vulnerable   # v1: exits 1
 
 ## Take home
 
-- [The full course](../agenda.md): 18 modules, from the gateway to red teaming.
+- [The core path](../start/core-path.md), and the electives by stage.
 - [Red teaming](../modules/red-teaming.md) and [annotation queues](../modules/annotation-queues.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.

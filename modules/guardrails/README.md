@@ -3,11 +3,15 @@
 !!! abstract "A block is the hand-off to a human"
     A guardrail that blocks is the agent saying "I need a person". The gateway returns an error the app can catch, and the app opens the escalation path. The model never has to be prompted into asking for help.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 00, `make seed-workspace` |
-| **You will have** | PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Command: `make seed-workspace`. Time: 25 min.
+
+## Goal
+
+PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all.
+
 
 ## Why
 
@@ -171,6 +175,9 @@ One detail in the code: these three calls pass `api="chat"`, so `run_turn` sends
 
 ### Step 4 · System guardrails and a rule that needs no request changes
 
+!!! instructor "Instructor demo: needs an admin key"
+    Guardrail rules are workspace administration: `/v2/guardrail-rules` answers 403 to a participant key. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 `orq_secret_detection` and `orq_pii_detection` ship with the workspace. No evaluator to create:
 
 ```text
@@ -252,10 +259,9 @@ Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `
 - In this run only top-level body `metadata` fed rule matching. `X-ORQ-METADATA-*` headers and `orq.metadata` reached the trace but did not match the rule.
 - A workspace-wide rule with an empty expression matches every request in the workspace, and system guardrails fail closed. A detector outage then blocks all traffic. Always scope to a project or gate on metadata.
 - The seeded regex guard blocks any sentence with "refund" and an amount above 500, including a refusal that names the amount. Wording decides. A judge with the policy text, or a check on the `issue_refund` tool result, is the better guard.
-- `orq.guardrail_rules.list()` in SDK 4.14 fails on the `_id` field the API returns. The solution uses `GET /v2/guardrail-rules`. Project rules only appear when you pass `project_id`.
 - Output guardrails do not run on streaming responses. Keep the refund agent non-streaming where enforcement matters.
-- Request-level `guardrails` are ignored on `/v3/router/responses` (accepted, not enforced, no error) as of 4.14.17. Step 3 uses `api="chat"` for that reason; rules apply to both endpoints.
-- Since orq.ai API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 
@@ -264,6 +270,10 @@ PII detection and redaction run as a System guardrail and cover country-specific
 ## Go further
 
 The same `pii_redaction` config can be switched on for the whole workspace under Settings > Plugins, and a request can only make it stricter, never looser. `GET /v2/pii/capabilities` is the live catalog of entity types and regions.
+
+## End state
+
+PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Budgets and keys](https://orq-ai.github.io/orq-workshop/modules/budgets-and-keys/).
 
 ## Official docs
 

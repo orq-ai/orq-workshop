@@ -3,11 +3,16 @@
 !!! abstract "One set of tools, three callers, one allow-list"
     The three refund tools return the same JSON whether the local loop, an MCP client or a managed agent calls them. The gateway decides which of them a given client is allowed to see. A small agent gets `lookup_order` and `get_policy`; nobody outside gets `issue_refund`.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 00, `make seed-workspace`, an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys) |
-| **You will have** | the refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/).
+Also: an API key with workspace-wide access (MCP servers and gateways return 403 for project-scoped keys).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+The refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -57,6 +62,9 @@ next     : three tools, no allow-list; the gateway in step 3 decides who sees wh
 The client is the `mcp` package: `streamable_http_client(url)` gives the streams, `ClientSession(read, write)` does `initialize`, `list_tools`, `call_tool`. The tool result is the dict `tools.py` returns, serialised.
 
 ### Step 2 · Register the upstream server in the MCP Portal
+
+!!! instructor "Instructor demo: needs a workspace-wide key"
+    MCP servers and gateways answer 403 to a project-scoped key; steps 2 and 3 create them, steps 4 to 6 use what the instructor created. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
 
 ```text
 ── Step 2 · Register the upstream server in the MCP Portal ──
@@ -200,11 +208,12 @@ With the DeepWiki stand-in the agent sees `read_wiki_structure` and `read_wiki_c
 
 ## Gotchas
 
-- `orq_ai_sdk 4.17` MCP models expect `id` but the API returns `_id`, so `orq.mcp_servers.create(...).mcp_server.id` and every tool `id` after `sync` are `None`. The solution reads the raw records with one `GET /v2/mcp-servers/<id>`. The CLI shows `_id` correctly.
 - A server link without `"enabled": True` is stored disabled and exposes zero tools. The create call succeeds, `exposed_tools_count` is `0`.
 - `tool_exposure.read_only: true` keeps only tools that carry a `readOnlyHint` annotation. DeepWiki's tools have none, so `read_only` alone hides everything. Use `tool_ids`.
 - The upstream URL must be public. `ssh -R`, `cloudflared` or `ngrok` in front of `make mcp-server` work; loopback and RFC 1918 hosts are rejected by the API.
 - Agents reference MCP tools by the server key plus a tool id, not by the gateway. Unverified: whether a gateway can be attached to an agent at all; the API has no field for it.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.17
 
@@ -213,6 +222,10 @@ OAuth is the default way to connect a client to an MCP Gateway (a browser sign-i
 ## Go further
 
 Create a **Toolset** on the gateway (a named subset of tools across servers) and bind an API key to it with `mcp_access.toolset_ids`. The key then sees only the intersection of what the gateway exposes and what the toolset contains, which is how one gateway serves several teams.
+
+## End state
+
+The refund tools as an MCP server, an orq.ai MCP Gateway `ws-refund-gateway` that exposes two of the three tools, a Python MCP client and a coding agent talking to it, and one managed-agent trace with an MCP tool span, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Advisor and sidekick](https://orq-ai.github.io/orq-workshop/modules/advisor-and-sidekick/).
 
 ## Official docs
 

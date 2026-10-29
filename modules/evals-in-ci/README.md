@@ -3,11 +3,15 @@
 !!! abstract "A gate is an agent run with an exit code"
     A gate is an agent run you can start from a workflow, read as an exit code, and resume from a JSON file. The same key that runs the refund agent also runs the judge, the red team and a headless coding agent, from a cron or a PR label.
 
-| | |
-|---|---|
-| **Time** | 35 min |
-| **Prerequisites** | modules 00 and 07, `make seed-workspace` (module 16 explains the attack file in depth, but is not required) |
-| **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/). The [Red teaming](https://orq-ai.github.io/orq-workshop/modules/red-teaming/) module explains the attack file in depth, but is not required.
+Command: `make seed-workspace`. Time: 35 min.
+
+## Goal
+
+`make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally.
+
 
 ## Why
 
@@ -259,7 +263,8 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
 - orqi writes reports to a file in the working directory unless the prompt says "print the report as your final answer, do not create any files".
 - `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behavior in CI.
-- Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.17
 
@@ -268,6 +273,10 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 ## Go further
 
 Replace the local `chat()` in `evals/regression.py` with one `orq.responses.create(model="agent/ws-refund-agent")` call (orq.ai runs its tool loop) and you gate the managed agent instead of the local loop, with the same scorers. Then add `--previous-run` style comparison: read the previous `latest.json` artifact and fail when any mean drops by more than 0.10, even if it is still above the bar. Today the gate is absolute; that step is what turns it into a true regression comparison.
+
+## End state
+
+`make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

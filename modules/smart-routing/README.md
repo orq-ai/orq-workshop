@@ -3,11 +3,15 @@
 !!! abstract "Which model answers is a decision"
     Which model answers is a decision. This module moves that decision out of the code and into two places you can read and change at runtime: a Smart Router that picks per request, and a routing rule that overrides it.
 
-| | |
-|---|---|
-| **Time** | 20 min |
-| **Prerequisites** | module 01 |
-| **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`. |
+## Starting point
+
+Done: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
+Command: `make module M=gateway`. Time: 20 min.
+
+## Goal
+
+A Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -117,6 +121,9 @@ The practical consequence: **a band with one model is not a routing decision.** 
 
 ### Step 3 · Pin traffic with a routing rule
 
+!!! instructor "Instructor demo: needs an admin key"
+    Routing rules are workspace administration: `/v2/routing-rules` answers 403 to a participant key. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 Steps 1 and 2 let the platform pick the model. A routing rule is you overriding that pick with a CEL expression over the request: model, metadata, identity, project. Same gateway, opposite direction.
 
 | Use | When | Example |
@@ -212,9 +219,8 @@ Create a smart router called `ws-refund-router` with the orq.ai MCP tools or the
 - New rules and updates take a few seconds to reach the gateway; the solution waits 10 s before calling.
 - A matching rule replaces `model`, `load_balancer` and `fallbacks` from the request; it does not merge with them.
 - `anthropic/claude-haiku-4-5` shows `enabled: false` while the dated id `anthropic/claude-haiku-4-5-20251001` is enabled, and the router never picked it: the OpenAI 5.x bands cover both ends. Test a model with `orq chat create` before putting it in a pool.
-- `gpt-5.4-nano` and `gpt-5.6-luna` cost the same; the COST profile still prefers nano for easy questions because the bands rank by intelligence index, not by price alone.
-- Routing rule list items dump as `_id`; create and update responses as `id`.
-- Since orq.ai API 4.14.17, `/v2/routing-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.17
 
@@ -223,6 +229,10 @@ Session affinity keeps every turn of a conversation on the model the Smart Route
 ## Go further
 
 Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from module 01 on the request for the days a provider is down.
+
+## End state
+
+A Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Guardrails](https://orq-ai.github.io/orq-workshop/modules/guardrails/).
 
 ## Official docs
 

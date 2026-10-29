@@ -9,7 +9,7 @@
 | 09:25 | 15 | [1 · The refund agent](../../modules/managed-agents/README.md) | `make seed-workspace` | your smoke trace open in the Studio |
 | 09:40 | 35 | [2 · Simulate customers](../../modules/simulation/README.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
 | 10:15 | 25 | [3 · Read the traces](../../modules/trace-insights/README.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
-| 10:40 | 12 | [4 · From insight to eval](../../modules/failure-analysis/README.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 10:40 | 12 | [4 · From insight to eval](../../modules/evaluators-and-experiments/README.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 10:52 | 8 | Take home, questions |  |  |
 
 Ends 11:00 (120 min).

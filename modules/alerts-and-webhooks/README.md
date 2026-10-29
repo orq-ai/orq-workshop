@@ -3,11 +3,16 @@
 !!! abstract "The platform pushes to you"
     Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
 
-| | |
-|---|---|
-| **Time** | 30 min |
-| **Prerequisites** | module 02, `make seed-workspace`, a public URL for the receiver (see step 3) |
-| **You will have** | a cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run. |
+## Starting point
+
+Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Also: a public URL for the receiver (see step 3).
+Command: `make seed-workspace`. Time: 30 min.
+
+## Goal
+
+A cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -83,6 +88,9 @@ Newest first. An empty list means this run's burst has not been evaluated yet: r
 
 ### Step 3 · The hook: a webhook into your own system
 
+!!! instructor "Instructor demo: needs a public tunnel"
+    Deliveries go to a URL orq.ai can reach; without one the step posts to httpbin and the receiver output is the instructor's. The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 Alerts notify; webhooks stream. A workspace webhook delivers the events you subscribe to (`llm.response`, `llm.chat_completion`, `llm.embedding`, `agent.updated`, `deployment.invoked`, ...) to an HTTPS endpoint of yours, each POST signed: `X-Orq-Signature` is the HMAC-SHA256 of the raw body with the webhook's secret. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) serves that endpoint (`/<WS_PREFIX>`): it verifies the signature and keeps what arrived. orq.ai cloud has to reach it, so it needs a public URL.
 
 Three terminals:
@@ -139,18 +147,14 @@ Query the Telemetry API (`POST /v3/telemetry/query`) for the last 24 hours group
 
 ## Gotchas
 
-- `orq.telemetry.query` and `orq.alerts.list` raise `ResponseValidationError` in SDK 4.17 (the API echoes `sort: ""`, and an evaluated alert has `severity: ""`). `entities.telemetry_query`, `list_alerts` and `alert_triggers` use REST for those.
 - `alerts.create` and `alerts.get` wrap the entity (`{"alert": {...}}`); `alerts.list` does not.
 - Alerts are project-scoped and error traces carry no project, so pick a metric successful traces produce: cost, latency, guardrail pass rate.
 - Telemetry shows the last complete minutes with a delay of a few minutes. A query for "the last 30 seconds" is empty.
 - Plan limits: Free, Team and Consumption plans allow 2 alerts checked hourly; Growth, Pro and Custom allow 5-minute checks. Saving below the plan minimum returns `evaluation interval 5m is below your plan's minimum of 1h`.
 - A webhook's secret has to exist before the webhook does, and the receiver needs the same one. Generate it, put it in `.env`, start the receiver, then run the step. With `WS_WEBHOOK_SECRET` empty the step generates one and prints it, and the receiver reports `signature_valid=None`.
 - Webhook deliveries take 3 to 30 seconds. The step polls for 30; orq.ai retries failed deliveries later.
-- A new tunnel means a new URL. `make module M=alerts-and-webhooks` re-points `ws-events-webhook` and `ws-alert-notifier` to the current `WS_WEBHOOK_URL`; nothing is recreated.
-- orq.ai switches a webhook off after 10 failed deliveries (`enabled: false`, `failure_count: 10`); a dead tunnel gets there in minutes and nothing arrives afterwards even once the URL is right. `ensure_webhook` PATCHes `enabled: true` on every run; `orq webhooks list` shows both fields, the SDK's `get` hides `enabled`.
-- SDK 4.14's `webhooks.update` returns 200 and changes nothing (it sends an empty body); `PATCH /v2/webhooks/<id>` over REST works, and `ensure_webhook` uses it to re-point the URL. `webhooks.get` returns `failure_count` as `None`, so a target that stores nothing (httpbin) gives no signal at all.
-- Notifiers and webhooks are different things: a notifier is where alerts and budgets send their notifications; a webhook is a subscription to workspace events. Both can point at the same URL.
-- `make reset-workspace` deletes the alert, the notifier and the webhook by prefix; the trigger history goes with the alert.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 to 4.17
 
@@ -160,6 +164,10 @@ The Telemetry API (`POST /v3/telemetry/query`) answers cost, token, latency and 
 
 - Add a second alert on `genai.latency.p95` with a threshold read from step 1, and a Slack notifier (`NOTIFIER_TYPE_SLACK_WEBHOOK`).
 - Subscribe the webhook to `llm.chat_completion` as well and write the receiver's events to a file: that is a trace export with no polling.
+
+## End state
+
+A cost alert that opened a trigger on a burst you caused, and orq.ai events arriving signed at a receiver you run, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

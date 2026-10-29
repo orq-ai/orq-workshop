@@ -3,11 +3,15 @@
 !!! abstract "Ask your workspace questions in plain language"
     The workspace you have been filling with traces, guardrail blocks and timeouts can be questioned from a terminal in plain language. orqi is the orq.ai helper agent: it operates the platform, it does not build your app.
 
-| | |
-|---|---|
-| **Time** | 15 min |
-| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make generate-traffic`) |
-| **You will have** | four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/) and the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page (orqi installed and signed in). Traffic in the workspace from the gateway, tracing, routing and guardrails modules, or `make generate-traffic`.
+Command: `make generate-traffic`. Time: 15 min.
+
+## Goal
+
+Four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`.
+
 
 ## Why
 
@@ -15,7 +19,7 @@ Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback cha
 
 ## The one concept to understand first
 
-orqi has the same 43 `orq_` tools and the same skills your coding agent gets in module 13, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
+orqi has the same 43 `orq_` tools and the same skills your coding agent gets in module 13, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
 
 ## Steps
 
@@ -231,7 +235,8 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 - One-shot answers take 15 s to 2 min; the `GOAL:` and `[x]` lines are progress, the answer is what follows.
 - `orq traces search` needs `--from` and `--to`; `--from 3h` alone is a 400.
 - The shell export from `orq setup` may belong to another workspace. `orq launch` prints `Note: ORQ_API_KEY may not belong to the workspace 'orq auth login' selected; the key wins.` That is expected here: the repo key decides where traces land.
-- `.env` overrides the shell by design, which is why Step 2 breaks the client in code rather than through a temp env file.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.15 and 4.16
 
@@ -240,6 +245,10 @@ Use orqi to find the most expensive trace of the last 24 hours and explain why i
 ## Go further
 
 `orqi "debug the conversation in thread traffic-<batch>-03"` uses the `debug-conversation` skill on the threads `make generate-traffic` created, and `orqi "how do I cut the cost of the refund agent by half"` runs `optimize-cost` against `query_analytics` and proposes an experiment before switching models.
+
+## End state
+
+Four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

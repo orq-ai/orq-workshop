@@ -3,11 +3,15 @@
 !!! abstract "One key, three doors"
     One credential, three doors: the OpenAI-compatible gateway, the native SDK, and the `orq` CLI that also wires your coding agent. Everything in this workshop goes through the same key.
 
-| | |
-|---|---|
-| **Time** | 20 min |
-| **Prerequisites** | an orq.ai account, Python 3.11+, [uv](https://docs.astral.sh/uv/), a terminal; Node.js only if you run your own tunnel in modules 09 and 14 (`npx localtunnel`) |
-| **You will have** | a working `.env`, a green `orq doctor`, one traced call in your workspace. |
+## Starting point
+
+An orq.ai account, Python 3.11+, [uv](https://docs.astral.sh/uv/) and a terminal. Node.js only if you run your own tunnel in the knowledge base and alerts modules (`npx localtunnel`).
+Command: `make setup`. Time: 20 min.
+
+## Goal
+
+A working `.env`, a green `orq doctor`, one traced call in your workspace.
+
 
 ## Why
 
@@ -253,6 +257,10 @@ The agent's own model calls go through the gateway too. Look for them in Traces 
 The orq.ai CLI installs with one command and `orq setup` signs in and wires every coding agent it detects; `orq launch <agent>` runs one through the gateway without writing config ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). Studio opens every page as a tab and lets you hide and reorder sidebar sections, so the sidebar in the screenshots can differ from yours ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
+
+## End state
+
+A working `.env`, a green `orq doctor`, one traced call in your workspace, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
 
 ## Official docs
 

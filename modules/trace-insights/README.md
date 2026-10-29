@@ -3,11 +3,15 @@
 !!! abstract "Criteria find what you expected; insights find what you did not"
     Module 11 scored each conversation against criteria you wrote. Insights reads the traces, writes a summary of each, clusters the summaries and names the clusters. The failure you planted shows up as a cluster with a name you did not choose.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | module 11, `make seed-workspace` |
-| **You will have** | an Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07. |
+## Starting point
+
+Done: [Agent simulation](https://orq-ai.github.io/orq-workshop/modules/simulation/).
+Command: `make seed-workspace`. Time: 25 min.
+
+## Goal
+
+An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07.
+
 
 ## Why
 
@@ -137,6 +141,10 @@ Insights has no entry in the 4.15 to 4.17 release notes; the [Insights page](htt
 - `--dimension` takes other discovered dimensions; `--label` takes a preset name or a JSON label spec of your own.
 - Re-run step 1 with the fixed agent (`settings.key("refund-agent")`) and compare the clusters.
 - `eq insights --help` lists facets: `--model`, `--tool`, `--status`, token and duration ranges.
+
+## End state
+
+An Insights run over your own simulated conversations, a named failure cluster with example traces, and the sentence that becomes the evaluator in module 07, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Annotation queues and automations](https://orq-ai.github.io/orq-workshop/modules/annotation-queues/).
 
 ## Official docs
 

@@ -3,11 +3,15 @@
 !!! abstract "The human loop"
     Module 14 made the platform push numbers and events to you. This module is the human loop: a queue collects the traces worth a look, an automation fills it without you, a reviewer scores each one, and the reviewed traces become a dataset the next experiment runs on.
 
-| | |
-|---|---|
-| **Time** | 25 min |
-| **Prerequisites** | modules 02 and 07, `make seed-workspace` |
-| **You will have** | `ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`. |
+## Starting point
+
+Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/), [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/).
+Command: `make seed-workspace`. Time: 25 min.
+
+## Goal
+
+`ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -133,11 +137,12 @@ The agent is a better reviewer than the rule in step 3, and slower than a human 
 ## Gotchas
 
 - Queue items are spans. `add_items` wants `{trace_id, span_id}`; `remove_items` wants span ids, not item ids.
-- `retrieve_item` returns an empty model in SDK 4.17 (no `input` or `output`), and `traces.get_span` in SDK 4.14 drops `output` (not retested). Read the span over REST instead: `/v3/traces/{trace_id}/spans/{span_id}`, `attributes.gen_ai.input.messages[0].parts[0].content` for the question and `attributes.gen_ai.output` for the output items, either a JSON string or `{"_value": [...]}` for an agent whose tools run in orq. The answer is the last `message` item.
 - Annotation keys must exist as definitions in the workspace; an unknown key is a 404, a `defects` value outside the fixed list (`grammatical, spelling, hallucination, repetition, inappropriate, off_topic, incompleteness, ambiguity`) is a 400. No list endpoint for definitions was found; the id of one shows up in `used_human_review_ids` after the first annotation.
 - A queue created by API has no annotations configured; set `human_review_ids` (the step does) or the Studio panel is empty.
 - Automations have no API and act on future traces only. Step 2 detects one by running a turn and polling for 30 seconds.
 - `make reset-workspace` deletes the queue and the dataset by prefix; annotations stay on the traces.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.16 and 4.17
 
@@ -147,6 +152,10 @@ Automations can target the spans of a given variant or Agent version without cus
 
 - Sample 10% into the queue with the automation, review for a day, and compare the bad rate with module 07's judge on the same traces: that gap is the judge's error.
 - Add a `correction` annotation definition (text) and store the reviewer's rewrite on the trace itself; promote it as `expected_output` instead of the fixed sentence used here.
+
+## End state
+
+`ws-review-queue` filled by hand and by an automation, every item annotated by API, and the bad ones promoted into `ws-review-dataset`, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
 
 ## Official docs
 

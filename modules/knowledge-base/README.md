@@ -3,11 +3,15 @@
 !!! abstract "Retrieval decides what the model sees"
     Retrieval decides what the model sees. Chunking decides what retrieval can find. Both are settings you own, and the cheapest RAG is the one that searches before the model call instead of asking the model to search.
 
-| | |
-|---|---|
-| **Time** | 35 min |
-| **Prerequisites** | modules 00 to 02, `make seed-workspace` |
-| **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools. |
+## Starting point
+
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/), [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/).
+Command: `make seed-workspace`. Time: 35 min.
+
+## Goal
+
+The refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools.
+
 
 Commands and names here write the default prefix `ws-`. Your entities carry your seat prefix from `.env` (`WS_PREFIX`, e.g. `ws07-`), so swap it in before you paste a command.
 
@@ -174,6 +178,9 @@ next     : the response keys are still just 'matches'; the refined query is not 
 
 ### Step 7 · An external knowledge base
 
+!!! instructor "Instructor demo: needs a public tunnel"
+    orq.ai has to reach your `/search` endpoint, so this step needs `make edge` exposed through a tunnel (or the instance the instructor hosts). The rest of the module does not depend on it; in a room without that access, watch the instructor run it.
+
 orq.ai can front a retrieval API you already run: a vector database you cannot move (Weaviate and Pinecone have documented configurations), or any search endpoint of yours. The contract is one endpoint, the `api_url` you register: orq.ai POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to it and expects `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}` with scores in 0 to 1, authenticated with `Authorization: Bearer <api_key>`. [`app/edge.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/edge.py) implements it over the four policy files with keyword scoring, in the same process that receives module 14's webhooks.
 
 ![Diagram: external knowledge base. The base is registered with your public api_url, so a search from your code makes orq.ai post the query to your own /search endpoint and wait for matches with scores. orq.ai then applies the same tail it applies internally, cutting to top_k, filtering by threshold and reranking, before returning the matches. Retrieval runs in your service; ranking still runs in orq.ai.](assets/step7-external-kb.png)
@@ -228,10 +235,11 @@ Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent
 ## Gotchas
 
 - Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset-workspace && make seed-workspace`.
-- `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it (SDK 4.14, not retested).
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
 - `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
+
+More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
 ## New in orq.ai 4.16 and 4.17
 
@@ -240,6 +248,10 @@ Cohere `embed-v5.0-pro` and `embed-v5.0-fast` ([release 4.16](https://docs.orq.a
 ## Go further
 
 - `app/edge.py`: the `/search` contract in 20 lines. Point it at a real index (Weaviate, Pinecone, pgvector) instead of keyword scoring and nothing on the orq.ai side changes.
+
+## End state
+
+The refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [MCP servers and gateway](https://orq-ai.github.io/orq-workshop/modules/mcp-gateway/).
 
 ## Official docs
 
