@@ -1,3 +1,5 @@
+<p class="stage-chip">Academy · the idea, no code · <a href="../start/academy/">all six stages</a></p>
+
 # Trace
 
 ## The problem

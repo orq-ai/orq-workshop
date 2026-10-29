@@ -27,7 +27,7 @@ CORE_PATH = ["setup", "gateway", "tracing", "managed-agents", "failure-analysis"
 
 
 def test_audience_pages_link_every_stage_or_module():
-    leaders = (ROOT / "docs/start/for-leaders.md").read_text()
+    leaders = (ROOT / "docs/start/academy.md").read_text()
     assert all(f"../{s}/index.md" in leaders for s in STAGES), "leaders page must link every stage"
     engineers = (ROOT / "docs/start/for-engineers.md").read_text()
     for slug in CORE_PATH:

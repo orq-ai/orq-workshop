@@ -6,9 +6,12 @@ hide: [navigation]
 
 Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app, a customer-support refund agent, grows module by module: through the AI Gateway, behind guardrails, into traces, under evaluation, as a managed agent with a knowledge base and MCP tools, attacked by simulated users and red teams, gated in CI, and driven by coding agents.
 
-[I lead a team](start/for-leaders.md){ .md-button }
-[I build](start/for-engineers.md){ .md-button .md-button--primary }
-[I already use orq.ai](start/already-on-orq.md){ .md-button }
+The site has two layers around the same loop. The **Academy** explains each stage: the idea, what good looks like, no code, about an hour. The **Workshop** practices it: hands-on modules on orq.ai, about four hours for the core path.
+
+[Academy: the ideas](start/academy.md){ .md-button }
+[Workshop: hands-on](start/for-engineers.md){ .md-button .md-button--primary }
+
+Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
 <div class="grid cards" markdown>
 

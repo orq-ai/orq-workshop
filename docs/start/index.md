@@ -8,9 +8,9 @@ Pick the page that matches you, or go straight to [Setup](../modules/setup.md).
 
     ---
 
-    Read the six concept pages, one per stage of the loop, in about an hour. No code.
+    The Academy: six concept pages, one per stage of the loop, about an hour. No code.
 
-    [:octicons-arrow-right-24: For leaders](for-leaders.md)
+    [:octicons-arrow-right-24: Academy](academy.md)
 
 -   :material-code-braces:{ .lg .middle } **I build**
 

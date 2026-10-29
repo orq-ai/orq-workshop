@@ -1,6 +1,6 @@
-# For leaders
+# Academy
 
-You run a team that ships, or is about to ship, an AI agent. This path is the concept layer of the workshop: one page per stage of the loop, no code, about an hour in total. Each page ends with a short block for you: what the stage costs, what it protects you from, who should own it, and one question to ask your team.
+The Academy is the concept layer of this site: one page per stage of the loop, no code, about an hour in total. It is written for people who lead a team, own a product, or are new to the topic; the Workshop modules are where engineers practice each stage on orq.ai. Each page ends with a short block for leaders: what the stage costs, what it protects you from, who should own it, and one question to ask your team.
 
 ![Diagram: the orq.ai loop, six stages around the refund agent.](../assets/diagrams/orq-loop.png)
 

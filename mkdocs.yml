@@ -85,6 +85,7 @@ plugins:
         modules/07-evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
         modules/failure-analysis/evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
         own-your-agent.md: build/index.md
+        start/for-leaders.md: start/academy.md
   - glightbox:
       touchNavigation: true
       zoomable: true
@@ -131,7 +132,7 @@ nav:
   - Home: index.md
   - Start here:
       - start/index.md
-      - For leaders: start/for-leaders.md
+      - Academy: start/academy.md
       - For engineers: start/for-engineers.md
       - Already on orq.ai: start/already-on-orq.md
       - Setup: modules/setup.md
