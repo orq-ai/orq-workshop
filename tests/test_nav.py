@@ -23,7 +23,7 @@ def test_every_module_wrapper_names_its_stage():
         assert ("core path" in text) != ("elective" in text), p
 
 
-CORE_PATH = ["setup", "gateway", "tracing", "managed-agents", "failure-analysis", "simulation", "evals-in-ci"]
+CORE_PATH = ["setup", "gateway", "tracing", "managed-agents", "failure-analysis", "evaluators-and-experiments", "simulation", "evals-in-ci"]
 
 
 def test_audience_pages_link_every_stage_or_module():

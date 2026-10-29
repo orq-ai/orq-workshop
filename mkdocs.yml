@@ -83,6 +83,7 @@ plugins:
         modules/08-logic.md: modules/managed-agents/logic.md
         modules/08-solution-design.md: modules/managed-agents/solution-design.md
         modules/07-evaluate.md: modules/failure-analysis/evaluate.md
+        own-your-agent.md: build/index.md
   - glightbox:
       touchNavigation: true
       zoomable: true
@@ -162,14 +163,14 @@ nav:
       - Tracing: modules/tracing.md
   - Find failures:
       - find-failures/index.md
-      - Failure analysis to experiments:
+      - Failure analysis:
           - Concepts: modules/failure-analysis/concepts.md
           - Find and fix: modules/failure-analysis.md
-          - Evaluate: modules/failure-analysis/evaluate.md
       - Trace insights: modules/trace-insights.md
       - Annotation queues and automations: modules/annotation-queues.md
   - Evaluate:
       - evaluate/index.md
+      - Evaluators and experiments: modules/evaluators-and-experiments.md
       - Agent simulation:
           - Concepts: modules/simulation/concepts.md
           - Run: modules/simulation.md
@@ -187,4 +188,3 @@ nav:
       - evaluatorq: reference/evaluatorq.md
       - orq-arena: reference/orq-arena.md
       - How retrieval works: reference/rag.md
-      - Build your own agent: own-your-agent.md

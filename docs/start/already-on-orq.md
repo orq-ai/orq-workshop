@@ -38,7 +38,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 | Module | You leave with | Needs |
 |---|---|---|
-| [Failure analysis to experiments](../modules/failure-analysis.md) | a failure taxonomy, a judge, an experiment | participant key |
+| [Failure analysis](../modules/failure-analysis.md) | a failure taxonomy and a fixed prompt | participant key |
 | [Trace insights](../modules/trace-insights.md) | failure clusters named from your own simulated conversations, and the Pass/Fail sentence that becomes an evaluator | participant key |
 | [Annotation queues and automations](../modules/annotation-queues.md) | a review queue an automation fills, reviewed by API, and the reviewed traces promoted to a dataset | participant key |
 
@@ -48,6 +48,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 | Module | You leave with | Needs |
 |---|---|---|
+| [Evaluators and experiments](../modules/evaluators-and-experiments.md) | two evaluators, the ws-refund-eval dataset, an experiment comparing two prompts | participant key |
 | [Agent simulation](../modules/simulation.md) | four simulation runs as Experiments, and the row where an empty answer passed | participant key |
 | [Red teaming](../modules/red-teaming.md) | a vulnerable agent that fails and a fixed one that passes the same OWASP attack set, and a CLI gate that exits 0 or 1 | participant key |
 

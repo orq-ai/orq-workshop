@@ -8,10 +8,11 @@ One agent, one loop, about four hours. Every step below runs with a participant 
 2. [Gateway](../modules/gateway.md) (25 min): fallbacks, retry, cache, load balancing as request fields.
 3. [Tracing](../modules/tracing.md) (30 min): agent, tool and LLM spans with identity and thread.
 4. [Managed agents](../modules/managed-agents.md) (40 min): the refund agent hosted by orq, with memory.
-5. [Failure analysis to experiments](../modules/failure-analysis.md) (40 min): a failure taxonomy, a judge, an experiment.
-6. [Agent simulation](../modules/simulation.md) (30 min): four simulation runs as Experiments, and the row where an empty answer passed.
-7. [Evals and agents in CI](../modules/evals-in-ci.md) (35 min): a GitHub Actions gate and a nightly triage agent.
-8. [Wrap-up](wrap-up.md): apply the loop to your own repo.
+5. [Failure analysis](../modules/failure-analysis.md) (25 min): a failure taxonomy and a fixed prompt.
+6. [Evaluators and experiments](../modules/evaluators-and-experiments.md) (25 min): two evaluators, a dataset, an experiment.
+7. [Agent simulation](../modules/simulation.md) (30 min): four simulation runs as Experiments, and the row where an empty answer passed.
+8. [Evals and agents in CI](../modules/evals-in-ci.md) (35 min): a GitHub Actions gate and a nightly triage agent.
+9. [Wrap-up](wrap-up.md): apply the loop to your own repo.
 
 </div>
 
@@ -47,7 +48,7 @@ The rest of the modules, grouped by the stage of the loop they belong to. Take t
 
 | Module | You leave with |
 |---|---|
-| [Failure analysis to experiments](../modules/failure-analysis.md) | a failure taxonomy, a judge, an experiment |
+| [Failure analysis](../modules/failure-analysis.md) | a failure taxonomy and a fixed prompt |
 | [Trace insights](../modules/trace-insights.md) | failure clusters named from your own simulated conversations, and the Pass/Fail sentence that becomes an evaluator |
 | [Annotation queues and automations](../modules/annotation-queues.md) | a review queue an automation fills, reviewed by API, and the reviewed traces promoted to a dataset |
 
@@ -55,6 +56,7 @@ The rest of the modules, grouped by the stage of the loop they belong to. Take t
 
 | Module | You leave with |
 |---|---|
+| [Evaluators and experiments](../modules/evaluators-and-experiments.md) | two evaluators, the ws-refund-eval dataset, an experiment comparing two prompts |
 | [Agent simulation](../modules/simulation.md) | four simulation runs as Experiments, and the row where an empty answer passed |
 | [Red teaming](../modules/red-teaming.md) | a vulnerable agent that fails and a fixed one that passes the same OWASP attack set, and a CLI gate that exits 0 or 1 |
 

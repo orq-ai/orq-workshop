@@ -19,7 +19,7 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | 15 | [1 · The refund agent](../modules/managed-agents.md) | `make seed-workspace` | your smoke trace open in the Studio |
 | 35 | [2 · Simulate customers](../modules/simulation.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
 | 25 | [3 · Read the traces](../modules/trace-insights.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
-| 12 | [4 · From insight to eval](../modules/failure-analysis.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 12 | [4 · From insight to eval](../modules/evaluators-and-experiments.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 8 | Take home, questions |  |  |
 
 Total: 120 min.

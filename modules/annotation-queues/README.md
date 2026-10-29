@@ -5,7 +5,7 @@
 
 ## Starting point
 
-Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/), [Failure analysis to experiments](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/).
+Done: [Tracing](https://orq-ai.github.io/orq-workshop/modules/tracing/), [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/).
 Command: `make seed-workspace`. Time: 25 min.
 
 ## Goal

@@ -1,6 +1,6 @@
 # For engineers
 
-The core path takes one sample app, a customer-support refund agent, around the loop once: about four hours, seven modules and a wrap-up. Every step runs with a participant key; nothing on this path needs admin rights or a tunnel. Each module says what it starts from, what it leaves behind, and hands you to the next.
+The core path takes one sample app, a customer-support refund agent, around the loop once: about four hours, eight modules and a wrap-up. Every step runs with a participant key; nothing on this path needs admin rights or a tunnel. Each module says what it starts from, what it leaves behind, and hands you to the next.
 
 Optional on every path: wire your own [coding agent](../modules/coding-agents.md) through orq.ai, so the "With your coding agent" prompt in each module has somewhere to go.
 
@@ -10,14 +10,15 @@ Optional on every path: wire your own [coding agent](../modules/coding-agents.md
 2. [Gateway](../modules/gateway.md) (25 min): fallbacks, retry, cache, load balancing as request fields.
 3. [Tracing](../modules/tracing.md) (30 min): agent, tool and LLM spans with identity and thread.
 4. [Managed agents](../modules/managed-agents.md) (40 min): the refund agent hosted by orq, with memory.
-5. [Failure analysis to experiments](../modules/failure-analysis.md) (40 min): a failure taxonomy, a judge, an experiment.
-6. [Agent simulation](../modules/simulation.md) (30 min): four simulation runs as Experiments, and the row where an empty answer passed.
-7. [Evals and agents in CI](../modules/evals-in-ci.md) (35 min): a GitHub Actions gate and a nightly triage agent.
-8. [Wrap-up](wrap-up.md): apply the loop to your own repo.
+5. [Failure analysis](../modules/failure-analysis.md) (25 min): a failure taxonomy and a fixed prompt.
+6. [Evaluators and experiments](../modules/evaluators-and-experiments.md) (25 min): two evaluators, a dataset, an experiment.
+7. [Agent simulation](../modules/simulation.md) (30 min): four simulation runs as Experiments, and the row where an empty answer passed.
+8. [Evals and agents in CI](../modules/evals-in-ci.md) (35 min): a GitHub Actions gate and a nightly triage agent.
+9. [Wrap-up](wrap-up.md): apply the loop to your own repo.
 
 </div>
 
-Total: about 220 minutes of hands-on work, plus breaks.
+Total: about 230 minutes of hands-on work, plus breaks.
 
 ## What each module needs
 

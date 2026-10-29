@@ -106,8 +106,9 @@ module: ## Run modules/$(M)/run.py (starter on main, finished file on the soluti
 
 # ponytail: the old numbered names (make m07) stay as aliases because printed handouts and private
 # run-of-shows use them. Drop after the next client run.
-OLD_NUMBERS := 00=setup 01=gateway 02=tracing 03=smart-routing 04=guardrails 05=budgets-and-keys 06=orqi 07=failure-analysis 08=managed-agents 09=knowledge-base 10=mcp-gateway 11=simulation 12=evals-in-ci 13=coding-agents 14=alerts-and-webhooks 15=advisor-and-sidekick 16=red-teaming 17=annotation-queues 18=trace-insights
+OLD_NUMBERS := 00=setup 01=gateway 02=tracing 03=smart-routing 04=guardrails 05=budgets-and-keys 06=orqi 08=managed-agents 09=knowledge-base 10=mcp-gateway 11=simulation 12=evals-in-ci 13=coding-agents 14=alerts-and-webhooks 15=advisor-and-sidekick 16=red-teaming 17=annotation-queues 18=trace-insights
 m%:
+	@test "$*" != 07 || { echo "module 07 became two modules: make module M=failure-analysis, then make module M=evaluators-and-experiments"; exit 1; }
 	@slug=$$(echo "$(OLD_NUMBERS)" | tr ' ' '\n' | sed -n 's/^$*=//p'); test -n "$$slug" || { echo "no module $*"; exit 1; }; \
 	echo "make m$* is now: make module M=$$slug"; $(MAKE) --no-print-directory module M=$$slug
 

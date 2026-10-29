@@ -5,7 +5,7 @@
 
 ## Starting point
 
-Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Failure analysis to experiments](https://orq-ai.github.io/orq-workshop/modules/failure-analysis/). The [Red teaming](https://orq-ai.github.io/orq-workshop/modules/red-teaming/) module explains the attack file in depth, but is not required.
+Done: [Setup](https://orq-ai.github.io/orq-workshop/modules/setup/), [Evaluators and experiments](https://orq-ai.github.io/orq-workshop/modules/evaluators-and-experiments/). The [Red teaming](https://orq-ai.github.io/orq-workshop/modules/red-teaming/) module explains the attack file in depth, but is not required.
 Command: `make seed-workspace`. Time: 35 min.
 
 ## Goal

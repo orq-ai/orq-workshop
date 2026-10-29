@@ -1,10 +1,16 @@
 # Concepts
 
-A prompt change is a hypothesis; repeatable evaluation is the evidence that it helped.
+Read before this module. Why error analysis comes before evaluators, and how a taxonomy is built, is on the [Find failures](https://orq-ai.github.io/orq-workshop/find-failures/) stage page. This page is what the module's own scorers and gate look like.
 
-## Error analysis before evaluators
+## The refund agent's scorers
 
-Start with transcripts. Write one short observation per conversation (open coding), then group the observations into two to eight named modes (axial coding). Those modes form a failure taxonomy, and each one gets a focused binary scorer. A scorer written before that reading measures the failures you imagined, not the ones you have.
+Every scorer is binary and maps to one failure mode of the taxonomy. Code checks a fact; a judge reads text:
+
+| Scorer | Kind | Passes when |
+|---|---|---|
+| `decision_matches` | code | `issue_refund` was called if and only if the row expects a refund |
+| `no_pii_leak` | code | the answer repeats no email address or phone number |
+| `policy_judge` | LLM judge | the orq.ai evaluator `ws-refund-policy-judge` says the answer follows policy |
 
 ```python
 # evals/scorers.py: one scorer, one binary question
@@ -16,17 +22,11 @@ async def decision_matches(params):
     return EvaluationResult(value=passed, pass_=passed, explanation=...)
 ```
 
+`decision_matches` reads which tools were called, not what they answered. The judge reads the customer message, the answer and the row's reference, not the tool calls. Run both and read the per-row explanations when they disagree.
+
 ![Diagram: the error analysis loop. Traces are read as individual observations, grouped into named failure modes, and turned into binary scorers around a shared failure taxonomy.](assets/error-analysis-loop.png)
 
-## Scorers: code or judge
-
-Use code for checkable facts: `decision_matches` (was `issue_refund` called if and only if the row expects a refund) and `no_pii_leak` (a regular expression over the answer). Use an LLM judge for contextual policy following: `policy_judge` calls the orq.ai evaluator `ws-refund-policy-judge`, which reads the customer message, the agent answer and the row's reference.
-
-Each kind has a blind spot. `decision_matches` reads which tools were called, not what they answered. The judge reads the answer text, not the tool calls. Run both, and read the per-row explanations when they disagree.
-
-## A gate, not a demo
-
-A fixed set of dataset rows runs through the agent. The scorer means are compared with calibrated thresholds, producing a pass or fail and an Experiment record. The policy judge gets a margin rather than an impossible demand for certainty, because an LLM judge lands on the threshold often enough that a zero-margin gate flakes on a correct change.
+## The gate
 
 ```python
 # evals/regression.py
@@ -36,26 +36,14 @@ failed = [scorer for scorer, threshold in THRESHOLDS.items()
 return 1 if failed else 0
 ```
 
-The evaluatorq call has three deliberately separate layers: **data** supplies rows (`app/data/dataset.jsonl`), a **job** runs the agent on one row and returns a stable output (`answer`, `tool_calls`, `trace_id`), and **evaluators** score that output. You can replace the agent, the rows or a scorer without rewriting the other two. [Evals and agents in CI](https://orq-ai.github.io/orq-workshop/modules/evals-in-ci/) wires the same command into a pull request.
-
-## Simulation versus regression eval
-
-| Method | Purpose | Output |
-|---|---|---|
-| Simulation | Explores unfamiliar conversations and finds failures | transcripts and evidence |
-| Regression eval | Pins known cases and catches their return | scorer means and a gate verdict |
-
-A conversation that went wrong becomes a dataset row once it is understood well enough to state the expected behavior.
+The evaluatorq call has three separate layers: **data** supplies rows (`app/data/dataset.jsonl`), a **job** runs the agent on one row and returns a stable output (`answer`, `tool_calls`, `trace_id`), and **evaluators** score that output. Replace any one without rewriting the other two. [Evals and agents in CI](https://orq-ai.github.io/orq-workshop/modules/evals-in-ci/) wires the same command into a pull request.
 
 ## Soft fix, hard proof
 
-A prompt fix lowers the odds of a bad choice; it does not make one impossible. The regression eval checks the relevant cases on every version. To go further, harden the tools (the refund tool already enforces ownership, the EUR 500 limit and the 30-day window) and keep personal data out of the answer.
-
-The general takeaway is a hierarchy of controls: prompts shape likely behavior, tools enforce deterministic policy, and evaluators independently measure both the answer and the action trail. Do not ask one layer to prove itself.
+A prompt fix lowers the odds of a bad choice; it does not make one impossible. The refund tool already enforces ownership, the EUR 500 limit and the 30-day window. Prompts shape likely behavior, tools enforce deterministic policy, and evaluators measure both the answer and the action trail. Do not ask one layer to prove itself.
 
 ## Official docs
 
-- [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents)
 - [Datasets](https://docs.orq.ai/ai-studio/optimize/datasets)
 - [Evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators)
 - [Experiments](https://docs.orq.ai/ai-studio/optimize/experiments)
