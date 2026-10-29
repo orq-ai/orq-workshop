@@ -168,7 +168,7 @@ Watch for: the trace in the Studio, its tool calls, its cost, the agent version 
 
 ## 2 · A user simulator, your agent, a judge
 
-![w:1000](../../../modules/11-simulation/assets/simulation-loop.png)
+![w:1000](../../../modules/simulation/assets/simulation-loop.png)
 
 <!-- Hand-written test transcripts go stale the day the prompt changes. A simulator writes new ones every run. -->
 
@@ -199,12 +199,12 @@ The judge reads the transcript text only, not the tool calls. Write criteria the
 ## 2 · Live demo · You try
 
 ```bash
-$ uv run python modules/11-simulation/run.py                     # your turn: the TODOs
-$ uv run python modules/11-simulation/run.py --only=1   # finished step 1, v1
+$ uv run python modules/simulation/run.py                     # your turn: the TODOs
+$ uv run python modules/simulation/run.py --only=1   # finished step 1, v1
 $ uv run eq dashboard                                            # http://127.0.0.1:8080
 ```
 
-- [ ] `modules/11-simulation/run.py`: a second persona and the post-window `ord_a3` scenario
+- [ ] `modules/simulation/run.py`: a second persona and the post-window `ord_a3` scenario
 - [ ] Experiments shows `ws<NN>-sim-local` with one row per conversation
 - [ ] At least one `ord_a3` row with a broken rule, and you can say what the agent wrote
 
@@ -272,7 +272,7 @@ Before you trust a red number, check who ran the tools. Block 3 uses the adapter
 - So it finds failures you did not write a criterion for.
 
 ```bash
-$ make m18
+$ make module M=trace-insights
 # 1. module 11's customers against the managed v1 agent, ws<NN>-refund-agent-vulnerable
 # 2. eq insights --agent ws<NN>-refund-agent-vulnerable \
 #      --dimension failure --dimension intent --label made_errors
@@ -291,7 +291,7 @@ $ make m18
 ## 3 · Live demo · You try
 
 ```bash
-$ make m18                             # simulate, then insights on your own traces
+$ make module M=trace-insights                             # simulate, then insights on your own traces
 $ uv run eq dashboard                  # Insights tab: clusters, and the traces in each
 $ orq traces conversation <trace_id>   # one trace, read as a conversation
 ```
@@ -355,7 +355,7 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ## 4 · Swap to `fixed_instructions.md`, re-run
 
-![w:1000](../../../modules/11-simulation/assets/11-step1-persona-matrix.png)
+![w:1000](../../../modules/simulation/assets/step1-persona-matrix.png)
 
 <!-- 1:46. In module 11, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the module 11 README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
 
@@ -422,7 +422,7 @@ Building evals from traces, testing the judge, red teaming
 
 ## Read traces before you write evals
 
-![h:520](../../../modules/07-failure-analysis-evals/assets/error-analysis-loop.png)
+![h:520](../../../modules/failure-analysis/assets/error-analysis-loop.png)
 
 <!-- Evaluators written before reading traces measure the failures you imagined, not the ones you have. -->
 
@@ -446,7 +446,7 @@ What the 20 conversations actually produced:
 
 ```bash
 $ make generate-traffic
-$ uv run python modules/07-failure-analysis-evals/run.py 2     # your turn: the TODO is in traffic_traces()
+$ uv run python modules/failure-analysis/run.py 2     # your turn: the TODO is in traffic_traces()
 ```
 
 <!-- The fixed prompt refunded three orders in one turn for a customer "moving abroad". One of the failures is on the prompt you thought was safe. -->
@@ -477,7 +477,7 @@ $ uv run python modules/07-failure-analysis-evals/run.py 2     # your turn: the 
 ## Module 07 · You try
 
 ```bash
-$ make m07       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
+$ make module M=failure-analysis       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
 ```
 
 Watch for: the experiment URL · per-row answers, verdicts and the judge's explanation · the fixed prompt's one miss.
@@ -529,7 +529,7 @@ Four things this workshop's own runs showed:
 An attacker is a simulated user with a worse goal: same loop as block 2, OWASP categories instead of criteria.
 
 ```bash
-$ uv run python modules/16-red-teaming/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
+$ uv run python modules/red-teaming/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
 ```
 
 | Target | Judged vulnerable | Resistance |

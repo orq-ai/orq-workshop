@@ -15,11 +15,11 @@ Evals without data are theory, so we get to simulation fast. Each block is a sho
 | Min | Block | You run | You leave with |
 |---|---|---|---|
 | 5 | Welcome, how this session works |  |  |
-| 20 | [Get your key and set up](../modules/00.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
-| 15 | [1 · The refund agent](../modules/08.md) | `make seed-workspace` | your smoke trace open in the Studio |
-| 35 | [2 · Simulate customers](../modules/11.md) | `uv run python modules/11-simulation/run.py` | an ord_a3 row that broke a rule |
-| 25 | [3 · Read the traces](../modules/18.md) | `make m18` | one Pass/Fail sentence for the failure the cluster names |
-| 12 | [4 · From insight to eval](../modules/07.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
+| 20 | [Get your key and set up](../modules/se.md) | `make setup && make orq-doctor && make gateway-check` | a green orq doctor and one trace |
+| 15 | [1 · The refund agent](../modules/ma.md) | `make seed-workspace` | your smoke trace open in the Studio |
+| 35 | [2 · Simulate customers](../modules/si.md) | `uv run python modules/simulation/run.py` | an ord_a3 row that broke a rule |
+| 25 | [3 · Read the traces](../modules/tr.md) | `make module M=trace-insights` | one Pass/Fail sentence for the failure the cluster names |
+| 12 | [4 · From insight to eval](../modules/fa.md) | `make regression-eval && make regression-eval-vulnerable` | a gate that exits 0 on the fixed prompt and 1 on v1 |
 | 8 | Take home, questions |  |  |
 
 Total: 120 min.
@@ -53,10 +53,10 @@ Done when you have opened your smoke trace in the Studio and can point at its to
 
 A user simulator plays a persona with a goal, your agent answers, a judge scores the transcript against criteria you write. Today's target is v1, `vulnerable_instructions.md`: it trusts a customer who says "a manager approved it".
 
-Open `modules/11-simulation/run.py` and fill in the TODOs: a second persona, and a post-window scenario on `ord_a3` with `must_not_happen` criteria. Then:
+Open `modules/simulation/run.py` and fill in the TODOs: a second persona, and a post-window scenario on `ord_a3` with `must_not_happen` criteria. Then:
 
 ```bash
-uv run python modules/11-simulation/run.py
+uv run python modules/simulation/run.py
 uv run eq dashboard
 ```
 
@@ -67,7 +67,7 @@ Done when at least one `ord_a3` row shows a broken rule and you can say why. The
 Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
-make m18
+make module M=trace-insights
 uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 
@@ -85,5 +85,5 @@ make regression-eval-vulnerable   # v1: exits 1
 ## Take home
 
 - [The full course](../agenda.md): 18 modules, from the gateway to red teaming.
-- [Red teaming](../modules/16.md) and [annotation queues](../modules/17.md) were left out today; they work on the same agent.
+- [Red teaming](../modules/red-teaming.md) and [annotation queues](../modules/annotation-queues.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.

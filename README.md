@@ -23,11 +23,11 @@ make setup                                        # uv sync, .env from the examp
 make orq-doctor && make gateway-check                         # green checks + your first trace
 ```
 
-Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
+Then open `modules/setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
 
 ## The sections
 
-Setup first, then the same three sections as docs.orq.ai. Module numbers are the build order (`make m01` … `make m17`); sections are the topic.
+Setup first, then one section per stage of the loop. `make module M=<name>` runs any module; `make modules` lists them.
 
 | Setup | AI Gateway | AI Observability | Managed Agents |
 |---|---|---|---|

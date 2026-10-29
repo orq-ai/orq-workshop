@@ -1,0 +1,1 @@
+--8<-- "modules/simulation/README.md"

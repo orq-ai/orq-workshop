@@ -39,10 +39,10 @@ Done when you have opened your smoke trace in the Studio and can point at its to
 
 A user simulator plays a persona with a goal, your agent answers, a judge scores the transcript against criteria you write. Today's target is v1, `vulnerable_instructions.md`: it trusts a customer who says "a manager approved it".
 
-Open `modules/11-simulation/run.py` and fill in the TODOs: a second persona, and a post-window scenario on `ord_a3` with `must_not_happen` criteria. Then:
+Open `modules/simulation/run.py` and fill in the TODOs: a second persona, and a post-window scenario on `ord_a3` with `must_not_happen` criteria. Then:
 
 ```bash
-uv run python modules/11-simulation/run.py
+uv run python modules/simulation/run.py
 uv run eq dashboard
 ```
 
@@ -53,7 +53,7 @@ Done when at least one `ord_a3` row shows a broken rule and you can say why. The
 Criteria check what you expected. Insights reads your traces, summarizes and clusters them, and names what went wrong, including what you did not write a criterion for.
 
 ```bash
-make m18
+make module M=trace-insights
 uv run eq dashboard     # Insights → your run → the failure cluster → two example traces
 ```
 
@@ -71,5 +71,5 @@ make regression-eval-vulnerable   # v1: exits 1
 ## Take home
 
 - [The full course](../agenda.md): 18 modules, from the gateway to red teaming.
-- [Red teaming](../modules/16.md) and [annotation queues](../modules/17.md) were left out today; they work on the same agent.
+- [Red teaming](../modules/red-teaming.md) and [annotation queues](../modules/annotation-queues.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.

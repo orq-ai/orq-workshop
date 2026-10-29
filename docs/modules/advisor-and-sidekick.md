@@ -1,0 +1,1 @@
+--8<-- "modules/advisor-and-sidekick/README.md"

@@ -1,0 +1,1 @@
+--8<-- "modules/managed-agents/README.md"

@@ -1,0 +1,1 @@
+--8<-- "modules/smart-routing/README.md"

@@ -2,7 +2,7 @@
 
 **[orqi](https://github.com/orq-ai/orqi)** is the orq.ai helper agent in your terminal. Ask it to investigate a failing agent, check workspace health, cut cost, build evaluators, or explain the platform, and it answers with your workspace's own tools, models and skills already wired in. No setup, no glue code.
 
-It embeds the [pi coding agent](https://github.com/earendil-works/pi) in-process and boots with the orq.ai MCP tools, the orq.ai skills and the orqi system prompt already wired in. It operates the platform; it does not build your app. For that, [Coding agents](../modules/13.md) wires your own coding agent through `orq launch`.
+It embeds the [pi coding agent](https://github.com/earendil-works/pi) in-process and boots with the orq.ai MCP tools, the orq.ai skills and the orqi system prompt already wired in. It operates the platform; it does not build your app. For that, [Coding agents](../modules/coding-agents.md) wires your own coding agent through `orq launch`.
 
 It is open source and developed in the open: the binary you install below is built from it, and issues and releases live there:
 
@@ -113,13 +113,13 @@ The five variables that matter in this workshop. The [README](https://github.com
 | `ORQ_SERVER` | API base URL (default `https://api.orq.ai`), and so which login session the CLI resolves |
 | `ORQ_PROFILE` | Which API-key profile the orq.ai CLI authenticates with; orqi follows it |
 | `ORQI_MODEL` | Router model (default `openai/gpt-5.6-terra`) |
-| `CI` | Any value suppresses the daily update check; use it in scripts and in `make m06` |
+| `CI` | Any value suppresses the daily update check; use it in scripts and in `make module M=orqi` |
 
 orqi keeps its own agent dir (`~/.orqi/agent`) and never touches `~/.pi`.
 
 ## Next
 
-[Troubleshooting with orqi](../modules/06.md) puts orqi to work on the failures the Gateway to Guardrails modules left in your workspace: a health check, a root-cause report for a real trace, a client-side 404 it cannot see in Traces, and a docs question.
+[Troubleshooting with orqi](../modules/orqi.md) puts orqi to work on the failures the Gateway to Guardrails modules left in your workspace: a health check, a root-cause report for a real trace, a client-side 404 it cannot see in Traces, and a docs question.
 
 ## Official docs
 

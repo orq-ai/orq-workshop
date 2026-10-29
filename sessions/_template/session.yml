@@ -5,7 +5,7 @@ start: "09:00"
 public: false # true = listed on the docs site
 blocks:
   # module: folder under modules/. Title, command and "you leave with" come from its README.
-  - {module: 00-setup, minutes: 20}
+  - {module: setup, minutes: 20}
   # No module? Give title (and optionally command, leave_with) yourself.
   - {title: Welcome, minutes: 5}
   - {title: Break, minutes: 10}

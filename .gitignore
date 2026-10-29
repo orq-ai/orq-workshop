@@ -27,3 +27,4 @@ modules/**/notebook.ipynb
 .agents/
 .kimi-code/
 .mcp.json
+.superpowers/

@@ -68,7 +68,7 @@ orq.annotations.create(trace_id=..., span_id=..., annotations=[{"key": "rating",
 make setup orq-doctor gateway-check test    # first run
 make seed-workspace                       # every prerequisite entity, idempotent
 make generate-traffic                    # 20 traced conversations for failure analysis
-make m01 ... make m17           # run a module's run.py
+make module M=<name>            # run a module's run.py; make modules lists the names
 make regression-eval                       # regression gate, exit 1 on failure
 make redteam-gate               # static red team gate
 make edge                       # modules 09 + 14: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)

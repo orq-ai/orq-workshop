@@ -11,36 +11,36 @@ days:
     blocks:
       - {title: "Welcome, goals, the 4 days", minutes: 10}
       - {title: "Platform overview: Studio, CLI and evaluatorq, and the components the Studio is built from", minutes: 35, leave_with: "a map of how Studio, CLI, evaluatorq and the gateway relate, and where each lives in the Orqflow"}
-      - {module: 00-setup, minutes: 30, title: "Set up: workspace, API key, CLI (orq setup), make seed-workspace under your own prefix"}
+      - {module: setup, minutes: 30, title: "Set up: workspace, API key, CLI (orq setup), make seed-workspace under your own prefix"}
       - {title: Break, minutes: 15}
       - {title: "Platform options: SaaS, VPC or on-prem (Helm), what runs where, who operates what", minutes: 15, leave_with: "which deployment October Insurance runs, and what the IT team operates versus orq.ai"}
       - {title: "Agent basics: LLM vs agent, tools, the agent loop, MCP, model parameters", minutes: 35, leave_with: "the difference between an LLM call, a workflow and an agent, and what temperature, top-p and max tokens change"}
       - {title: "Model access: Model Garden, EU and ZDR filters, restrict models per project, playground (D1-2)", minutes: 30, leave_with: "the test project limited to the agreed EU/ZDR model pool, and a denied call to a model outside it"}
       - {title: Lunch, minutes: 60}
-      - {module: 01-gateway, minutes: 30, title: "Gateway resilience: fallbacks, retry, cache, load balancing"}
-      - {module: 02-tracing, minutes: 30, title: "Tracing: identities, threads, annotations"}
+      - {module: gateway, minutes: 30, title: "Gateway resilience: fallbacks, retry, cache, load balancing"}
+      - {module: tracing, minutes: 30, title: "Tracing: identities, threads, annotations"}
       - {title: "IT controls 1: roles, SSO, restricted/service/management keys, audit logs, workspace security (D1-1). Create keys in the Studio or CLI", minutes: 30, leave_with: "a project key with minimal permissions, a refused write (dry-run it first), and the audit-log entry the key creation left"}
       - {title: Break, minutes: 15}
-      - {module: 05-budgets-keys, minutes: 20, title: "IT controls 2: budgets and keys, instructor demo (D1-7)", leave_with: "seen: a restricted CI key, an identity budget refusing the third call, and the threshold alert reaching the notifier"}
-      - {module: 14-observability-ops, minutes: 30, title: "IT controls 3: start the traffic burst first, then spend per key and the cost alert (D1-7, D1-9)", leave_with: "spend per key from the Reporting API, and a cost alert whose trigger you open in the Studio at the wrap"}
-      - {module: 04-guardrails, minutes: 35, title: "IT controls 4: guardrails and PII redaction (D1-5). Dutch BSN shown in the Studio"}
+      - {module: budgets-and-keys, minutes: 20, title: "IT controls 2: budgets and keys, instructor demo (D1-7)", leave_with: "seen: a restricted CI key, an identity budget refusing the third call, and the threshold alert reaching the notifier"}
+      - {module: alerts-and-webhooks, minutes: 30, title: "IT controls 3: start the traffic burst first, then spend per key and the cost alert (D1-7, D1-9)", leave_with: "spend per key from the Reporting API, and a cost alert whose trigger you open in the Studio at the wrap"}
+      - {module: guardrails, minutes: 35, title: "IT controls 4: guardrails and PII redaction (D1-5). Dutch BSN shown in the Studio"}
       - {title: "IT controls checklist: open the guardrail block, the pii.redact span, spend per key and the alert that fired; what we proved denied today (key, model, budget, PII); what October Insurance still configures on-prem", minutes: 15}
   - name: Day 2 · Learn the pieces, then build (technical, hackathon)
     date: 2026-10-20
     start: "09:00"
     blocks:
       - {title: "Recap day 1, open IT points", minutes: 10}
-      - {module: 08-managed-agents, minutes: 40, title: "Build a generic agent first: tools, streaming, memory, versions (D2-3)"}
-      - {module: 09-knowledge-base-rag, minutes: 30, title: "Knowledge base and retrieval (D1-8)"}
+      - {module: managed-agents, minutes: 40, title: "Build a generic agent first: tools, streaming, memory, versions (D2-3)"}
+      - {module: knowledge-base, minutes: 30, title: "Knowledge base and retrieval (D1-8)"}
       - {title: Break, minutes: 15}
-      - {module: 10-mcp-gateway, minutes: 30, title: "MCP Gateway: governed tool access, including the tool the gateway hides (D1-6)"}
-      - {module: 13-coding-agents, minutes: 15, title: "Build from your assistant: orq CLI, Skills and coding agents through the gateway (D2-1, D2-4)"}
+      - {module: mcp-gateway, minutes: 30, title: "MCP Gateway: governed tool access, including the tool the gateway hides (D1-6)"}
+      - {module: coding-agents, minutes: 15, title: "Build from your assistant: orq CLI, Skills and coding agents through the gateway (D2-1, D2-4)"}
       - {title: "Demo: orq in Claude Desktop (custom connector, ZIP plugin), CLI preferred over MCP for technical users", minutes: 10}
       - {title: Lunch, minutes: 60}
       - {title: "Hackathon kickoff: October Insurance's nominated use cases (claims plus one of advice or compliance), teams, success criteria", minutes: 15}
       - {title: "Build 1: the engineers build the October Insurance agents (5-min stand-up first)", minutes: 80, leave_with: "a working first version of each October Insurance use case, with traces"}
       - {title: Break, minutes: 15}
-      - {module: 07-failure-analysis-evals, minutes: 30, title: "Evals: Python evals and an LLM-as-judge intro (D2-5)"}
+      - {module: failure-analysis, minutes: 30, title: "Evals: Python evals and an LLM-as-judge intro (D2-5)"}
       - {title: "Build 2: add an evaluator and a 5-row dataset to each October Insurance agent, iterate", minutes: 50, leave_with: "two October Insurance agents with an evaluator, and the design principles behind them"}
       - {title: "Demos, review incl. the denied MCP tool call, backlog owned by October Insurance, best practices (right vs wrong, and why)", minutes: 35}
   - name: Day 3 · Concepts, prompts and the Studio (mixed)
