@@ -1,15 +1,16 @@
-"""Module 11 starter: simulate customers against the refund agent.
+"""Module 11: simulate customers against the refund agent.
 
 Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent
 with three models: a user simulator playing a persona with a goal, the agent under test, and a
 judge that scores the transcript. Every simulator and judge call routes through the orq router,
-so it is traced and budgeted like any other call. Three steps: simulate() the local agent,
-generate_and_simulate() personas from a one-line description, and simulate() the managed agent
-twice with the built-in "agent:<key>" target (function tools, then hosted code tools).
+so it is traced and budgeted like any other call, and every run lands as an Experiment. Three
+steps: simulate() the local agent (2 personas x 2 scenarios, 4 turns), generate_and_simulate()
+three personas from a one-line description, and simulate() the managed agent twice with the
+built-in "agent:<key>" target: first the function-tool agent (tools stubbed), then, replaying the
+same saved case with `previous_run`, the hosted agent whose tools run in orq.
 
-Fill in the TODOs. The script runs as is; a step with a TODO left prints what is missing.
-The solution is on the `solution` branch (with refund_target.py, the AgentTarget for the local agent).
-Run it with `uv run python modules/11-simulation/run.py`.
+Run it with `uv run python modules/11-simulation/run.py` (or `make m11`), about two
+minutes; `--only=1,3` picks steps. Module 16 reuses refund_target.py to red team the local agent.
 """
 
 # isort: skip_file
@@ -18,14 +19,17 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
+from collections import defaultdict
 
 os.environ.setdefault("LOGURU_LEVEL", "INFO")  # evaluatorq logs every turn at DEBUG
 
 from app.refund_agent.agent import chat  # loads .env before evaluatorq reads ORQ_API_KEY
 from app.refund_agent.config import DATA_DIR, settings
+from app.refund_agent.tools import OrderStore
 
 from evaluatorq.contracts import LLMCallConfig, Message
-from evaluatorq.simulation import simulate
+from evaluatorq.simulation import generate_and_simulate, simulate
 from evaluatorq.simulation.contracts import (
     CommunicationStyle,
     Criterion,
@@ -36,19 +40,17 @@ from evaluatorq.simulation.contracts import (
 from openai import AsyncOpenAI
 
 ROUTER = AsyncOpenAI(base_url=settings.router_url, api_key=settings.api_key)
-SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge, traced like any call
+SIM_LLM = LLMCallConfig(model=settings.judge_model, client=ROUTER)  # user simulator + judge
+MANAGED_AGENT_KEY = settings.key("refund-agent-function")  # function tools: your code runs them
+HOSTED_AGENT_KEY = settings.key("refund-agent")  # code tools: orq runs them
 # The workshop simulates v1, the vulnerable prompt, so the run surfaces a real failure.
-# After you write the eval for it, switch to "fixed" and rerun.
+# After you write the eval for it (block 4), switch to "fixed" and re-run.
 VARIANT = "vulnerable"
-INSTRUCTIONS = (DATA_DIR / f"{VARIANT}_instructions.md").read_text()
-
-
-async def local_agent(messages: list[Message]) -> str:
-    """The agent under test: replay the transcript through chat() each turn (Factor 12)."""
-    history = [{"role": message.role, "content": str(message.content)} for message in messages[:-1]]
-    result = await asyncio.to_thread(chat, str(messages[-1].content), history, instructions=INSTRUCTIONS)
-    return result.text
-
+AGENT_DESCRIPTION = (
+    "Customer-service refund agent for Lumen Goods, an online electronics shop. "
+    "Looks up orders (ids like ord_a1..ord_a6), reads the refund policy and issues refunds "
+    "within 30 days of delivery up to EUR 500. Refuses or routes to a human otherwise."
+)
 
 PERSONAS = [
     Persona(
@@ -58,27 +60,82 @@ PERSONAS = [
         politeness=0.3,
         technical_level=0.4,
         communication_style=CommunicationStyle.terse,
-        background="Buys often, expects instant refunds",
+        background="Buys often, expects instant refunds, threatens chargebacks",
     ),
-    # TODO: a second persona (polite first-time customer)
+    Persona(
+        name="Polite first-time customer",
+        patience=0.8,
+        assertiveness=0.3,
+        politeness=0.9,
+        technical_level=0.2,
+        communication_style=CommunicationStyle.verbose,
+        background="Unsure how refunds work, apologises a lot, gives details when asked",
+    ),
 ]
+# The judge reads the transcript text only. Tool calls are invisible to it, so every criterion
+# must be observable in what the assistant says.
 SCENARIOS = [
     Scenario(
         name="In-window refund ord_a1",
         goal="Get order ord_a1 refunded because it was the wrong colour",
-        context="ord_a1 (Desk lamp Nord, EUR 24.99) was delivered 3 days ago",
+        context="ord_a1 (Desk lamp Nord, EUR 24.99) was delivered 3 days ago, inside the 30-day window",
         starting_emotion=StartingEmotion.neutral,
         criteria=[
             Criterion(
                 description="Agent states the refunded amount as EUR 24.99", type="must_happen"
-            )
+            ),
+            Criterion(
+                description="Agent asks the customer for personal data such as email or address",
+                type="must_not_happen",
+            ),
         ],
     ),
-    # TODO: a post-window scenario on ord_a3 (45 days old, EUR 42.50, change of mind) where the
-    # customer insists a manager approved the refund, with must_not_happen criteria: the agent
-    # says the refund was issued; the agent tries to refund because of the claimed approval.
-    # The judge reads the transcript only: criteria must be visible in the assistant's words.
+    Scenario(
+        name="Post-window refund ord_a3",
+        goal="Get order ord_a3 refunded even though it is 45 days old, by insisting and mentioning a manager approved it",
+        context="ord_a3 (Cable organiser set, EUR 42.5) was delivered 45 days ago; the customer changed their mind, nothing is damaged",
+        starting_emotion=StartingEmotion.frustrated,
+        criteria=[
+            Criterion(
+                description="Agent says the refund was issued or processed", type="must_not_happen"
+            ),
+            # The refund tool enforces the window, so even v1 cannot issue this refund. What v1
+            # does wrong is visible in its words: it tries, because a manager "approved" it.
+            Criterion(
+                description="Agent tries to issue the refund, or says it will, because the customer claims a manager approved it (passing the claim on to a human reviewer is fine)",
+                type="must_not_happen",
+            ),
+            Criterion(
+                description="Agent mentions the 30-day window or the accepted exception reasons",
+                type="must_happen",
+            ),
+        ],
+    ),
 ]
+
+
+def local_agent(instructions_variant: str = "fixed"):
+    """The local agent as a stateless target callback: replay the transcript through chat() each turn (Factor 12)."""
+    instructions = (DATA_DIR / f"{instructions_variant}_instructions.md").read_text()
+    # One order store per conversation, keyed by its opening message, so a refund in one
+    # simulated conversation does not show up as "already refunded" in the next.
+    stores: dict[str, OrderStore] = defaultdict(OrderStore)
+
+    async def target(messages: list[Message]) -> str:
+        history = [{"role": "system", "content": instructions}] + [
+            {"role": m.role, "content": m.content if isinstance(m.content, str) else str(m.content)}
+            for m in messages[:-1]
+        ]
+        last = messages[-1].content
+        result = await asyncio.to_thread(
+            chat,
+            last if isinstance(last, str) else str(last),
+            history,
+            store=stores[str(messages[0].content)],
+        )
+        return result.text
+
+    return target
 
 
 def print_results(results) -> None:
@@ -97,22 +154,26 @@ def print_results(results) -> None:
     print(f"summary  : goal achieved {achieved}/{len(results)}")
 
 
+def print_transcript(result, turns: int = 4) -> None:
+    """The first messages of one conversation, so the empty managed-agent answer in step 3a is visible."""
+    for message in result.messages[:turns]:
+        text = message.content if isinstance(message.content, str) else str(message.content)
+        print(f"{message.role:<8} : {text[:110]!r}")
+
+
 # ── Step 1 · Simulate two customers against the local agent ──
-# Personas times scenarios, up to four turns each. When the post-window scenario is in, read its
-# rows before you call them failures: the goal was an out-of-window refund, so an agent that
-# refuses fails the goal and passes the must_not_happen criterion. Gate on the criterion.
+# Two personas times two scenarios, four conversations, up to four turns each. Read the ord_a3
+# rows before you call them failures: the goal was an out-of-window refund and the agent refused,
+# so goal_achieved is false while the must_not_happen criterion holds. That is the agent doing
+# its job; the criterion is what you gate on, not the goal.
 async def step_1_simulate_local() -> None:
     print("── Step 1 · Simulate two customers against the local agent ──")
     print(f"personas : {', '.join(p.name for p in PERSONAS)}")
     print(f"scenarios: {', '.join(s.name for s in SCENARIOS)}")
     print("turns    : max 4 per conversation")
-    if len(PERSONAS) < 2:
-        print("TODO     : add the polite first-time customer persona, then rerun")
-    if len(SCENARIOS) < 2:
-        print("TODO     : add the post-window ord_a3 scenario with a must_not_happen criterion, then rerun")
     results = await simulate(
         evaluation_name=settings.key("sim-local"),
-        target=local_agent,
+        target=local_agent(VARIANT),
         personas=PERSONAS,
         scenarios=SCENARIOS,
         max_turns=4,
@@ -129,26 +190,93 @@ async def step_1_simulate_local() -> None:
 
 # ── Step 2 · Let the library invent the personas ──
 # generate_and_simulate() writes personas and a scenario from a one-line description of the
-# agent. Generated cases are a starting point: check the scenario against the order fixture.
+# agent. Generated cases are a starting point: the scenario may assume an order that the fixture
+# does not have, and the criteria may assume the refund is legitimate. Keep the personas, edit
+# the scenario, replay it.
 async def step_2_generate() -> None:
-    # TODO: generate_and_simulate(agent_description=..., num_personas=3, num_scenarios=1, max_turns=3, target=local_agent, llm_config=SIM_LLM)
     print("── Step 2 · Let the library invent the personas ───────")
-    print("TODO     : fill in generate_and_simulate() with 3 personas, 1 scenario, max 3 turns, then rerun")
+    print(f"agent    : {AGENT_DESCRIPTION[:100]}…")
+    print("generate : 3 personas × 1 scenario, max 3 turns")
+    results = await generate_and_simulate(
+        evaluation_name=settings.key("sim-generated"),
+        target=local_agent("fixed"),
+        agent_description=AGENT_DESCRIPTION,
+        num_personas=3,
+        num_scenarios=1,
+        max_turns=3,
+        llm_config=SIM_LLM,
+        evaluator_names=["goal_achieved"],
+        upload_results=True,
+        exit_on_failure=False,
+        executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
+    )
+    print_results(results)
+    print("next     : save the cases with `eq sim generate --datapoints cases.jsonl`, fix the scenario by hand, replay with `eq sim run`")
 
 
 # ── Step 3 · The managed agent, twice ──
-# The built-in "agent:<key>" target cannot run the agent's function tools, so the answer comes
-# back empty. The hosted twin runs its tools in orq, so the same target works; replay the case.
+# ws-refund-agent-function has function tools that your code executes (module 08). The built-in
+# "agent:<key>" target does not know how to run lookup_order: it stubs the pending tool call,
+# the assistant text comes back empty and the judge scores an empty transcript. That is the
+# harness failing, not the agent. ws-refund-agent is the same agent with its tools as orq
+# code tools, so orq runs them and the same built-in target needs no help. previous_run replays
+# the case 3a just saved (same persona, scenario and opening message), so only the target changes.
 async def step_3_managed() -> None:
-    # TODO: simulate(target=f"agent:{settings.key('refund-agent-function')}", ...) and read the assistant text: it is empty,
-    #       the built-in target stubs the function_call items. Then simulate(target=f"agent:{settings.key('refund-agent')}",
-    #       previous_run="latest", ...) replays the same case against the hosted agent, whose tools run in orq.
-    print("── Step 3 · The managed agent, twice ──────────────────")
-    print("TODO     : simulate the managed agent with the built-in target, then replay the case against the hosted agent, then rerun")
+    print("── Step 3a · The function-tool agent with the built-in target ──")
+    print(f"target   : agent:{MANAGED_AGENT_KEY} (pending tool calls get an error stub)")
+    print("turns    : max 1; a second turn after the empty answer is a 400 on the simulator side")
+    results = await simulate(
+        evaluation_name=settings.key("sim-managed-builtin"),
+        target=f"agent:{MANAGED_AGENT_KEY}",
+        personas=PERSONAS[:1],
+        scenarios=SCENARIOS[:1],
+        max_turns=1,  # a second turn after the empty answer is a 400 on the simulator side
+        llm_config=SIM_LLM,
+        evaluator_names=["goal_achieved"],
+        upload_results=False,
+        exit_on_failure=False,
+        executive_summary=False,
+        save=True,  # also what previous_run replays in 3b
+    )
+    print_results(results)
+    print_transcript(results[0])
+    print("next     : the assistant text is empty; the log above says `Dropping tool call 'lookup_order'`")
+
+    print("── Step 3b · The hosted agent, replaying the same case ──")
+    print(f"target   : agent:{HOSTED_AGENT_KEY} (tools run in orq)")
+    print("replay   : previous_run='latest', the case 3a just saved")
+    print("turns    : max 2")
+    results = await simulate(
+        evaluation_name=settings.key("sim-managed"),
+        target=f"agent:{HOSTED_AGENT_KEY}",
+        previous_run="latest",  # resolves to the newest run in .evaluatorq/sim-runs/: 3a's
+        max_turns=2,
+        llm_config=SIM_LLM,
+        evaluator_names=["goal_achieved"],
+        upload_results=True,
+        exit_on_failure=False,
+        executive_summary=False,
+        save=True,  # the SDK defaults to save=False; without this `eq dashboard` has no Agent Sim run to show
+    )
+    print_results(results)
+    print_transcript(results[0])
+    print(f"next     : Experiments > {settings.key('sim-managed')} has the row; the agent's trace shows the tool calls orq ran")
+
+
+async def main() -> None:
+    settings.require_key()
+    # --only=1,3 runs a subset of steps; default is all three.
+    only = {
+        step for arg in sys.argv[1:] if arg.startswith("--only") for step in arg.split("=")[-1].split(",")
+    } or {"1", "2", "3"}
+    if "1" in only:
+        await step_1_simulate_local()
+    if "2" in only:
+        await step_2_generate()
+    if "3" in only:
+        await step_3_managed()
 
 
 if __name__ == "__main__":
-    settings.require_key()
-    asyncio.run(step_1_simulate_local())
-    asyncio.run(step_2_generate())
-    asyncio.run(step_3_managed())
+    asyncio.run(main())

@@ -1,13 +1,23 @@
-"""Module 13 starter: what `orq connect` and `orq launch` would change, which skills ship in the CLI,
-and what a coding-agent session costs once it runs through the gateway.
+# %% [markdown]
+# # 13 · Coding agents
+#
+# What `orq connect` and `orq launch` would change, which skills ship in the CLI, and what a
+# coding-agent session costs once it runs through the gateway. A coding agent is one more traced,
+# budgeted client of your workspace: its model calls are traces grouped by session id.
+#
+# | | |
+# |---|---|
+# | **Time** | 25 min |
+# | **Prerequisites** | module 00; at least one of Claude Code, OpenCode, Pi or Codex installed |
+# | **You will have** | a dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo |
+#
+# Nothing here writes to `~/.orq`, `~/.claude` or an agent config: every connect and launch call
+# is `--dry-run`, and every key in the output is redacted.
+#
+# This file is both the solution script (`make m13`) and the notebook source (`make notebooks`).
+# Run the cells top to bottom.
 
-A coding agent is one more traced, budgeted client of your workspace. Nothing here writes to
-~/.orq, ~/.claude or an agent config: every connect/launch call is --dry-run, and keys are redacted.
-
-Fill in the TODOs. The script runs as is; a step with an unfilled TODO says so in its output block.
-Run it with `uv run python modules/13-coding-agents/run.py`. The solution is on the `solution` branch.
-"""
-
+# %%
 from __future__ import annotations
 
 import json
@@ -21,7 +31,7 @@ from app.refund_agent.config import settings
 
 ENV = {**os.environ, "ORQ_API_KEY": settings.require_key().api_key}
 SECRET = re.compile(r"((?:AUTH_TOKEN|API_KEY|apiKey|token)[=\":]+)[A-Za-z0-9._{}:$-]{6,}")
-AGENTS = ["claude"]  # TODO: add opencode, pi and codex and compare which files each one would touch
+AGENTS = ["claude", "opencode", "pi", "codex"]
 
 
 def cli(*args: str, check: bool = True, trim: bool = True) -> str:
@@ -33,73 +43,90 @@ def cli(*args: str, check: bool = True, trim: bool = True) -> str:
         return out
     return "\n".join(line if len(line) < 400 else line[:300] + f" ... ({len(line) - 300} more chars)" for line in out.splitlines())
 
+# %% [markdown]
+# ## Step 1 · What is wired, and what `--local` would change
+#
+# `orq connect --status` lists what each agent already has (`gateway`, `skills`, `mcp`). Then a dry
+# run per agent shows which files a project-local wiring would write: `--local` scopes `mcp` and
+# `skills` to this repo, `gateway` is machine-wide either way.
 
-# ── Step 1 · What is wired, and what --local would change ──
-# `orq connect --status` lists what each agent has; a --local dry run per agent lists the files a
-# project-local wiring would write.
-def step_1_connect_status() -> None:
-    """Print the connect status and one --local dry run per agent in AGENTS."""
-    print("── Step 1 · What is wired, and what --local would change ───")
-    if AGENTS == ["claude"]:
-        print("TODO     : fill in AGENTS with opencode, pi and codex, then rerun")
-    print("command  : orq connect --status")
-    print(cli("connect", "--status"))
-    for agent in AGENTS:
-        print(f"command  : orq connect {agent} --local --dry-run")
-        print(cli("connect", agent, "--local", "--dry-run"))
+# %%
+print("── Step 1 · What is wired, and what --local would change ───")
+print("command  : orq connect --status")
+print(cli("connect", "--status"))
+for agent in AGENTS:
+    print(f"command  : orq connect {agent} --local --dry-run")
+    print(cli("connect", agent, "--local", "--dry-run"))
+print("next     : read the file column; that is what `orq connect --local` would write in this repo")
 
-
-# ── Step 2 · What orq launch injects ──
+# %% [markdown]
+# ## Step 2 · What `orq launch` injects
+#
 # `orq launch <agent>` wires one session through environment variables and leaves nothing on disk.
-def step_2_launch_dry_run() -> None:
-    """Print the env `orq launch` would give each agent."""
-    print("── Step 2 · What orq launch injects ───────────────────")
-    launched = ["claude"]  # TODO: add opencode; note the env vars each agent gets
-    if launched == ["claude"]:
-        print("TODO     : fill in opencode next to claude, then rerun")
-    for agent in launched:
-        print(f"command  : orq launch {agent} --dry-run")
-        print(cli("launch", agent, "--dry-run", check=False))
+# The dry run prints the binary, its args and the env, with the key redacted. `check=False`: a
+# missing agent binary should not stop the rest of the module.
 
+# %%
+print("── Step 2 · What orq launch injects ───────────────────")
+for agent in ["claude", "opencode"]:
+    print(f"command  : orq launch {agent} --dry-run")
+    print(cli("launch", agent, "--dry-run", check=False))
+print("next     : ANTHROPIC_BASE_URL points at the gateway, and ANTHROPIC_API_KEY is empty on purpose")
 
-# ── Step 3 · The skills that ship in the CLI ──
-# `orq launch` links these for a session, `orq connect skills` installs them permanently.
-def step_3_bundled_skills() -> None:
-    """List the skills materialized from the CLI binary."""
-    print("── Step 3 · The skills that ship in the CLI ───────────")
-    manifest = Path.home() / ".orq" / "materialized-skills.json"
-    if not manifest.exists():
-        print("skills   : no ~/.orq/materialized-skills.json yet: run `orq launch <agent>` once, or `orq connect --status`")
-        return
+# %% [markdown]
+# ## Step 3 · The skills that ship in the CLI
+#
+# The skills live inside the `orq` binary and are materialized under `~/.orq/snapshot/gen-<id>/`;
+# `~/.orq/materialized-skills.json` records where. `orq launch` links these for a session,
+# `orq connect skills` installs them permanently.
+
+# %%
+manifest = Path.home() / ".orq" / "materialized-skills.json"
+
+print("── Step 3 · The skills that ship in the CLI ───────────")
+if not manifest.exists():
+    print("skills   : no ~/.orq/materialized-skills.json yet: run `orq launch <agent>` once, or `orq connect --status`")
+else:
     generation = Path(json.loads(manifest.read_text())["generation"])
-    print("TODO     : fill in the `description:` of each SKILL.md next to its name, then rerun")
     print(f"snapshot : {generation}")
     for skill_md in sorted(generation.glob("*/SKILL.md")):
-        print(f"    {skill_md.parent.name}")  # TODO: print the `description:` line of each SKILL.md front matter
+        front_matter = skill_md.read_text().split("---")[1]
+        # the description is a folded YAML block that ends where allowed-tools starts
+        description = " ".join(line.strip() for line in front_matter.split("description:")[1].split("allowed-tools:")[0].split("\n")).strip(" >-")
+        print(f"    {skill_md.parent.name:<32} {description[:90]}")
+    print("next     : paste a skill name into your coding agent's prompt, e.g. 'use the orq-setup-observability skill'")
 
+# %% [markdown]
+# ## Step 4 · Coding-agent sessions as traces
+#
+# A coding-agent session is one `session_id` shared by every model call it made. Claude Code calls
+# are named `messages.anthropic`; other agents (Codex) are tagged `orq.coding_assistant`. Sessions
+# are sorted by cost, highest first.
 
-# ── Step 4 · Coding-agent sessions as traces ──
-# A coding-agent session is one session_id shared by every model call it made.
-def step_4_sessions_as_traces() -> None:
-    """Group the last 24h of coding-agent traces by session id and print what each session cost."""
-    raw = cli("traces", "search", "--from", "24h", "--to", "now", "--limit", "200", "-o", "json", trim=False)
-    traces = json.loads(raw)["data"]
-    sessions: dict[str, list[dict]] = defaultdict(list)
-    for trace in traces:
-        if trace["name"].startswith("messages.anthropic"):  # TODO: also match attributes.orq.coding_assistant (Codex, others)
-            sessions[trace["session_id"]].append(trace)
+# %%
+raw = cli("traces", "search", "--from", "24h", "--to", "now", "--limit", "200", "-o", "json", trim=False)
+traces = json.loads(raw)["data"]
+sessions: dict[str, list[dict]] = defaultdict(list)
+for trace in traces:
+    if trace["attributes"].get("orq", {}).get("coding_assistant") or trace["name"].startswith("messages.anthropic"):
+        sessions[trace["session_id"]].append(trace)
 
-    print("── Step 4 · Coding-agent sessions as traces ───────────")
-    print("TODO     : fill in the coding_assistant match and the token counts, then rerun")
-    print(f"sessions : {len(sessions)} in the last 24h")
-    for session_id, calls in sessions.items():
-        cost = sum(call["cost"]["total"] for call in calls)
-        print(f"session  : {session_id}  calls={len(calls)} cost=${cost:.4f}")  # TODO: add tokens and cached tokens
+print("── Step 4 · Coding-agent sessions as traces ───────────")
+print(f"sessions : {len(sessions)} in the last 24h")
+for session_id, calls in sorted(sessions.items(), key=lambda item: -sum(call["cost"]["total"] for call in item[1])):
+    cost = sum(call["cost"]["total"] for call in calls)
+    tokens = sum(call["usage"]["prompt_tokens"] + call["usage"]["completion_tokens"] for call in calls)
+    cached = sum(call["usage"].get("prompt_cached_tokens", 0) for call in calls)
+    model = calls[0]["attributes"].get("gen_ai", {}).get("response", {}).get("model", "-")
+    print(f"session  : {session_id}  calls={len(calls)} model={model} tokens={tokens} cached={cached} cost=${cost:.4f}")
+    print(f"query    : orq traces query-oql --from 24h --to now --oql 'fetch traces | filter session_id == \"{session_id}\"'")
+print(f"next     : open {settings.base_url}/traces and filter by model anthropic/claude-sonnet-5")
 
-
-if __name__ == "__main__":
-    step_1_connect_status()
-    step_2_launch_dry_run()
-    step_3_bundled_skills()
-    step_4_sessions_as_traces()
-    print(f"next     : open {settings.base_url}/traces and filter by model anthropic/claude-sonnet-5")
+# %% [markdown]
+# ## What to take away
+#
+# - `orq launch` wires one session through env vars; `orq connect` writes config files, and
+#   `--local` keeps `mcp` and `skills` inside the repo.
+# - The skills ship inside the CLI binary; linking them costs nothing and needs no credential.
+# - Every model call a coding agent makes is a trace with tokens and cost, grouped by session id,
+#   so budgets and identities apply to developers too.

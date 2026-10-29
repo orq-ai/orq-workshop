@@ -1,10 +1,10 @@
-"""Module 00 starter: one refund turn through the gateway, spelled out.
+"""Module 00 solution: one refund turn through the gateway, spelled out.
 
-Nothing to code in this module: `make gateway-check` is the exercise, and this file is the same as the
-solution. It makes the call without the checks, so you can read the three things every later
-module relies on: the answer, the tools the model called, and the trace id the gateway sent back.
+Nothing to code in this module: `make gateway-check` is the exercise. This file makes the same call
+without the checks, so you can read the three things every later module relies on: the answer,
+the tools the model called, and the trace id the gateway sent back.
 
-Run it with `uv run python modules/00-setup/run.py`.
+Run it with `make m00` (or `uv run python modules/00-setup/run.py`).
 """
 
 from app.refund_agent.agent import chat
