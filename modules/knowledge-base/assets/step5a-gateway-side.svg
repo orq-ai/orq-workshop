@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="step5a-gateway-side-title step5a-gateway-side-desc">
   <title id="step5a-gateway-side-title">Gateway-side retrieval: asked for in the request body</title>
-  <desc id="step5a-gateway-side-desc">Architecture diagram for module 09 step 5a. Your code sends a plain chat completion with the knowledge base named in extra_body, asking the gateway to inject the chunks. In this workspace nothing was injected: the request reached the model with 25 prompt tokens and a generic answer came back.</desc>
+  <desc id="step5a-gateway-side-desc">Architecture diagram for the knowledge-base module, step 5a. Your code sends a plain chat completion with the knowledge base named in extra_body, asking the gateway to inject the chunks. In this workspace nothing was injected: the request reached the model with 25 prompt tokens and a generic answer came back.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="1040" class="bg"/>

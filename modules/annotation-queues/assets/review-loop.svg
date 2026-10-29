@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 992" width="1920" height="992" role="img" aria-labelledby="review-loop-title review-loop-desc">
   <title id="review-loop-title">The annotation queue review loop</title>
-  <desc id="review-loop-desc">Architecture diagram: refund-agent traces reach the annotation queue ws-review-queue either through a Studio trace automation or through the add_items API; a reviewer, in the Studio or through the Annotations API, applies a rating and a defect to each queued span, which marks it reviewed; the bad ones are promoted as rows into the dataset ws-review-dataset, which module 07's experiments run on.</desc>
+  <desc id="review-loop-desc">Architecture diagram: refund-agent traces reach the annotation queue ws-review-queue either through a Studio trace automation or through the add_items API; a reviewer, in the Studio or through the Annotations API, applies a rating and a defect to each queued span, which marks it reviewed; the bad ones are promoted as rows into the dataset ws-review-dataset, which the evaluators-and-experiments module's experiments run on.</desc>
   <style>@import url("../../../scripts/diagram.css");</style>
   <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
   <rect width="1920" height="992" class="bg"/>
@@ -42,7 +42,7 @@
   <rect x="1392" y="320" width="128" height="24" rx="4" class="mask"/>
   <text x="1456" y="338" text-anchor="middle" class="lbl t-accent">BAD ONES</text>
   <rect x="1704" y="480" width="128" height="24" rx="4" class="mask"/>
-  <text x="1712" y="498" class="lbl">MODULE 07</text>
+  <text x="1712" y="498" class="lbl">EVALUATORS</text>
   <!-- Node: Traces (store) -->
   <rect x="96" y="304" width="320" height="112" rx="16" class="mask"/>
   <rect x="96" y="304" width="320" height="112" rx="16" class="soft"/>
@@ -91,7 +91,7 @@
   <rect x="1552" y="592" width="56" height="24" rx="4" class="tag-box ink"/>
   <text x="1580" y="610" text-anchor="middle" class="tag t-ink">RUN</text>
   <text x="1680" y="640" text-anchor="middle" class="name">Experiment</text>
-  <text x="1680" y="670" text-anchor="middle" class="sub">module 07 evaluators</text>
+  <text x="1680" y="670" text-anchor="middle" class="sub">the evaluators module</text>
   <!-- Callout -->
   <path d="M 464 784 Q 600 776 1056 688" class="faint dash"/>
   <circle cx="1056" cy="688" r="4" class="dot"/>

@@ -1,4 +1,4 @@
-"""Module 10: the refund tools as an MCP server, governed by an orq MCP Gateway.
+"""The mcp-gateway module: the refund tools as an MCP server, governed by an orq MCP Gateway.
 
 Tools leak. A coding agent that can look up orders can also refund them if both tools sit on
 the same server. The MCP Portal puts a governed endpoint between the client and the upstream
@@ -235,7 +235,7 @@ async def step_4_consume(gateway: Any) -> None:
 # {"type": "mcp", "key": <server key>, "tool_id": <id from sync>}, one entry per tool. The agent
 # then runs the tool server-side: the response carries an mcp_call output item and the trace
 # has MCP Connect, MCP Discover Tools and one span.tool per call. A copy of ws-refund-agent
-# keeps module 07's agent untouched. UNVERIFIED shape: the block reports what the API says.
+# keeps the failure-analysis module's agent untouched. UNVERIFIED shape: the block reports what the API says.
 def step_5_agent_copy(server: Any) -> None:
     print("── Step 5 · Give the managed agent one MCP tool ───────")
     print(f"agent    : {AGENT_COPY_KEY} (copy of {settings.key('refund-agent')})")

@@ -11,7 +11,7 @@
 # | | |
 # |---|---|
 # | **Time** | 30 min |
-# | **Prerequisites** | module 08, `make seed-workspace` |
+# | **Prerequisites** | the managed-agents module, `make seed-workspace` |
 # | **You will have** | a refund agent that consults `gpt-5.6-sol` only before a refusal and delegates the closing note to `gpt-5.4-nano`, with the cost of each choice read off one trace |
 #
 # This file is both the solution script (`make module M=advisor-and-sidekick`) and the notebook source (`make notebooks`).
@@ -46,7 +46,7 @@ def run_agent(
     max_steps: int = 8,
     **kwargs: Any,
 ) -> dict[str, Any]:
-    """One customer turn through module 08's loop; keeps every output item so step 3 can read the delegation.
+    """One customer turn through the managed-agents module's loop; keeps every output item so step 3 can read the delegation.
 
     Execute the `function_call` items that are ours, skip the ones with an `orq:*` sibling (the
     platform already ran those), continue with `previous_response_id` until no call is pending.
@@ -145,7 +145,7 @@ print(f"next     : Agents > {settings.prefix}-refund-agent-delegating > Tools in
 #
 # `ord_a6` is a EUR 620 frame; the policy caps refunds at EUR 500. The instructions send the agent to
 # the advisor before it refuses, and to the sidekick for the closing note. `run_agent` (above) is
-# module 08's loop, plus the full list of output items: that is where the delegation shows up.
+# the managed-agents module's loop, plus the full list of output items: that is where the delegation shows up.
 
 # %%
 started = time.time()
@@ -224,7 +224,7 @@ print(f"next     : orq traces get-span {turn['traces'][-1]} <span_id> for any ro
 # A copy of the agent points its advisor at a model that does not exist. The turn does not fail:
 # the `orq:advisor` item carries the error text, the advisor span stays `ok`, and the agent answers
 # from its own model. So a broken advisor degrades quality silently. Alert on the advisor's error
-# text, or on `genai.error_rate` filtered to the advisor's model (module 14), not on the agent.
+# text, or on `genai.error_rate` filtered to the advisor's model (the alerts-and-webhooks module), not on the agent.
 
 # %%
 print("── Step 5 · When the secondary model fails ────────────")

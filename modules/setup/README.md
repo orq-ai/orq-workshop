@@ -66,7 +66,7 @@ That second line of `orq version` matters: when a command exists in the docs but
 
 ### Step 2 · Pick a project and mint a key into this repo
 
-`orq setup --local` creates a project-scoped API key and writes it to `./.env`. Say no to wiring coding agents for now, module 13 does that deliberately.
+`orq setup --local` creates a project-scoped API key and writes it to `./.env`. Say no to wiring coding agents for now, the coding-agents module does that deliberately.
 
 ```bash
 $ git clone https://github.com/orq-ai/orq-workshop && cd orq-workshop
@@ -89,7 +89,7 @@ Four commands, in this order. Each one proves one layer works before the next on
 $ make setup
 ```
 
-Runs `uv sync --all-groups --extra langgraph`, which creates `.venv/` and installs the pinned dependencies from `uv.lock`: the orq.ai SDK, the OpenAI client, evaluatorq, OpenTelemetry, the LangGraph extra for module 02, plus the test, docs and notebook tool groups. Then it copies `.env.example` to `.env` if you do not have one yet. Nothing talks to orq.ai.
+Runs `uv sync --all-groups --extra langgraph`, which creates `.venv/` and installs the pinned dependencies from `uv.lock`: the orq.ai SDK, the OpenAI client, evaluatorq, OpenTelemetry, the LangGraph extra for the tracing module, plus the test, docs and notebook tool groups. Then it copies `.env.example` to `.env` if you do not have one yet. Nothing talks to orq.ai.
 
 ```text
 uv sync --all-groups --extra langgraph
@@ -141,7 +141,7 @@ $ orq doctor | grep -B3 "status: fail"    # the message of every failing check
 $ make test
 ```
 
-Runs `pytest -q` over `tests/`: the session and build tests plus five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq.ai: this is the business logic every later module leans on, and the reason a refund "outside policy" in module 16 is a prompt problem, not a tool problem.
+Runs `pytest -q` over `tests/`: the session and build tests plus five unit tests of the three tools the refund agent calls, `lookup_order`, `get_policy`, `issue_refund`, against the in-memory order store. They check that a customer cannot see another customer's order, that an in-window refund goes through exactly once, that the 30-day window and the exception reasons are enforced, that the EUR 500 limit holds and an unknown tool is rejected, and that every policy topic resolves. No model, no orq.ai: this is the business logic every later module leans on, and the reason a refund "outside policy" in the red-teaming module is a prompt problem, not a tool problem.
 
 ```text
 uv run pytest -q
@@ -175,7 +175,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 | `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API Keys** (**+ Secret key**) |
 | `401` from the router | wrong or stale key in `.env` | `.env` beats your shell: check that file, not `echo $ORQ_API_KEY` |
 | `404 Model ... not found` | `MODEL` in `.env` is not enabled in the workspace | enable it under **Models**, or set `MODEL=openai/gpt-6-luna` |
-| `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |
+| `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (the orqi module plants this failure on purpose) |
 | `400 ... reasoning_effort` on a tools call | a GPT-5.x model on `/chat/completions` | the app uses `/responses`; on chat completions set `reasoning_effort: "none"` |
 
 #### 3e · `make seed-workspace`: every entity the modules expect
@@ -184,7 +184,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 $ make seed-workspace
 ```
 
-Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed-workspace` as a prerequisite and module 12's gates need the seeded agent and judge; run it once here and you can start any module. `make reset-workspace` deletes everything with the prefix, and refuses the bare shared `ws`.
+Runs `app/refund_agent/entities.py seed`: the dataset, the knowledge base, the two evaluators, the tools, the three managed agents, the alert, the annotation queue and the review dataset, every one with your seat prefix (`WS_PREFIX`, e.g. `ws07`; the examples in these modules write `ws-`, read it as your prefix). It is idempotent: an entity that already exists is found by key and left alone, so run it as often as you like. Seven modules list `make seed-workspace` as a prerequisite and the evals-in-ci module's gates need the seeded agent and judge; run it once here and you can start any module. `make reset-workspace` deletes everything with the prefix, and refuses the bare shared `ws`.
 
 ```text
 uv run python -m app.refund_agent.entities seed
@@ -200,7 +200,7 @@ agent    : ws-refund-agent
 
 ### Step 4 · Look at the trace
 
-Open **Traces** in the Studio, paste the trace id in the search box. You see the last model call of the loop, with cost, tokens and latency, and no instrumentation code in the app. The earlier calls are their own traces; module 02 nests them under one span.
+Open **Traces** in the Studio, paste the trace id in the search box. You see the last model call of the loop, with cost, tokens and latency, and no instrumentation code in the app. The earlier calls are their own traces; the tracing module nests them under one span.
 
 ### Step 5 · Meet the sample app
 
@@ -260,7 +260,7 @@ The orq.ai CLI installs with one command and `orq setup` signs in and wires ever
 
 ## End state
 
-A working `.env`, a green `orq doctor`, one traced call in your workspace, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
+A working `.env`, a green `orq doctor`, one traced call in your workspace: `.env` in this repo, and the traced call in your workspace. Next: [Gateway](https://orq-ai.github.io/orq-workshop/modules/gateway/).
 
 ## Official docs
 

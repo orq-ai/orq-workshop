@@ -10,7 +10,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | module 00 (`make setup`, `make gateway-check` green) |
+# | **Prerequisites** | the setup module (`make setup`, `make gateway-check` green) |
 # | **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span |
 #
 # This file is both the solution script (`make module M=gateway`) and the notebook source
@@ -47,7 +47,7 @@ print(f"next     : search the trace id in {TRACES_URL}; expect one model span pe
 
 # %% [markdown]
 # In the Studio you find one span per model call in the loop (three here: two tool calls, then
-# the answer), each with cost and latency. Module 02 nests them under one agent span.
+# the answer), each with cost and latency. The tracing module nests them under one agent span.
 #
 # ## Step 2 · Force a fallback
 #

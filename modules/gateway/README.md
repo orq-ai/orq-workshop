@@ -68,7 +68,7 @@ trace    : c1ffc319ff931393bb52d3e50d24e7f6
 next     : search the trace id in https://my.orq.ai/traces; expect one model span per round of the tool loop
 ```
 
-`tools` is the order the model called them: it looked the order up, checked the policy, then issued the refund. In the Studio you find one span per model call in the tool loop (four here: three tool calls, then the answer), each with cost and latency. Module 02 nests them under one agent span.
+`tools` is the order the model called them: it looked the order up, checked the policy, then issued the refund. In the Studio you find one span per model call in the tool loop (four here: three tool calls, then the answer), each with cost and latency. The tracing module nests them under one agent span.
 
 ### Step 2 · Force a fallback
 
@@ -152,7 +152,7 @@ Add a fallback chain and a 600 second exact-match cache to `modules/gateway/run.
 ## Gotchas
 
 - Every fallback attempt gets the same `call_timeout`. Total worst case is `timeout × (1 + fallbacks)`.
-- GPT-5.x models reject `tools` on `/chat/completions` unless `reasoning_effort` is `"none"`. The app uses `/responses`, where tools just work; frameworks that still speak chat completions (the LangGraph stretch in module 02) set the flag.
+- GPT-5.x models reject `tools` on `/chat/completions` unless `reasoning_effort` is `"none"`. The app uses `/responses`, where tools just work; frameworks that still speak chat completions (the LangGraph stretch in the tracing module) set the flag.
 - `cache` keys on the exact request. A different `thread` or `metadata` value is a different cache key.
 - The load balancer picks per request. With two models and four calls you may see the same model four times.
 

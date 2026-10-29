@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 35 min |
-# | **Prerequisites** | modules 00 to 02, `make seed-workspace` |
+# | **Prerequisites** | the setup, gateway and tracing modules, `make seed-workspace` |
 # | **You will have** | the refund policy searched three ways, re-chunked two ways, wired into the local agent in place of `get_policy`, pre-fetched into a plain completion, and searched by a managed agent through its knowledge tools |
 #
 # This file is both the solution script (`make module M=knowledge-base`) and the notebook source
@@ -276,7 +276,7 @@ print("next     : the response keys are still just 'matches'; the refined query 
 # orq POSTs `{query, top_k, threshold, filter_by, search_options, rerank_config}` to `api_url`,
 # answering `{"matches": [{id, text, metadata, scores: {search_score, rerank_score}}]}`, Bearer `api_key`.
 # `app/edge.py` implements it over the four policy files with keyword scoring (the same process
-# receives module 14's webhooks). orq's servers call `api_url`, so it must be public: `make edge`
+# receives the alerts-and-webhooks module's webhooks). orq's servers call `api_url`, so it must be public: `make edge`
 # behind `npx localtunnel --port 8001`, or the instance the room shares, as `WS_EDGE_URL`.
 
 # %%

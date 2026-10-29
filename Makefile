@@ -69,7 +69,7 @@ diagrams: ## Re-export the diagram SVGs (modules/*/assets, docs/assets/diagrams)
 # Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.
 NB_SOURCES := $(shell grep -l "^\# %%" modules/*/run.py 2>/dev/null)
 
-notebooks: ## Generate modules/NN-*/notebook.ipynb from every percent-format run.py (on the solution branch)
+notebooks: ## Generate modules/*/notebook.ipynb from every percent-format run.py (on the solution branch)
 	@for src in $(NB_SOURCES); do dir=$${src%/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
 
 lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root

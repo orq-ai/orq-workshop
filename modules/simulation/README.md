@@ -16,7 +16,7 @@ Four simulation runs as Experiments and in the local dashboard, a managed agent 
 
 ## Why
 
-Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent with three models: a **user simulator** playing a persona with a goal, the **agent under test**, and a **judge** that scores the transcript. Every one of those model calls goes through the orq.ai router with your key, so they are traced, costed and budgeted like the agent itself. Module 16 runs the same loop with an attacker instead of a customer.
+Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent with three models: a **user simulator** playing a persona with a goal, the **agent under test**, and a **judge** that scores the transcript. Every one of those model calls goes through the orq.ai router with your key, so they are traced, costed and budgeted like the agent itself. The red-teaming module runs the same loop with an attacker instead of a customer.
 
 ## The one concept to understand first
 
@@ -235,7 +235,7 @@ $ make evaluatorq-dashboard                 # http://127.0.0.1:8080 · Ctrl-C to
 $ make evaluatorq-dashboard PORT=8600     # another port if 8080 is taken
 ```
 
-With no argument it scans **both** local stores: `.evaluatorq/sim-runs/` (this module) and `.evaluatorq/runs/` (module 16 red teaming). One server, both kinds of run.
+With no argument it scans **both** local stores: `.evaluatorq/sim-runs/` (this module) and `.evaluatorq/runs/` (the red-teaming module red teaming). One server, both kinds of run.
 
 ![Screenshot: the evaluatorq dashboard home. Twenty-eight jobs run, split red team 86% and agent sim 14%, with average cost per job, total spend and token usage, and a recent-runs table listing the four ws-sim runs this module just produced.](assets/dashboard-home.png)
 
@@ -288,7 +288,7 @@ Evaluators skip Agent runs that ended in an error, so scores reflect completed r
 
 ## Go further
 
-Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim simulate --input cases.jsonl` after every prompt change: that is the regression test module 12 puts in CI. Module 16 turns the same targets against an attacker.
+Save a generated run's cases with `eq sim generate --datapoints cases.jsonl`, edit the scenario the library got wrong, and replay it with `eq sim simulate --input cases.jsonl` after every prompt change: that is the regression test the evals-in-ci module puts in CI. The red-teaming module turns the same targets against an attacker.
 
 ## End state
 

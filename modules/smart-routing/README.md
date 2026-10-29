@@ -143,7 +143,7 @@ call     : metadata tier=free, model openai/gpt-5.6-luna
 answered : gpt-5.6-luna
 trace    : 4e6b71be752fc5a63c266cd5e9427352
 verdict  : rule did not fire: a plain router call carries no project scope, so a project rule never sees it
-disabled : rrl_01m2k94dh6v5317h4r7yg42s2k (kept in place for module 08)
+disabled : rrl_01m2k94dh6v5317h4r7yg42s2k (kept in place for the managed-agents module)
 ── Step 3b · A workspace-wide rule, gated on a tag ────
 rule     : rrl_01m2kkgkxhgw2c9nn9jxbjxerj (workspace-wide)
 cel      : metadata["ws_module"] == "03" && model == "openai/gpt-5.6-luna"
@@ -154,7 +154,7 @@ deleted  : rrl_01m2kkgkxhgw2c9nn9jxbjxerj
 next     : open the tagged trace; a span.load_balancer span records the rule's target
 ```
 
-Two things happened. The project-scoped rule was created and validated, but did not match: in this workspace a plain router call carries no project scope (`project_id` is empty on its trace, with an all-projects key and with a project-scoped key alike), and a project rule only sees requests that have one, such as the agents module 08 runs. So the solution proves the redirect with a workspace-wide rule whose CEL is gated on a metadata key nobody else sends, `metadata["ws_module"] == "03"`, and deletes it afterwards. Both rules are cleaned up in a `finally`, so a failed gateway call or trace lookup cannot leave a live rule behind. The proof is in the spans of the matching trace:
+Two things happened. The project-scoped rule was created and validated, but did not match: in this workspace a plain router call carries no project scope (`project_id` is empty on its trace, with an all-projects key and with a project-scoped key alike), and a project rule only sees requests that have one, such as the agents the managed-agents module runs. So the solution proves the redirect with a workspace-wide rule whose CEL is gated on a metadata key nobody else sends, `metadata["ws_module"] == "03"`, and deletes it afterwards. Both rules are cleaned up in a `finally`, so a failed gateway call or trace lookup cannot leave a live rule behind. The proof is in the spans of the matching trace:
 
 ```console
 $ orq request GET /v3/traces/052a64b6c580dc0e17c859d1f50db608/spans -o json | jq -c '.body.data[] | {type, name, model}'
@@ -163,7 +163,7 @@ $ orq request GET /v3/traces/052a64b6c580dc0e17c859d1f50db608/spans -o json | jq
 {"type":"span.responses","name":"chat openai/gpt-5.4-nano","model":"gpt-5.4-nano"}
 ```
 
-The request asked for `gpt-5.6-luna`; a `span.load_balancer` span records the rule's target and `gpt-5.4-nano` answered. The project rule is left in place, disabled, for module 08.
+The request asked for `gpt-5.6-luna`; a `span.load_balancer` span records the rule's target and `gpt-5.4-nano` answered. The project rule is left in place, disabled, for the managed-agents module.
 
 ### Step 4 · The same from the CLI
 
@@ -228,7 +228,7 @@ Session affinity keeps every turn of a conversation on the model the Smart Route
 
 ## Go further
 
-Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from module 01 on the request for the days a provider is down.
+Combine both: put the `model_ref` of the router in a routing rule's `models_config` so a whole tier of traffic is auto-routed, and keep `fallbacks` from the gateway module on the request for the days a provider is down.
 
 ## End state
 

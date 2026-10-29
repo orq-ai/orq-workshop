@@ -15,11 +15,11 @@ Four real answers from orqi about your own workspace, a diagnosis of a seeded cl
 
 ## Why
 
-Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 400 guardrail blocks (`make generate-traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
+The gateway, tracing, smart-routing, guardrails and budgets-and-keys modules produce failures on purpose: 408 timeouts from the fallback chain, 404s from bad model ids, 400 guardrail blocks (`make generate-traffic` seeds them if you are here first). Someone has to read them. orqi turns "what broke in the last two hours" into one command, with the same MCP tools and skills your coding agent gets, minus the coding.
 
 ## The one concept to understand first
 
-orqi has the same 43 `orq_` tools and the same skills your coding agent gets in module 13, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
+orqi has the same 43 `orq_` tools and the same skills your coding agent gets in the coding-agents module, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
 
 ## Steps
 
@@ -49,7 +49,7 @@ Example timeout trace: `1ef2bd90187a45fe20d13c52c15475d3`, which ran for 8.4s be
 1. **Investigate the `gpt-5.6-sol` timeout cluster first.** Use `investigate-root-cause` on trace `1ef2bd90187a45fe20d13c52c15475d3`.
 ```
 
-Those 408s are your module 01 fallback runs (900 ms `call_timeout`). The skill pulled `get_analytics_overview`, `query_analytics` and `list_traces`, and it names the trace to look at next.
+Those 408s are your the gateway module fallback runs (900 ms `call_timeout`). The skill pulled `get_analytics_overview`, `query_analytics` and `list_traces`, and it names the trace to look at next.
 
 ```bash
 $ orqi "list the traces with errors from the last 2 hours and group them by root cause"
@@ -107,7 +107,7 @@ Expected output (trimmed, 37 s):
 **Confidence: High.**
 ```
 
-That is the `investigate-root-cause` skill: it walked the span tree with `list_spans`, found the first upstream failure, and separated it from the tool calls that had succeeded. Compare with module 01, where you set that timeout by hand.
+That is the `investigate-root-cause` skill: it walked the span tree with `list_spans`, found the first upstream failure, and separated it from the tool calls that had succeeded. Compare with the gateway module, where you set that timeout by hand.
 
 ### Step 2 · A failure orqi cannot see in Traces
 
@@ -133,7 +133,7 @@ trace    : None (no trace id: the request never reached the gateway)
 next     : step 3 pastes this error into orqi
 ```
 
-Step 1 counts by HTTP status. In this run every failure in the window was a 400 (the guardrail blocks of module 04); earlier runs also showed the 408 timeouts and the 404 from module 01, and 502s from a guardrail evaluator returning the wrong type, and orqi's grouping in the second prompt of step 1 listed each cause. Your numbers will differ; the shape will not.
+Step 1 counts by HTTP status. In this run every failure in the window was a 400 (the guardrail blocks of the guardrails module); earlier runs also showed the 408 timeouts and the 404 from the gateway module, and 502s from a guardrail evaluator returning the wrong type, and orqi's grouping in the second prompt of step 1 listed each cause. Your numbers will differ; the shape will not.
 
 Paste that text into the prompt:
 
@@ -173,7 +173,7 @@ This applies automatically to every Router request and Agent call that does not 
 Documentation: [Workspace-level PII redaction](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction)
 ```
 
-The `platform-guide` skill refuses to answer from memory: it calls `search_docs` and links the page. Module 04 did the same thing per request with `extra_body={"plugins": [...]}`.
+The `platform-guide` skill refuses to answer from memory: it calls `search_docs` and links the page. The guardrails module did the same thing per request with `extra_body={"plugins": [...]}`.
 
 ### Step 4 · orqi versus `orq launch`
 
@@ -201,7 +201,7 @@ $ orq launch claude -- -p "run orq doctor and summarise in three lines" --allowe
 16/16 checks pass, auth good (workspace orq-research, key expires 85d). 5/5 coding agents wired, MCP present. Endpoints all reachable, gateway key healthy.
 ```
 
-Nineteen seconds, four `messages.anthropic` traces under one session id, $0.30. Module 13 takes that session apart. The rule: orqi operates the platform (traces, analytics, evaluators, docs) and needs no repo; `orq launch <agent>` builds your app with orq.ai wired in, and its own model calls become traces you pay for.
+Nineteen seconds, four `messages.anthropic` traces under one session id, $0.30. The coding-agents module takes that session apart. The rule: orqi operates the platform (traces, analytics, evaluators, docs) and needs no repo; `orq launch <agent>` builds your app with orq.ai wired in, and its own model calls become traces you pay for.
 
 ## With your coding agent
 

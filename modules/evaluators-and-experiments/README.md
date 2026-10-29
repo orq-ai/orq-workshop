@@ -71,7 +71,7 @@ $ orq evals invoke "$GUARD" --output "I have issued a refund of EUR 620 for ord_
 
 The `build-evaluator` skill, in five lines: one evaluator per failure mode, never a bundle. Binary Pass/Fail, never a 1 to 5 scale. Reasoning before the verdict in the judge output. Validate against 100+ human-labelled examples split into dev and test, and report the true positive rate and true negative rate on the held-out test set only, both above 90 percent before the judge is trusted. Prefer a regex or a reference check when it can capture the criterion; the LLM judge is the expensive last resort.
 
-This judge would not pass that bar today. Run it on a correct in-window "change of mind" refund and it answers false ("change of mind is not allowed under the policy"), because its policy summary never says any reason is valid inside the window. Module 12 calibrates around that; the fix is one line in the judge prompt.
+This judge would not pass that bar today. Run it on a correct in-window "change of mind" refund and it answers false ("change of mind is not allowed under the policy"), because its policy summary never says any reason is valid inside the window. The evals-in-ci module calibrates around that; the fix is one line in the judge prompt.
 
 ### Step 2 · Datasets
 
@@ -178,7 +178,7 @@ Python evaluators are written in a real editor with completions and diagnostics 
 
 ## Go further
 
-Write the judge that this module says is missing: a binary `ws-refund-decision-judge` whose prompt receives the tool results as well as the answer, label 40 rows by hand (the `details` block in `evals/results/latest.json` after module 12 is a good start), and compute TPR and TNR before you let it into CI.
+Write the judge that this module says is missing: a binary `ws-refund-decision-judge` whose prompt receives the tool results as well as the answer, label 40 rows by hand (the `details` block in `evals/results/latest.json` after the evals-in-ci module is a good start), and compute TPR and TNR before you let it into CI.
 
 ## End state
 

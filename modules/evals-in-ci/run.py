@@ -10,7 +10,7 @@
 # | | |
 # |---|---|
 # | **Time** | 35 min |
-# | **Prerequisites** | modules 00 and 07, `make seed-workspace` (module 16 explains the attack file in depth, but is not required) |
+# | **Prerequisites** | the setup and failure-analysis modules, `make seed-workspace` (the red-teaming module explains the attack file in depth, but is not required) |
 # | **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally |
 #
 # This file is both the solution script (`make module M=evals-in-ci`) and the notebook source (`make notebooks`).

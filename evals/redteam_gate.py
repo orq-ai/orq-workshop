@@ -10,7 +10,7 @@ What makes CI fail: anything short of a full, clean run. A resistance rate below
 zero tolerance on attacks we already know about. An errored attack, an attack the judge could not
 evaluate, or a run with no verdict at all also exits 1, so an outage cannot pass as "no
 vulnerabilities found". Static mode is deterministic on the attack side (the judge is still an
-LLM), cheap, and the right shape for CI. Exploratory, LLM-generated attacks belong in module 16,
+LLM), cheap, and the right shape for CI. Exploratory, LLM-generated attacks belong in the red-teaming module,
 not in a PR check.
 
 The target is evaluatorq's built-in `agent:<key>` target on the hosted refund agent, whose

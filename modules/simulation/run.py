@@ -1,4 +1,4 @@
-"""Module 11: simulate customers against the refund agent.
+"""The simulation module: simulate customers against the refund agent.
 
 Hand-written test transcripts go stale the day the prompt changes. evaluatorq drives the agent
 with three models: a user simulator playing a persona with a goal, the agent under test, and a
@@ -10,7 +10,7 @@ built-in "agent:<key>" target: first the function-tool agent (tools stubbed), th
 same saved case with `previous_run`, the hosted agent whose tools run in orq.
 
 Run it with `uv run python modules/simulation/run.py` (or `make module M=simulation`), about two
-minutes; `--only=1,3` picks steps. Module 16 reuses refund_target.py to red team the local agent.
+minutes; `--only=1,3` picks steps. The red-teaming module reuses refund_target.py to red team the local agent.
 """
 
 # isort: skip_file
@@ -216,7 +216,7 @@ async def step_2_generate() -> None:
 
 
 # ── Step 3 · The managed agent, twice ──
-# ws-refund-agent-function has function tools that your code executes (module 08). The built-in
+# ws-refund-agent-function has function tools that your code executes (the managed-agents module). The built-in
 # "agent:<key>" target does not know how to run lookup_order: it stubs the pending tool call,
 # the assistant text comes back empty and the judge scores an empty transcript. That is the
 # harness failing, not the agent. ws-refund-agent is the same agent with its tools as orq

@@ -1,7 +1,7 @@
 # %% [markdown]
 # # 08 · Managed agents
 #
-# The refund agent as a managed orq Agent. Modules 01 to 07 kept the loop in
+# The refund agent as a managed orq Agent. The gateway, tracing, smart-routing, guardrails, budgets-and-keys, orqi and failure-analysis modules kept the loop in
 # `app/refund_agent/agent.py`; here instructions, model, tools, limits, knowledge base and memory
 # become one versioned entity, and the app shrinks to one Responses call: the refund tools are
 # code tools, so orq runs the loop and the tools. Nine steps, the same surface as the Run Agents
@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 40 min |
-# | **Prerequisites** | modules 00 to 02, `make seed-workspace` |
+# | **Prerequisites** | the setup, gateway and tracing modules, `make seed-workspace` |
 # | **You will have** | the refund agent invoked through the Responses API (orq runs its tools), a function-tool twin whose tools your code runs, streamed, carrying variables and metadata, continued across turns, tool calls steered with `tool_choice`, given memory, versioned and pinned by `@version` |
 #
 # This file is both the solution script (`make module M=managed-agents`) and the notebook source
@@ -254,7 +254,7 @@ print(f"next     : orq responses get {follow_up['id']} -o json | jq '.output[0].
 # `tool_choice` steers the agent's own tools: `"none"` forbids them, `"required"` forces at least
 # one, `{"type": "function", "name": ...}` forces a named one. A `tools` array in the request is
 # accepted, echoed and ignored on an `agent/` call: an agent's tools come from its configuration
-# (MCP and HTTP tools included, modules 10 and 15). A named tool is the tool key, `ws-get_policy`.
+# (MCP and HTTP tools included, the mcp-gateway and advisor-and-sidekick modules). A named tool is the tool key, `ws-get_policy`.
 
 # %%
 def output_types(response: dict[str, Any]) -> list[str]:
@@ -358,7 +358,7 @@ if marker not in (agent_info["description"] or ""):
         agent_key=AGENT,
         description=f"{agent_info['description']} {marker}",
         version_increment="minor",
-        version_description="Module 08: minor bump to demo @version routing",
+        version_description="The managed-agents module: minor bump to demo @version routing",
     ).model_dump(by_alias=True)
     print(f"version  : bumped {AGENT} to v{agent_info['version']}")
 else:

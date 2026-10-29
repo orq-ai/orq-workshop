@@ -1,10 +1,10 @@
 """MkDocs build hook (registered under `hooks:` in mkdocs.yml).
 
-Module READMEs live outside docs/ and are pulled into docs/modules/NN.md by pymdownx.snippets.
+Module READMEs live outside docs/ and are pulled into docs/modules/<name>.md by pymdownx.snippets.
 Two things break when a page is assembled that way, and this hook fixes both:
 
-- Images. A `![...](assets/x.png)` in modules/NN-name/README.md resolves on GitHub but not on
-  the site, because the page is docs/modules/NN.md. `on_files` registers every
+- Images. A `![...](assets/x.png)` in modules/<name>/README.md resolves on GitHub but not on
+  the site, because the page is docs/modules/<name>.md. `on_files` registers every
   modules/*/assets/*.png and *.svg as the docs-relative file `modules/assets/<name>`, which is
   exactly where the snippet-included page looks for it.
 - Terminal fences. termynal turns `<!-- termynal -->` fences into animated terminals, but its

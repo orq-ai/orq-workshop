@@ -8,7 +8,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | module 00; at least one of Claude Code, OpenCode, Pi or Codex installed |
+# | **Prerequisites** | the setup module; at least one of Claude Code, OpenCode, Pi or Codex installed |
 # | **You will have** | a dry-run of every file `orq connect` would touch, the exact env `orq launch` injects, the list of skills that ship in the CLI, one coding-agent session visible as traces with its cost, and a checklist to repeat this in your own repo |
 #
 # Nothing here writes to `~/.orq`, `~/.claude` or an agent config: every connect and launch call

@@ -1,7 +1,7 @@
 # Red teaming
 
 !!! abstract "An attacker is a simulated user with a worse goal"
-    An attacker is a simulated user with a worse goal. The same loop that tested the agent in module 11 now tries to break it, category by category, and the tool results, not the judge, say what really happened.
+    An attacker is a simulated user with a worse goal. The same loop that tested the agent in the simulation module now tries to break it, category by category, and the tool results, not the judge, say what really happened.
 
 ## Starting point
 
@@ -15,11 +15,11 @@ Two red-team runs as Experiments in your workspace, a per-target resistance rate
 
 ## Why
 
-Module 11 asked "does the agent serve customers"; this one asks "what can a customer make it do". evaluatorq's red team drives the agent with an **attacker** model instead of a persona and scores each transcript against an OWASP category (LLM Top 10 and the Agentic ASI list) instead of a goal. Static mode replays a fixed attack file, so a run is reproducible and cheap enough for CI (module 12); dynamic mode lets the attacker adapt mid-conversation. Every attacker and judge call goes through the orq.ai router with your key, so it is traced, costed and budgeted like the agent itself.
+The simulation module asked "does the agent serve customers"; this one asks "what can a customer make it do". evaluatorq's red team drives the agent with an **attacker** model instead of a persona and scores each transcript against an OWASP category (LLM Top 10 and the Agentic ASI list) instead of a goal. Static mode replays a fixed attack file, so a run is reproducible and cheap enough for CI (the evals-in-ci module); dynamic mode lets the attacker adapt mid-conversation. Every attacker and judge call goes through the orq.ai router with your key, so it is traced, costed and budgeted like the agent itself.
 
 ## The one concept to understand first
 
-The target is the `AgentTarget` contract from module 11 (`LocalRefundTarget` in `refund_target.py`; orq.ai agents with code tools need no class, just `agent:<key>`). Two instances, one per instruction file, is the whole experiment:
+The target is the `AgentTarget` contract from the simulation module (`LocalRefundTarget` in `refund_target.py`; orq.ai agents with code tools need no class, just `agent:<key>`). Two instances, one per instruction file, is the whole experiment:
 
 ```python
 report = await red_team(
@@ -159,7 +159,7 @@ $ make evaluatorq-dashboard                 # http://127.0.0.1:8080 · Ctrl-C to
 $ make evaluatorq-dashboard PORT=8600     # another port if 8080 is taken
 ```
 
-It scans both stores, so red teaming and module 11's simulations land in one place. **Red Team** totals every run in the folder and lists them newest first:
+It scans both stores, so red teaming and the simulation module's simulations land in one place. **Red Team** totals every run in the folder and lists them newest first:
 
 ![Screenshot: the Red Team page of the evaluatorq dashboard. Two hundred and thirty-two attacks run across twenty-four saved runs, a 7% overall attack success rate, zero critical findings and $0.0722 of total spend, above a table of runs each tagged with the targets it drove and its score, case count and cost.](assets/dashboard-redteam-runs.png)
 

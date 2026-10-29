@@ -42,7 +42,7 @@ orqi checks once a day and prints a header note when a newer release exists; `or
 Three candidates, best first: a pinned profile's key, then `ORQ_API_KEY`, then the `orq auth login` session. Each is tried on the real connection, so a rejected one falls through to the next.
 
 ```bash
-# 1. Nothing set: the login session from module 00.
+# 1. Nothing set: the login session from setup.
 $ orq auth login
 $ orqi
 
@@ -93,7 +93,7 @@ Start it with the repo key exported and try the commands before the prompts:
 
 | Command | What it does |
 |---|---|
-| `/doctor` | runs `orq doctor`, the same 16 checks as module 00 |
+| `/doctor` | runs `orq doctor`, the same 16 checks as the setup module |
 | `/whoami`, `/workspace` | which workspace and project the tools point at |
 | `/tools` | the 43 `orq_` tools by name |
 | `/model` | the workspace's enabled models, nothing else |

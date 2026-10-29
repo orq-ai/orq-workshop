@@ -1,15 +1,15 @@
 # %% [markdown]
 # # 14 · Alerts, automations and framework hooks
 #
-# Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a
+# The tracing and orqi modules read traces after the fact. This module makes the platform push to you: a
 # Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook
 # delivers every model call, signed, to a system you run. Three steps; the review queue that
-# collects traces for a human is module 17.
+# collects traces for a human is the annotation-queues module.
 #
 # | | |
 # |---|---|
 # | **Time** | 30 min |
-# | **Prerequisites** | module 02, `make seed-workspace` |
+# | **Prerequisites** | the tracing module, `make seed-workspace` |
 # | **You will have** | a cost alert that opened a trigger on a burst you caused, and orq events arriving signed at a receiver you run |
 #
 # This file is both the solution script (`make module M=alerts-and-webhooks`) and the notebook source (`make notebooks`).

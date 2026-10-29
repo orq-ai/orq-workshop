@@ -6,7 +6,7 @@
 # | | |
 # |---|---|
 # | **Time** | 20 min |
-# | **Prerequisites** | module 01 |
+# | **Prerequisites** | the gateway module |
 # | **You will have** | a Smart Router `ws-refund-router` the refund agent calls by reference, traces that show which model it picked and why, and a routing rule that redirects cheap-tier traffic to `gpt-5.4-nano` |
 #
 # This file is both the solution script (`make module M=smart-routing`) and the notebook source (`make notebooks`).
@@ -102,7 +102,7 @@ def ensure_rule(display_name: str, project_id: str | None, cel: str) -> dict[str
             return normalize_rule(rules_api("PATCH", f"/v2/routing-rules/{rule_id}", patch))
     body: dict[str, Any] = {
         "display_name": display_name,
-        "description": "workshop module 03: send cheap-tier traffic to gpt-5.4-nano",
+        "description": "workshop the smart-routing module: send cheap-tier traffic to gpt-5.4-nano",
         "enabled": True,
         "expression": {"cel": cel},
         "models_config": {"mode": "weighted", "models": [{"model": RULE_TARGET, "weight": 1.0}]},
@@ -165,7 +165,7 @@ print("next     : compare with step 1; the pick moves only when two pool models 
 # Two things will happen. The project-scoped rule is created and validated but does not match: in
 # this workspace a plain router call carries no project scope (its trace has an empty
 # `project_id`), and a project rule only sees requests that have one, such as the agent calls of
-# module 08. So the redirect is proved with a workspace-wide rule gated on a metadata key nobody
+# the managed-agents module. So the redirect is proved with a workspace-wide rule gated on a metadata key nobody
 # else sends, and deleted right after.
 
 # %%
@@ -195,7 +195,7 @@ if rule_fired:
     print(f"verdict  : rule fired: {model} answered a request that asked for {settings.model}")
 else:
     print("verdict  : rule did not fire: a plain router call carries no project scope, so a project rule never sees it")
-print(f"disabled : {project_rule['id']} (kept in place for module 08)")
+print(f"disabled : {project_rule['id']} (kept in place for the managed-agents module)")
 
 # %% [markdown]
 # A workspace-wide rule gated on our own metadata key touches nobody else's traffic. One tagged
@@ -233,7 +233,7 @@ print("next     : open the tagged trace; a span.load_balancer span records the r
 
 # %% [markdown]
 # The request asked for `gpt-5.6-luna`; a `span.load_balancer` span records the rule's target and
-# `gpt-5.4-nano` answered. The project rule stays in place, disabled, for module 08.
+# `gpt-5.4-nano` answered. The project rule stays in place, disabled, for the managed-agents module.
 #
 # ## Step 4 · The same from the CLI
 #

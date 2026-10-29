@@ -1,11 +1,11 @@
-"""Module 16: red team the vulnerable and the fixed refund prompt side by side.
+"""The red-teaming module: red team the vulnerable and the fixed refund prompt side by side.
 
-Module 11 asked "does the agent serve customers"; this one asks "what can a customer make it
+The simulation module asked "does the agent serve customers"; this one asks "what can a customer make it
 do". evaluatorq's red team drives the agent with an attacker model instead of a persona and
 scores each transcript against an OWASP category instead of a goal. The attacker and the judge
 route through the orq router, so they are traced and budgeted like the agent itself. Static mode
 replays a fixed attack file, so the attack side is deterministic: same file, same order. The
-targets come from module 11 (refund_target.py): one AgentTarget contract, two agents.
+targets come from the simulation module (refund_target.py): one AgentTarget contract, two agents.
 Two steps: red_team() the vulnerable and the fixed LOCAL agent (static, 4 OWASP categories,
 8 attacks), then the same red team from the CLI against the managed vulnerable agent.
 
@@ -110,7 +110,7 @@ async def step_1_red_team() -> None:
 # ── Step 2 · The same gate from the CLI ──
 # `eq redteam run` against the managed vulnerable agent. Its tools are orq.ai code tools, so the
 # built-in `agent:` target gets real answers and the judge can score every attack. The exit code is
-# what CI gates on (module 12).
+# what CI gates on (the evals-in-ci module).
 def step_2_cli() -> None:
     cmd = [
         "uv",

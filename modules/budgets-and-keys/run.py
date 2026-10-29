@@ -1,4 +1,4 @@
-"""Module 05 solution: API keys, identities and budgets. Instructor demo.
+"""The budgets-and-keys module solution: API keys, identities and budgets. Instructor demo.
 
 Factor 5: unify execution state and business state. Who called, on whose behalf, and what it may
 cost are request attributes the gateway enforces, not bookkeeping the app does afterwards. Five

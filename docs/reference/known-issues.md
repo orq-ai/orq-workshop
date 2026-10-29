@@ -27,7 +27,7 @@ Dated notes on SDK, CLI and platform behavior the modules work around, and the l
 
 - 2026-10-29 Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
 
-## Failure analysis to experiments
+## Failure analysis, Evaluators and experiments
 
 - 2026-10-29 The SDK's `Attributes` model on search results is empty in SDK 4.17. Read `gen_ai.output`, `metadata.*` and `thread_id` from the raw JSON.
 

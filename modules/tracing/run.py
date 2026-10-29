@@ -1,12 +1,12 @@
 # %% [markdown]
 # # 02 · Tracing
 #
-# From the zero-code traces module 01 left behind to a trace that reads `refund_turn -> tool -> llm`. Four steps: list the traces you already have, attach name, identity, thread and metadata so a conversation groups per customer, wrap the agent loop and each tool in `@traced` so one turn is one trace, then put a human annotation on the answer. Every later module (failure analysis, evals, red teaming) starts from these traces.
+# From the zero-code traces the gateway module left behind to a trace that reads `refund_turn -> tool -> llm`. Four steps: list the traces you already have, attach name, identity, thread and metadata so a conversation groups per customer, wrap the agent loop and each tool in `@traced` so one turn is one trace, then put a human annotation on the answer. Every later module (failure analysis, evals, red teaming) starts from these traces.
 #
 # | | |
 # |---|---|
 # | **Time** | 30 min |
-# | **Prerequisites** | module 01 |
+# | **Prerequisites** | the gateway module |
 # | **You will have** | traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it |
 #
 # This file is both the solution script (`make module M=tracing`) and the notebook source (`make notebooks`).
@@ -191,7 +191,7 @@ try:
         annotations=[{"key": "rating", "value": "good"}],
     )
     print("verdict  : written")
-    print(f"next     : open the trace in {TRACES_URL}, Annotations panel; module 17 reads these back as labels")
+    print(f"next     : open the trace in {TRACES_URL}, Annotations panel; the annotation-queues module reads these back as labels")
 except Exception as exc:  # noqa: BLE001
     print(f"verdict  : failed: {str(exc)[:220]}")
     print("fix      : Studio > Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad, then rerun")

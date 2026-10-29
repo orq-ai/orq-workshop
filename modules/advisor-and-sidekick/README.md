@@ -66,13 +66,13 @@ rules    : - Before refusing a post-window or above-limit request, ask the advis
 next     : Agents > wsvE-refund-agent-delegating > Tools in the Studio: the two delegation tools next to the three function tools
 ```
 
-The version is `v1.0.0` on a fresh seed; module 14 bumps it every time it touches the description.
+The version is `v1.0.0` on a fresh seed; the alerts-and-webhooks module bumps it every time it touches the description.
 
 `make seed-workspace` built it from the fixed refund agent ([`app/refund_agent/entities.py`](https://github.com/orq-ai/orq-workshop/blob/main/app/refund_agent/entities.py), `ensure_delegating_agent`). Open it in the Studio (**Agents** > `ws-refund-agent-delegating` > **Tools**): the two delegation tools sit next to the three code tools, each with its model.
 
 ### Step 2 · Run a refund the agent has to refuse
 
-`ord_a6` is a EUR 620 frame; the policy caps refunds at EUR 500. The instructions send the agent to the advisor before it refuses and to the sidekick for the closing note. The loop is module 08's: execute the `function_call` items that are yours, skip the ones with an `orq:*` sibling, continue with `previous_response_id`.
+`ord_a6` is a EUR 620 frame; the policy caps refunds at EUR 500. The instructions send the agent to the advisor before it refuses and to the sidekick for the closing note. The loop is the managed-agents module's: execute the `function_call` items that are yours, skip the ones with an `orq:*` sibling, continue with `previous_response_id`.
 
 ```text
 ── Step 2 · Run a refund the agent has to refuse ──────
@@ -175,7 +175,7 @@ Use the build-agent skill to create an agent `ws-refund-agent-triage`, a copy of
 - Nested tool spans arrive a few seconds after the response. `list_spans` straight after the call can miss the sidekick; the solution sleeps five seconds.
 - The root span of type `trace` repeats the agent's own model cost. Skip it when summing, or the agent's share doubles.
 - `max_uses` is per turn. With `max_uses: 2` the agent may ask the advisor twice; the broken agent did.
-- A secondary model that fails does not fail the turn. Its advisor span is marked `error`, yet alerting on `genai.error_rate` will not see it (module 14); reading the `orq:advisor` result will.
+- A secondary model that fails does not fail the turn. Its advisor span is marked `error`, yet alerting on `genai.error_rate` will not see it (the alerts-and-webhooks module); reading the `orq:advisor` result will.
 
 ## New in orq.ai 4.15
 

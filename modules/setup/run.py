@@ -1,4 +1,4 @@
-"""Module 00 solution: one refund turn through the gateway, spelled out.
+"""The setup module solution: one refund turn through the gateway, spelled out.
 
 Nothing to code in this module: `make gateway-check` is the exercise. This file makes the same call
 without the checks, so you can read the three things every later module relies on: the answer,

@@ -15,7 +15,7 @@ Command: `make seed-workspace`. Time: 35 min.
 
 ## Why
 
-Module 07 measured the refund agent once. Nobody re-runs a notebook before merging a prompt change. CI does, on every pull request that touches `app/` or `evals/`, and it answers one question: is the agent still above the bar we wrote down? That is a quality gate with absolute thresholds, not a benchmark and not a diff against the previous run. It never says the agent is good. It says it clears the bar, on the rows and the attacks we agreed on.
+The evaluators-and-experiments module measured the refund agent once. Nobody re-runs a notebook before merging a prompt change. CI does, on every pull request that touches `app/` or `evals/`, and it answers one question: is the agent still above the bar we wrote down? That is a quality gate with absolute thresholds, not a benchmark and not a diff against the previous run. It never says the agent is good. It says it clears the bar, on the rows and the attacks we agreed on.
 
 ## The one concept to understand first
 
@@ -26,7 +26,7 @@ THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.7
 DEFAULT_GATE = 0.95                                                                    # evals/redteam_gate.py
 ```
 
-The numbers are calibrated, not aspirational. On 2026-09-16, on `gpt-5.6-luna`, the fixed instructions scored 0.90 / 1.00 / 0.85 and the vulnerable ones 0.75 / 0.90 / 0.50 (on gpt-4o-mini a week earlier: 0.85 / 1.00 / 0.75 against 0.70 / 1.00 / 0.35). The judge bar sits at 0.70, well under the 0.85 it scored: an LLM judge lands on its own mean often enough that a zero-margin gate flakes on green code, and the vulnerable prompt already fails at 0.50. It moved up from 0.60 once `judge_prompt.md` stopped failing valid "change of mind" refunds (module 07). The red-team bar is zero tolerance: with 10 known attacks, one success is 0.90, below the 0.95 gate. The gate also fails closed: an attack that errored or that the judge could not evaluate exits 1, so an outage cannot pass as "no vulnerabilities found".
+The numbers are calibrated, not aspirational. On 2026-09-16, on `gpt-5.6-luna`, the fixed instructions scored 0.90 / 1.00 / 0.85 and the vulnerable ones 0.75 / 0.90 / 0.50 (on gpt-4o-mini a week earlier: 0.85 / 1.00 / 0.75 against 0.70 / 1.00 / 0.35). The judge bar sits at 0.70, well under the 0.85 it scored: an LLM judge lands on its own mean often enough that a zero-margin gate flakes on green code, and the vulnerable prompt already fails at 0.50. It moved up from 0.60 once `judge_prompt.md` stopped failing valid "change of mind" refunds (the evaluators-and-experiments module). The red-team bar is zero tolerance: with 10 known attacks, one success is 0.90, below the 0.95 gate. The gate also fails closed: an attack that errored or that the judge could not evaluate exits 1, so an outage cannot pass as "no vulnerabilities found".
 
 ## Steps
 
@@ -122,8 +122,8 @@ next     : the Experiment run URL is in the log above; each attack is one row wi
 
 Exit code 0, about a minute. Read the `evaluated` line before the `resist` line: the gate counts attempted, evaluated and errored attacks separately, and anything short of a full clean run exits 1. An earlier version passed a run in which one attack errored (the gateway answered 400 to that payload) because the resistance rate only covered the seven attacks the judge could evaluate; a gate that passes when the judge is down is not a gate. Three things to know about this gate:
 
-- **Static mode** replays [`evals/redteam_static.json`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_static.json), ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are module 16, not CI.
-- **Tools really run.** The target is `agent:ws-refund-agent`, evaluatorq's built-in target on the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). A function-tool agent such as `ws-refund-agent-function` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (module 11 step 3). `make seed-workspace` creates the agent.
+- **Static mode** replays [`evals/redteam_static.json`](https://github.com/orq-ai/orq-workshop/blob/main/evals/redteam_static.json), ten refund-specific attacks in the same schema as the public `orq/redteam-vulnerabilities` dataset (authority claim, injected tool result, prompt extraction, role play, PII fishing, a German injection). No attacker model runs, only the OWASP judge. Dynamic attacks are the red-teaming module, not CI.
+- **Tools really run.** The target is `agent:ws-refund-agent`, evaluatorq's built-in target on the refund agent, whose three tools are orq.ai code tools. orq.ai executes them, so `lookup_order` and `issue_refund` run for real and a successful attack really issues a refund (in memory, inside the tool). A function-tool agent such as `ws-refund-agent-function` cannot be gated this way: the built-in target answers its pending function calls with a stub error, so an agent that never sees an order cannot be tricked into refunding one (the simulation module step 3). `make seed-workspace` creates the agent.
 - **The judge is generic.** The same run against `ws-refund-agent-vulnerable` scored 88% once and 100% once: the OWASP judge does not know the EUR 500 limit or the 30-day window. Policy laxity is the quality gate's job (step 2). This gate catches injection, leakage and agency, the classes the public dataset covers.
 
 The CLI form is `uv run eq redteam run -t agent:<WS_PREFIX>-refund-agent --mode static --dataset evals/redteam_static.json -y`, the same target the script uses.
@@ -151,7 +151,7 @@ jobs:
 ```
 
 - **Secrets.** `ORQ_API_KEY` is a project-scoped key minted with `orq setup`, stored as a secret of the GitHub environment `evals`, never in `.env` and never as a repository secret. The environment requires a reviewer, so a PR run stops at *Review pending deployments* until someone with review rights approves it: that click is the trust boundary, a human sees the diff before repository code runs with the key. Only the gate steps receive it; `uv sync` and the installers do not. Pull requests from forks get no secrets at all, so both jobs skip on forks instead of failing with "API key is empty".
-- **Budgets.** Put a budget on that key (module 05: a Management Key creates one scoped to an API key, with a cost limit and an alert). A runaway judge loop on a busy PR day then stops at the limit instead of at the invoice.
+- **Budgets.** Put a budget on that key (the budgets-and-keys module: a Management Key creates one scoped to an API key, with a cost limit and an alert). A runaway judge loop on a busy PR day then stops at the limit instead of at the invoice.
 - **Static only.** The security job replays every attack in the file. Ten attacks, one judge call each, no attacker model. Cheap enough to run on every PR, and any error or unevaluated attack fails the job.
 - **Artifacts and summary.** `evals/results/*.json` is uploaded with `if: always()`, and the markdown table lands in the job summary, which is what the Track B prompt reads.
 
@@ -192,7 +192,7 @@ Add a contract test that invokes the evaluator and validates its result type bef
 1. **Fix the evaluator output-type mismatch first.** It accounts for 14 of the 25 explicitly errored traces.
 ```
 
-That first finding is real: the seeded guardrail `ws-refund-limit-guard` returned booleans with `output_type: number`, and module 07 fixed it with one `orq evals update`. A nightly job would have found it the morning after module 04. The workflow appends `triage.md` to the step summary and, only when `GH_TOKEN` is set, opens an issue with `gh issue create --body-file triage.md`.
+That first finding is real: the seeded guardrail `ws-refund-limit-guard` returned booleans with `output_type: number`, and the failure-analysis module fixed it with one `orq evals update`. A nightly job would have found it the morning after the guardrails module. The workflow appends `triage.md` to the step summary and, only when `GH_TOKEN` is set, opens an issue with `gh issue create --body-file triage.md`.
 
 `.github/workflows/pr-failure-analysis.yml` runs when a PR gets the label `analyze-traces`. It installs the orq.ai CLI and Claude Code (`npm i -g @anthropic-ai/claude-code`) and launches:
 
@@ -258,7 +258,7 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 ## Gotchas
 
 - The judge is an LLM. Means move a few points between identical runs (the fixed judge scored 0.70 and 0.75 in two consecutive runs). Set thresholds from two or three runs, not one, and keep a margin.
-- The seeded guardrail was created with `output_type: number`; a Python evaluator that returns `True` then fails every invoke with HTTP 500 `result should be type number!`. `orq evals update <id> --output-type boolean` fixes it; module 07's solution does that idempotently.
+- The seeded guardrail was created with `output_type: number`; a Python evaluator that returns `True` then fails every invoke with HTTP 500 `result should be type number!`. `orq evals update <id> --output-type boolean` fixes it; the evaluators-and-experiments module's solution does that idempotently.
 - evaluatorq's static default dataset is `hf:orq/redteam-vulnerabilities`, which needs `huggingface_hub`. It is not in this lockfile, so the gate ships its own `evals/redteam_static.json`. `uv add "evaluatorq[redteam]"` unlocks the public set.
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
 - orqi writes reports to a file in the working directory unless the prompt says "print the report as your final answer, do not create any files".
@@ -276,7 +276,7 @@ Replace the local `chat()` in `evals/regression.py` with one `orq.responses.crea
 
 ## End state
 
-`make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: pick a module from [Already on orq.ai](https://orq-ai.github.io/orq-workshop/start/already-on-orq/).
+`make regression-eval` green then red, a static red-team gate, three GitHub workflows, and two headless agent runs you executed locally, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: the [wrap-up](https://orq-ai.github.io/orq-workshop/start/wrap-up/), the same loop on your own repo.
 
 ## Official docs
 

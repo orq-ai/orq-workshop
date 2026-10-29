@@ -1,7 +1,7 @@
 # Alerts and webhooks
 
 !!! abstract "The platform pushes to you"
-    Modules 02 and 06 read traces after the fact. This module makes the platform push to you: a Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
+    The tracing and orqi modules read traces after the fact. This module makes the platform push to you: a Telemetry API query gives the number, an alert watches it and opens an incident, and a webhook delivers every model call, signed, to a system you run.
 
 ## Starting point
 
@@ -18,7 +18,7 @@ Commands and names here write the default prefix `ws-`. Your entities carry your
 
 ## Why
 
-A trace nobody reads is a log file. Three things turn traces into operations: a number you can watch, a rule that watches it while you sleep, and a feed into the systems you already have. All three read the same trace store the Studio charts, and all three are one API call away. The fourth, a queue that collects what a human should look at, is module 17.
+A trace nobody reads is a log file. Three things turn traces into operations: a number you can watch, a rule that watches it while you sleep, and a feed into the systems you already have. All three read the same trace store the Studio charts, and all three are one API call away. The fourth, a queue that collects what a human should look at, is the annotation-queues module.
 
 ## The one concept to understand first
 
@@ -31,7 +31,7 @@ orq.alerts.create(display_name="ws-cost-alert", project_id=PROJECT, signal="cost
 orq.webhooks.create(id="ws-events-webhook", url=WS_WEBHOOK_URL, events=["llm.response", "agent.updated"], secret=WS_WEBHOOK_SECRET, ...)
 ```
 
-![Diagram: your app sends traces into orq.ai; the Telemetry API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is module 17's subject.](assets/observability-ops.png)
+![Diagram: your app sends traces into orq.ai; the Telemetry API aggregates them, the alert ws-cost-alert evaluates one metric every five minutes and opens a trigger that notifies a notifier; the webhook ws-events-webhook POSTs llm.response and agent.updated events, signed with X-Orq-Signature, to a receiver you run; the Studio-only trace automation into ws-review-queue is the annotation-queues module's subject.](assets/observability-ops.png)
 
 Two facts shape what you can alert on. Alerts are project-scoped, and only successful traces carry a project: a request the gateway rejected (unknown model, timeout, guardrail block) is an error trace with no project, so an error-rate alert on your project never sees it. Cost, latency and guardrail metrics come from successful traces and work. And reporting ingests in minutes, not seconds, so an alert with a five-minute window fires a tick or two after the fact.
 
@@ -58,7 +58,7 @@ top      : last 24 hours by cost
 next     : Observability > Traces in the Studio draws these same numbers
 ```
 
-The error rate counts failed spans inside successful traces, such as module 01's fallback chain. The 404s and 408s you can cause from the client are not in this number: no project.
+The error rate counts failed spans inside successful traces, such as the gateway module's fallback chain. The 404s and 408s you can cause from the client are not in this number: no project.
 
 ### Step 2 · The watcher: an alert on spend
 
@@ -97,7 +97,7 @@ Three terminals:
 
 ```bash
 $ orq webhooks generate-secret -o json | jq -r .secret        # -> WS_WEBHOOK_SECRET in .env
-$ make edge                                                  # terminal 1: http://127.0.0.1:8001 (app/edge.py, also module 09's external KB)
+$ make edge                                                  # terminal 1: http://127.0.0.1:8001 (app/edge.py, also the knowledge-base module's external KB)
 $ npx localtunnel --port 8001                                # terminal 2 -> https://<random>.loca.lt, into WS_EDGE_URL in .env
 $ uv run python modules/alerts-and-webhooks/run.py          # terminal 3
 ```

@@ -12,7 +12,7 @@
 # | | |
 # |---|---|
 # | **Time** | 25 min |
-# | **Prerequisites** | module 00, `make seed-workspace` |
+# | **Prerequisites** | the setup module, `make seed-workspace` |
 # | **You will have** | PII replaced by placeholders before the provider sees it, an output guardrail that turns an over-limit refund promise into a human hand-off, and a gateway rule that guards calls which carry no guardrail config at all |
 #
 # This file is both the solution script (`make module M=guardrails`) and the notebook source
