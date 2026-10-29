@@ -4,7 +4,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Build
 
-[Read the concept page first](../build/index.md).
+[Read the concept page first](../academy/build.md).
 
 | Module | You leave with | Needs |
 |---|---|---|
@@ -15,7 +15,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Route and protect
 
-[Read the concept page first](../route/index.md).
+[Read the concept page first](../academy/route.md).
 
 | Module | You leave with | Needs |
 |---|---|---|
@@ -26,7 +26,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Trace
 
-[Read the concept page first](../trace/index.md).
+[Read the concept page first](../academy/trace.md).
 
 | Module | You leave with | Needs |
 |---|---|---|
@@ -34,7 +34,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Find failures
 
-[Read the concept page first](../find-failures/index.md).
+[Read the concept page first](../academy/find-failures.md).
 
 | Module | You leave with | Needs |
 |---|---|---|
@@ -44,7 +44,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Evaluate
 
-[Read the concept page first](../evaluate/index.md).
+[Read the concept page first](../academy/evaluate.md).
 
 | Module | You leave with | Needs |
 |---|---|---|
@@ -54,7 +54,7 @@ You have an agent on orq.ai, or an app behind the gateway, and you know the basi
 
 ## Gate and monitor
 
-[Read the concept page first](../gate/index.md).
+[Read the concept page first](../academy/gate.md).
 
 | Module | You leave with | Needs |
 |---|---|---|

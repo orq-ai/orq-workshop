@@ -8,12 +8,12 @@ Read them in order the first time. The loop is a cycle: a change shipped at the 
 
 <div class="steps" markdown>
 
-1. [Build](../build/index.md)
-2. [Route and protect](../route/index.md)
-3. [Trace](../trace/index.md)
-4. [Find failures](../find-failures/index.md)
-5. [Evaluate](../evaluate/index.md)
-6. [Gate and monitor](../gate/index.md)
+1. [Build](build.md)
+2. [Route and protect](route.md)
+3. [Trace](trace.md)
+4. [Find failures](find-failures.md)
+5. [Evaluate](evaluate.md)
+6. [Gate and monitor](gate.md)
 
 </div>
 
@@ -30,4 +30,4 @@ One question per stage. If the answer is a shrug, that stage is where to invest 
 
 ## If you want to go further
 
-The [core path](core-path.md) is the engineer's version of the same loop: hands-on modules on one sample agent, about four hours. Sit in on one; the "Done when" list at the end of each module is what your team can show you.
+The [core path](../workshop/index.md) is the engineer's version of the same loop: hands-on modules on one sample agent, about four hours. Sit in on one; the "Done when" list at the end of each module is what your team can show you.

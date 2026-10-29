@@ -10,14 +10,14 @@ PLANTED = ["use your judgment", "telling the truth", "read it back", "colleague"
 
 @pytest.mark.parametrize("stage", STAGES)
 def test_concept_page_sections_and_length(stage):
-    text = (ROOT / "docs" / stage / "index.md").read_text()
+    text = (ROOT / "docs" / "academy" / f"{stage}.md").read_text()
     heads = [l[3:].strip() for l in text.splitlines() if l.startswith("## ")]
     assert heads == SECTIONS, (stage, heads)
     assert 700 <= len(text.split()) <= 1400, (stage, len(text.split()))
 
 @pytest.mark.parametrize("stage", STAGES)
 def test_concept_page_has_no_code_and_no_tool_names_outside_the_orq_sections(stage):
-    text = (ROOT / "docs" / stage / "index.md").read_text()
+    text = (ROOT / "docs" / "academy" / f"{stage}.md").read_text()
     assert "```" not in text, stage
     before = text.split("## On orq.ai")[0]
     leaders = text.split("## For leaders")[1]
@@ -26,6 +26,6 @@ def test_concept_page_has_no_code_and_no_tool_names_outside_the_orq_sections(sta
         assert tok not in leaders, (stage, tok)
 
 def test_evaluate_stage_does_not_name_the_planted_behaviors():
-    text = ((ROOT / "docs/evaluate/index.md").read_text() + (ROOT / "modules/simulation/concepts.md").read_text()).lower()
+    text = ((ROOT / "docs/academy/evaluate.md").read_text() + (ROOT / "modules/simulation/concepts.md").read_text()).lower()
     for term in PLANTED:
         assert term not in text, term
