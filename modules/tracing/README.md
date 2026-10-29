@@ -240,6 +240,8 @@ The finished file is at the same path on the [`solution` branch](https://github.
 - [ ] A trace named `refund_langgraph` exists
 - [ ] The `refund_turn` trace carries a `rating` annotation (open it in the Studio, Annotations panel)
 
+Verify all four at once: `make check M=tracing` prints one ✓ or ✗ per item.
+
 ## On your app
 
 Forty-five to sixty minutes on your own code. Pick the way in that matches it (the [chooser in the Academy](https://orq-ai.github.io/orq-workshop/academy/trace/) explains each), do it, and find one trace of yours in the Studio.

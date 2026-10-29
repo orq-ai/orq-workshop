@@ -18,7 +18,7 @@ This is a training repo for orq.ai. Participants run it with Claude Code, OpenCo
 - `make gateway-check` is the fastest health check. `orq doctor` is the second.
 - Use `uv run` for every Python invocation. `make test` runs without network.
 
-- Never put solution code on `main`. Completed `run.py` files (and the stretch scripts) live at the same paths on the `solution` branch. After main changes, merge main into `solution`; CI runs `make test` on both.
+- Never put solution code on `main`. Exception: re-cut modules (tracing so far) teach through one `# CHANGE:` line per step, and that line, its hint and the README card show the value to change on `main` on purpose; everything else finished stays on `solution`. Completed `run.py` files (and the stretch scripts) live at the same paths on the `solution` branch. After main changes, merge main into `solution`; CI runs `make test` on both.
 
 ## Writing
 

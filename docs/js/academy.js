@@ -118,7 +118,8 @@
           var w = root.querySelector("#" + CSS.escape(id));
           if (w) w.classList.add("is-lit");
         });
-        if (why) why.textContent = opt.dataset.why;
+        var reason = opt.querySelector(".chooser-reason");
+        if (why) why.textContent = reason ? reason.textContent : opt.dataset.why;
       });
     });
   }

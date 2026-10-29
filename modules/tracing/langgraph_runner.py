@@ -8,6 +8,7 @@ Needs the optional extra: `uv sync --extra langgraph`.
 
 from __future__ import annotations
 
+import importlib.util
 import time
 import warnings
 from datetime import UTC, datetime, timedelta
@@ -18,6 +19,12 @@ from app.refund_agent.config import settings
 from app.refund_agent.tools import OrderStore, get_policy, issue_refund, lookup_order
 
 RUN_NAME = "refund_langgraph"
+
+# Fail at import, where run.py turns it into a hint, instead of halfway through run().
+# The LangChain classes themselves are imported inside run(), after setup().
+_missing = [name for name in ("langchain_core", "langchain_openai", "langgraph") if importlib.util.find_spec(name) is None]
+if _missing:
+    raise ImportError(f"missing {', '.join(_missing)}: uv sync --extra langgraph")
 
 
 def run(question: str) -> str | None:
