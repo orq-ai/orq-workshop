@@ -26,6 +26,7 @@ docs = [
     "mkdocs-material>=9.5",
     "termynal>=0.12",
     "mkdocs-glightbox>=0.4",
+    "mkdocs-redirects>=1.2,<1.2.3",
 ]
 
 [tool.uv]

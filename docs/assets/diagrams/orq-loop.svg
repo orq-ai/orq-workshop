@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-labelledby="orq-loop-title orq-loop-desc">
+  <title id="orq-loop-title">The orq.ai loop</title>
+  <desc id="orq-loop-desc">Six stages around the refund agent, in a cycle: Build, Route and protect, Trace, Find failures, Evaluate, Gate and monitor, and back to Build.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1600" height="1000" class="bg"/>
+  <path d="M 899 197 Q 986 178 1013 263" class="arrow"/>
+  <path d="M 1112 384 Q 1172 500 1112 616" class="arrow"/>
+  <path d="M 1013 737 Q 986 822 899 803" class="arrow"/>
+  <path d="M 701 803 Q 614 822 587 737" class="arrow"/>
+  <path d="M 488 616 Q 428 500 488 384" class="arrow"/>
+  <path d="M 587 263 Q 614 178 701 197" class="arrow"/>
+  <rect x="610" y="90" width="380" height="100" rx="16" class="focal"/>
+  <text x="800" y="132" text-anchor="middle" class="name">Build</text>
+  <text x="800" y="164" text-anchor="middle" class="sub">managed agents · KB · MCP</text>
+  <rect x="922" y="270" width="380" height="100" rx="16" class="node"/>
+  <text x="1112" y="312" text-anchor="middle" class="name">Route and protect</text>
+  <text x="1112" y="344" text-anchor="middle" class="sub">gateway · guardrails · budgets</text>
+  <rect x="922" y="630" width="380" height="100" rx="16" class="node"/>
+  <text x="1112" y="672" text-anchor="middle" class="name">Trace</text>
+  <text x="1112" y="704" text-anchor="middle" class="sub">spans · threads · identity</text>
+  <rect x="610" y="810" width="380" height="100" rx="16" class="node"/>
+  <text x="800" y="852" text-anchor="middle" class="name">Find failures</text>
+  <text x="800" y="884" text-anchor="middle" class="sub">taxonomy · insights · review</text>
+  <rect x="298" y="630" width="380" height="100" rx="16" class="node"/>
+  <text x="488" y="672" text-anchor="middle" class="name">Evaluate</text>
+  <text x="488" y="704" text-anchor="middle" class="sub">evaluators · datasets · simulation</text>
+  <rect x="298" y="270" width="380" height="100" rx="16" class="node"/>
+  <text x="488" y="312" text-anchor="middle" class="name">Gate and monitor</text>
+  <text x="488" y="344" text-anchor="middle" class="sub">CI gate · alerts · webhooks</text>
+  <circle cx="800" cy="500" r="120" class="soft"/>
+  <text x="800" y="490" text-anchor="middle" class="name">Refund agent</text>
+  <text x="800" y="522" text-anchor="middle" class="sub">the same app, every stage</text>
+  <text x="800" y="960" text-anchor="middle" class="note">Ship a change and the loop starts again.</text>
+</svg>

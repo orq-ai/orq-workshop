@@ -1,8 +1,8 @@
-# Nightly triage (module 12, step 5). A headless orqi run reads yesterday's error traces
+# Nightly triage (the evals-in-ci module, step 5). A headless orqi run reads yesterday's error traces
 # through the orq MCP tools, groups them by root cause and writes a markdown report that lands
 # in the job summary. Optionally opens a GitHub issue when the report has at least one section.
 #
-# Local equivalent (module 12 README):
+# Local equivalent (the evals-in-ci module README):
 #   set -a; source .env; set +a; CI=1 orqi "List the traces with errors ..." > triage.md
 name: nightly-triage
 

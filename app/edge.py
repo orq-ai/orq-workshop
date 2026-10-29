@@ -2,9 +2,9 @@
 
 Two contracts in one process, so one tunnel (or one hosted instance) serves both:
 
-    POST /search             module 09, external knowledge base (registered as api_url): {query, top_k, threshold, ...}
+    POST /search             the knowledge-base module, external knowledge base (registered as api_url): {query, top_k, threshold, ...}
                              -> {"matches": [{id, text, metadata, scores}]}, keyword scoring over app/data/kb
-    POST /<prefix>           module 14, webhook delivery for one participant (WS_PREFIX), HMAC verified
+    POST /<prefix>           the alerts-and-webhooks module, webhook delivery for one participant (WS_PREFIX), HMAC verified
     GET  /<prefix>/events    what arrived for that prefix, newest last
     GET  /events             everything, all prefixes
     GET  /health
@@ -54,7 +54,7 @@ MIN_WORD_LENGTH = 4  # shorter words (the, and, for) match every policy file and
 EDGE_DOCS = os.environ.get("EDGE_DOCS", "1") != "0"  # EDGE_DOCS=0 hides /docs; it has no auth in front of it
 
 
-# ------------------------------------------------------------------ module 09: external knowledge base
+# ------------------------------------------------------------------ the knowledge-base module: external knowledge base
 
 def kb_search(query: str, top_k: int = 3, threshold: float = 0.0) -> list[dict]:
     """Keyword overlap per policy file, scores in 0..1 as the contract requires.
@@ -85,7 +85,7 @@ async def search(request: Request) -> JSONResponse:
     The block after `---` is what SchemaGenerator reads; the handlers without one stay out of the
     schema on purpose, so the docs page describes the KB contract and not the webhook endpoints.
     ---
-    summary: The external knowledge base contract (module 09).
+    summary: The external knowledge base contract (the knowledge-base module).
     description: >
       Scoring is keyword overlap against the policy files, so a placeholder query such as
       "string" scores 0 and comes back with no matches: the filter is score > threshold.
@@ -121,7 +121,7 @@ async def search(request: Request) -> JSONResponse:
     return JSONResponse({"matches": matches})
 
 
-# ------------------------------------------------------------------ module 14: webhook receiver
+# ------------------------------------------------------------------ the alerts-and-webhooks module: webhook receiver
 
 async def receive(request: Request) -> JSONResponse:
     """POST /<prefix>: store one webhook delivery and whether its HMAC signature checks out.
@@ -130,7 +130,7 @@ async def receive(request: Request) -> JSONResponse:
     `signature_valid` is None when no secret is configured (nothing to verify against).
     A bad signature is recorded, not rejected: the event log is where learners see the mismatch.
     ---
-    summary: Webhook delivery (module 14). A bad signature is recorded, not rejected.
+    summary: Webhook delivery (the alerts-and-webhooks module). A bad signature is recorded, not rejected.
     requestBody:
       content:
         application/json:

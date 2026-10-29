@@ -95,7 +95,7 @@ try:
         """Issue a refund for an order the customer owns."""
         return issue_refund(graph_store, order_id, reason)
 
-    # `reasoning_effort="none"` is the GPT-5.x detail module 02 documents: on /chat/completions
+    # `reasoning_effort="none"` is the GPT-5.x detail the tracing module documents: on /chat/completions
     # the model rejects tool definitions unless reasoning is off. Leg 1 and leg 3 use the
     # Responses API, where the question does not arise — the first real difference between them.
     graph = create_react_agent(

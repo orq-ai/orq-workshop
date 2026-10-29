@@ -6,76 +6,70 @@ hide: [navigation]
 
 Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app, a customer-support refund agent, grows module by module: through the AI Gateway, behind guardrails, into traces, under evaluation, as a managed agent with a knowledge base and MCP tools, attacked by simulated users and red teams, gated in CI, and driven by coding agents.
 
-[Start with Setup](modules/00.md){ .md-button .md-button--primary }
-[See the agenda](agenda.md){ .md-button }
+The site has two layers around the same loop. The **Academy** explains each stage: the idea, what good looks like, no code, about an hour. The **Workshop** practices it: hands-on modules on orq.ai, about four hours for the core path.
+
+[Academy: the ideas](start/academy.md){ .md-button }
+[Workshop: hands-on](start/for-engineers.md){ .md-button .md-button--primary }
+
+Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
 <div class="grid cards" markdown>
 
--   :material-tools:{ .lg .middle } **Setup**
+-   :material-hammer-wrench:{ .lg .middle } **Build**
 
     ---
 
-    The orq CLI and your keys, the orqi harness, troubleshooting a failing run, and handing the same exercise to a coding agent.
+    The refund agent as a managed agent, with a knowledge base, MCP tools and delegation.
 
-    [:octicons-arrow-right-24: Setup, orqi troubleshooting, coding agents](modules/00.md)
+    [:octicons-arrow-right-24: Build](build/index.md)
 
--   :material-router:{ .lg .middle } **AI Gateway**
-
-    ---
-
-    Fallbacks and cache, smart routing and routing rules, guardrails and PII, MCP servers and the MCP Gateway.
-
-    [:octicons-arrow-right-24: Gateway, routing, guardrails, MCP](modules/01.md)
-
--   :material-chart-timeline-variant:{ .lg .middle } **AI Observability**
+-   :material-router:{ .lg .middle } **Route and protect**
 
     ---
 
-    Tracing across your code and the gateway, alerts and webhooks, annotation queues and trace automations.
+    Fallbacks and cache, smart routing, guardrails and PII, budgets and keys: every call goes through the gateway.
 
-    [:octicons-arrow-right-24: Tracing, alerts, annotation queues](modules/02.md)
+    [:octicons-arrow-right-24: Route and protect](route/index.md)
 
--   :material-robot:{ .lg .middle } **Managed agents**
-
-    ---
-
-    The same agent three ways: your loop, a framework's, orq's, then managed agents, and delegation with advisor and sidekick.
-
-    [:octicons-arrow-right-24: Build your own agent](own-your-agent.md)
-
--   :material-database-search:{ .lg .middle } **RAG and Retrieval**
+-   :material-chart-timeline-variant:{ .lg .middle } **Trace**
 
     ---
 
-    How retrieval actually works (chunking, embeddings, search modes, reranking) and a knowledge base wired three ways.
+    Every model call, tool result and decision, readable after the fact, grouped by customer and conversation.
 
-    [:octicons-arrow-right-24: How retrieval works](reference/rag.md)
+    [:octicons-arrow-right-24: Trace](trace/index.md)
 
--   :material-clipboard-check:{ .lg .middle } **Evaluation**
-
-    ---
-
-    evaluatorq and orq-arena, failure analysis to evaluators to experiments, agent simulation, red teaming, and the whole thing gated in CI.
-
-    [:octicons-arrow-right-24: evaluatorq](reference/evaluatorq.md)
-
--   :material-shield-key:{ .lg .middle } **Administration**
+-   :material-magnify-scan:{ .lg .middle } **Find failures**
 
     ---
 
-    Budgets per identity, keys and Management Keys, and the Terraform provider that declares them.
+    Turn traces into a failure taxonomy, by hand, with a skill, with Insights, and with human review.
 
-    [:octicons-arrow-right-24: Budgets and keys](modules/05.md)
+    [:octicons-arrow-right-24: Find failures](find-failures/index.md)
 
--   :material-book-open-variant:{ .lg .middle } **Reference**
+-   :material-clipboard-check:{ .lg .middle } **Evaluate**
 
     ---
 
-    Cheat sheet, troubleshooting table, glossary.
+    Evaluators, datasets and experiments, simulated customers, red teams.
 
-    [:octicons-arrow-right-24: Cheat sheet](reference/cheat-sheet.md)
+    [:octicons-arrow-right-24: Evaluate](evaluate/index.md)
+
+-   :material-shield-check:{ .lg .middle } **Gate and monitor**
+
+    ---
+
+    A regression gate in CI, alerts on cost and errors, webhooks into your own systems.
+
+    [:octicons-arrow-right-24: Gate and monitor](gate/index.md)
 
 </div>
+
+## The loop
+
+One agent goes around the loop; every stage reads what the previous one left. The core path visits each stage once, in this order, in about four hours.
+
+![Diagram: the orq.ai loop, six stages around the refund agent: Build, Route and protect, Trace, Find failures, Evaluate, Gate and monitor, and back to Build.](assets/diagrams/orq-loop.png)
 
 ## How the pieces fit
 

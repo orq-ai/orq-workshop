@@ -31,23 +31,23 @@ Local sources (gitignored, in `.context/`): `october-insurance-prep-notes.md` (c
 - [ ] Participant roles per day received from the customer contact (5 technical carry over to days 3 and 4, plus 5 business)
 - [ ] 10 Studio accounts exist (EUR 35/user; the customer contact aligns with finance)
 - [ ] EU location and ZDR filters set on the workspace before Monday (SOW Part B ii)
-- [ ] Each technical participant ran `make orq-doctor && make gateway-check` on their own laptop (SOW Part B v); each runs `make seed-workspace` under their own `WS_PREFIX` in module 00 (`make reset-workspace` refuses the bare prefix)
-- [ ] Trainer has workspace admin; participants who do module 05 need it too
+- [ ] Each technical participant ran `make orq-doctor && make gateway-check` on their own laptop (SOW Part B v); each runs `make seed-workspace` under their own `WS_PREFIX` in the setup module (`make reset-workspace` refuses the bare prefix)
+- [ ] Trainer has workspace admin; participants who do the budgets-and-keys module need it too
 - [ ] Day 1 click-path for roles, SSO, audit logs written (no module backs it): create a restricted key in the Studio, attempt a write, open the audit-log entry (see the dry-run item below)
-- [ ] Budget threshold alert to the notifier set in the Studio and seen firing once (SOW Part B iv; module 05 does not create it)
-- [ ] Dutch BSN redaction tested once in the Studio (module 04 does not cover it)
-- [ ] Module 10: leave `MCP_SERVER_URL` empty to use the DeepWiki stand-in; check it is reachable from the on-prem instance
+- [ ] Budget threshold alert to the notifier set in the Studio and seen firing once (SOW Part B iv; the budgets-and-keys module does not create it)
+- [ ] Dutch BSN redaction tested once in the Studio (the guardrails module does not cover it)
+- [ ] The mcp-gateway module: leave `MCP_SERVER_URL` empty to use the DeepWiki stand-in; check it is reachable from the on-prem instance
 - [ ] Day 3: a Studio dataset (10 rows) and judge template per use case (advice, compliance, claims, fourth), not per pair: pairs pick on Wednesday 10:35
 - [ ] Claims: third-party agent endpoint and credentials confirmed, one test call made before Monday. Fallback: advice + compliance on Tuesday, claims on Thursday
 - [ ] Fourth use case confirmed by Fri 16 Oct, else a policy-FAQ agent over the Dutch polisvoorwaarden (plan section 5)
 - [ ] Day 3 per use case: knowledge base with the use case's documents uploaded before Wednesday, one ready-made tool a business person can attach (pre-registered code tool or a public MCP server from plan section 5), Chat enabled on the instance in use
 - [ ] SOW Part B (v) done for business participants (orq MCP connected in Claude or Codex): yes/no. If no, the Day 3 Claude Desktop block is a 10 min demo and 10 min go to Experiment
-- [ ] Dry-run in the Studio: a restricted key refuses a write, a model outside the EU/ZDR pool is denied. Module 05 stored API-created restrictions as `permission_mode: all`, so do not promise the refusal before seeing it
+- [ ] Dry-run in the Studio: a restricted key refuses a write, a model outside the EU/ZDR pool is denied. The budgets-and-keys module stored API-created restrictions as `permission_mode: all`, so do not promise the refusal before seeing it
 - [ ] Insurance data for the 4 use cases from the customer contact, Tuesday's two in hand first (SOW 1.5.1 iv): advice, compliance officer, claims (reuses a third-party agent), fourth TBC
 
 ## Day 1 and 2 (technical)
 
-Day 1 is platform options and IT controls (the IT manager is in the room): keys, budgets, audit logs, spend. Day 2 builds. Setup (module 00) runs at 09:45, before the agent-basics talk, on purpose: install problems on corporate laptops show up early, while there is still talk content to cover the fix. Right vs wrong for the IT controls (no deck slide covers them): restricted and service-account keys, never personal All keys in apps; budgets on the key or identity, not only the workspace; guardrail rules at the gateway, not per agent; EU/ZDR filters before anyone builds; test the deny path, not only the happy path. Optional if time: module 03 step 3 (routing rule keeping EU traffic on EU providers). Take the brakes off. Order: generic agent first (chatbot, knowledge base), a fun non-insurance example if the room needs energy (not scheduled), insurance in the Tue working session. Python evals and LLM-as-judge intro live here only. Every block says right vs wrong and why, not only how the software works. Attendees: Peter and Martijn (T-shaped analysts, Claude Code daily), 2 developers (API integration, invocation), IT manager (infra).
+Day 1 is platform options and IT controls (the IT manager is in the room): keys, budgets, audit logs, spend. Day 2 builds. Setup (the setup module) runs at 09:45, before the agent-basics talk, on purpose: install problems on corporate laptops show up early, while there is still talk content to cover the fix. Right vs wrong for the IT controls (no deck slide covers them): restricted and service-account keys, never personal All keys in apps; budgets on the key or identity, not only the workspace; guardrail rules at the gateway, not per agent; EU/ZDR filters before anyone builds; test the deny path, not only the happy path. Optional if time: the smart-routing module step 3 (routing rule keeping EU traffic on EU providers). Take the brakes off. Order: generic agent first (chatbot, knowledge base), a fun non-insurance example if the room needs energy (not scheduled), insurance in the Tue working session. Python evals and LLM-as-judge intro live here only. Every block says right vs wrong and why, not only how the software works. Attendees: Peter and Martijn (T-shaped analysts, Claude Code daily), 2 developers (API integration, invocation), IT manager (infra).
 
 ## Ask the room (do not decide these in advance)
 
@@ -66,12 +66,12 @@ Technical people pair with business people and share an account. Day 4 is not a 
 
 ## What to cut when the room runs slow
 
-- Day 1: module 02 step 5, module 04 step 4, module 01 step 4, module 14 step 3 (webhook receiver needs a public URL). Module 14: start the burst at the top of its block; the alert lags a few minutes (use `ALERT_WAIT=600`).
-- Day 2: module 08 steps 2b, 6 and 9; module 09 steps 3 and 7 (step 7 needs a tunnel); module 13 entirely; module 07 steps 3 and 7 (need a coding agent).
+- Day 1: the tracing module step 5, the guardrails module step 4, the gateway module step 4, the alerts-and-webhooks module step 3 (webhook receiver needs a public URL). The alerts-and-webhooks module: start the burst at the top of its block; the alert lags a few minutes (use `ALERT_WAIT=600`).
+- Day 2: the managed-agents module steps 2b, 6 and 9; the knowledge-base module steps 3 and 7 (step 7 needs a tunnel); the coding-agents module entirely; the failure-analysis module steps 3 and 7 (need a coding agent).
 - Day 3: cut annotation, never the A/B comparison (SOW Annex I names it).
 - Day 4: if a pair is stuck at the 14:00 checkpoint, drop the A/B and demo the judge verdicts only.
-- Day 2: module 07 and the Tuesday build are tight; if Build 1 runs long, cut the module 07 steps listed above and keep the evaluator in Build 2.
-- Gotcha for the IT manager: key restrictions set through the API are not stored (module 05). Create keys in the Studio or CLI.
+- Day 2: the evaluators-and-experiments module and the Tuesday build are tight; if Build 1 runs long, cut the evaluators-and-experiments module steps listed above and keep the evaluator in Build 2.
+- Gotcha for the IT manager: key restrictions set through the API are not stored (the budgets-and-keys module). Create keys in the Studio or CLI.
 - Product owner: Day 3 until lunch and the governance block, Day 4 demos. The 5 technical carry-overs coach their partner on Day 3.
 
 ## After the week

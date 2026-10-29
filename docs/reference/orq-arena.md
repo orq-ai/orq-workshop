@@ -63,10 +63,10 @@ They sit either side of one decision and answer different questions:
 | **Use it to** | gate a PR, catch a regression, find a vulnerability | choose the model, or justify switching |
 | **Cadence** | every change, in CI | when the field moves, or before you commit to a model |
 
-The usual order is arena first, evaluatorq forever after: pick the model with a tournament, then keep it honest with a regression gate. The pairwise data also feeds model selection for [smart routing](../modules/03.md): a strong model and an economical one, chosen with evidence rather than vibes.
+The usual order is arena first, evaluatorq forever after: pick the model with a tournament, then keep it honest with a regression gate. The pairwise data also feeds model selection for [smart routing](../modules/smart-routing.md): a strong model and an economical one, chosen with evidence rather than vibes.
 
 ## Official docs
 
 - The repo: [orq-ai/orq-arena](https://github.com/orq-ai/orq-arena)
 - The docs: [orq-ai.github.io/orq-arena](https://orq-ai.github.io/orq-arena/)
-- In this workshop: [Smart routing](../modules/03.md) routes between models once you have picked them, and [Failure analysis to experiments](../modules/07.md) turns a chosen model's failures into evaluators.
+- In this workshop: [Smart routing](../modules/smart-routing.md) routes between models once you have picked them, and [Evaluators and experiments](../modules/evaluators-and-experiments.md) turns a chosen model's failures into evaluators.

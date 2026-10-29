@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="key-scopes-title key-scopes-desc">
+  <title id="key-scopes-title">Key scoping: permission mode across project scope</title>
+  <desc id="key-scopes-desc">Diagram for the budgets-and-keys module, step 1. An API key is scoped on two axes: the permission mode (all, read only, or restricted with a per-domain access map) and the project scope (every project or a single one). A panel records what this workshop observed in September 2026: a key requested as restricted and single-project was stored as all and all, so the budget became the real limit.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Column eyebrows -->
+  <text x="392" y="160" text-anchor="middle" class="zone-title">ALL PROJECTS</text>
+  <text x="936" y="160" text-anchor="middle" class="zone-title">SINGLE PROJECT</text>
+  <!-- Row: PERMISSION_MODE_ALL -->
+  <rect x="144" y="192" width="496" height="160" rx="16" class="node"/>
+  <text x="392" y="260" text-anchor="middle" class="name">ALL</text>
+  <text x="392" y="300" text-anchor="middle" class="sub">every domain, every project</text>
+  <rect x="688" y="192" width="496" height="160" rx="16" class="node"/>
+  <text x="936" y="260" text-anchor="middle" class="name">ALL</text>
+  <text x="936" y="300" text-anchor="middle" class="sub">every domain, one project</text>
+  <!-- Row: READ_ONLY -->
+  <rect x="144" y="384" width="496" height="160" rx="16" class="soft"/>
+  <text x="392" y="452" text-anchor="middle" class="name">READ_ONLY</text>
+  <text x="392" y="492" text-anchor="middle" class="sub">reads everything, writes nothing</text>
+  <rect x="688" y="384" width="496" height="160" rx="16" class="soft"/>
+  <text x="936" y="452" text-anchor="middle" class="name">READ_ONLY</text>
+  <text x="936" y="492" text-anchor="middle" class="sub">reads one project</text>
+  <!-- Row: RESTRICTED -->
+  <rect x="144" y="576" width="496" height="160" rx="16" class="soft"/>
+  <text x="392" y="644" text-anchor="middle" class="name">RESTRICTED</text>
+  <text x="392" y="684" text-anchor="middle" class="sub">a per-domain access map</text>
+  <rect x="688" y="576" width="496" height="160" rx="16" class="soft"/>
+  <text x="936" y="644" text-anchor="middle" class="name">RESTRICTED</text>
+  <text x="936" y="684" text-anchor="middle" class="sub">access map, one project</text>
+  <!-- Panel: what this workshop actually observed -->
+  <rect x="1264" y="192" width="512" height="544" rx="16" class="focal"/>
+  <rect x="1296" y="224" width="256" height="24" rx="4" class="tag-box accent"/>
+  <text x="1424" y="242" text-anchor="middle" class="tag t-accent">OBSERVED SEPT 2026</text>
+  <text x="1296" y="300" class="name">Asked is not stored</text>
+  <text x="1296" y="356" class="sub">asked  : RESTRICTED · single</text>
+  <text x="1296" y="388" class="sub">         chat_completions:write</text>
+  <text x="1296" y="420" class="sub">         dataset:read eval:read</text>
+  <text x="1296" y="476" class="sub t-accent">stored : permission_mode all</text>
+  <text x="1296" y="508" class="sub t-accent">         project_scope all</text>
+  <text x="1296" y="540" class="sub t-accent">         access null</text>
+  <text x="1296" y="572" class="sub t-accent">family : workspace_jwt</text>
+  <text x="1296" y="636" class="sub t-mute">the request is accepted,</text>
+  <text x="1296" y="668" class="sub t-mute">the narrowing is not kept —</text>
+  <text x="1296" y="700" class="sub t-mute">so the budget is the real limit</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="880" x2="1840" y2="880" class="hair"/>
+  <text x="80" y="912" class="legend-title">LEGEND</text>
+  <rect x="80" y="944" width="28" height="20" rx="4" class="node"/>
+  <text x="120" y="960" class="msg">Widest grant</text>
+  <rect x="352" y="944" width="28" height="20" rx="4" class="soft"/>
+  <text x="392" y="960" class="msg">Narrower grant you can request</text>
+  <rect x="848" y="944" width="28" height="20" rx="4" class="focal"/>
+  <text x="888" y="960" class="msg">What this workspace stored — check yours with `orq api-keys list`</text>
+    
+</svg>
