@@ -116,10 +116,10 @@ body { font-family: var(--md-text-font-family); }
 .md-typeset :not(pre) > code { font-size: 0.85em; }
 .md-nav, .md-tabs__link { font-size: 0.875rem; }
 
-/* Use the screen: the grid spans the window, the reading column takes what the two rails leave
-   (capped at 72rem so lines stay readable on very wide monitors). Left rail 16rem as on docs.orq.ai. */
-.md-grid { max-width: 120rem; }
-.md-content__inner { max-width: 72rem; margin-left: 2rem; margin-right: 2rem; }
+/* Use the whole window: no cap on the grid or the reading column. The two rails keep their width and the
+   column takes the rest. Left rail 16rem as on docs.orq.ai. */
+.md-grid { max-width: none; }
+.md-content__inner { max-width: none; margin-left: 2rem; margin-right: 2rem; }
 @media screen and (min-width: 76.25em) {
   .md-sidebar--primary { width: 16rem; }
   .md-sidebar--secondary { width: 14.5rem; }
