@@ -475,7 +475,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | an orq.ai account, Python 3.11+, uv |
 | **You will have** | a working `.env`, a green `orq doctor`, one traced call |
 
-`make module M=setup` · <span class="tag">docs</span> `modules/00` · <span class="tag orange">before block 1</span>
+`make module M=setup` · <span class="tag">docs</span> `modules/setup` · <span class="tag orange">before block 1</span>
 
 ---
 
@@ -491,7 +491,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00 |
 | **You will have** | fallbacks, retry, cache and load balancing on the refund agent, each visible as a span |
 
-`make module M=gateway` · <span class="tag">docs</span> `modules/01` · <span class="tag orange">block A</span>
+`make module M=gateway` · <span class="tag">docs</span> `modules/gateway` · <span class="tag orange">block A</span>
 
 ---
 
@@ -507,7 +507,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 01 |
 | **You will have** | traces searchable by thread and customer, one `refund_turn -> tool -> llm` trace, one human annotation |
 
-`make module M=tracing` · <span class="tag">docs</span> `modules/02` · <span class="tag orange">block C</span>
+`make module M=tracing` · <span class="tag">docs</span> `modules/tracing` · <span class="tag orange">block C</span>
 
 ---
 
@@ -523,7 +523,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 01 |
 | **You will have** | `ws-refund-router` called by reference, traces showing which model it picked, a rule sending cheap-tier traffic to `gpt-5.4-nano` |
 
-`make module M=smart-routing` · <span class="tag">docs</span> `modules/03` · <span class="tag orange">block A</span>
+`make module M=smart-routing` · <span class="tag">docs</span> `modules/smart-routing` · <span class="tag orange">block A</span>
 
 ---
 
@@ -539,7 +539,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00, `make seed-workspace` |
 | **You will have** | PII placeholders before the provider, an over-limit refund turned into a hand-off, a gateway rule for unguarded calls |
 
-`make module M=guardrails` · <span class="tag">docs</span> `modules/04` · <span class="tag orange">block B</span>
+`make module M=guardrails` · <span class="tag">docs</span> `modules/guardrails` · <span class="tag orange">block B</span>
 
 ---
 
@@ -555,7 +555,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00, workspace admin |
 | **You will have** | a purpose-built API key, an identity, two budgets that block the third call in a minute |
 
-`make module M=budgets-and-keys` · <span class="tag">docs</span> `modules/05` · <span class="tag orange">block A</span>
+`make module M=budgets-and-keys` · <span class="tag">docs</span> `modules/budgets-and-keys` · <span class="tag orange">block A</span>
 
 ---
 
@@ -571,7 +571,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00, orqi installed, traffic from modules 01 to 04 (or `make generate-traffic`) |
 | **You will have** | four real answers about your workspace, a seeded client-side failure diagnosed, when to use orqi vs `orq launch` |
 
-`make module M=orqi` · <span class="tag">docs</span> `modules/06` · <span class="tag orange">block C</span>
+`make module M=orqi` · <span class="tag">docs</span> `modules/orqi` · <span class="tag orange">block C</span>
 
 ---
 
@@ -587,7 +587,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 00 and 02 |
 | **You will have** | a taxonomy from 20 conversations, two evaluators, `ws-refund-eval`, an Experiment comparing fixed vs vulnerable |
 
-`make module M=failure-analysis` · <span class="tag">docs</span> `modules/07` · <span class="tag orange">block D</span>
+`make module M=failure-analysis` · <span class="tag">docs</span> `modules/failure-analysis` · <span class="tag orange">block D</span>
 
 ---
 
@@ -603,7 +603,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the refund agent over the Responses API with a local tool loop, streamed, with memory, pinned by `@version` |
 
-`make module M=managed-agents` · <span class="tag">docs</span> `modules/08` · <span class="tag orange">blocks 1 and 2</span>
+`make module M=managed-agents` · <span class="tag">docs</span> `modules/managed-agents` · <span class="tag orange">blocks 1 and 2</span>
 
 ---
 
@@ -619,7 +619,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 00 to 02, `make seed-workspace` |
 | **You will have** | the policy searched three ways, re-chunked two ways, wired in place of `get_policy`, pre-fetched, and searched by a managed agent |
 
-`make module M=knowledge-base` · <span class="tag">docs</span> `modules/09` · <span class="tag orange">block 3</span>
+`make module M=knowledge-base` · <span class="tag">docs</span> `modules/knowledge-base` · <span class="tag orange">block 3</span>
 
 ---
 
@@ -635,7 +635,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00, `make seed-workspace` |
 | **You will have** | the tools as an MCP server, `ws-refund-gateway` exposing two of three, an MCP client and a coding agent on it, a managed-agent MCP span |
 
-`make module M=mcp-gateway` · <span class="tag">docs</span> `modules/10` · <span class="tag orange">block 4</span>
+`make module M=mcp-gateway` · <span class="tag">docs</span> `modules/mcp-gateway` · <span class="tag orange">block 4</span>
 
 ---
 
@@ -651,7 +651,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 00 and 07, `make seed-workspace` |
 | **You will have** | four simulation runs as Experiments and in the local dashboard, a managed-agent adapter, one surprise about judges |
 
-`make module M=simulation` · <span class="tag">docs</span> `modules/11` · <span class="tag orange">block H</span>
+`make module M=simulation` · <span class="tag">docs</span> `modules/simulation` · <span class="tag orange">block H</span>
 
 ---
 
@@ -667,7 +667,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 00, 07 and 16 |
 | **You will have** | `make regression-eval` green then red, a static red-team gate, three GitHub workflows, two headless agent runs |
 
-`make module M=evals-in-ci` · <span class="tag">docs</span> `modules/12` · <span class="tag orange">block I</span>
+`make module M=evals-in-ci` · <span class="tag">docs</span> `modules/evals-in-ci` · <span class="tag orange">block I</span>
 
 ---
 
@@ -683,7 +683,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 00, one coding agent installed |
 | **You will have** | a dry-run of `orq connect`, the env `orq launch` injects, the CLI skills, a session visible as traces with cost |
 
-`make module M=coding-agents` · <span class="tag">docs</span> `modules/13` · <span class="tag orange">block J</span>
+`make module M=coding-agents` · <span class="tag">docs</span> `modules/coding-agents` · <span class="tag orange">block J</span>
 
 ---
 
@@ -699,7 +699,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 02, `make seed-workspace`, a public URL for the receiver |
 | **You will have** | a cost alert that opened a trigger on your burst, signed events at a receiver you run |
 
-`make module M=alerts-and-webhooks` · <span class="tag">docs</span> `modules/14` · <span class="tag orange">block C</span>
+`make module M=alerts-and-webhooks` · <span class="tag">docs</span> `modules/alerts-and-webhooks` · <span class="tag orange">block C</span>
 
 ---
 
@@ -715,7 +715,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | module 08, `make seed-workspace` |
 | **You will have** | an agent that consults `gpt-5.6-sol` before a refusal and delegates the closing note to `gpt-5.4-nano`, cost read off one trace |
 
-`make module M=advisor-and-sidekick` · <span class="tag">docs</span> `modules/15` · <span class="tag orange">block 2</span>
+`make module M=advisor-and-sidekick` · <span class="tag">docs</span> `modules/advisor-and-sidekick` · <span class="tag orange">block 2</span>
 
 ---
 
@@ -731,7 +731,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 07 and 11, `make seed-workspace` |
 | **You will have** | two red-team runs as Experiments, a per-target resistance rate, a CLI gate that exits 0 or 1 |
 
-`make module M=red-teaming` · <span class="tag">docs</span> `modules/16` · <span class="tag orange">block H</span>
+`make module M=red-teaming` · <span class="tag">docs</span> `modules/red-teaming` · <span class="tag orange">block H</span>
 
 ---
 
@@ -747,7 +747,7 @@ All 18 modules in the repo, in order. Each one runs on its own with **make mNN**
 | **Needs** | modules 02 and 07, `make seed-workspace` |
 | **You will have** | `ws-review-queue` filled by hand and by automation, items annotated by API, bad ones promoted to `ws-review-dataset` |
 
-`make module M=annotation-queues` · <span class="tag">docs</span> `modules/17` · <span class="tag orange">block C</span>
+`make module M=annotation-queues` · <span class="tag">docs</span> `modules/annotation-queues` · <span class="tag orange">block C</span>
 
 ---
 

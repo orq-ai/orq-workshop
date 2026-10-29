@@ -403,16 +403,15 @@ body { font-family: var(--md-text-font-family); }
 .md-typeset .steps > ol > li:last-child { padding-bottom: 0; }
 .md-typeset .steps > ol > li:last-child::after { display: none; }
 
-/* --- Screenshots and diagrams: hairline frame, a gentle lift ------------------ */
+/* --- Screenshots and diagrams: hairline frame, no shadow ----------------------
+   ponytail: no box-shadow on large images. Chrome left an unpainted band under a
+   glightbox-wrapped diagram with radius + shadow on hover; the hairline is enough. */
 .md-typeset p:has(> img:only-child), .md-typeset p:has(> a.glightbox:only-child > img) { margin: 1.5rem 0 1.75rem; }
 .md-typeset p > img:only-child, .md-typeset p > a.glightbox:only-child > img {
   display: block;
   border: 1px solid var(--orq-hairline);
   border-radius: var(--orq-radius);
-  box-shadow: 0 3px 8px rgb(10 14 13 / 6%), 0 12px 28px rgb(10 14 13 / 8%);
 }
-[data-md-color-scheme="slate"] .md-typeset p > img:only-child,
-[data-md-color-scheme="slate"] .md-typeset p > a.glightbox:only-child > img { box-shadow: 0 3px 8px rgb(0 0 0 / 20%), 0 12px 28px rgb(0 0 0 / 28%); }
 .dashboard-shot { border-radius: var(--orq-radius); border: 1px solid var(--orq-hairline); margin: 1em 0; }
 .md-typeset img[alt^="Diagram"] { background: var(--orq-surface); }
 
