@@ -254,7 +254,6 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 ## Gotchas
 
 - The judge is an LLM. Means move a few points between identical runs (the fixed judge scored 0.70 and 0.75 in two consecutive runs). Set thresholds from two or three runs, not one, and keep a margin.
-- `orq_ai_sdk 4.14` parses `orq.evals.invoke` into an empty model. `evals/scorers.py` posts to `/v3/evaluators/{id}/invoke` directly and reads `passed`.
 - The seeded guardrail was created with `output_type: number`; a Python evaluator that returns `True` then fails every invoke with HTTP 500 `result should be type number!`. `orq evals update <id> --output-type boolean` fixes it; module 07's solution does that idempotently.
 - evaluatorq's static default dataset is `hf:orq/redteam-vulnerabilities`, which needs `huggingface_hub`. It is not in this lockfile, so the gate ships its own `evals/redteam_static.json`. `uv add "evaluatorq[redteam]"` unlocks the public set.
 - The Homebrew `eq` on some machines is an older evaluatorq. Always `uv run eq ...` so the CLI matches the library in `.venv`.
@@ -262,9 +261,9 @@ Open a pull request from a new branch that swaps the contents of [`app/data/fixe
 - `orq launch` with `ORQ_API_KEY` set prints a note that the key wins over the login session. That is the intended behavior in CI.
 - Both gates upload their Experiment runs under `settings.path` (`<ORQ_PROJECT>/workshop`, so `orq-workshop/workshop` by default; `ORQ_PATH` overrides it). `evaluatorq.red_team` has no path parameter, so `redteam_gate.py` patches its upload call; without that patch the run would land in the workspace's Default project and be invisible while `orq-workshop` is the active project. The printed URL always opens the right run.
 
-## New in orq.ai 4.6
+## New in orq.ai 4.15 and 4.17
 
-Red teaming shipped in evaluatorq with OWASP LLM Top 10 and Agentic categories, agent-aware attacks, exit-code gating and results as Experiment runs. That release is what makes `evals/redteam_gate.py` a twenty-line file: the pipeline, the OWASP judges and the Studio upload are library code, the script only picks a target, a dataset and a bar.
+`orq launch <agent> -p` runs a coding agent headless in CI through the gateway ([release 4.15](https://docs.orq.ai/changelog/release-4-15)), and workload federation exchanges the GitHub Actions OIDC token for a short-lived orq.ai key, so the workflow stores no orq.ai secret ([release 4.17](https://docs.orq.ai/changelog/release-4-17), Enterprise).
 
 ## Go further
 

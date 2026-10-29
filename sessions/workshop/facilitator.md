@@ -36,7 +36,7 @@ The appendix opens with one slide per module (00 to 17): abstract, time, prerequ
 - `uv sync --extra langgraph`, then `uv run python examples/own-your-agent.py` once: block 1 needs all three legs green, and the LangGraph leg waits ~10s for its trace to index.
 - A Management Key only if you plan to fall back to appendix block A, exported in the demo shell.
 - `app/mcp_server.py` deployed to a public URL, `MCP_SERVER_URL` set, for block 4.
-- `orqi` installed and pinned; `orq` 11.x; `claude` or `opencode` on the demo machine.
+- `orqi` installed and pinned; `orq` 12.x; `claude` or `opencode` on the demo machine.
 - Every `make mNN` run once today; keep the terminal output in a scratch file as fallback.
 
 ## Demo fallbacks

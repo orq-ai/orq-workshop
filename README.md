@@ -63,7 +63,7 @@ slides/             Marp deck and facilitator guide for a live session
 
 ## Requirements
 
-Python 3.11 to 3.13, [uv](https://docs.astral.sh/uv/), the orq.ai CLI 11.x, an orq.ai workspace with at least one chat model, one embedding model and one rerank model enabled. Node is only needed for `make slides` if `marp` is not installed.
+Python 3.11 to 3.13, [uv](https://docs.astral.sh/uv/), the orq.ai CLI 12.x, an orq.ai workspace with at least one chat model, one embedding model and one rerank model enabled. Node is only needed for `make slides` if `marp` is not installed.
 
 ## License
 

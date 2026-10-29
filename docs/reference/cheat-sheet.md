@@ -30,7 +30,7 @@ orq budgets list               # needs a Management Key
 orq alerts list | list-triggers <alert_id>   # project alerts and their incidents
 orq annotation-queues query-items <queue_id>
 orq webhooks generate-secret | list | get <id>   # event subscriptions to your HTTPS endpoint
-orq request POST /v2/reporting --stdin      # metrics; body: {"metric":"genai.cost","from":...,"to":...,"mode":"scalar"}
+orq request POST /v3/telemetry/query --stdin   # body: {"source":"TELEMETRY_SOURCE_TRACES","compute":[{"metric":"genai.cost","op":"sum"}],"from":...,"to":...,"mode":"scalar"}
 orq pii redact --text "..."
 orq request GET /v2/routing-rules   # raw escape hatch for anything without a command
 orq orqi "why did my agent fail today?"

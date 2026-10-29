@@ -173,9 +173,9 @@ Use the build-agent skill to create an agent `ws-refund-agent-triage`, a copy of
 - `max_uses` is per turn. With `max_uses: 2` the agent may ask the advisor twice; the broken agent did.
 - A secondary model that fails does not fail the turn. Its advisor span is marked `error`, yet alerting on `genai.error_rate` will not see it (module 14); reading the `orq:advisor` result will.
 
-## New in orq.ai 4.13
+## New in orq.ai 4.15
 
-Advisor and Sidekick tools on Agents, metered separately with their own spans. 4.12 added a configurable timeout per agent tool, which applies to these too.
+`orq:subagent` and `orq:advisor` are gateway server tools: add one to the `tools` array and orq.ai runs the delegation on Responses and Chat Completions, reporting it under `usage.server_tool_use` ([release 4.15](https://docs.orq.ai/changelog/release-4-15)).
 
 ## Go further
 

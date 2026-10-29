@@ -228,14 +228,14 @@ Use the manage-knowledge-base idea with the orq.ai Python SDK (`app.refund_agent
 ## Gotchas
 
 - Vector and hybrid search return `500 internal_error` on a knowledge base embedded with `openai/text-embedding-3-small`; the same chunks with `openai/text-embedding-3-large` search fine. That is why `EMBEDDING_MODEL` defaults to the large model. If you inherit a workspace seeded before that change, re-embed: `make reset && make seed`.
-- `orq_ai_sdk 4.14.14`: `orq.knowledge.list_datasources` sends `limit=50.0` and the API rejects the float. The solution uses the REST endpoint for that one call. `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it.
+- `search_options.include_metadata` shows `metadata.topic` through the CLI and REST; the SDK model drops it (SDK 4.14, not retested).
 - All eleven rerank models are `enabled: false` here. `rerank_config` with a disabled model is silently ignored. Enable one under **AI Gateway** > **Models** before you compare.
 - `orq knowledge-bases list -o json` returns `{data, has_more, object}`, not a bare array: iterate `.data[]`.
 - Gateway-side retrieval (`orq.knowledge_bases` on `chat.completions`) did not inject context in this workspace. Verify with `usage.prompt_tokens` before you trust it, not with the answer text.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.16 and 4.17
 
-The Chunking API (`orq.chunking.parse`) exposes seven strategies (`token`, `sentence`, `recursive`, `semantic`, `agentic`, `fast`, `late`) as a stateless call, so chunking can be tuned in a script before a datasource is rebuilt. Knowledge base retrieval settings (search type, threshold, top_k, rerank, agentic RAG) can be overridden per request with `retrieval_config`.
+Cohere `embed-v5.0-pro` and `embed-v5.0-fast` ([release 4.16](https://docs.orq.ai/changelog/release-4-16)) and `rerank-v5.0-pro` and `rerank-v5.0-fast` ([release 4.17](https://docs.orq.ai/changelog/release-4-17)) join the Model Garden, so embedding and rerank models for a knowledge base can be swapped without touching the app.
 
 ## Go further
 

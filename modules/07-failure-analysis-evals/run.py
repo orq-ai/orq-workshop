@@ -126,8 +126,8 @@ def classify(conv: dict[str, Any]) -> list[str]:
 
 
 def invoke(evaluator_id: str, **body: Any) -> dict[str, Any]:
-    """POST /v3/evaluators/{id}/invoke. orq_ai_sdk 4.14's `orq.evals.invoke` returns an empty model."""
-    return rest_post(None, f"/v3/evaluators/{evaluator_id}/invoke", body)
+    """Run one orq.ai evaluator on a row: `orq.evals.invoke` returns `passed` and `explanation`."""
+    return make_orq().evals.invoke(id=evaluator_id, **body).model_dump()
 
 
 async def decision_scorer(params: dict[str, Any]) -> EvaluationResult:

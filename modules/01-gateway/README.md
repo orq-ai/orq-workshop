@@ -142,9 +142,9 @@ Add a fallback chain and a 600 second exact-match cache to `modules/01-gateway/r
 - `cache` keys on the exact request. A different `thread` or `metadata` value is a different cache key.
 - The load balancer picks per request. With two models and four calls you may see the same model four times.
 
-## New in orq.ai 4.13
+## New in orq.ai 4.15 to 4.17
 
-Router error envelopes are consistent across providers, so the OpenAI SDK parses every error, and rate-limited requests return `Retry-After`. Incremental streaming (4.11) lowers time to first token on the same endpoint.
+Server tools run on the gateway itself: add `orq:web_search`, `orq:web_fetch` or `orq:shell` to `tools` and orq.ai executes the call on both Responses and Chat Completions ([release 4.15](https://docs.orq.ai/changelog/release-4-15)). The Batch API sends thousands of requests as one job at the provider's batch price ([release 4.17](https://docs.orq.ai/changelog/release-4-17)), and streamed model calls may now run for up to 30 minutes ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
 
 ## Go further
 

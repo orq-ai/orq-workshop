@@ -9,7 +9,7 @@ Why a prefix: every key starts with WS_PREFIX (`ws-refund-agent`; `ws_...` for m
 whose keys reject hyphens), so `reset` can find the workshop's entities in a shared workspace and
 leave everything else alone.
 
-Why REST in places: the orq SDK 4.14 cannot serialize or parse a few payloads. Each raw call below
+Why REST in places: the orq SDK (4.17 retested, 4.14 for the admin-only calls) cannot serialize or parse a few payloads. Each raw call below
 says which quirk it works around, and goes through `rest_post`, `rest_get` or `rules_api`.
 
     uv run python -m app.refund_agent.entities seed
@@ -672,7 +672,7 @@ def ensure_webhook(
 
 
 def list_alerts() -> list[dict[str, Any]]:
-    """ponytail: REST. Once an alert has evaluated, its `recent_runs[].severity` is "" and the SDK's literal rejects it (4.14)."""
+    """ponytail: REST. Once an alert has evaluated, its `recent_runs[].severity` is "" and the SDK's literal rejects it (4.17)."""
     return rest_get("/v2/alerts?limit=100")
 
 
@@ -681,16 +681,16 @@ def alert_triggers(alert_id: str) -> list[dict[str, Any]]:
     return rest_get(f"/v2/alerts/{alert_id}/triggers?limit=50")
 
 
-def reporting_query(orq, **body: Any) -> dict[str, Any]:
-    """POST /v2/reporting. ponytail: REST, not orq.reporting.query: the SDK 4.14 rejects the echoed request (`grain: ""`)."""
-    return rest_post(orq, "/v2/reporting", body)
+def telemetry_query(orq, **body: Any) -> dict[str, Any]:
+    """POST /v3/telemetry/query on the traces source. ponytail: REST, not orq.telemetry.query: SDK 4.17 rejects the echoed request (`sort: ""`)."""
+    return rest_post(orq, "/v3/telemetry/query", {"source": "TELEMETRY_SOURCE_TRACES", **body})
 
 
 # ---------------------------------------------------------------- reset
 
 
 def rest_get(path: str) -> list[dict[str, Any]]:
-    """Raw GET for lists where the SDK drops the `_id` field (MCP servers and gateways in 4.14)."""
+    """Raw GET for lists where the SDK drops the `_id` field (MCP servers and gateways in 4.17)."""
     import httpx
 
     response = httpx.get(

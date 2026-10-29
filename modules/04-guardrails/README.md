@@ -257,9 +257,9 @@ Using the orq.ai MCP tools, create a Python evaluator `ws-no-email-echo` whose `
 - Request-level `guardrails` are ignored on `/v3/router/responses` (accepted, not enforced, no error) as of 4.14.17. Step 3 uses `api="chat"` for that reason; rules apply to both endpoints.
 - Since orq.ai API 4.14.17, `/v2/guardrail-rules` answers `403 not authorized for this endpoint` to the repo's workspace key (a legacy `workspace_jwt` service-account token). `entities.rules_api` retries the call through `orq request` with the `ORQ_API_KEY` your shell exported before `.env` overrode it, so log in with the CLI (`orq auth login`) and keep that key in the shell. A key minted by `orq setup --local` is a different kind and should not need the fallback; if you get the 403 with one, tell the instructor.
 
-## New in orq.ai 4.14
+## New in orq.ai 4.15 and 4.16
 
-Every trace now shows which guardrails and evaluators ran on a span (the shield icon and the `orq.guardrail.*` attributes above). 4.13 added sampling and a monitor-only mode for system guardrails, and 4.12 made `orq_pii_detection` and `orq_secret_detection` available in every workspace without setup.
+PII detection and redaction run as a System guardrail and cover country-specific identifiers (BSN, NHS and NINO numbers, among others) ([release 4.15](https://docs.orq.ai/changelog/release-4-15)), in more languages and with Enable all and Disable all toggles ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). Evaluators and guardrails now follow the plugins configured on the call, so PII redaction applies to them too ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
 
 ## Go further
 

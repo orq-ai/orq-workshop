@@ -133,15 +133,15 @@ The agent is a better reviewer than the rule in step 3, and slower than a human 
 ## Gotchas
 
 - Queue items are spans. `add_items` wants `{trace_id, span_id}`; `remove_items` wants span ids, not item ids.
-- `retrieve_item` returns an empty model in SDK 4.16 (no `input` or `output`), and `traces.get_span` in SDK 4.14 drops `output`. Read the span over REST instead: `/v3/traces/{trace_id}/spans/{span_id}`, `attributes.gen_ai.input.messages[0].parts[0].content` for the question and `attributes.gen_ai.output` for the output items, either a JSON string or `{"_value": [...]}` for an agent whose tools run in orq. The answer is the last `message` item.
+- `retrieve_item` returns an empty model in SDK 4.17 (no `input` or `output`), and `traces.get_span` in SDK 4.14 drops `output` (not retested). Read the span over REST instead: `/v3/traces/{trace_id}/spans/{span_id}`, `attributes.gen_ai.input.messages[0].parts[0].content` for the question and `attributes.gen_ai.output` for the output items, either a JSON string or `{"_value": [...]}` for an agent whose tools run in orq. The answer is the last `message` item.
 - Annotation keys must exist as definitions in the workspace; an unknown key is a 404, a `defects` value outside the fixed list (`grammatical, spelling, hallucination, repetition, inappropriate, off_topic, incompleteness, ambiguity`) is a 400. No list endpoint for definitions was found; the id of one shows up in `used_human_review_ids` after the first annotation.
 - A queue created by API has no annotations configured; set `human_review_ids` (the step does) or the Studio panel is empty.
 - Automations have no API and act on future traces only. Step 2 detects one by running a turn and polling for 30 seconds.
 - `make reset` deletes the queue and the dataset by prefix; annotations stay on the traces.
 
-## New in orq.ai 4.11 and 4.14
+## New in orq.ai 4.16 and 4.17
 
-Human Review became **Annotations** with queues and an API in 4.11; 4.14 added **trace automations** with sampling and the two actions, dataset and annotation queue, and evaluator results can be corrected from the review screen.
+Automations can target the spans of a given variant or Agent version without custom metadata ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). When a span is added to a Dataset, Copy annotations brings its human annotations along as named datapoint inputs ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
 
 ## Go further
 

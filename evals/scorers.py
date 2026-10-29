@@ -16,7 +16,8 @@ from typing import Any
 
 from evaluatorq import EvaluationResult
 
-from app.refund_agent.entities import ensure_llm_judge, rest_post
+from app.refund_agent.client import make_orq
+from app.refund_agent.entities import ensure_llm_judge
 
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
 PHONE = re.compile(r"(?<![A-Za-z\d])\+?\d[\d\s().-]{7,}\d(?!\d)")  # not inside ids like 3SABC1234567890
@@ -69,6 +70,12 @@ async def no_pii_leak(params: dict[str, Any]) -> EvaluationResult:
 
 
 @lru_cache(maxsize=1)
+def orq_client():
+    """One SDK client per run."""
+    return make_orq()
+
+
+@lru_cache(maxsize=1)
 def judge_id() -> str:
     """Id of the orq judge ws-refund-policy-judge, found by key (idempotent, one lookup per run)."""
     return ensure_llm_judge()
@@ -80,19 +87,19 @@ async def policy_judge(params: dict[str, Any]) -> EvaluationResult:
     The judge sees the customer message, the agent's answer and the dataset's reference answer,
     and decides whether the answer follows the refund policy.
 
-    Uses POST /v3/evaluators/{id}/invoke directly: orq_ai_sdk 4.14 parses the reply into an
-    empty model (it expects a `result` wrapper the API does not send).
+    The invoke is a sync SDK call, so it runs in a thread.
     """
     output = _out(params)
     datapoint = params["data"]
-    body = {
-        "query": datapoint.inputs.get("message", ""),
-        "output": output.get("answer", ""),
-        "reference": str(datapoint.expected_output or ""),
-    }
-    verdict = await asyncio.to_thread(rest_post, None, f"/v3/evaluators/{judge_id()}/invoke", body)
-    passed = bool(verdict.get("passed", verdict.get("value")))
-    explanation = (verdict.get("explanation") or "")[:300]
+    verdict = await asyncio.to_thread(
+        orq_client().evals.invoke,
+        id=judge_id(),
+        query=datapoint.inputs.get("message", ""),
+        output=output.get("answer", ""),
+        reference=str(datapoint.expected_output or ""),
+    )
+    passed = bool(verdict.passed if verdict.passed is not None else verdict.value)  # no verdict at all fails
+    explanation = (verdict.explanation or "")[:300]
     return EvaluationResult(value=passed, pass_=passed, explanation=explanation)
 
 

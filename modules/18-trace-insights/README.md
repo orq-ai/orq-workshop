@@ -128,6 +128,10 @@ Paste `agent_prompt.md`, or ask it directly to run the `orq-recommend-evaluators
 - Without `--agent`, the population includes the simulator and judge calls (they share your key), and every other trace in the window.
 - Local-agent traces (module 11 step 1) are one per model call, without an agent name: insights still runs on them, but summaries of single tool rounds read as "pending lookup_order call, no user message". Use the managed agent for this module.
 
+## New in orq.ai 4.16
+
+Insights has no entry in the 4.15 to 4.17 release notes; the [Insights page](https://docs.orq.ai/ai-studio/observability/insights) is the reference. The example traces a cluster names open in the rebuilt Traces page, where filters, columns and time range live in the URL, so you can share the exact list ([release 4.16](https://docs.orq.ai/changelog/release-4-16)).
+
 ## Go further
 
 - `--dimension` takes other discovered dimensions; `--label` takes a preset name or a JSON label spec of your own.
