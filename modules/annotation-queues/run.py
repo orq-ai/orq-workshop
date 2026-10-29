@@ -225,7 +225,7 @@ print(f"dataset  : {settings.prefix}-review-dataset {DATASET}")
 print(f"rows     : +{len(bad_rows)} from this review, {count} total")
 print(f"queue    : {items_now} items left")
 print(f"cli      : orq datasets list-datapoints {DATASET} -o json | jq -c '.data[] | {{message: .inputs.message, expected_output}}'")
-print("next     : point modules/07 at this dataset, or an experiment: the bad answers of today are the regression test of tomorrow")
+print("next     : point the evaluators-and-experiments module at this dataset, or an experiment: the bad answers of today are the regression test of tomorrow")
 
 # %% [markdown]
 # ## Step 5 · The same from the CLI
