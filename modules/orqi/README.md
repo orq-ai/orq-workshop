@@ -6,7 +6,7 @@
 | | |
 |---|---|
 | **Time** | 15 min |
-| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make generate-traffic`) |
+| **Prerequisites** | module 00; the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page (orqi installed and signed in); traffic from modules 01 to 04 in the workspace (or `make generate-traffic`) |
 | **You will have** | four real answers from orqi about your own workspace, a diagnosis of a seeded client-side failure, and a clear rule for when to reach for orqi versus `orq launch`. |
 
 ## Why
@@ -15,7 +15,7 @@ Modules 01 to 05 produce failures on purpose: 408 timeouts from the fallback cha
 
 ## The one concept to understand first
 
-orqi has the same 43 `orq_` tools and the same skills your coding agent gets in module 13, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/setup/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
+orqi has the same 43 `orq_` tools and the same skills your coding agent gets in module 13, plus seven of its own (`workspace-health-check`, `investigate-root-cause`, `debug-conversation`, `optimize-cost`, `setup-guardrails`, `manage-knowledge-base`, `platform-guide`) and three subagents (`investigator`, `analyst`, `docs`). What it lacks is a repo to build: it reads and runs shell commands in your current directory, but its job is the platform. Install and sign-in are on the [orqi harness](https://orq-ai.github.io/orq-workshop/start/orqi/) page; this module assumes the header line already shows `43 tools` and `ORQ_API_KEY`.
 
 ## Steps
 

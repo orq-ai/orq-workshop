@@ -70,6 +70,6 @@ make regression-eval-vulnerable   # v1: exits 1
 
 ## Take home
 
-- [The full course](../agenda.md): 18 modules, from the gateway to red teaming.
+- [The core path](../start/core-path.md), and the electives by stage.
 - [Red teaming](../modules/red-teaming.md) and [annotation queues](../modules/annotation-queues.md) were left out today; they work on the same agent.
 - Your key is deleted after the workshop.
