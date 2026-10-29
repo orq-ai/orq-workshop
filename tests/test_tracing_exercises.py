@@ -66,3 +66,38 @@ def test_code_tab_snippets_are_in_run_py():
                 line = line.strip()
                 if line and "# CHANGE:" not in line:
                     assert line in code_lines, line
+
+
+def _branch() -> str:
+    import subprocess
+    return subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+
+
+def test_solution_differs_by_the_changes_only():
+    """On the solution branch the finished run.py is the starter plus the five CHANGE lines (and notebook cells)."""
+    import difflib
+    import subprocess
+
+    import pytest
+
+    if _branch() != "solution":
+        pytest.skip("runs on the solution branch")
+    starter = subprocess.run(["git", "show", "main:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True).stdout
+    if not starter or "# CHANGE:" not in starter:
+        starter = subprocess.run(["git", "show", "arianpasquali/academy-slice:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True).stdout
+
+    def code(text: str) -> list[str]:
+        out, in_markdown = [], False
+        for line in text.splitlines():
+            if line.startswith("# %%"):
+                in_markdown = line.startswith("# %% [markdown]")
+                continue
+            if in_markdown and (line.startswith("#") or not line.strip()):
+                continue
+            in_markdown = False
+            out.append(line)
+        return out
+
+    changed = [line for line in difflib.unified_diff(code(starter), code(RUN.read_text()), lineterm="", n=0) if line[:1] in "+-" and not line.startswith(("+++", "---"))]
+    assert len(changed) == 10, changed
+    assert all("# CHANGE:" in line for line in changed), changed
