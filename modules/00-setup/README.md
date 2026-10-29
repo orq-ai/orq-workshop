@@ -158,7 +158,7 @@ If the verdict reads `OK`, everything the workshop needs is in place: environmen
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API keys** |
+| `ORQ_API_KEY is empty` | `.env` not filled | `orq setup --local --capability gateway`, or paste a key from **Settings > API Keys** (**+ Secret key**) |
 | `401` from the router | wrong or stale key in `.env` | `.env` beats your shell: check that file, not `echo $ORQ_API_KEY` |
 | `404 Model ... not found` | `MODEL` in `.env` is not enabled in the workspace | enable it under **Models**, or set `MODEL=openai/gpt-6-luna` |
 | `no x-orq-trace-id header` | `ORQ_BASE_URL` does not point at orq.ai | `ORQ_BASE_URL=https://my.orq.ai` in `.env` (module 06 plants this failure on purpose) |

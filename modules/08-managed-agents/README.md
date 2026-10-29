@@ -343,7 +343,7 @@ Use the build-agent skill to create an agent `ws-refund-agent-v2` in path `orq-w
 - The agent's attached knowledge base (`ws-refund-policy`) is rarely searched in these traces; the agent uses `ws-get_policy`. Module 09 covers why, and what retrieval looks like.
 - `orq.agents.responses.create(agent_key=, message=, task_id=)` still works but the SDK marks it deprecated, and the docs now list every `/v2/agents` invoke endpoint (`task`, `stream-task`, `run`) as deprecated. Use `orq.responses.create(model="agent/<key>")`.
 - `metadata` values must be strings. `identity` and `thread` are not echoed on the response; look for them on the trace.
-- SDK 4.14 rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
+- SDK 4.14 (not retested on 4.17) rejects the built-in tool names the docs use (`orq:datetime`, `orq:web_search`) client-side; it knows `orq:current_date`, `orq:google_search`, `orq:web_scraper`. Either way, attach built-ins to the agent, a request `tools` array is ignored on `agent/` calls.
 
 ## New in orq.ai 4.15 and 4.16
 

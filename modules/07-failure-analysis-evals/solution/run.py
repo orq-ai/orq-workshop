@@ -50,7 +50,7 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     """The last `make traffic` batch as one row per router trace, oldest first.
 
     Same body as `orq.traces.search(from_=, to=, filters=, limit=)`, sent raw: the SDK model
-    (4.14.14) drops the `attributes` block, and that is where the tool calls and the answer live.
+    (SDK 4.17) drops the `attributes` block, and that is where the tool calls and the answer live.
     The search API has no `tags` field (400 "unknown field"), so filter on metadata (ops: eq, neq,
     in, not_in, gt, gte, lt, lte, exists) and keep the tag check client-side (`orq.tags` on
     chat-completions traces, `metadata.tag` on Responses traces).

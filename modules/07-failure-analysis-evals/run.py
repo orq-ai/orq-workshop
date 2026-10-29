@@ -48,7 +48,7 @@ def traffic_traces(limit: int = 100, hours: int = 2) -> list[dict[str, Any]]:
     """The last `make traffic` batch as one row per router trace, oldest first.
 
     Same body as `orq.traces.search(from_=, to=, filters=, limit=)`, sent raw because the SDK
-    model (4.14.14) drops the `attributes` block that holds the tool calls and the answer.
+    model (SDK 4.17) drops the `attributes` block that holds the tool calls and the answer.
     """
     now = datetime.now(UTC)
     # TODO: add "filters": [{"field": "metadata.batch", "op": "exists"}]. The search API has no `tags` field.
