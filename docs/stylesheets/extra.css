@@ -207,7 +207,15 @@ body { font-family: var(--md-text-font-family); }
     padding: 0.35rem 0.75rem;
     border-radius: var(--orq-radius-sm);
   }
-  .md-nav--primary .md-nav__link:hover { color: var(--orq-heading); background: var(--orq-primary-tint); }
+  /* A section whose label is itself a page (navigation.indexes) gets the same pill as its children. */
+  .md-nav--primary .md-nav__item--section > .md-nav__container { display: flex; }
+  .md-nav--primary .md-nav__item--section > .md-nav__container > a.md-nav__link {
+    padding: 0.35rem 0.75rem;
+    margin-left: -0.75rem;
+    border-radius: var(--orq-radius-sm);
+  }
+  .md-nav--primary .md-nav__item--section > .md-nav__container > label.md-nav__link { display: none; }
+  .md-nav--primary a.md-nav__link:hover { color: var(--orq-heading); background: var(--orq-primary-tint); }
   .md-nav--primary .md-nav__link--active {
     color: var(--orq-primary);
     background: var(--orq-primary-tint);
@@ -481,3 +489,20 @@ body { font-family: var(--md-text-font-family); }
 /* --- Footer ----------------------------------------------------------------- */
 .md-footer, .md-footer-meta { background: var(--orq-bg); border-top: 1px solid var(--orq-hairline); }
 .md-footer__link, .md-copyright { color: var(--orq-body); }
+
+/* --- Stage chip: which stage of the loop a module belongs to, core path or elective --- */
+.md-typeset .stage-chip {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  background: var(--orq-primary-tint);
+  color: var(--orq-heading);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.md-typeset .stage-chip a { text-decoration: none; font-weight: 600; }
+
+/* --- Instructor demo: a step a participant key cannot run ---------------------- */
+.md-typeset .admonition.instructor, .md-typeset details.instructor { --adm: 107 114 128; }
+.md-typeset .admonition.instructor > .admonition-title::before { -webkit-mask-image: var(--md-admonition-icon--info); mask-image: var(--md-admonition-icon--info); }

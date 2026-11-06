@@ -1,4 +1,4 @@
-# The edge service (app/edge.py): webhook receiver for module 14 and external knowledge base for module 09.
+# The edge service (app/edge.py): webhook receiver for the alerts-and-webhooks module and external knowledge base for the knowledge-base module.
 # One instance can serve the whole room, each participant on /<WS_PREFIX>.
 #   docker build -t orq-edge . && docker run -p 8001:8001 -e WS_WEBHOOK_SECRET=<secret> orq-edge
 FROM python:3.12-slim

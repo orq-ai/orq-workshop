@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1152" width="1920" height="1152" role="img" aria-labelledby="observability-ops-title observability-ops-desc">
+  <title id="observability-ops-title">Alerts, automations and webhooks around the trace store</title>
+  <desc id="observability-ops-desc">Architecture diagram: your app sends traces into orq; the Reporting API aggregates them, an alert watches one metric on a timer and opens a trigger that notifies a webhook notifier; a trace automation routes matching traces into an annotation queue; a workspace webhook delivers llm.response and agent.updated events, signed, to a receiver you run.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1152" class="bg"/>
+  <!-- Zone: orq platform -->
+  <rect x="592" y="80" width="880" height="624" rx="20" class="zone"/>
+  <rect x="616" y="88" width="144" height="24" rx="4" class="mask"/>
+  <text x="688" y="106" text-anchor="middle" class="zone-title">ORQ PLATFORM</text>
+  <!-- Layout (x,y,w,h):
+       Your app      48,176,160,56
+       Traces        344,176,160,56    Webhook       344,264,160,56
+       Reporting API 560,96,160,56     Alert (focal) 560,176,160,56    Automation 560,264,160,56
+       Notifier      784,176,144,56    Queue         784,264,144,56    Receiver   784,352,144,56 -->
+  <!-- Arrows first -->
+  <!-- A1 Your app → Traces (same y) -->
+  <line x1="416" y1="408" x2="688" y2="408" class="link"/>
+  <!-- A3 Traces → Reporting API (right + up) -->
+  <path d="M 1008 384 H 1048 Q 1064 384 1064 368 V 264 Q 1064 248 1080 248 H 1120" class="arrow"/>
+  <!-- A4 Reporting API → Alert (down, same x) -->
+  <line x1="1280" y1="304" x2="1280" y2="352" class="arrow"/>
+  <!-- A5 Alert → Notifier (same y) -->
+  <line x1="1440" y1="408" x2="1568" y2="408" class="accent"/>
+  <!-- A6 Traces → Automation (right + down) -->
+  <path d="M 1008 432 H 1048 Q 1064 432 1064 448 V 568 Q 1064 584 1080 584 H 1120" class="arrow"/>
+  <!-- A7 Automation → Queue (same y) -->
+  <line x1="1440" y1="584" x2="1568" y2="584" class="arrow"/>
+  <!-- A8 Traces → Webhook (down, same x) -->
+  <line x1="848" y1="464" x2="848" y2="528" class="arrow"/>
+  <!-- A9 Webhook → Receiver (down, then right below the zone) -->
+  <path d="M 848 640 V 744 Q 848 760 864 760 H 1568" class="accent"/>
+  <!-- Arrow labels (mask + 6–8px gap) -->
+  <rect x="496" y="368" width="112" height="24" rx="4" class="mask"/>
+  <text x="552" y="386" text-anchor="middle" class="lbl">GATEWAY</text>
+  <rect x="888" y="296" width="160" height="24" rx="4" class="mask"/>
+  <text x="968" y="314" text-anchor="middle" class="lbl">AGGREGATE</text>
+  <rect x="1304" y="312" width="144" height="24" rx="4" class="mask"/>
+  <text x="1312" y="330" class="lbl">EVERY 5 MIN</text>
+  <rect x="1440" y="368" width="128" height="24" rx="4" class="mask"/>
+  <text x="1504" y="386" text-anchor="middle" class="lbl t-accent">TRIGGER</text>
+  <rect x="936" y="504" width="112" height="24" rx="4" class="mask"/>
+  <text x="992" y="522" text-anchor="middle" class="lbl">MATCH</text>
+  <rect x="1448" y="544" width="112" height="24" rx="4" class="mask"/>
+  <text x="1504" y="562" text-anchor="middle" class="lbl">ADD ITEM</text>
+  <rect x="872" y="480" width="96" height="24" rx="4" class="mask"/>
+  <text x="880" y="498" class="lbl">EVENT</text>
+  <rect x="1096" y="720" width="240" height="24" rx="4" class="mask"/>
+  <text x="1216" y="738" text-anchor="middle" class="lbl t-accent">POST + X-ORQ-SIGNATURE</text>
+  <!-- Node: Your app -->
+  <rect x="96" y="352" width="320" height="112" rx="16" class="mask"/>
+  <rect x="96" y="352" width="320" height="112" rx="16" class="node"/>
+  <rect x="112" y="368" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="140" y="386" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="256" y="416" text-anchor="middle" class="name">Your app</text>
+  <text x="256" y="446" text-anchor="middle" class="sub">agent/ws-refund-agent</text>
+  <!-- Node: Traces (store) -->
+  <rect x="688" y="352" width="320" height="112" rx="16" class="mask"/>
+  <rect x="688" y="352" width="320" height="112" rx="16" class="soft"/>
+  <rect x="704" y="368" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="740" y="386" text-anchor="middle" class="tag">STORE</text>
+  <text x="848" y="416" text-anchor="middle" class="name">Traces</text>
+  <text x="848" y="446" text-anchor="middle" class="sub">spans · cost · status</text>
+  <!-- Node: Webhook -->
+  <rect x="688" y="528" width="320" height="112" rx="16" class="mask"/>
+  <rect x="688" y="528" width="320" height="112" rx="16" class="node"/>
+  <rect x="704" y="544" width="88" height="24" rx="4" class="tag-box ink"/>
+  <text x="748" y="562" text-anchor="middle" class="tag t-ink">EVENTS</text>
+  <text x="848" y="592" text-anchor="middle" class="name">ws-events-webhook</text>
+  <text x="848" y="622" text-anchor="middle" class="sub">llm.* · agent.updated</text>
+  <!-- Node: Reporting API -->
+  <rect x="1120" y="192" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1120" y="192" width="320" height="112" rx="16" class="node"/>
+  <rect x="1136" y="208" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="1164" y="226" text-anchor="middle" class="tag t-ink">API</text>
+  <text x="1280" y="256" text-anchor="middle" class="name">Reporting API</text>
+  <text x="1280" y="286" text-anchor="middle" class="sub">POST /v2/reporting</text>
+  <!-- Node: Alert (focal) -->
+  <rect x="1120" y="352" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1120" y="352" width="320" height="112" rx="16" class="focal"/>
+  <rect x="1136" y="368" width="72" height="24" rx="4" class="tag-box accent"/>
+  <text x="1172" y="386" text-anchor="middle" class="tag t-accent">ALERT</text>
+  <text x="1280" y="416" text-anchor="middle" class="name">ws-cost-alert</text>
+  <text x="1280" y="446" text-anchor="middle" class="sub">genai.cost &gt; 0.002 / 5m</text>
+  <!-- Node: Automation (Studio-only) -->
+  <rect x="1120" y="528" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1120" y="528" width="320" height="112" rx="16" class="quiet"/>
+  <rect x="1136" y="544" width="88" height="24" rx="4" class="tag-box mute"/>
+  <text x="1180" y="562" text-anchor="middle" class="tag t-mute">STUDIO</text>
+  <text x="1280" y="592" text-anchor="middle" class="name">Trace automation</text>
+  <text x="1280" y="622" text-anchor="middle" class="sub">filter · sample · action</text>
+  <!-- Node: Notifier (external) -->
+  <rect x="1568" y="352" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1568" y="352" width="288" height="112" rx="16" class="ghost"/>
+  <rect x="1584" y="368" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1612" y="386" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="1712" y="416" text-anchor="middle" class="name">Notifier</text>
+  <text x="1712" y="446" text-anchor="middle" class="sub">webhook · Slack · email</text>
+  <!-- Node: Annotation queue (store) -->
+  <rect x="1568" y="528" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1568" y="528" width="288" height="112" rx="16" class="soft"/>
+  <rect x="1584" y="544" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="1620" y="562" text-anchor="middle" class="tag">QUEUE</text>
+  <text x="1712" y="592" text-anchor="middle" class="name">ws-review-queue</text>
+  <text x="1712" y="622" text-anchor="middle" class="sub">a human reads these</text>
+  <!-- Node: Your receiver -->
+  <rect x="1568" y="704" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1568" y="704" width="288" height="112" rx="16" class="node"/>
+  <rect x="1584" y="720" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="1612" y="738" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="1712" y="768" text-anchor="middle" class="name">Your receiver</text>
+  <text x="1712" y="798" text-anchor="middle" class="sub">app.webhook_receiver</text>
+  <!-- Callout -->
+  <path d="M 464 936 Q 568 920 592 704" class="faint dash"/>
+  <circle cx="592" cy="704" r="4" class="dot"/>
+  <text x="80" y="968" class="note">Alerts are project-scoped, and only successful traces carry a project:</text>
+  <text x="80" y="1004" class="note">an error-rate alert cannot see errors the gateway rejected. Watch cost, latency or guardrails.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="1064" x2="1840" y2="1064" class="hair"/>
+  <text x="80" y="1096" class="legend-title">LEGEND</text>
+  <rect x="80" y="1120" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1136" class="msg">The one thing that acts on a timer</text>
+  <rect x="528" y="1120" width="28" height="20" rx="4" class="quiet"/>
+  <text x="568" y="1136" class="msg">Studio-only, no API</text>
+  <line x1="864" y1="1132" x2="920" y2="1132" class="link"/>
+  <text x="936" y="1136" class="msg">Traces in</text>
+  <line x1="1160" y1="1132" x2="1216" y2="1132" class="accent"/>
+  <text x="1232" y="1136" class="msg">Pushed to you: trigger open / resolve, signed events</text>
+    
+</svg>

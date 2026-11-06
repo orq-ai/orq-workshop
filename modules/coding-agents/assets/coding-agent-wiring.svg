@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 848" width="1920" height="848" role="img" aria-labelledby="coding-agent-wiring-title coding-agent-wiring-desc">
+  <title id="coding-agent-wiring-title">How orq wires a coding agent: gateway, skills, MCP</title>
+  <desc id="coding-agent-wiring-desc">Architecture diagram showing the orq CLI writing gateway, skills and MCP wiring into a coding agent on your machine and linking the bundled skills into its skills directory; the agent then sends model calls to the orq AI Gateway, which records them as traces grouped by session id with cost, and talks to the orq MCP server over OAuth.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="848" class="bg"/>
+  <!-- Zone: your machine -->
+  <rect x="80" y="80" width="880" height="592" rx="20" class="zone"/>
+  <rect x="112" y="88" width="176" height="24" rx="4" class="mask"/>
+  <text x="200" y="106" text-anchor="middle" class="zone-title">YOUR MACHINE</text>
+  <!-- Zone: orq.ai -->
+  <rect x="1040" y="80" width="832" height="592" rx="20" class="zone"/>
+  <rect x="1072" y="88" width="112" height="24" rx="4" class="mask"/>
+  <text x="1128" y="106" text-anchor="middle" class="zone-title">ORQ.AI</text>
+  <!-- Arrows first -->
+  <!-- CLI -> agent (wires gateway/skills/mcp) -->
+  <line x1="416" y1="240" x2="528" y2="240" class="accent"/>
+  <!-- CLI -> skills dir (links the bundle) -->
+  <path d="M 256 320 V 512 Q 256 528 272 528 H 528" class="arrow"/>
+  <!-- agent -> skills dir (reads) -->
+  <line x1="736" y1="320" x2="736" y2="464" class="arrow"/>
+  <!-- agent -> gateway (model calls) -->
+  <line x1="944" y1="216" x2="1088" y2="216" class="link"/>
+  <!-- agent -> MCP server -->
+  <path d="M 944 264 H 984 Q 1000 264 1000 280 V 512 Q 1000 528 1016 528 H 1088" class="link"/>
+  <!-- gateway -> traces -->
+  <line x1="1472" y1="240" x2="1568" y2="240" class="arrow"/>
+  <!-- Arrow labels (mask + 8px gap from the stroke) -->
+  <rect x="424" y="200" width="96" height="24" rx="4" class="mask"/>
+  <text x="472" y="218" text-anchor="middle" class="lbl t-accent">WIRES</text>
+  <rect x="280" y="392" width="120" height="24" rx="4" class="mask"/>
+  <text x="288" y="410" class="lbl">LINKS 14</text>
+  <rect x="760" y="376" width="88" height="24" rx="4" class="mask"/>
+  <text x="768" y="394" class="lbl">READS</text>
+  <rect x="952" y="176" width="128" height="24" rx="4" class="mask"/>
+  <text x="1016" y="194" text-anchor="middle" class="lbl">MESSAGES</text>
+  <rect x="824" y="424" width="144" height="24" rx="4" class="mask"/>
+  <text x="964" y="442" text-anchor="end" class="lbl">MCP · OAUTH</text>
+  <rect x="1480" y="200" width="80" height="24" rx="4" class="mask"/>
+  <text x="1520" y="218" text-anchor="middle" class="lbl">COST</text>
+  <!-- Node: orq CLI (focal) -->
+  <rect x="96" y="160" width="320" height="160" rx="16" class="mask"/>
+  <rect x="96" y="160" width="320" height="160" rx="16" class="focal"/>
+  <rect x="112" y="176" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="140" y="194" text-anchor="middle" class="tag t-accent">CLI</text>
+  <text x="256" y="240" text-anchor="middle" class="name">orq launch · connect</text>
+  <text x="256" y="272" text-anchor="middle" class="sub">gateway · skills · mcp</text>
+  <text x="256" y="300" text-anchor="middle" class="sub">one session, or on disk</text>
+  <!-- Node: coding agent (external tool) -->
+  <rect x="528" y="160" width="416" height="160" rx="16" class="mask"/>
+  <rect x="528" y="160" width="416" height="160" rx="16" class="ghost"/>
+  <rect x="544" y="176" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="572" y="194" text-anchor="middle" class="tag t-ink">AGT</text>
+  <text x="736" y="240" text-anchor="middle" class="name">Coding agent</text>
+  <text x="736" y="272" text-anchor="middle" class="sub">claude · opencode · codex · pi</text>
+  <text x="736" y="300" text-anchor="middle" class="sub">model calls → /v3/anthropic</text>
+  <!-- Node: skills directory (files on disk) -->
+  <rect x="528" y="464" width="416" height="128" rx="16" class="mask"/>
+  <rect x="528" y="464" width="416" height="128" rx="16" class="node"/>
+  <rect x="544" y="480" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="572" y="498" text-anchor="middle" class="tag t-ink">DIR</text>
+  <text x="736" y="536" text-anchor="middle" class="name">Skills directory</text>
+  <text x="736" y="568" text-anchor="middle" class="sub">symlinks → ~/.orq/snapshot</text>
+  <!-- Node: AI Gateway (orq entity) -->
+  <rect x="1088" y="160" width="384" height="160" rx="16" class="mask"/>
+  <rect x="1088" y="160" width="384" height="160" rx="16" class="soft"/>
+  <rect x="1104" y="176" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1132" y="194" text-anchor="middle" class="tag">GW</text>
+  <text x="1280" y="240" text-anchor="middle" class="name">AI Gateway</text>
+  <text x="1280" y="272" text-anchor="middle" class="sub">/v3/anthropic · /v3/router</text>
+  <text x="1280" y="300" text-anchor="middle" class="sub">budgets · rate limits</text>
+  <!-- Node: traces (orq entity) -->
+  <rect x="1568" y="160" width="272" height="160" rx="16" class="mask"/>
+  <rect x="1568" y="160" width="272" height="160" rx="16" class="soft"/>
+  <rect x="1584" y="176" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1612" y="194" text-anchor="middle" class="tag">OBS</text>
+  <text x="1704" y="240" text-anchor="middle" class="name">Traces</text>
+  <text x="1704" y="272" text-anchor="middle" class="sub">messages.anthropic</text>
+  <text x="1704" y="300" text-anchor="middle" class="sub">session_id · cost</text>
+  <!-- Node: orq MCP server (orq entity) -->
+  <rect x="1088" y="464" width="384" height="128" rx="16" class="mask"/>
+  <rect x="1088" y="464" width="384" height="128" rx="16" class="soft"/>
+  <rect x="1104" y="480" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1132" y="498" text-anchor="middle" class="tag">MCP</text>
+  <text x="1280" y="536" text-anchor="middle" class="name">orq MCP server</text>
+  <text x="1280" y="568" text-anchor="middle" class="sub">/v2/mcp · orq-workspace</text>
+  <!-- Editorial callout (italic aside, dashed leader, landing dot) -->
+  <path d="M 1704 320 V 392" class="faint dash"/>
+  <circle cx="1704" cy="320" r="4" class="dot"/>
+  <text x="1864" y="412" text-anchor="end" class="note">A developer session is a client</text>
+  <text x="1864" y="448" text-anchor="end" class="note">like any other: budgeted, traced.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="728" x2="1840" y2="728" class="hair"/>
+  <text x="80" y="760" class="legend-title">LEGEND</text>
+  <rect x="80" y="792" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="808" class="msg">orq CLI</text>
+  <rect x="280" y="792" width="28" height="20" rx="4" class="ghost"/>
+  <text x="320" y="808" class="msg">Third-party agent</text>
+  <rect x="560" y="792" width="28" height="20" rx="4" class="node"/>
+  <text x="600" y="808" class="msg">Files on disk</text>
+  <rect x="800" y="792" width="28" height="20" rx="4" class="soft"/>
+  <text x="840" y="808" class="msg">orq entity</text>
+  <line x1="1040" y1="804" x2="1096" y2="804" class="link"/>
+  <text x="1112" y="808" class="msg">HTTPS call</text>
+  <line x1="1320" y1="804" x2="1376" y2="804" class="arrow"/>
+  <text x="1392" y="808" class="msg">Written or read locally</text>
+  <line x1="1680" y1="804" x2="1736" y2="804" class="accent"/>
+  <text x="1752" y="808" class="msg">Wiring</text>
+    
+</svg>

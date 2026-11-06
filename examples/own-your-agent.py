@@ -12,7 +12,7 @@ Why: teams usually already have a framework. The question is not "should we adop
 but "can we keep our architecture and still get prompts, routing, tracing and tool tracing from
 orq". All three rows below are that answer.
 
-How: `uv run python examples/own-your-agent.py` (needs `make seed`). LangGraph is an optional
+How: `uv run python examples/own-your-agent.py` (needs `make seed-workspace`). LangGraph is an optional
 extra: `uv sync --extra langgraph`, otherwise that leg is skipped with a note instead of failing.
 """
 
@@ -31,7 +31,7 @@ from app.refund_agent.tools import OrderStore, dispatch
 
 # The same sentence for every leg. Without that, the comparison is not one.
 QUESTION = "Refund ord_a2 please, the dock does not fit my laptop."
-AGENT_KEY = settings.key("refund-agent-function")  # function tools your code runs, created by `make seed`
+AGENT_KEY = settings.key("refund-agent-function")  # function tools your code runs, created by `make seed-workspace`
 GRAPH_TRACE_NAME = "own_your_agent_langgraph"  # the run name LangGraph reports, so leg 2 can find its trace
 MAX_STEPS = 8
 TRACE_INDEX_WAIT = 10  # the gateway indexes a trace a few seconds after the last span arrives
@@ -95,7 +95,7 @@ try:
         """Issue a refund for an order the customer owns."""
         return issue_refund(graph_store, order_id, reason)
 
-    # `reasoning_effort="none"` is the GPT-5.x detail module 02 documents: on /chat/completions
+    # `reasoning_effort="none"` is the GPT-5.x detail the tracing module documents: on /chat/completions
     # the model rejects tool definitions unless reasoning is off. Leg 1 and leg 3 use the
     # Responses API, where the question does not arise — the first real difference between them.
     graph = create_react_agent(

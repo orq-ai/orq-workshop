@@ -1,10 +1,10 @@
-"""make traffic: 20 conversations through the gateway, so Traces has something to analyze.
+"""make generate-traffic: 20 conversations through the gateway, so Traces has something to analyze.
 
 What: every row of `app/data/dataset.jsonl` (or the first N) sent as one refund turn.
-Why: failure analysis (module 07) needs real policy violations to find. Even rows run with the
+Why: failure analysis (the failure-analysis module) needs real policy violations to find. Even rows run with the
 fixed instructions, odd rows with the vulnerable ones. Each call carries an identity and a thread
 id, so traces group per customer and per conversation.
-How: `make traffic`, or `uv run python -m app.traffic 6` for the first six rows. Filter the
+How: `make generate-traffic`, or `uv run python -m app.traffic 6` for the first six rows. Filter the
 traces afterwards on `metadata.batch` (this run) or `metadata.tag == "traffic"` (every run).
 """
 
@@ -48,7 +48,7 @@ def main(limit: int = 20) -> None:
             },
             # A `reasoning` output item (any effort above none, when the model actually reasons) makes the
             # trace store drop the whole output: search has no gen_ai.output, the thread view prints
-            # "[content unavailable]". The traffic runs without reasoning so module 07 can read the answers.
+            # "[content unavailable]". The traffic runs without reasoning so the failure-analysis module can read the answers.
             "reasoning": {"effort": "none"},
         }
         try:

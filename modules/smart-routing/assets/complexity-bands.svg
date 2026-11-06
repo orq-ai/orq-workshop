@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1240" width="1920" height="1240" role="img" aria-labelledby="complexity-bands-title complexity-bands-desc">
+  <title id="complexity-bands-title">How a Smart Router picks a model by prompt complexity</title>
+  <desc id="complexity-bands-desc">Architecture diagram. Two requests, an easy one and a hard one, both reach a complexity score step that rates the prompt itself. The score selects one of three bands the model pool is sorted into by intelligence index: Easy holding gpt-5.4-nano at 30.2 and claude-haiku-4-5 at 23.7, Medium holding gpt-5.6-terra at 45.6 and gpt-5.6-luna at 38.1, and Hard holding gpt-5.6-sol at 53.6. The cost, balanced and quality mode feeds the scoring step as a preference dial, tuning how aggressively the router prefers economical models over stronger ones rather than choosing the band itself. A note records that the index sorts the bands and the price does not: gpt-5.6-luna sits in Medium at $0.45 per million tokens while claude-haiku-4-5 sits in Easy at $2.00.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1240" class="bg"/>
+  <!-- Arrows first (z-order: behind the boxes) -->
+  <!-- easy request -> score -->
+  <path d="M 496 312 H 544 Q 560 312 560 328 V 488 Q 560 504 576 504 H 624" class="arrow"/>
+  <!-- hard request -> score -->
+  <path d="M 496 792 H 544 Q 560 792 560 776 V 616 Q 560 600 576 600 H 624" class="arrow"/>
+  <!-- score -> Easy band (corridor x=524) -->
+  <path d="M 976 504 H 1032 Q 1048 504 1048 520 V 736 Q 1048 752 1064 752 H 1120" class="arrow"/>
+  <!-- score -> Hard band (corridor x=540, offset so the two never share a segment) -->
+  <path d="M 976 600 H 1064 Q 1080 600 1080 584 V 280 Q 1080 264 1096 264 H 1120" class="arrow"/>
+  <!-- profile -> score, dashed: it tunes the decision, it does not make it -->
+  <line x1="800" y1="760" x2="800" y2="664" class="accent dash"/>
+  <!-- Arrow labels (mask + 8px gap from the stroke) -->
+  <rect x="376" y="388" width="152" height="24" rx="4" class="mask"/>
+  <text x="384" y="406" class="lbl">EASY PROMPT</text>
+  <rect x="376" y="684" width="152" height="24" rx="4" class="mask"/>
+  <text x="384" y="702" class="lbl">HARD PROMPT</text>
+  <rect x="816" y="688" width="176" height="24" rx="4" class="mask"/>
+  <text x="824" y="706" class="lbl t-accent">PREFERENCE</text>
+  <!-- Band: Hard -->
+  <rect x="1120" y="192" width="720" height="144" rx="16" class="mask"/>
+  <rect x="1120" y="192" width="720" height="144" rx="16" class="soft"/>
+  <text x="1144" y="232" class="zone-title">HARD</text>
+  <text x="1160" y="292" class="name">gpt-5.6-sol</text>
+  <text x="1816" y="292" text-anchor="end" class="sub">53.6 · $8.00</text>
+  <!-- Band: Medium -->
+  <rect x="1120" y="400" width="720" height="192" rx="16" class="mask"/>
+  <rect x="1120" y="400" width="720" height="192" rx="16" class="soft"/>
+  <text x="1144" y="440" class="zone-title">MEDIUM</text>
+  <text x="1160" y="496" class="name">gpt-5.6-terra</text>
+  <text x="1816" y="496" text-anchor="end" class="sub">45.6 · $4.50</text>
+  <text x="1160" y="552" class="name">gpt-5.6-luna</text>
+  <text x="1816" y="552" text-anchor="end" class="sub t-accent">38.1 · $0.45</text>
+  <!-- Band: Easy -->
+  <rect x="1120" y="656" width="720" height="192" rx="16" class="mask"/>
+  <rect x="1120" y="656" width="720" height="192" rx="16" class="soft"/>
+  <text x="1144" y="696" class="zone-title">EASY</text>
+  <text x="1160" y="752" class="name">gpt-5.4-nano</text>
+  <text x="1816" y="752" text-anchor="end" class="sub">30.2 · $0.46</text>
+  <text x="1160" y="808" class="name">claude-haiku-4-5</text>
+  <text x="1816" y="808" text-anchor="end" class="sub t-accent">23.7 · $2.00</text>
+  <!-- Node: easy request -->
+  <rect x="80" y="240" width="416" height="144" rx="16" class="mask"/>
+  <rect x="80" y="240" width="416" height="144" rx="16" class="alt"/>
+  <rect x="96" y="256" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="274" text-anchor="middle" class="tag t-mute">REQ</text>
+  <text x="288" y="320" text-anchor="middle" class="name">An easy question</text>
+  <text x="288" y="356" text-anchor="middle" class="sub">&quot;what is 2+2?&quot;</text>
+  <!-- Node: hard request -->
+  <rect x="80" y="720" width="416" height="144" rx="16" class="mask"/>
+  <rect x="80" y="720" width="416" height="144" rx="16" class="alt"/>
+  <rect x="96" y="736" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="754" text-anchor="middle" class="tag t-mute">REQ</text>
+  <text x="288" y="800" text-anchor="middle" class="name">A hard question</text>
+  <text x="288" y="836" text-anchor="middle" class="sub">refund policy edge cases</text>
+  <!-- Node: the scorer (focal) -->
+  <rect x="624" y="456" width="352" height="192" rx="16" class="mask"/>
+  <rect x="624" y="456" width="352" height="192" rx="16" class="focal"/>
+  <rect x="640" y="472" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="668" y="490" text-anchor="middle" class="tag t-accent">SCORE</text>
+  <text x="800" y="544" text-anchor="middle" class="name">Complexity score</text>
+  <text x="800" y="580" text-anchor="middle" class="sub">rates the prompt,</text>
+  <text x="800" y="608" text-anchor="middle" class="sub">not the caller</text>
+  <!-- Node: the profile dial -->
+  <rect x="624" y="760" width="352" height="128" rx="16" class="mask"/>
+  <rect x="624" y="760" width="352" height="128" rx="16" class="node"/>
+  <text x="800" y="808" text-anchor="middle" class="name">Profile</text>
+  <text x="800" y="840" text-anchor="middle" class="sub">cost · balanced · quality</text>
+  <text x="800" y="868" text-anchor="middle" class="sub">cheaper &#8596; stronger</text>
+  <!-- Editorial note: the point most readers miss -->
+  <path d="M 1400 848 V 912" class="faint dash"/>
+  <circle cx="1400" cy="848" r="4" class="dot"/>
+  <text x="1120" y="960" class="note">The index sorts the bands. The price does not:</text>
+  <text x="1120" y="996" class="note">luna is Medium at $0.45, haiku is Easy at $2.00.</text>
+  <text x="80" y="960" class="note">Switching cost to quality moved</text>
+  <text x="80" y="996" class="note">nothing here: Hard holds one model,</text>
+  <text x="80" y="1032" class="note">so there was nothing to prefer.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="1096" x2="1840" y2="1096" class="hair"/>
+  <text x="80" y="1128" class="legend-title">LEGEND</text>
+  <rect x="80" y="1160" width="28" height="20" rx="4" class="alt"/>
+  <text x="120" y="1176" class="msg">Incoming request</text>
+  <rect x="360" y="1160" width="28" height="20" rx="4" class="focal"/>
+  <text x="400" y="1176" class="msg">Where the decision is made</text>
+  <rect x="760" y="1160" width="28" height="20" rx="4" class="soft"/>
+  <text x="800" y="1176" class="msg">Band · intelligence index · $/M tokens</text>
+  <line x1="1280" y1="1172" x2="1336" y2="1172" class="arrow"/>
+  <text x="1352" y="1176" class="msg">Routing path</text>
+  <line x1="1560" y1="1172" x2="1616" y2="1172" class="accent dash"/>
+  <text x="1632" y="1176" class="msg">Tunes, does not decide</text>
+    
+</svg>

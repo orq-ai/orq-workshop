@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1600" width="1920" height="1600" role="img" aria-labelledby="s11-step3-title s11-step3-desc">
+  <title id="s11-step3-title">The managed agent simulated through two different targets</title>
+  <desc id="s11-step3-desc">Sequence diagram comparing two managed refund agents driven by the same built-in agent target, replaying one case. With the function-tool agent the agent asks for a lookup_order tool call, the harness drops it because it cannot execute function calls, the assistant text comes back empty and the judge scores zero. With the hosted agent, whose tools are orq code tools, orq executes the tool call, the agent answers with the refund and the judge scores an answer. The failure in the first case is the harness, not the agent.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1600" class="bg"/>
+  <!-- Lifelines -->
+  <line x1="240" y1="224" x2="240" y2="1432" class="faint dash"/>
+  <line x1="752" y1="224" x2="752" y2="1432" class="faint dash"/>
+  <line x1="1264" y1="224" x2="1264" y2="1432" class="faint dash"/>
+  <line x1="1712" y1="224" x2="1712" y2="1432" class="faint dash"/>
+  <!-- ALT frame -->
+  <rect x="192" y="368" width="1568" height="1008" rx="8" class="zone"/>
+  <rect x="192" y="368" width="80" height="32" rx="4" class="tag-box mute"/>
+  <text x="232" y="392" text-anchor="middle" class="lbl">ALT</text>
+  <!-- region divider -->
+  <line x1="208" y1="864" x2="1744" y2="864" class="faint dash"/>
+  <!-- Guards -->
+  <text x="296" y="424" class="lbl">[ target = &quot;agent:ws-refund-agent&quot; · the built-in target ]</text>
+  <text x="216" y="912" class="lbl">[ target = &quot;agent:ws-refund-agent-hosted&quot; · the same built-in target, previous_run replays the case ]</text>
+  <!-- ── Shared opening turn (above the frame) ── -->
+  <line x1="240" y1="320" x2="736" y2="320" class="arrow"/>
+  <rect x="360" y="280" width="256" height="24" rx="4" class="mask"/>
+  <text x="488" y="298" text-anchor="middle" class="lbl">REFUND ORD_A1</text>
+  <!-- ── Region A ── -->
+  <line x1="752" y1="496" x2="1248" y2="496" class="arrow"/>
+  <rect x="856" y="456" width="288" height="24" rx="4" class="mask"/>
+  <text x="1000" y="474" text-anchor="middle" class="lbl">RESPONSES.CREATE</text>
+  <line x1="1264" y1="576" x2="768" y2="576" class="arrow dash"/>
+  <rect x="864" y="536" width="288" height="24" rx="4" class="mask"/>
+  <text x="1008" y="554" text-anchor="middle" class="lbl">FUNCTION_CALL</text>
+  <!-- self message: dropped -->
+  <path d="M 752 640 H 880 V 696 H 768" class="accent"/>
+  <rect x="904" y="652" width="336" height="24" rx="4" class="mask"/>
+  <text x="912" y="670" class="lbl t-accent">DROPPING TOOL CALL</text>
+  <line x1="752" y1="768" x2="256" y2="768" class="arrow dash"/>
+  <rect x="360" y="728" width="240" height="24" rx="4" class="mask"/>
+  <text x="480" y="746" text-anchor="middle" class="lbl">&apos;&apos; EMPTY TEXT</text>
+  <text x="1264" y="776" class="note">score 0.00 · criteria_0 broken</text>
+  <text x="1264" y="812" class="note">the harness failed, not the agent</text>
+  <!-- ── Region B ── -->
+  <line x1="752" y1="992" x2="1248" y2="992" class="arrow"/>
+  <rect x="856" y="952" width="288" height="24" rx="4" class="mask"/>
+  <text x="1000" y="970" text-anchor="middle" class="lbl">RESPONSES.CREATE</text>
+  <line x1="1280" y1="1104" x2="1696" y2="1104" class="arrow"/>
+  <rect x="1336" y="1064" width="256" height="24" rx="4" class="mask"/>
+  <text x="1464" y="1082" text-anchor="middle" class="lbl">CODE TOOL IN ORQ</text>
+  <line x1="1712" y1="1200" x2="1296" y2="1200" class="arrow dash"/>
+  <rect x="1376" y="1160" width="256" height="24" rx="4" class="mask"/>
+  <text x="1504" y="1178" text-anchor="middle" class="lbl">ORDER JSON</text>
+  <line x1="1264" y1="1344" x2="768" y2="1344" class="arrow dash"/>
+  <rect x="904" y="1304" width="208" height="24" rx="4" class="mask"/>
+  <text x="1008" y="1322" text-anchor="middle" class="lbl">FINAL TEXT</text>
+  <line x1="752" y1="1408" x2="256" y2="1408" class="accent"/>
+  <rect x="336" y="1368" width="288" height="24" rx="4" class="mask"/>
+  <text x="480" y="1386" text-anchor="middle" class="lbl t-accent">REFUNDED EUR 24.99</text>
+  <text x="1280" y="1400" class="note">the judge scores a real answer</text>
+  <!-- Actors (drawn last so lifelines sit behind) -->
+  <rect x="80" y="96" width="320" height="128" rx="16" class="mask"/>
+  <rect x="80" y="96" width="320" height="128" rx="16" class="alt"/>
+  <rect x="96" y="112" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="130" text-anchor="middle" class="tag t-mute">SIM</text>
+  <text x="240" y="176" text-anchor="middle" class="name">User simulator</text>
+  <text x="240" y="208" text-anchor="middle" class="sub">persona + judge</text>
+  <rect x="592" y="96" width="320" height="128" rx="16" class="mask"/>
+  <rect x="592" y="96" width="320" height="128" rx="16" class="focal"/>
+  <rect x="608" y="112" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="636" y="130" text-anchor="middle" class="tag t-accent">TGT</text>
+  <text x="752" y="176" text-anchor="middle" class="name">Built-in target</text>
+  <text x="752" y="208" text-anchor="middle" class="sub">built-in agent:&lt;key&gt;</text>
+  <rect x="1104" y="96" width="320" height="128" rx="16" class="mask"/>
+  <rect x="1104" y="96" width="320" height="128" rx="16" class="node"/>
+  <rect x="1120" y="112" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="1148" y="130" text-anchor="middle" class="tag t-ink">API</text>
+  <text x="1264" y="176" text-anchor="middle" class="name">Managed agent</text>
+  <text x="1264" y="208" text-anchor="middle" class="sub">agent/&lt;key&gt;</text>
+  <rect x="1552" y="96" width="320" height="128" rx="16" class="mask"/>
+  <rect x="1552" y="96" width="320" height="128" rx="16" class="soft"/>
+  <rect x="1568" y="112" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1596" y="130" text-anchor="middle" class="tag">DB</text>
+  <text x="1712" y="176" text-anchor="middle" class="name">Code tools</text>
+  <text x="1712" y="208" text-anchor="middle" class="sub">hosted in orq</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="1480" x2="1840" y2="1480" class="hair"/>
+  <text x="80" y="1512" class="legend-title">LEGEND</text>
+  <line x1="80" y1="1556" x2="136" y2="1556" class="arrow"/>
+  <text x="152" y="1560" class="msg">Call</text>
+  <line x1="320" y1="1556" x2="376" y2="1556" class="arrow dash"/>
+  <text x="392" y="1560" class="msg">Return</text>
+  <line x1="600" y1="1556" x2="656" y2="1556" class="accent"/>
+  <text x="672" y="1560" class="msg">Where the two runs diverge</text>
+  <rect x="1080" y="1544" width="28" height="20" rx="4" class="focal"/>
+  <text x="1120" y="1560" class="msg">Shared by both runs: the target</text>
+    
+</svg>

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1104" width="1920" height="1104" role="img" aria-labelledby="fallback-chain-title fallback-chain-desc">
+  <title id="fallback-chain-title">Fallback chain: primary times out, fallback answers</title>
+  <desc id="fallback-chain-desc">Sequence diagram showing the refund app calling the AI Gateway with timeout, fallbacks, retry and cache in extra_body; the primary model gpt-5.6-sol times out after 1500 ms, the gateway records a fallback span and calls gpt-5.4-nano, which answers, and the app receives the response.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1104" class="bg"/>
+  <!-- Lifelines: app 120 · gateway 360 · gpt-5.6-sol 600 · gpt-5.4-nano 840 -->
+  <line x1="240" y1="192" x2="240" y2="928" class="faint dash"/>
+  <line x1="720" y1="192" x2="720" y2="928" class="faint dash"/>
+  <line x1="1200" y1="192" x2="1200" y2="928" class="faint dash"/>
+  <line x1="1680" y1="192" x2="1680" y2="928" class="faint dash"/>
+  <!-- Activation bars -->
+  <rect x="712" y="272" width="16" height="560" class="bar"/>
+  <rect x="1192" y="352" width="16" height="96" class="bar"/>
+  <rect x="1672" y="640" width="16" height="96" class="bar"/>
+  <!-- Messages, time flows down -->
+  <!-- M1 app -> gateway -->
+  <line x1="240" y1="272" x2="712" y2="272" class="link"/>
+  <!-- M2 gateway -> gpt-5.6-sol -->
+  <line x1="728" y1="352" x2="1192" y2="352" class="link"/>
+  <!-- M3 gpt-5.6-sol -> gateway, timeout (return, dashed) -->
+  <line x1="1192" y1="448" x2="728" y2="448" class="arrow dash"/>
+  <!-- M4 gateway self-message: span.fallback_selected -->
+  <path d="M 728 520 H 800 V 568 H 728" class="arrow"/>
+  <!-- M5 gateway -> gpt-5.4-nano -->
+  <line x1="728" y1="640" x2="1672" y2="640" class="link"/>
+  <!-- M6 gpt-5.4-nano -> gateway, headline success (accent) -->
+  <line x1="1672" y1="736" x2="728" y2="736" class="accent"/>
+  <!-- M7 gateway -> app, response (return, dashed) -->
+  <line x1="712" y1="832" x2="240" y2="832" class="arrow dash"/>
+  <!-- Message labels (masked, 8px above the stroke) -->
+  <rect x="400" y="232" width="152" height="24" rx="4" class="mask"/>
+  <text x="476" y="250" text-anchor="middle" class="lbl">COMPLETIONS</text>
+  <!-- M1 sublabel: the extra_body fields, 8px below the stroke -->
+  <rect x="280" y="288" width="392" height="24" rx="4" class="mask"/>
+  <text x="476" y="306" text-anchor="middle" class="lbl">timeout 1500 ms · fallbacks · retry · cache</text>
+  <rect x="880" y="312" width="160" height="24" rx="4" class="mask"/>
+  <text x="960" y="330" text-anchor="middle" class="lbl">CALL GPT-4.1</text>
+  <rect x="872" y="408" width="176" height="24" rx="4" class="mask"/>
+  <text x="960" y="426" text-anchor="middle" class="lbl">408 · 1201 MS</text>
+  <rect x="1352" y="600" width="176" height="24" rx="4" class="mask"/>
+  <text x="1440" y="618" text-anchor="middle" class="lbl">CALL 4.1-NANO</text>
+  <rect x="1368" y="696" width="144" height="24" rx="4" class="mask"/>
+  <text x="1440" y="714" text-anchor="middle" class="lbl t-accent">OK · 706 MS</text>
+  <rect x="376" y="792" width="200" height="24" rx="4" class="mask"/>
+  <text x="476" y="810" text-anchor="middle" class="lbl">200 · 4.1-NANO</text>
+  <!-- Span names in the trace, beside the lifelines (mono, muted) -->
+  <rect x="1224" y="384" width="264" height="24" rx="4" class="mask"/>
+  <text x="1232" y="402" class="lbl t-mute">span.responses · error</text>
+  <rect x="1424" y="760" width="248" height="24" rx="4" class="mask"/>
+  <text x="1664" y="778" text-anchor="end" class="lbl t-mute">span.responses · ok</text>
+  <rect x="816" y="532" width="256" height="24" rx="4" class="mask"/>
+  <text x="824" y="550" class="lbl">span.fallback_selected</text>
+  <!-- Editorial callout: cache on the second identical request -->
+  <path d="M 928 872 Q 824 864 704 836" class="faint dash"/>
+  <circle cx="696" cy="832" r="4" class="dot"/>
+  <text x="944" y="892" class="note">Send it again within ttl 600 s:</text>
+  <text x="944" y="928" class="note">cache hit, zero provider cost.</text>
+  <!-- Actor boxes -->
+  <!-- Refund app (your code) -->
+  <rect x="96" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="96" y="80" width="288" height="112" rx="16" class="node"/>
+  <rect x="112" y="96" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="140" y="114" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="240" y="144" text-anchor="middle" class="name">Refund app</text>
+  <text x="240" y="174" text-anchor="middle" class="sub">OpenAI SDK · extra_body</text>
+  <!-- AI Gateway (focal) -->
+  <rect x="576" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="576" y="80" width="288" height="112" rx="16" class="focal"/>
+  <rect x="592" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="620" y="114" text-anchor="middle" class="tag t-accent">GW</text>
+  <text x="720" y="144" text-anchor="middle" class="name">AI Gateway</text>
+  <text x="720" y="174" text-anchor="middle" class="sub">/v3/router</text>
+  <!-- gpt-5.6-sol (external, primary) -->
+  <rect x="1056" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1056" y="80" width="288" height="112" rx="16" class="ghost"/>
+  <rect x="1072" y="96" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1100" y="114" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="1200" y="144" text-anchor="middle" class="name">Primary model</text>
+  <text x="1200" y="174" text-anchor="middle" class="sub">openai/gpt-5.6-sol</text>
+  <!-- gpt-5.4-nano (external, fallback) -->
+  <rect x="1536" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1536" y="80" width="288" height="112" rx="16" class="ghost"/>
+  <rect x="1552" y="96" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1580" y="114" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="1680" y="144" text-anchor="middle" class="name">Fallback model</text>
+  <text x="1680" y="174" text-anchor="middle" class="sub">openai/gpt-5.4-nano</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="984" x2="1840" y2="984" class="hair"/>
+  <text x="80" y="1016" class="legend-title">LEGEND</text>
+  <rect x="80" y="1048" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1064" class="msg">Gateway (decides)</text>
+  <rect x="360" y="1048" width="28" height="20" rx="4" class="node"/>
+  <text x="400" y="1064" class="msg">Your code</text>
+  <rect x="584" y="1048" width="28" height="20" rx="4" class="ghost"/>
+  <text x="624" y="1064" class="msg">Provider model</text>
+  <line x1="856" y1="1060" x2="912" y2="1060" class="link"/>
+  <text x="928" y="1064" class="msg">HTTP call</text>
+  <line x1="1104" y1="1060" x2="1160" y2="1060" class="arrow dash"/>
+  <text x="1176" y="1064" class="msg">Return</text>
+  <line x1="1312" y1="1060" x2="1368" y2="1060" class="accent"/>
+  <text x="1384" y="1064" class="msg">The answer that counts</text>
+  <rect x="1656" y="1050" width="16" height="20" class="bar"/>
+  <text x="1688" y="1064" class="msg">Holds control</text>
+    
+</svg>

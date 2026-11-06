@@ -20,28 +20,30 @@ orq auth login
 git clone https://github.com/orq-ai/orq-workshop && cd orq-workshop
 orq setup --local --capability gateway            # mints ORQ_API_KEY into ./.env
 make setup                                        # uv sync, .env from the example
-make doctor && make smoke                         # green checks + your first trace
+make orq-doctor && make gateway-check                         # green checks + your first trace
 ```
 
-Then open `modules/00-setup/README.md` or the docs site and go module by module. `make seed` creates every entity a module expects, so you can start anywhere. `make reset` deletes them all.
+Then open `modules/setup/README.md` or the docs site and go module by module. `make seed-workspace` creates every entity a module expects, so you can start anywhere. `make reset-workspace` deletes them all.
 
 ## The sections
 
-Setup first, then the same three sections as docs.orq.ai. Module numbers are the build order (`make m01` … `make m17`); sections are the topic.
+Setup first, then one section per stage of the loop. `make module M=<name>` runs any module; `make modules` lists them.
 
-| Setup | AI Gateway | AI Observability | Managed Agents |
-|---|---|---|---|
-| 00 Setup: the orq.ai CLI | 01 Gateway: fallbacks, retry, cache, load balancing | 02 Tracing: identity, thread, spans, annotations | 08 Managed agents |
-| 13 Coding agents and wrap-up | 03 Smart routing and routing rules | 07 Failure analysis to evaluators to experiments | 09 Knowledge base and RAG |
-| orqi harness | 04 Guardrails and PII | 14 Alerts and webhooks | 10 MCP servers and the MCP Gateway |
-| 06 Troubleshooting with orqi | 05 Budgets, keys, identities, Terraform | 17 Annotation queues and automations | 11 Agent simulation |
-| | | | 12 Evals and headless agents in CI |
-| | | | 15 Advisor and sidekick |
-| | | | 16 Red teaming |
+| Stage | Modules |
+|---|---|
+| Start here | Setup · Coding agents · orqi (harnesses, optional) |
+| Build | Managed agents · Knowledge base and RAG · MCP servers and gateway · Advisor and sidekick |
+| Route and protect | Gateway · Smart routing and routing rules · Guardrails · Budgets and keys |
+| Trace | Tracing |
+| Find failures | Failure analysis · Trace insights · Annotation queues and automations |
+| Evaluate | Evaluators and experiments · Agent simulation · Red teaming |
+| Gate and monitor | Evals and agents in CI · Alerts and webhooks |
 
-Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs), a `solution/` and an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
+The core path (setup, gateway, tracing, managed agents, failure analysis, evaluators and experiments, simulation, evals in CI, then a wrap-up on your own repo) takes about four hours with a participant key. The rest are electives.
 
-**Prefer a notebook?** `make lab` opens JupyterLab with one notebook for every module whose solution is written in Jupytext percent format (`make notebooks` prints the list, 12 modules today). Each is the solution split into steps: a cell of explanation, then a cell that does one thing. The generated files carry no saved output; run a cell to see its result. The notebooks are generated from `solution/run.py`, so they never drift from the script `make mNN` runs.
+Every module has a `README.md` (the lesson, with real expected output), a `run.py` (starter with TODOs; the finished file is at the same path on the [`solution` branch](https://github.com/orq-ai/orq-workshop/tree/solution)), an `agent_prompt.md` for the coding-agent path. Each ends with a **Done when** checklist.
+
+**Prefer a notebook?** Check out the `solution` branch (`git checkout solution`), then `make lab` opens JupyterLab with one notebook for every module whose `run.py` is written in Jupytext percent format (`make notebooks` prints the list). Each is the finished module split into steps: a cell of explanation, then a cell that does one thing. The generated files carry no saved output; run a cell to see its result. On `main` the starters are plain scripts, so `make notebooks` finds nothing there.
 
 ## Two ways to work
 
@@ -54,7 +56,7 @@ Every module has a `README.md` (the lesson, with real expected output), a `run.p
 ```text
 app/refund_agent/   the sample app (never changes across modules)
 app/data/           orders, policy docs, dataset, agent instructions
-modules/NN-name/    README.md · run.py · solution/ · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)
+modules/<name>/     README.md · run.py · agent_prompt.md · assets/ (diagrams) · notebook.ipynb (generated, make notebooks)
 evals/              CI regression gate (evaluatorq) and red-team gate
 .github/workflows/  evals.yml · nightly-triage.yml · pr-failure-analysis.yml · docs.yml
 docs/               MkDocs site (module pages include the module READMEs)
