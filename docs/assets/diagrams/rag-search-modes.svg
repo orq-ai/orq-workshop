@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="rag-search-modes-title rag-search-modes-desc">
+  <title id="rag-search-modes-title">Vector, keyword and hybrid search over one index</title>
+  <desc id="rag-search-modes-desc">Reference diagram. One query is answered three ways against the same index: keyword search matches the words themselves, vector search matches meaning through embedding distance, and hybrid search runs both and lets the engine fuse the two rankings. Because keyword and vector scores come from different calculations, their scores are on different scales and must not be compared across modes.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Arrows first -->
+  <path d="M 816 224 V 288 Q 816 304 800 304 H 408 Q 392 304 392 320 V 352" class="link"/>
+  <line x1="936" y1="224" x2="936" y2="352" class="link"/>
+  <path d="M 1104 224 V 288 Q 1104 304 1120 304 H 1464 Q 1480 304 1480 320 V 352" class="accent"/>
+  <line x1="392" y1="528" x2="392" y2="656" class="arrow"/>
+  <line x1="936" y1="528" x2="936" y2="656" class="arrow"/>
+  <line x1="1480" y1="528" x2="1480" y2="656" class="accent"/>
+  <!-- Node: the query -->
+  <rect x="672" y="112" width="576" height="112" rx="16" class="node"/>
+  <rect x="688" y="128" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="716" y="146" text-anchor="middle" class="tag t-ink">ASK</text>
+  <text x="960" y="184" text-anchor="middle" class="name">One query</text>
+  <!-- Mode: keyword -->
+  <rect x="144" y="352" width="496" height="176" rx="16" class="soft"/>
+  <text x="392" y="416" text-anchor="middle" class="name">keyword_search</text>
+  <text x="392" y="456" text-anchor="middle" class="sub">matches the words themselves</text>
+  <text x="392" y="492" text-anchor="middle" class="sub t-mute">codes, names, exact strings</text>
+  <!-- Mode: vector -->
+  <rect x="688" y="352" width="496" height="176" rx="16" class="soft"/>
+  <text x="936" y="416" text-anchor="middle" class="name">vector_search</text>
+  <text x="936" y="456" text-anchor="middle" class="sub">matches meaning</text>
+  <text x="936" y="492" text-anchor="middle" class="sub t-mute">nearest embeddings</text>
+  <!-- Mode: hybrid (the default) -->
+  <rect x="1232" y="352" width="496" height="176" rx="16" class="focal"/>
+  <text x="1480" y="416" text-anchor="middle" class="name">hybrid_search</text>
+  <text x="1480" y="456" text-anchor="middle" class="sub t-accent">runs both, the engine fuses</text>
+  <text x="1480" y="492" text-anchor="middle" class="sub t-mute">the default, and the right one</text>
+  <!-- The shared index -->
+  <rect x="144" y="656" width="1584" height="112" rx="16" class="node"/>
+  <rect x="160" y="672" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="188" y="690" text-anchor="middle" class="tag t-ink">IDX</text>
+  <text x="936" y="712" text-anchor="middle" class="name">One index</text>
+  <text x="936" y="744" text-anchor="middle" class="sub">the chunk text and its vector, side by side — which is why one query can go either way</text>
+  <!-- The warning that costs people an afternoon -->
+  <text x="144" y="816" class="sub t-accent">keyword 1.000 and hybrid 0.654 on the same question are not a relevance gap — they are different scales</text>
+  <text x="144" y="848" class="sub t-mute">compare scores within one mode, and check what a mode scores before you set a threshold against it</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="904" x2="1840" y2="904" class="hair"/>
+  <text x="80" y="936" class="legend-title">LEGEND</text>
+  <rect x="80" y="968" width="28" height="20" rx="4" class="soft"/>
+  <text x="120" y="984" class="msg">A search mode you can ask for</text>
+  <rect x="560" y="968" width="28" height="20" rx="4" class="focal"/>
+  <text x="600" y="984" class="msg">The default</text>
+    
+</svg>

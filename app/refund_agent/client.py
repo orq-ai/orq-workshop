@@ -1,7 +1,7 @@
 """The two doors into orq: the OpenAI-compatible gateway and the native SDK.
 
 Both use the same credential: ORQ_API_KEY, or the `orq auth login` session when it is empty.
-The gateway is what the refund agent calls (module 01 onwards); the
+The gateway is what the refund agent calls (the gateway module onwards); the
 native SDK is what the modules use to create and inspect entities (agents, knowledge,
 evaluators, datasets, traces, budgets, MCP).
 """

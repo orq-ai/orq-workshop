@@ -21,8 +21,8 @@ from typing import Any
 from .config import DATA_DIR
 
 WINDOW_DAYS = 30  # the standard refund window, counted from delivery
-REFUND_LIMIT_EUR = 500.0  # above this a human reviews; the guardrail in module 04 enforces it too
-KB_DIR = DATA_DIR / "kb"  # one markdown file per policy topic; module 09 turns them into a KB
+REFUND_LIMIT_EUR = 500.0  # above this a human reviews; the guardrail in the guardrails module enforces it too
+KB_DIR = DATA_DIR / "kb"  # one markdown file per policy topic; the knowledge-base module turns them into a KB
 POLICY_TOPICS = ("refund_basics", "post_window_exceptions", "abuse_patterns", "shipping_and_scope")
 POST_WINDOW_REASONS = ("damaged_in_transit", "never_received", "defective_on_arrival")
 
@@ -113,7 +113,7 @@ def get_policy(topic: str, kb_dir: Path = KB_DIR) -> dict[str, Any]:
     Rules:
       1. `topic` must be one of POLICY_TOPICS, else `unknown_topic` (with the list, so the model
          can retry with a valid one).
-      2. The text comes from the local markdown file; `source: "local"` says so. Module 09
+      2. The text comes from the local markdown file; `source: "local"` says so. The knowledge-base module
          swaps this function for a knowledge-base search through `policy_fn`.
     """
     if topic not in POLICY_TOPICS:
@@ -128,7 +128,7 @@ def get_policy(topic: str, kb_dir: Path = KB_DIR) -> dict[str, Any]:
 
 # What the model sees. The descriptions are part of the contract: they say what each tool
 # enforces, so the model does not try to argue with a `not_found`. Chat-completions shape
-# (nested under "function"); module 08 registers Tool entities from schema["function"].
+# (nested under "function"); the managed-agents module registers Tool entities from schema["function"].
 TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
@@ -178,8 +178,8 @@ def dispatch(store: OrderStore, name: str, arguments: dict[str, Any], policy_fn=
 
     An unknown tool name or arguments that do not fit the signature come back as a short error
     string, so the model gets a chance to correct itself instead of the turn crashing.
-    `policy_fn` lets a module swap `get_policy` for a knowledge-base search (module 09) or a
-    traced wrapper (module 02) without touching this file.
+    `policy_fn` lets a module swap `get_policy` for a knowledge-base search (the knowledge-base module) or a
+    traced wrapper (the tracing module) without touching this file.
     """
     try:
         if name == "lookup_order":
@@ -194,7 +194,7 @@ def dispatch(store: OrderStore, name: str, arguments: dict[str, Any], policy_fn=
 
 
 # The same three tools in the Responses API shape: name/description/parameters flat at the top
-# level. TOOL_SCHEMAS stays chat-shaped because module 08 reads schema["function"].
+# level. TOOL_SCHEMAS stays chat-shaped because the managed-agents module reads schema["function"].
 RESPONSES_TOOLS: list[dict[str, Any]] = [
     {"type": "function", **schema["function"]} for schema in TOOL_SCHEMAS
 ]

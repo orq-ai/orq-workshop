@@ -1,0 +1,70 @@
+/* Shared style for the diagram sources: modules/*/assets/*.svg and docs/assets/diagrams/*.svg
+   (rendered to committed PNGs by scripts/export_diagrams.py, `make diagrams`).
+   Each SVG pulls this in with `@import url("../../../scripts/diagram.css")`; the font urls below
+   resolve relative to this file. The type sizes assume a ~1000-1900 unit wide viewBox shown at
+   about 850px: names 25px, subtitles 19px.
+   Palette follows docs.orq.ai: primary #027f6b, ink #161a1a, body #3e4241, sand #f7f6f5. No orange. */
+@font-face { font-family: "Inter"; font-weight: 400; src: url("../docs/stylesheets/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 500; src: url("../docs/stylesheets/fonts/inter-500.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-weight: 600; src: url("../docs/stylesheets/fonts/inter-600.woff2") format("woff2"); }
+@font-face { font-family: "Kurrent"; font-weight: 600; src: url("../docs/stylesheets/fonts/ESKlarheitKurrent-Smbd.woff2") format("woff2"); }
+@font-face { font-family: "Paper Mono"; font-weight: 400; src: url("../docs/stylesheets/fonts/PaperMono-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Paper Mono"; font-weight: 500; src: url("../docs/stylesheets/fonts/PaperMono-Medium.woff2") format("woff2"); }
+
+/* ---- text ---- */
+text { font-family: "Inter", sans-serif; fill: #3e4241; }
+.name  { font: 600 25px "Kurrent", "Inter", sans-serif; fill: #161a1a; }
+.q     { font: 600 25px "Kurrent", "Inter", sans-serif; fill: #161a1a; }
+.sub   { font: 400 19px "Paper Mono", monospace; fill: #3e4241; }
+.code  { font: 400 19px "Paper Mono", monospace; fill: #027f6b; }
+.tool  { font: 500 19px "Paper Mono", monospace; fill: #161a1a; }
+.msg   { font: 400 16px "Inter", sans-serif; fill: #3e4241; }
+.note  { font: 400 22px "Inter", sans-serif; fill: #3e4241; paint-order: stroke; stroke: #f7f6f5; stroke-width: 8px; stroke-linejoin: round; }
+.lbl   { font: 500 16px "Paper Mono", monospace; letter-spacing: 0.04em; fill: #027f6b; }
+.tag   { font: 500 14px "Paper Mono", monospace; letter-spacing: 0.08em; fill: #027f6b; }
+.zone-title   { font: 500 14px "Paper Mono", monospace; letter-spacing: 0.14em; fill: #6f7473; }
+.legend-title { font: 500 16px "Paper Mono", monospace; letter-spacing: 0.18em; fill: #027f6b; }
+/* colour modifiers, placed after the base class */
+.t-ink    { fill: #161a1a; }
+.t-accent { fill: #027f6b; }
+.t-mute   { fill: #6f7473; }
+.t-inv    { fill: #f7f6f5; }
+
+/* ---- boxes ---- */
+.bg    { fill: #f7f6f5; }
+.mask  { fill: #f7f6f5; }
+.node  { fill: #fff; stroke: #161a1a; stroke-width: 1.6; }
+.focal { fill: rgb(2 127 107 / 10%); stroke: #027f6b; stroke-width: 2.2; }
+.soft  { fill: #f1f0ee; stroke: #027f6b; stroke-width: 1.6; }
+.alt   { fill: rgb(2 127 107 / 6%); stroke: #6f7473; stroke-width: 1.6; }
+.quiet { fill: #fff; stroke: #a9adac; stroke-width: 1.6; stroke-dasharray: 8 6; }
+.ghost { fill: rgb(10 10 14 / 3%); stroke: #a9adac; stroke-width: 1.6; }
+.zone  { fill: #f7f6f5; stroke: rgb(10 10 14 / 18%); stroke-width: 1.6; }
+.bar   { fill: #f1f0ee; stroke: #027f6b; stroke-width: 1.4; }
+.track { fill: #e4e3e1; }
+.fill  { fill: #027f6b; }
+.ink-fill { fill: #161a1a; }
+.dot   { fill: #161a1a; }
+.dot-accent { fill: #027f6b; }
+.tag-box       { fill: none; stroke: rgb(2 127 107 / 55%); stroke-width: 1.4; }
+.tag-box.ink   { stroke: rgb(22 26 26 / 45%); }
+.tag-box.mute  { stroke: rgb(111 116 115 / 55%); }
+.tag-box.solid { stroke: #161a1a; }
+.tag-box.accent{ stroke: #027f6b; }
+
+/* ---- lines ---- */
+.arrow, .link, .accent, .mute { fill: none; stroke-linejoin: round; marker-end: url(#a); }
+.arrow  { stroke: #3e4241; stroke-width: 2.2; }
+.link   { stroke: #027f6b; stroke-width: 2.2; }
+.accent { stroke: #027f6b; stroke-width: 2.6; }
+.mute   { stroke: #6f7473; stroke-width: 2; }
+.rule   { fill: none; stroke: #3e4241; stroke-width: 2; }
+.faint  { fill: none; stroke: rgb(10 10 14 / 28%); stroke-width: 1.8; }
+.hair   { fill: none; stroke: rgb(10 10 14 / 12%); stroke-width: 1.5; }
+.nm     { marker-end: none; }
+.dash   { stroke-dasharray: 8 6; }
+.life   { stroke: #c9ccca; stroke-width: 1.5; stroke-dasharray: 5 6; }
+
+/* text that must shrink to stay inside a narrow box */
+.fit   { font-size: 16px; }
+.fit-s { font-size: 15px; }

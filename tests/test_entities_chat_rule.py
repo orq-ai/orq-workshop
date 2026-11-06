@@ -1,4 +1,4 @@
-"""The chat's guardrail rule is created by `make seed`, and its output guardrail id is real."""
+"""The chat's guardrail rule is created by `make seed-workspace`, and its output guardrail id is real."""
 
 from app.refund_agent import entities
 

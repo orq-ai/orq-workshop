@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1040" width="1920" height="1040" role="img" aria-labelledby="red-team-loop-title red-team-loop-desc">
+  <title id="red-team-loop-title">The red-team loop against the vulnerable and the fixed refund prompt</title>
+  <desc id="red-team-loop-desc">Architecture diagram: a static attack file feeds an attacker model that replays one attack per OWASP category against two targets, the vulnerable and the fixed refund prompt; each transcript goes to a judge that marks it vulnerable or not; the targets' tool calls hit the order store, which records which refunds really went through; judge verdicts and real refunds both land in one Experiment run with a resistance rate per target.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1040" class="bg"/>
+  <!-- Layout (x,y,w,h):
+       Attack file  48,144,160,56      Attacker 288,144,160,56
+       Vulnerable   528,80,160,56      Fixed    528,208,160,56   (targets)
+       Judge        768,144,144,56
+       Order store  528,320,160,56     Experiment 768,320,144,56 (focal) -->
+  <!-- Arrows first -->
+  <!-- A1 file → attacker -->
+  <line x1="416" y1="344" x2="576" y2="344" class="arrow"/>
+  <!-- A2 attacker → vulnerable (right + up) -->
+  <path d="M 896 328 H 960 Q 976 328 976 312 V 232 Q 976 216 992 216 H 1056" class="arrow"/>
+  <!-- A3 attacker → fixed (right + down) -->
+  <path d="M 896 360 H 960 Q 976 360 976 376 V 456 Q 976 472 992 472 H 1056" class="arrow"/>
+  <!-- A4 vulnerable → judge (right + down) -->
+  <path d="M 1376 216 H 1440 Q 1456 216 1456 232 V 312 Q 1456 328 1472 328 H 1536" class="arrow dash"/>
+  <!-- A5 fixed → judge (right + up) -->
+  <path d="M 1376 472 H 1440 Q 1456 472 1456 456 V 376 Q 1456 360 1472 360 H 1536" class="arrow dash"/>
+  <!-- A6 targets → order store (down from fixed, same x) -->
+  <line x1="1216" y1="528" x2="1216" y2="640" class="arrow"/>
+  <!-- A7 judge → experiment (down, same x) -->
+  <line x1="1680" y1="400" x2="1680" y2="640" class="accent"/>
+  <!-- A8 order store → experiment (right, same y) -->
+  <line x1="1376" y1="696" x2="1536" y2="696" class="accent"/>
+  <!-- Arrow labels -->
+  <rect x="432" y="304" width="128" height="24" rx="4" class="mask"/>
+  <text x="496" y="322" text-anchor="middle" class="lbl">8 ATTACKS</text>
+  <rect x="896" y="256" width="144" height="24" rx="4" class="mask"/>
+  <text x="904" y="274" class="lbl">MAX 2 TURNS</text>
+  <rect x="1384" y="256" width="144" height="24" rx="4" class="mask"/>
+  <text x="1392" y="274" class="lbl">TRANSCRIPT</text>
+  <rect x="1240" y="568" width="176" height="24" rx="4" class="mask"/>
+  <text x="1248" y="586" class="lbl">ISSUE_REFUND</text>
+  <rect x="1704" y="504" width="160" height="24" rx="4" class="mask"/>
+  <text x="1712" y="522" class="lbl t-accent">VULNERABLE?</text>
+  <rect x="1392" y="656" width="128" height="24" rx="4" class="mask"/>
+  <text x="1456" y="674" text-anchor="middle" class="lbl t-accent">REFUNDED</text>
+  <!-- Node: Attack file (store) -->
+  <rect x="96" y="288" width="320" height="112" rx="16" class="mask"/>
+  <rect x="96" y="288" width="320" height="112" rx="16" class="soft"/>
+  <rect x="112" y="304" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="148" y="322" text-anchor="middle" class="tag">FILE</text>
+  <text x="256" y="352" text-anchor="middle" class="name">static_attacks.json</text>
+  <text x="256" y="382" text-anchor="middle" class="sub">LLM01 LLM07 ASI01 ASI02</text>
+  <!-- Node: Attacker (external model) -->
+  <rect x="576" y="288" width="320" height="112" rx="16" class="mask"/>
+  <rect x="576" y="288" width="320" height="112" rx="16" class="ghost"/>
+  <rect x="592" y="304" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="620" y="322" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="736" y="352" text-anchor="middle" class="name">Attacker</text>
+  <text x="736" y="382" text-anchor="middle" class="sub">gpt-5.6-luna via router</text>
+  <!-- Node: Vulnerable target -->
+  <rect x="1056" y="160" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1056" y="160" width="320" height="112" rx="16" class="node"/>
+  <rect x="1072" y="176" width="88" height="24" rx="4" class="tag-box ink"/>
+  <text x="1116" y="194" text-anchor="middle" class="tag t-ink">TARGET</text>
+  <text x="1216" y="224" text-anchor="middle" class="name">Vulnerable prompt</text>
+  <text x="1216" y="254" text-anchor="middle" class="sub fit">LocalRefundTarget("vulnerable")</text>
+  <!-- Node: Fixed target -->
+  <rect x="1056" y="416" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1056" y="416" width="320" height="112" rx="16" class="node"/>
+  <rect x="1072" y="432" width="88" height="24" rx="4" class="tag-box ink"/>
+  <text x="1116" y="450" text-anchor="middle" class="tag t-ink">TARGET</text>
+  <text x="1216" y="480" text-anchor="middle" class="name">Fixed prompt</text>
+  <text x="1216" y="510" text-anchor="middle" class="sub">LocalRefundTarget("fixed")</text>
+  <!-- Node: Judge (external model) -->
+  <rect x="1536" y="288" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1536" y="288" width="288" height="112" rx="16" class="ghost"/>
+  <rect x="1552" y="304" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1580" y="322" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="1680" y="352" text-anchor="middle" class="name">OWASP judge</text>
+  <text x="1680" y="382" text-anchor="middle" class="sub">reads text only</text>
+  <!-- Node: Order store -->
+  <rect x="1056" y="640" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1056" y="640" width="320" height="112" rx="16" class="soft"/>
+  <rect x="1072" y="656" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="1108" y="674" text-anchor="middle" class="tag">STORE</text>
+  <text x="1216" y="704" text-anchor="middle" class="name">Order store</text>
+  <text x="1216" y="734" text-anchor="middle" class="sub">REFUNDS_ISSUED, the truth</text>
+  <!-- Node: Experiment (focal) -->
+  <rect x="1536" y="640" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1536" y="640" width="288" height="112" rx="16" class="focal"/>
+  <rect x="1552" y="656" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="1580" y="674" text-anchor="middle" class="tag t-accent">RUN</text>
+  <text x="1680" y="704" text-anchor="middle" class="name">ws-redteam-local</text>
+  <text x="1680" y="734" text-anchor="middle" class="sub">resistance per target</text>
+  <!-- Callout -->
+  <path d="M 464 840 Q 600 832 1056 752" class="faint dash"/>
+  <circle cx="1056" cy="752" r="4" class="dot"/>
+  <text x="80" y="872" class="note">The judge flagged one attack. The order store says two refunds went through.</text>
+  <text x="80" y="908" class="note">Structured tool results are the ground truth; the judge is the second opinion.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="952" x2="1840" y2="952" class="hair"/>
+  <text x="80" y="984" class="legend-title">LEGEND</text>
+  <rect x="80" y="1008" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1024" class="msg">Where both verdicts land</text>
+  <line x1="528" y1="1020" x2="584" y2="1020" class="arrow"/>
+  <text x="600" y="1024" class="msg">Attack turn</text>
+  <line x1="832" y1="1020" x2="888" y2="1020" class="arrow dash"/>
+  <text x="904" y="1024" class="msg">Transcript to the judge</text>
+  <line x1="1240" y1="1020" x2="1296" y2="1020" class="accent"/>
+  <text x="1312" y="1024" class="msg">Verdict (judge) and truth (store) into one run</text>
+    
+</svg>

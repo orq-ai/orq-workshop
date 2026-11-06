@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 720" width="1920" height="720" role="img" aria-labelledby="own-loop-managed-title own-loop-managed-desc">
+  <title id="own-loop-managed-title">A managed agent whose loop runs server-side</title>
+  <desc id="own-loop-managed-desc">Architecture diagram. Your process posts a question to a managed agent and the loop runs inside orq, where the instructions, model and tool schemas are configuration rather than code. The agent sends function_call items back to your process, which executes the tools locally and returns the results, and orq calls the model itself.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="720" class="bg"/>
+  <!-- Zones: the only thing that moves across the three diagrams is which side holds the loop -->
+  <rect x="64" y="128" width="928" height="480" rx="20" class="zone"/>
+  <rect x="88" y="136" width="208" height="24" rx="4" class="mask"/>
+  <text x="96" y="154" class="zone-title">YOUR PROCESS</text>
+  <rect x="1056" y="128" width="800" height="480" rx="20" class="zone"/>
+  <rect x="1080" y="136" width="80" height="24" rx="4" class="mask"/>
+  <text x="1088" y="154" class="zone-title">ORQ</text>
+  <line x1="432" y1="280" x2="1088" y2="280" class="arrow"/>
+  <line x1="1088" y1="360" x2="432" y2="360" class="arrow dash"/>
+  <line x1="272" y1="384" x2="272" y2="448" class="arrow"/>
+  <line x1="1424" y1="384" x2="1424" y2="448" class="arrow"/>
+  <rect x="664" y="240" width="120" height="24" rx="4" class="mask"/>
+  <text x="724" y="258" text-anchor="middle" class="lbl">QUESTION</text>
+  <rect x="632" y="376" width="184" height="24" rx="4" class="mask"/>
+  <text x="724" y="394" text-anchor="middle" class="lbl">FUNCTION_CALL</text>
+  <rect x="288" y="400" width="72" height="24" rx="4" class="mask"/>
+  <text x="324" y="418" text-anchor="middle" class="lbl">RUN</text>
+  <rect x="112" y="224" width="320" height="160" rx="16" class="mask"/>
+  <rect x="112" y="224" width="320" height="160" rx="16" class="node"/>
+  <rect x="128" y="240" width="56" height="24" rx="4" class="tag-box solid"/>
+  <text x="156" y="258" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="272" y="308" text-anchor="middle" class="name">Your code</text>
+  <text x="272" y="344" text-anchor="middle" class="sub">executes the</text>
+  <text x="272" y="372" text-anchor="middle" class="sub">function_call items</text>
+  <rect x="112" y="448" width="320" height="128" rx="16" class="mask"/>
+  <rect x="112" y="448" width="320" height="128" rx="16" class="soft"/>
+  <rect x="128" y="464" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="156" y="482" text-anchor="middle" class="tag">TOOL</text>
+  <text x="272" y="532" text-anchor="middle" class="name">Tools</text>
+  <text x="272" y="568" text-anchor="middle" class="sub">still run here</text>
+  <rect x="1120" y="224" width="688" height="160" rx="16" class="mask"/>
+  <rect x="1120" y="224" width="688" height="160" rx="16" class="focal"/>
+  <rect x="1136" y="240" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="1164" y="258" text-anchor="middle" class="tag t-accent">LOOP</text>
+  <text x="1464" y="308" text-anchor="middle" class="name">The loop runs in orq</text>
+  <text x="1464" y="344" text-anchor="middle" class="sub">agent/&lt;key&gt; · instructions,</text>
+  <text x="1464" y="372" text-anchor="middle" class="sub">model and tools are config</text>
+  <rect x="1264" y="448" width="544" height="128" rx="16" class="mask"/>
+  <rect x="1264" y="448" width="544" height="128" rx="16" class="node"/>
+  <rect x="1280" y="464" width="56" height="24" rx="4" class="tag-box solid"/>
+  <text x="1308" y="482" text-anchor="middle" class="tag t-ink">LLM</text>
+  <text x="1536" y="532" text-anchor="middle" class="name">Model</text>
+  <text x="1536" y="568" text-anchor="middle" class="sub">orq calls it, not you</text>
+    
+</svg>
