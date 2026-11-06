@@ -95,7 +95,7 @@ Laptop blocks `curl | sh`, or setup is still red at 0:20? Pair with a neighbour 
 
 # 1 · The refund agent
 
-<span class="tag orange">module 00 · setup</span> <span class="tag">module 08 · managed agents</span>
+<span class="tag orange">the setup module · setup</span> <span class="tag">the managed-agents module · managed agents</span>
 
 <!-- 0:25. Seven minutes of concept, eight minutes of running it. -->
 
@@ -158,7 +158,7 @@ Watch for: the trace in the Studio, its tool calls, its cost, the agent version 
 
 # 2 · Simulate customers
 
-<span class="tag orange">module 11 · agent simulation</span>
+<span class="tag orange">the simulation module · agent simulation</span>
 
 <!-- 0:40. Ten minutes of concept, then 25 minutes on the TODOs. -->
 
@@ -168,7 +168,7 @@ Watch for: the trace in the Studio, its tool calls, its cost, the agent version 
 
 ## 2 · A user simulator, your agent, a judge
 
-![w:1000](../../../modules/11-simulation/assets/simulation-loop.png)
+![w:1000](../../../modules/simulation/assets/simulation-loop.png)
 
 <!-- Hand-written test transcripts go stale the day the prompt changes. A simulator writes new ones every run. -->
 
@@ -199,12 +199,12 @@ The judge reads the transcript text only, not the tool calls. Write criteria the
 ## 2 · Live demo · You try
 
 ```bash
-$ uv run python modules/11-simulation/run.py                     # your turn: the TODOs
-$ uv run python modules/11-simulation/run.py --only=1   # finished step 1, v1
+$ uv run python modules/simulation/run.py                     # your turn: the TODOs
+$ uv run python modules/simulation/run.py --only=1   # finished step 1, v1
 $ uv run eq dashboard                                            # http://127.0.0.1:8080
 ```
 
-- [ ] `modules/11-simulation/run.py`: a second persona and the post-window `ord_a3` scenario
+- [ ] `modules/simulation/run.py`: a second persona and the post-window `ord_a3` scenario
 - [ ] Experiments shows `ws<NN>-sim-local` with one row per conversation
 - [ ] At least one `ord_a3` row with a broken rule, and you can say what the agent wrote
 
@@ -257,7 +257,7 @@ Before you trust a red number, check who ran the tools. Block 3 uses the adapter
 
 # 3 · Read the traces
 
-<span class="tag orange">module 18 · trace insights</span>
+<span class="tag orange">the trace-insights module · trace insights</span>
 
 <!-- 1:15. Five minutes of concept, twenty minutes clicking. Never cut this block. -->
 
@@ -272,7 +272,7 @@ Before you trust a red number, check who ran the tools. Block 3 uses the adapter
 - So it finds failures you did not write a criterion for.
 
 ```bash
-$ make m18
+$ make module M=trace-insights
 # 1. module 11's customers against the managed v1 agent, ws<NN>-refund-agent-vulnerable
 # 2. eq insights --agent ws<NN>-refund-agent-vulnerable \
 #      --dimension failure --dimension intent --label made_errors
@@ -291,7 +291,7 @@ $ make m18
 ## 3 · Live demo · You try
 
 ```bash
-$ make m18                             # simulate, then insights on your own traces
+$ make module M=trace-insights                             # simulate, then insights on your own traces
 $ uv run eq dashboard                  # Insights tab: clusters, and the traces in each
 $ orq traces conversation <trace_id>   # one trace, read as a conversation
 ```
@@ -329,7 +329,7 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 # 4 · From insight to eval
 
-<span class="tag orange">module 07 · failure analysis and evals</span> <span class="tag">module 12 · evals in CI</span>
+<span class="tag orange">the failure-analysis module · failure analysis and evals</span> <span class="tag">the evals-in-ci module · evals in CI</span>
 
 <!-- 1:40. Demo only, twelve minutes. If late, this block is the first to shrink. -->
 
@@ -339,9 +339,9 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ## 4 · One cluster, one binary evaluator
 
-- **Name it after the failure**: `refund_when_should_refuse`, module 07's label for this shape.
+- **Name it after the failure**: `refund_when_should_refuse`, the failure-analysis module's label for this shape.
 - **Binary, Pass/Fail.** Never a 1 to 5 scale: nobody can act on a 3.
-- **Code first** where the tool call shows it: module 07's `decision_matches` checks whether `issue_refund` was called when it should not be.
+- **Code first** where the tool call shows it: the evaluators-and-experiments module's `decision_matches` checks whether `issue_refund` was called when it should not be.
 - **LLM judge last**, for what only the words show: accepting a reason that is not on the list.
 - **Evaluate the evaluator**: label a few rows yourself, or let `orq-evaluator-alignment` jury-test the judge prompt.
 
@@ -355,9 +355,9 @@ The criterion you wrote names manager approval. The cluster is wider: any reason
 
 ## 4 · Swap to `fixed_instructions.md`, re-run
 
-![w:1000](../../../modules/11-simulation/assets/11-step1-persona-matrix.png)
+![w:1000](../../../modules/simulation/assets/step1-persona-matrix.png)
 
-<!-- 1:46. In module 11, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the module 11 README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
+<!-- 1:46. In the simulation module, set VARIANT = "fixed" and re-run step 1: 0 rules broken. This figure is the simulation module README run on the fixed prompt. Read the ord_a3 cells: goal not achieved is the agent correctly refusing. Gate on rules broken, not on goal achieved. -->
 
 ---
 
@@ -378,7 +378,7 @@ THRESHOLDS = {"decision_matches": 0.80, "no_pii_leak": 1.00, "policy_judge": 0.7
 - `.github/workflows/evals.yml` runs it on every PR that touches `app/` or `evals/`.
 - Your new evaluator goes in the same list. The prompt that broke it can no longer merge.
 
-<!-- 1:50. One slide, not a lab. Module 12 has the full walkthrough. -->
+<!-- 1:50. One slide, not a lab. The evals-in-ci module has the full walkthrough. -->
 
 ---
 
@@ -412,7 +412,7 @@ Everything today: `github.com/orq-ai/orq-workshop`, modules 00 setup, 08 managed
 
 Building evals from traces, testing the judge, red teaming
 
-<span class="tag orange">module 07</span> <span class="tag">module 12</span> <span class="tag">module 16</span>
+<span class="tag orange">the failure-analysis module</span> <span class="tag">the evals-in-ci module</span> <span class="tag">the red-teaming module</span>
 
 <!-- Not presented live. For questions, and for anyone going further after the session. -->
 
@@ -422,7 +422,7 @@ Building evals from traces, testing the judge, red teaming
 
 ## Read traces before you write evals
 
-![h:520](../../../modules/07-failure-analysis-evals/assets/error-analysis-loop.png)
+![h:520](../../../modules/failure-analysis/assets/error-analysis-loop.png)
 
 <!-- Evaluators written before reading traces measure the failures you imagined, not the ones you have. -->
 
@@ -446,7 +446,7 @@ What the 20 conversations actually produced:
 
 ```bash
 $ make generate-traffic
-$ uv run python modules/07-failure-analysis-evals/run.py 2     # your turn: the TODO is in traffic_traces()
+$ uv run python modules/failure-analysis/run.py 2     # your turn: the TODO is in traffic_traces()
 ```
 
 <!-- The fixed prompt refunded three orders in one turn for a customer "moving abroad". One of the failures is on the prompt you thought was safe. -->
@@ -468,16 +468,16 @@ $ uv run python modules/07-failure-analysis-evals/run.py 2     # your turn: the 
 | `decision_matches` (code) | 95% | 75% |
 | `policy_judge` (LLM) | 90% | 65% |
 
-<!-- Numbers from the module 07 README run. Yours will differ by a few points. -->
+<!-- Numbers from the failure-analysis module README run. Yours will differ by a few points. -->
 
 ---
 
 <!-- _class: block -->
 
-## Module 07 · You try
+## The failure-analysis module · You try
 
 ```bash
-$ make m07       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
+$ make module M=failure-analysis       # taxonomy, both evaluators invoked, dataset, experiment fixed vs vulnerable
 ```
 
 Watch for: the experiment URL · per-row answers, verdicts and the judge's explanation · the fixed prompt's one miss.
@@ -511,7 +511,7 @@ Four things this workshop's own runs showed:
 
 ## Measure the judge like any classifier
 
-1. **Label by hand.** Open the module 07 Experiment. For 20 rows, write your own pass or fail before reading the judge's.
+1. **Label by hand.** Open the evaluators-and-experiments module Experiment. For 20 rows, write your own pass or fail before reading the judge's.
 2. **Count agreement.** Where you said fail, how often did the judge say fail (true positive rate)? Where you said pass, how often did it say pass (true negative rate)?
 3. **Fix the prompt, not the threshold.** Each disagreement is a missing line in the judge prompt.
 4. **Bar before trust:** both rates above 90% on rows you did not tune on. Then it can gate.
@@ -529,7 +529,7 @@ Four things this workshop's own runs showed:
 An attacker is a simulated user with a worse goal: same loop as block 2, OWASP categories instead of criteria.
 
 ```bash
-$ uv run python modules/16-red-teaming/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
+$ uv run python modules/red-teaming/run.py --only=1    # 8 static attacks, LLM01 LLM07 ASI01 ASI02
 ```
 
 | Target | Judged vulnerable | Resistance |
@@ -554,4 +554,4 @@ $ make redteam-gate      # static red team, 95% bar, fails closed on errors
 - Fails closed: an attack that errored or was not evaluated exits 1, so an outage cannot pass as "no vulnerabilities".
 - `.github/workflows/evals.yml` runs it next to `make regression-eval` on every PR that touches `app/` or `evals/`.
 
-Module 16 step 4: `diff` the two instruction files; most of the diff is noise, three sentences moved the number.
+The red-teaming module step 4: `diff` the two instruction files; most of the diff is noise, three sentences moved the number.

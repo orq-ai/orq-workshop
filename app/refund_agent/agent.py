@@ -6,7 +6,7 @@ agent, and every module in the workshop runs it unchanged; what changes is the r
 
 Factor 12, stateless reducer: `run_turn` takes the full item list and returns the extended item
 list. Nothing is stored server-side (`store: false`), so the caller owns the conversation and
-can replay, fork or inspect it. Module 08 shows the other shape, `previous_response_id`, for
+can replay, fork or inspect it. The managed-agents module shows the other shape, `previous_response_id`, for
 agents that live in orq.
 
 How to use it:
@@ -46,7 +46,7 @@ class TurnResult:
 
     `messages` starts with `{"role": "system"}`, then user and assistant messages and the tool
     items, in the order they happened. Pass it back as `history` to continue the conversation
-    (module 02 does). With `api="responses"` (the default) the tool items are Responses-shaped
+    (the tracing module does). With `api="responses"` (the default) the tool items are Responses-shaped
     (`function_call` / `function_call_output`); with `api="chat"` they are chat-shaped
     (`tool_calls` on the assistant message, `{"role": "tool"}` for results). See the table
     above `run_turn`.
@@ -102,7 +102,7 @@ def run_turn(
 
     A leading `{"role": "system"}` message becomes the Responses `instructions`; everything else
     is sent as `input` items, in full, every round. `api="chat"` runs the same loop on
-    `/chat/completions` (module 04: request-level guardrails are enforced there, not on
+    `/chat/completions` (the guardrails module: request-level guardrails are enforced there, not on
     Responses). `extra_body` is where the gateway controls go (fallbacks, cache, guardrails,
     identity, thread, metadata); `extra_headers` is for raw headers a module wants to add.
     """
@@ -228,7 +228,7 @@ def _run_turn_chat(
 ) -> TurnResult:
     """The same five-step loop over `/chat/completions`; every item stays chat-shaped.
 
-    Module 04 needs it: request-level guardrails are enforced on chat completions, not on
+    The guardrails module needs it: request-level guardrails are enforced on chat completions, not on
     Responses. The system prompt stays in the list as `{"role": "system"}`, so the returned
     list is the input list extended, nothing prepended.
     """

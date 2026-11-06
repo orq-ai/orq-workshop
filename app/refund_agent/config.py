@@ -122,11 +122,11 @@ class Settings:
     )
     identity_id: str = field(default_factory=lambda: _env("IDENTITY_ID", "customer-user_001"))
     # "gateway" (default): the gateway traces every model call by itself.
-    # "otel": module 02 adds our own spans around the loop and each tool (see tracing.py).
+    # "otel": the tracing module adds our own spans around the loop and each tool (see tracing.py).
     tracing: str = field(default_factory=lambda: _env("TRACING", "gateway"))
     mcp_server_url: str = field(default_factory=lambda: _env("MCP_SERVER_URL"))
     # Public base URL of app/edge.py (a tunnel to your laptop, or the instance the room shares).
-    # Module 09 registers `<edge_url>/search` as an external knowledge base; module 14 delivers
+    # The knowledge-base module registers `<edge_url>/search` as an external knowledge base; the alerts-and-webhooks module delivers
     # webhooks to `<edge_url>/<prefix>` unless WS_WEBHOOK_URL says otherwise.
     edge_url: str = field(default_factory=lambda: _env("WS_EDGE_URL").rstrip("/"))
     webhook_url: str = field(default_factory=_default_webhook_url)
