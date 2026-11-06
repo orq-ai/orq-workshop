@@ -143,3 +143,15 @@ def test_runner_import_fails_cleanly_without_the_extra(monkeypatch):
 def test_starter_source_is_none_when_no_ref_resolves():
     """A shallow CI checkout has no main or slice ref; the diff test must skip, not compare against nothing."""
     assert _starter_source(["no-such-ref-a", "no-such-ref-b"]) is None
+
+
+def test_step_option_picks_steps():
+    """`run.py --step N` runs one step; step 5 needs step 3's trace, so it pulls step 3 in."""
+    source = RUN.read_text()
+    node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == "steps_to_run")
+    scope: dict = {}
+    exec(compile(ast.Module([node], []), "run.py", "exec"), scope)
+    steps_to_run = scope["steps_to_run"]
+    assert steps_to_run([]) == {1, 2, 3, 4, 5}
+    assert steps_to_run(["--step", "1"]) == {1}
+    assert steps_to_run(["--step", "5"]) == {3, 5}
