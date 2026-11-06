@@ -113,3 +113,8 @@
 /* chooser reasons: plain text without JS, copied into the why box by JS */
 .md-typeset .chooser-reason { display: block; margin-top: 0.35rem; font-size: 0.8125rem; color: var(--orq-body); }
 .md-typeset .chooser.is-interactive .chooser-reason { display: none; }
+
+/* recorded clips sit inside their storyboard */
+.md-typeset .storyboard video.clip { display: block; width: 100%; height: auto; margin: 0.4rem 0 0.8rem; border-radius: var(--orq-radius-sm); border: 1px solid var(--orq-hairline); background: #0d1117; }
+.md-typeset .storyboard[data-status="recorded"] { border-style: solid; border-color: var(--orq-hairline); background: var(--orq-surface); }
+.md-typeset .storyboard[data-status="recorded"]::before { background: var(--orq-primary); }

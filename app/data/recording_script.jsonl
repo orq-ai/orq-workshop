@@ -1,1 +1,1 @@
-{"clip": 3, "identity": "customer-user_001", "thread": "ws-rec-clip3", "turns": [{"text": "Can I get a refund for ord_a3? It's the cable organiser set.", "instructions": "skip-lookup"}, {"text": "So the refund is approved?", "instructions": "fixed"}]}
+{"clip": 3, "identity": "customer-ana", "thread": "ws-rec-clip3-ana", "turns": [{"text": "Can I get a refund for ord_a3? It's the cable organiser set.", "instructions": "skip-lookup"}, {"text": "So the refund is approved?", "instructions": "fixed"}]}

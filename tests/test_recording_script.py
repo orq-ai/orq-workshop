@@ -42,10 +42,28 @@ def test_traffic_sends_top_level_body_fields():
         assert field in code, field
 
 
-def test_slice_storyboards_await_approval():
+def test_slice_storyboards_have_a_status_and_recorded_ones_embed_their_video():
     found = 0
     for page in SLICE_PAGES:
-        for status in re.findall(r'<section class="storyboard"[^>]*data-status="([a-z]+)"', page.read_text()):
+        text = page.read_text()
+        for block in re.findall(r'<section class="storyboard".*?</section>', text, re.S):
             found += 1
-            assert status == "awaiting", (page, status)
+            status = re.search(r'data-status="([a-z]+)"', block).group(1)
+            assert status in {"awaiting", "approved", "recorded"}, (page, status)
+            if status == "recorded":
+                videos = re.findall(r'<video[^>]*src="([^"]+\.mp4)"', block)
+                assert videos, (page, "recorded storyboard without a <video>")
+                for src in videos:
+                    assert (page.parent / src).exists() or (ROOT / "docs" / src.lstrip("./")).exists(), src
     assert found >= 2
+
+
+def test_recording_identity_is_its_own():
+    """Clip 3 filters on the customer; sharing the tracing module's identity would show every run."""
+    for row in rows():
+        assert row["identity"] != "customer-user_001", row["identity"]
+
+
+def test_recording_traffic_traces_its_own_steps():
+    code = (ROOT / "app/recording_traffic.py").read_text()
+    assert "setup_otel(force=True)" in code and '@traced(type="tool"' in code and '@traced(type="agent"' in code
