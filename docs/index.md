@@ -8,10 +8,12 @@ Hands-on training for teams building on [orq.ai](https://orq.ai). One sample app
 
 The site has two layers around the same loop. The **Academy** explains each stage: the idea, what good looks like, no code, about an hour. The **Workshop** practices it: hands-on modules on orq.ai, about four hours for the core path.
 
-[Academy: the ideas](start/academy.md){ .md-button }
-[Workshop: hands-on](start/for-engineers.md){ .md-button .md-button--primary }
+[Academy: the ideas](academy/index.md){ .md-button }
+[Workshop: hands-on](workshop/index.md){ .md-button .md-button--primary }
 
-Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
+[Onboarding: bring orq.ai into your company](onboarding/index.md){ .md-button }
+
+Already on orq.ai? Go to the [electives by stage](workshop/electives.md).
 
 <div class="grid cards" markdown>
 
@@ -21,7 +23,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     The refund agent as a managed agent, with a knowledge base, MCP tools and delegation.
 
-    [:octicons-arrow-right-24: Build](build/index.md)
+    [:octicons-arrow-right-24: Build](academy/build.md)
 
 -   :material-router:{ .lg .middle } **Route and protect**
 
@@ -29,7 +31,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     Fallbacks and cache, smart routing, guardrails and PII, budgets and keys: every call goes through the gateway.
 
-    [:octicons-arrow-right-24: Route and protect](route/index.md)
+    [:octicons-arrow-right-24: Route and protect](academy/route.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **Trace**
 
@@ -37,7 +39,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     Every model call, tool result and decision, readable after the fact, grouped by customer and conversation.
 
-    [:octicons-arrow-right-24: Trace](trace/index.md)
+    [:octicons-arrow-right-24: Trace](academy/trace.md)
 
 -   :material-magnify-scan:{ .lg .middle } **Find failures**
 
@@ -45,7 +47,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     Turn traces into a failure taxonomy, by hand, with a skill, with Insights, and with human review.
 
-    [:octicons-arrow-right-24: Find failures](find-failures/index.md)
+    [:octicons-arrow-right-24: Find failures](academy/find-failures.md)
 
 -   :material-clipboard-check:{ .lg .middle } **Evaluate**
 
@@ -53,7 +55,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     Evaluators, datasets and experiments, simulated customers, red teams.
 
-    [:octicons-arrow-right-24: Evaluate](evaluate/index.md)
+    [:octicons-arrow-right-24: Evaluate](academy/evaluate.md)
 
 -   :material-shield-check:{ .lg .middle } **Gate and monitor**
 
@@ -61,7 +63,7 @@ Already on orq.ai? Go to the [electives by stage](start/already-on-orq.md).
 
     A regression gate in CI, alerts on cost and errors, webhooks into your own systems.
 
-    [:octicons-arrow-right-24: Gate and monitor](gate/index.md)
+    [:octicons-arrow-right-24: Gate and monitor](academy/gate.md)
 
 </div>
 

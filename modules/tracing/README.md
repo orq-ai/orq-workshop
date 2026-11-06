@@ -10,241 +10,278 @@ Command: `make module M=gateway`. Time: 30 min.
 
 ## Goal
 
-Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it.
+Traces you can search by customer and conversation, one trace that reads `refund_turn -> tool -> llm`, a framework traced over OpenTelemetry, and one human rating on an answer. Five steps, one changed line each.
 
+## Why this matters
 
-## Why
+The gateway module left traces behind without a line of code. This module makes them yours: named, grouped per customer and conversation, with your own agent loop and tools in the same tree. Every later module (failure analysis, evaluators, red teaming) starts from these traces.
 
-The gateway module left traces behind without a line of code. This module makes them yours: name them, group them per conversation, attach the customer, then add your own spans so the agent loop is one trace instead of one trace per model call. Every later module (failure analysis, evals, red teaming) starts from these traces.
+!!! tip "Why traces, without the code"
+    [Academy › Trace](https://orq-ai.github.io/orq-workshop/academy/trace/), 8 minutes: logs versus traces, stepped through on one customer complaint, and the four ways to get traces into orq.ai.
 
-## The one concept to understand first
+## How it works
 
 Three things decide what a trace looks like, and all three are in your hands:
 
 1. **Request fields.** On `/v3/router/responses` (and on `/chat/completions`), `name`, `identity`, `thread` and `metadata` are top-level fields of the request body. The OpenAI SDK forwards them through `extra_body`. They become filters in the Studio and in `orq.traces.search` ([request metadata](https://docs.orq.ai/ai-gateway/request-metadata), [thread management](https://docs.orq.ai/ai-gateway/thread-management)).
 2. **The W3C `traceparent` header.** When a gateway call carries it, the gateway continues your trace instead of starting its own. `run_turn` adds it from the active `@traced` span (via `orq_ai_sdk.traced.propagation_headers()`).
-3. **`@traced` spans.** `@traced(type="agent")` and `@traced(type="tool")` from `orq_ai_sdk.traced` add the spans the gateway cannot see. With `TRACING=otel` the app's `setup_otel()` exports them over OTLP to `https://my.orq.ai/v2/otel`.
-
-```python
-body = {"name": "refund-turn", "identity": {"id": "customer-user_001"}, "thread": {"id": thread_id}, "metadata": {"tier": "free"}}
-chat("Refund ord_a2 please", extra_body=body)
-
-@traced(type="agent", name="refund_turn")
-def refund_turn(text):
-    return chat(text)   # run_turn sends traceparent, the gateway nests under this span
-```
+3. **Spans you add.** `@traced(type="agent")` and `@traced(type="tool")` from the orq.ai SDK add the steps the gateway cannot see; a framework such as LangGraph adds them for you over OpenTelemetry. Both export over OTLP to `https://my.orq.ai/v2/otel`.
 
 ![Diagram: who produces which span. Your app emits the @traced root span refund_turn and its three tool spans and ships them over OTLP; the gateway emits one responses.openai trace per model call with a span.responses child, nested under the root because run_turn sends the W3C traceparent header; the request body fields name, identity, thread and metadata become filters in the Traces view and the CLI.](assets/span-ownership.png)
 
 ## Steps
 
-Open [`modules/tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/tracing/run.py). Each step is a function with a `TODO`. The solution is on the [`solution` branch](https://github.com/orq-ai/orq-workshop/blob/solution/modules/tracing/run.py).
-
-### Step 1 · The traces you already have
+Open [`modules/tracing/run.py`](https://github.com/orq-ai/orq-workshop/blob/main/modules/tracing/run.py). Each step is a function with one line marked `# CHANGE:`; the script runs as is and tells you, step by step, which line is still unchanged. Run it after each change:
 
 ```bash
 $ uv run python modules/tracing/run.py
 ```
 
-Expected output (first block):
+The finished file is at the same path on the [`solution` branch](https://github.com/orq-ai/orq-workshop/tree/solution).
 
-```text
-── Step 1 · The traces you already have ───────────────
-question : Refund ord_a2 please, the dock does not fit my laptop.
-answer   : Your refund of **€89.00** for order **ord_a2** has been issued to the original payment method. Pleas…
-tools    : lookup_order → get_policy → issue_refund
-trace    : 610d07561cb9a9ef8668fc0fc6805783
-recent   : the last 5 traces of the workspace, one per gateway call
-    7cd1b5c0c1566726a56e240f9aa5ab94  responses.openai ok      2134 ms  $0.000265
-    0e4651ec7e1f45fe80b7cf8b6c326b77  responses.openai ok      1379 ms  $0.000201
-    3d96282c5b60dd9ce87efcebc5473351  responses.openai ok      1767 ms  $0.000212
-    6cdc5dd1b1d4e30375cd0a4e620dd8ec  responses.openai ok      5509 ms  $0.022867
-    9f530706a4d69dd3eb187aabef9c88ed  responses.openai ok      3396 ms  $0.006166
-cli      : orq traces search --from now-10m --to now -o json | jq '.data[] | {trace_id, name}'
-next     : open https://my.orq.ai/traces; every gateway call is its own trace, named after the endpoint
-```
+### Step 1 · Name the traces you already have
 
-Every gateway call is a trace named after its endpoint, `responses.openai` here (`chat.openai` for chat completions, `responses.<workspace>@orq` for a smart router; rows from other modules, such as 04's `pii *` plugin spans, show up too if they ran recently). A turn with two tool calls is three traces. The same list from the CLI, and one trace rendered as a conversation:
+!!! example "Change · Run · Watch"
+    - **Change** `trace_name = None` → `trace_name = "refund-turn"` in `step_1_name`.
+    - **Run** the script.
+    - **Watch** the newest traces in the list: named `refund-turn` instead of after the endpoint.
+    - **Why it matters** a name is the first filter anyone uses: "show me the refund turns of the last hour".
 
-```console
-$ set -a; source .env; set +a          # the CLI otherwise searches the project of your `orq` session
-$ orq traces search --from now-10m --to now --limit 3 -o json | jq -c '.data[] | {trace_id, name, status, cost: .cost.total}'
-{"trace_id":"e4119747783704db32ff153043c1fa9a","name":"responses.openai","status":"ok","cost":0.0002204}
-{"trace_id":"24db29ca280446773e74878862b7391d","name":"responses.openai","status":"ok","cost":0.0002044}
-{"trace_id":"b56aa7c55447d568b8a099e81ad7b313","name":"responses.openai","status":"ok","cost":0.00025865}
-$ orq traces conversation 6d3815f83d19c502ea7bef614d67bc8a
-```
+=== "Studio"
 
-```text
-<conversation trace="6d3815f83d19c502ea7bef614d67bc8a" span="14b9946e7718e1d7" format="responses" model="gpt-6-luna" duration_ms="1530" tokens="1485">
+    ![Studio: the Traces list searched for refund-turn, with the Traces entry in the sidebar marked 1 and the search box marked 2](assets/studio-step-1.png)
 
-<message index="0" role="system">
-You are the customer-service refund agent for Lumen Goods, ...
-</message>
+    1. Open **Observability › Traces**. The newest rows are this run's model calls, each with duration and tokens.
+    2. Type `refund-turn` in the search box. Before the change nothing matches; after it, this run's calls are there.
 
-<message index="1" role="user">
-It was damaged in transit. Please refund it.
-</message>
+=== "Code"
 
-<message index="2" role="assistant">
-<tool_call id="call_..." name="lookup_order">
-{ "order_id": "ord_a3" }
-</tool_call>
-</message>
+    ```python
+    trace_name = None  # CHANGE: "refund-turn"
+    result = chat(QUESTION, extra_body={"name": trace_name} if trace_name else None)
+    ```
 
-...
+    `name` is a top-level field of the request body; `extra_body` is how the OpenAI client sends it.
 
-<message index="14" role="assistant">
-I can't approve an out-of-window refund without a valid carrier tracking reference ...
+=== "CLI"
 
-<reasoning>
-[encrypted]
-</reasoning>
-</message>
+    ```bash
+    $ orq traces search --from now-10m --to now --limit 5
+    ```
 
-</conversation>
-```
+=== "Coding agent"
 
-The CLI renders Responses traces in full: system prompt, user turns, tool calls and results, and the final answer. Reasoning items stay `[encrypted]` (the provider does not return them), and tool results are the real JSON the app sent back. Chat-completions traces render the same way, as the guardrails module's captures show.
+    > Run `modules/tracing/run.py`, find the `# CHANGE:` line of step 1, make that change, rerun, and show me the names of the last five traces.
 
-### Step 2 · Name, identity, thread, metadata
+<section class="storyboard" data-clip="t1" data-status="awaiting" markdown>
 
-Fill `step_2_thread`: put `name`, `identity`, `thread` and `metadata` in `extra_body`, call `chat()` twice with the same thread id and the first turn's `messages` as history, then search by `thread_id`.
+<p class="storyboard-title"><strong>Clip T1 · One changed line, a named trace</strong></p>
 
-```text
-── Step 2 · Name, identity, thread, metadata ──────────
-thread   : ws-thread-21c5900e
-turn 1   : 5824e4d8a05994578ae60bc187cb42ac  tools lookup_order → get_policy → get_policy
-turn 2   : 8d56a5496ab66fa63a806ded661c989c  tools (none)
-search   : thread_id=ws-thread-21c5900e → 4 traces: 8d56a5496ab66fa63a806ded661c989c, 5824e4d8a05994578ae60bc187cb42ac, fa4160a67177e03c1dbe2367b5954aff, 9ff5f82d43e0d356539ef797775136d8
-fields   : name=refund-turn identity_id=customer-user_001 thread_id=ws-thread-21c5900e
-cli      : orq traces conversation 8d56a5496ab66fa63a806ded661c989c
-next     : in https://my.orq.ai/traces filter on Thread ID ws-thread-21c5900e; every model call of the conversation lines up
-```
+<ul class="storyboard-meta">
+<li><strong>Audience:</strong> engineers, step 1 of the tracing module</li>
+<li><strong>Point it makes:</strong> one line in the code, and the trace has a name you can filter on</li>
+<li><strong>Length:</strong> about 30 seconds, captions only, terminal recorded with vhs</li>
+<li><strong>Source:</strong> this repo, project orq-academy</li>
+<li><strong>Also on screen:</strong> the terminal only; no key, no shell prompt with a user name</li>
+</ul>
 
-Four traces, one conversation: turn 1 made three model calls, turn 2 made one. In the Studio, open **Traces**, filter on Thread ID, and the four line up. The same filters work on `identity_id`, `metadata.tier` and `name`:
+| # | Time | On screen | Caption |
+|---|---|---|---|
+| 1 | 0:00-0:08 | `uv run python modules/tracing/run.py`, step 1 output with the `CHANGE :` hint | The script tells you which line to change. |
+| 2 | 0:08-0:15 | The editor: `trace_name = None` becomes `trace_name = "refund-turn"` | One value. |
+| 3 | 0:15-0:25 | The rerun: the recent list shows `refund-turn` at the top | The trace now has a name. |
+| 4 | 0:25-0:30 | `orq traces search --from now-10m --to now` shows the same name | Same result from the CLI. |
 
-```console
-$ orq traces search --from now-15m --to now --filters '[{"field":"thread_id","op":"eq","values":["ws-thread-9a2d79c4"]}]' -o json | jq -c '{rows: .meta.row_count, traces: [.data[].trace_id]}'
-{"rows":4,"traces":["6d3815f83d19c502ea7bef614d67bc8a","14e3eaa42eaf74afb9501aa0817395b5","b86261f809268f38f2a40e49323e5b34","a6f1c0edd571fd176540dc91d7555225"]}
-```
+**To approve:** say "approve clip T1", or change any row.
 
-### Step 3 · One trace per turn with `@traced`
+</section>
 
-Set `TRACING=otel` in `.env`, or call `tracing.setup_otel(force=True)` as the solution does (a shell export loses to `.env`). Fill `step_3_otel`: decorate `refund_turn` with `@traced(type="agent", name="refund_turn")` and wrap each tool dispatch in `@traced(type="tool", name=name)`. `run_turn` already sends the `traceparent` of the active span. `app/` does not change: the solution replaces `agent.dispatch` at runtime.
+### Step 2 · Group by customer and conversation
 
-```text
-── Step 3 · One trace per turn with @traced ───────────
-question : Refund ord_a2 please, the dock does not fit my laptop.
-answer   : Your refund of **€89** for order **ord_a2** has been issued to the original payment method. It shoul…
-tools    : lookup_order → get_policy → issue_refund
-trace    : cb2289e8eae4e587f8bba591734cc831
-spans    : oldest first
-    root    trace                  refund_turn                  unset                        d712fd0358d4ce02
-      child trace                  responses.openai             ok    gpt-5.6-luna           62e90468d43efc07
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           2b324819ba24c84a
-      child span.agent_tool_execution lookup_order                 ok                           fdafc7009ecb1664
-      child trace                  responses.openai             ok    gpt-5.6-luna           b9fa333d5c611a13
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           882e2e37d59f5692
-      child span.agent_tool_execution get_policy                   ok                           2970e7a2aecf9061
-      child trace                  responses.openai             ok    gpt-5.6-luna           3fefa9f4b3358cb6
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           78248a60c1d527b8
-      child span.agent_tool_execution issue_refund                 ok                           ec74c3b36a223add
-      child trace                  responses.openai             ok    gpt-5.6-luna           05f820afc5dc467f
-      child span.responses         chat openai/gpt-5.6-luna     ok    gpt-5.6-luna           274c568b4fffdfc5
-next     : open the trace in https://my.orq.ai/traces; one root refund_turn, tool spans between the model calls
-```
+!!! example "Change · Run · Watch"
+    - **Change** `customer = None` → `customer = settings.identity_id` in `step_2_conversation`.
+    - **Run** the script.
+    - **Watch** `search` in the step's output: 0 traces before the change, every model call of both turns after it.
+    - **Why it matters** "show me everything this customer was told" becomes one filter instead of an afternoon in the logs.
 
-One root `refund_turn` span, four gateway calls nested under it, three tool spans between them in the order the model called them. `tracing.flush()` before exit matters: the batch exporter ships on a timer and a short script exits first.
+=== "Studio"
 
-### Step 4 · Annotate the answer
+    ![Studio: the Traces list searched for one ws-thread id, five refund-turn traces of one conversation](assets/studio-step-2.png)
 
-Fill `step_4_annotation` with `annotations=[{"key": "rating", "value": "good"}]` on the last `span.responses`.
+    1. Paste the `ws-thread-…` id step 2 printed into the search box.
+    2. Every model call of both turns lines up as one conversation; open one and switch to **Thread** to read it as a chat.
 
-```text
-── Step 4 · Annotate the answer ───────────────────────
-key      : rating=good
-span     : 274c568b4fffdfc5 of trace cb2289e8eae4e587f8bba591734cc831
-verdict  : written
-next     : open the trace in https://my.orq.ai/traces, Annotations panel; the annotation-queues module reads these back as labels
-```
+=== "Code"
 
-A key has to exist as an annotation definition first. This workspace has `rating`; any other key returns:
+    ```python
+    customer = None  # CHANGE: settings.identity_id
+    thread_id = f"{THREAD_PREFIX}{uuid.uuid4().hex[:8]}"
+    if customer:
+        body = {"name": "refund-turn", "identity": {"id": customer}, "thread": {"id": thread_id}, "metadata": {"module": "tracing", "tier": "free"}}
+    turn_1 = chat("Can I still return ord_a3? It arrived 45 days ago.", extra_body=body)
+    turn_2 = chat("It was damaged in transit. Please refund it.", history=turn_1.messages, extra_body=body)
+    ```
 
-```text
-Status 404. Body: {"code":"deployment_not_found","message":"The human review with key \"ws-does-not-exist\" for workspace 624ccbbd-... was not found.","category":"not_found",...}
-```
+    Same thread id on both turns, the customer as the identity, a free-form `metadata` dict for anything else you want to filter on.
 
-If you get that for `rating`, create it in the Studio: **Optimization > Annotations > Create**, key `rating`, type categorical with values `good` and `bad`, then rerun. Annotations are queryable later (the guardrails module uses them as labels).
+=== "CLI"
 
-### Step 5 · Stretch: a framework does this for you
+    ```bash
+    $ orq traces search --from now-10m --to now --filters '[{"field": "thread_id", "op": "eq", "values": ["ws-thread-…"]}]'
+    $ orq traces conversation <trace_id>
+    ```
 
-```bash
-$ git checkout solution && uv run python modules/tracing/stretch_langgraph.py
-```
+=== "Coding agent"
 
-```text
-── Step 4 · Build the graph and run one turn ──────────
-question : Refund ord_a2 please, the dock does not fit my laptop.
-answer   : Your refund of €89.00 for order ord_a2 has been issued to the original payment method. It should arr…
-steps    : human → ai → tool → ai → tool → ai → tool → ai
-next     : the trace is named refund_langgraph; step 5 searches it by that name
-── Step 5 · Read the trace back ───────────────────────
-trace    : 01a144e0cf267fb1a11632c55ea4491a
-spans    : 29
-kinds    : trace 1, span.agent 5, span.chain 16, span.chat_completion 4, span.tool 3
-next     : open https://my.orq.ai/traces and search the trace id; the graph panel shows agent → tools → agent
-```
+    > Make the step 2 change in `modules/tracing/run.py`, rerun, then use the orq MCP tools to list the traces of the thread the step printed and tell me which customer they belong to.
 
-The trace can take about 45 s to index, so `trace : not indexed yet` on the first try is expected: rerun the script after a few seconds.
+### Step 3 · Your own steps with the orq.ai SDK
 
-One `setup()` from `orq_ai_sdk.langchain` before the graph is built, and every node, tool and model call is a span; the Studio draws the graph next to the trace. Strands agents get the same treatment through OpenTelemetry: [docs.orq.ai/ai-studio/integrations/frameworks/aws-strands](https://docs.orq.ai/ai-studio/integrations/frameworks/aws-strands).
+!!! example "Change · Run · Watch"
+    - **Change** `trace_my_steps = False` → `trace_my_steps = True` in `step_3_sdk`.
+    - **Run** the script.
+    - **Watch** the span table: one flat model call before the change; after it, a root `refund_turn` with the tool calls nested between the model calls.
+    - **Why it matters** the gateway sees the model; only your code sees your tools. Now the order lookup and its result are in the trace, which is where most bugs hide.
 
-## Proof
+=== "Studio"
 
-![Studio: Traces list for the orq-workshop project, showing ws-refund-agent runs with duration, tokens and cost per request.](assets/studio-traces.png)
+    ![Studio: the refund_turn trace open, with the root span marked 1 and the lookup_order tool span marked 2](assets/studio-step-3.png)
 
-## With your coding agent
+    1. Open the trace id step 3 printed: the root span is `refund_turn`.
+    2. Below it the model calls and the tool spans alternate. Click `lookup_order`: its input and output are on the right.
 
-```bash
-$ orq launch claude
-```
+=== "Code"
 
-Paste `agent_prompt.md`:
+    ```python
+    trace_my_steps = False  # CHANGE: True
+    @traced(type="agent", name="refund_turn")
+    def refund_turn(text: str):
+        return chat(text)  # run_turn adds the W3C traceparent of the active @traced span
+    ```
 
-<blockquote class="agent-prompt-frame" markdown>
-Use the `setup-observability` skill against this repository. Do not change anything: report what the skill would change, which integration mode it picks for this app, which spans it would add with `@traced` and with which types, and which of its recommendations the module already implements. Then use the orq.ai MCP tools to fetch the spans of the most recent trace named `refund_turn` and tell me the order of tool spans and model calls inside it.
-</blockquote>
+    `traced_turn()` in the same file wraps the turn and each tool dispatch with `@traced`; the change switches it on.
+
+=== "CLI"
+
+    ```bash
+    $ orq traces list-spans <trace_id>
+    ```
+
+=== "Coding agent"
+
+    > Make the step 3 change, rerun, and tell me the order of tool spans and model calls inside the newest trace named `refund_turn`.
+
+### Step 4 · A framework over OpenTelemetry
+
+!!! example "Change · Run · Watch"
+    - **Change** `otel_export = False` → `otel_export = True` in `step_4_framework`.
+    - **Run** `uv sync --extra langgraph` once, then the script.
+    - **Watch** one trace named `refund_langgraph` with every node, tool and model call of the graph in it.
+    - **Why it matters** a team already on a framework keeps it: one setup call and the traces read the same as yours.
+
+=== "Studio"
+
+    ![Studio: the refund_langgraph trace, its name marked 1 and the Graph panel marked 2 showing Start, agent, tools and End](assets/studio-step-4.png)
+
+    1. Search `refund_langgraph` and open the trace: every node of the graph is a span.
+    2. The **Graph** panel draws it: start, agent, tools, agent, end, with how many times each ran.
+
+=== "Code"
+
+    ```python
+    otel_export = False  # CHANGE: True
+    trace_id = langgraph_runner.run(QUESTION)
+    ```
+
+    `modules/tracing/langgraph_runner.py` builds the same agent as a LangGraph graph; its first line, `orq_ai_sdk.langchain.setup(...)`, registers orq.ai as the OpenTelemetry destination.
+
+=== "CLI"
+
+    ```bash
+    $ orq traces search --from now-10m --to now --filters '[{"field": "name", "op": "eq", "values": ["refund_langgraph"]}]'
+    ```
+
+### Step 5 · Annotate the answer
+
+!!! example "Change · Run · Watch"
+    - **Change** `rating = None` → `rating = "good"` in `step_5_annotation`.
+    - **Run** the script.
+    - **Watch** `verdict : written`, then the rating on the span in the Studio.
+    - **Why it matters** a human verdict on a real answer is the first row of a dataset; the annotation-queues module collects them at scale.
+
+=== "Studio"
+
+    ![Studio: a model span of the refund_turn trace, scrolled to the Rating annotation with good selected, marked 1](assets/studio-step-5.png)
+
+    1. Open step 3's trace and select the last model span.
+    2. Scroll the right panel to **Rating** and click **good**. This is the same write as the code, without the code.
+
+=== "Code"
+
+    ```python
+    rating = None  # CHANGE: "good"
+    orq.annotations.create(trace_id=trace_id, span_id=span_id, annotations=[{"key": "rating", "value": rating}])
+    ```
+
+=== "CLI"
+
+    ```bash
+    $ orq traces create <trace_id> <span_id> --annotations '[{"key": "rating", "value": "good"}]'
+    ```
+
+=== "Coding agent"
+
+    > Put a `rating` annotation with value `good` on the last model span of the newest `refund_turn` trace, using the orq MCP tools, and confirm it is there.
 
 ## Done when
 
 - [ ] `orq traces search` filtered on your thread id returns every model call of the conversation
 - [ ] A trace with a root span named `refund_turn` and three `span.agent_tool_execution` children exists
-- [ ] That trace carries a `rating` annotation (open it in the Studio, Annotations panel)
-- [ ] `git status` shows changes under `modules/tracing/` and `.env` only
+- [ ] A trace named `refund_langgraph` exists
+- [ ] The `refund_turn` trace carries a `rating` annotation (open it in the Studio, Annotations panel)
+
+Verify all four at once: `make check M=tracing` prints one ✓ or ✗ per item.
+
+## On your app
+
+Forty-five to sixty minutes on your own code. Pick the way in that matches it (the [chooser in the Academy](https://orq-ai.github.io/orq-workshop/academy/trace/) explains each), do it, and find one trace of yours in the Studio.
+
+=== "AI Gateway"
+
+    Point your OpenAI-compatible client at the gateway (`base_url="https://my.orq.ai/v3/router"`, your orq.ai key), use `provider/model` ids, and send `name`, `identity` and `thread` as top-level body fields, as in step 2.
+
+=== "orq.ai SDK"
+
+    On top of the gateway: decorate your agent turn with `@traced(type="agent")` and each tool with `@traced(type="tool")`, call `setup_otel()` once at start-up, as in step 3.
+
+=== "OpenTelemetry"
+
+    Keep your framework and provider. Follow the setup guide for your framework on [docs.orq.ai](https://docs.orq.ai/ai-studio/observability/quickstart); for LangGraph it is the one call in step 4.
+
+No app at hand? Keep going on the refund agent: rerun the script with a question of your own and find it by its thread.
 
 ## Gotchas
 
-- `.env` beats the shell: `TRACING=otel uv run ...` still reads `TRACING=gateway` from `.env`. Edit `.env` or do what the solution does.
-- On both router endpoints, `identity`, `thread` and `metadata` worked as top-level body fields here. Nested under `orq` (the shape the request-metadata docs describe for this endpoint) they were silently ignored: `identity_id` and `thread_id` stayed empty.
-- The SDK's automatic `traceparent` injection (a patch on `httpx.Client.send`) did not reach the OpenAI client (openai 3.9, httpx 0.28), so `run_turn` merges `propagation_headers()` into the request headers itself. If you call the gateway from your own code inside a `@traced` function, pass `extra_headers=propagation_headers()`.
+- `.env` beats the shell: `TRACING=otel uv run ...` still reads `TRACING=gateway` from `.env`. Step 3 forces OpenTelemetry on for itself.
+- On both router endpoints, `identity`, `thread` and `metadata` are top-level body fields. Nested under `orq` they are silently ignored: `identity_id` and `thread_id` stay empty.
+- If you call the gateway from your own code inside a `@traced` function, pass `extra_headers=propagation_headers()`; the automatic `traceparent` injection does not reach the OpenAI client.
 - `orq traces search` needs `--from` and `--to`; relative values are `now-10m` and `now`. Without `ORQ_API_KEY` in the shell the CLI searches the project of your `orq` session, which is not necessarily this one.
-- `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; the Studio reads the `agent` / `tool` type from the span attributes. Gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions; filter on both.
-- Reasoning items in `orq traces conversation` show as `[encrypted]`; the text, tool calls and tool results render in full.
+- `list_spans` reports the `@traced` root as type `trace` and tools as `span.agent_tool_execution`; gateway model spans are `span.responses` on the Responses endpoint and `span.chat_completion` on chat completions.
 
 More, including SDK and CLI version notes: [Known issues](https://orq-ai.github.io/orq-workshop/reference/known-issues/).
 
-## New in orq.ai 4.15 to 4.17
+## For instructors
 
-The Traces page was rebuilt: filter on any attribute or metadata field, write the query in OQL, configure columns, and share the exact list as a URL ([release 4.16](https://docs.orq.ai/changelog/release-4-16)). The span panel splits reasoning and cached tokens out of the total ([release 4.15](https://docs.orq.ai/changelog/release-4-15) and [release 4.16](https://docs.orq.ai/changelog/release-4-16)), and dragging across the activity chart zooms into a time window ([release 4.17](https://docs.orq.ai/changelog/release-4-17)).
+??? note "Demo rhythm, where people get stuck, timing"
+    **Demo rhythm (5 beats).** Open Traces and show the unnamed calls from the gateway module. Make change 1 live and refresh. Make change 3 and open the tree: point at the tool output, "this is what logs never had". Show the LangGraph trace's graph view for the framework users in the room. Rate one answer and say where ratings go next.
 
-## Go further
+    **Where people get stuck.** Searching the wrong project from the CLI (`ORQ_API_KEY` not exported). Waiting less than ten seconds for a trace to be indexed. Step 4 without `uv sync --extra langgraph`.
 
-Filter by `metadata.tier` in the Studio and save it as a view: that is the "free tier customers" slice the budgets-and-keys module puts a budget on. The `orq traces conversation` command accepts `--slice -1` to print only the last message, which is what `eq insights` summarizes across a time range.
+    **Timing.** Steps 1 and 2 take 10 minutes, step 3 takes 10, steps 4 and 5 take 10. "On your app" adds 45 to 60.
 
 ## End state
 
-Traces you can search by thread and customer, one trace that reads `refund_turn -> tool -> llm`, one human annotation on it, all in your workspace under the `ws-` prefix (`make reset-workspace` removes them). Next: [Managed agents](https://orq-ai.github.io/orq-workshop/modules/managed-agents/).
+Traces you can search by customer and conversation, one trace that reads `refund_turn -> tool -> llm`, one `refund_langgraph` trace and one human rating, all in your project (`make reset-workspace` removes the `ws-` entities). Next: [Managed agents](https://orq-ai.github.io/orq-workshop/modules/managed-agents/).
 
 ## Official docs
 

@@ -7,7 +7,7 @@ NEEDS = {"smart-routing": "admin key", "guardrails": "admin key", "budgets-and-k
 
 
 def test_restricted_steps_are_marked_and_tabled():
-    table = (ROOT / "docs/start/for-engineers.md").read_text()
+    table = (ROOT / "docs/workshop/index.md").read_text()
     for slug, need in NEEDS.items():
         assert f"../modules/{slug}.md" in table, slug
         assert need in table, need

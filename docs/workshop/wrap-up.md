@@ -37,4 +37,4 @@ Read this repository and tell me which stage of the loop it is at: traced or not
 
 ## Keep going
 
-The electives, listed by stage on [Already on orq.ai](already-on-orq.md), each add one capability to this loop: a knowledge base, an MCP gateway, simulated customers, a red team, human review. Take the one that matches the failure mode you found first.
+The electives, listed by stage on [Already on orq.ai](electives.md), each add one capability to this loop: a knowledge base, an MCP gateway, simulated customers, a red team, human review. Take the one that matches the failure mode you found first.

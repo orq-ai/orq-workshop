@@ -47,8 +47,10 @@ theme:
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/academy.css
 extra_javascript:
   - js/keyboard.js
+  - js/academy.js
 hooks:
   - scripts/mkdocs_hooks.py
 
@@ -57,8 +59,8 @@ plugins:
   - redirects:
       redirect_maps:
         modules/00.md: modules/setup.md
-        agenda.md: start/core-path.md
-        setup/orqi.md: start/orqi.md
+        agenda.md: workshop/index.md
+        setup/orqi.md: workshop/orqi.md
         modules/01.md: modules/gateway.md
         modules/02.md: modules/tracing.md
         modules/03.md: modules/smart-routing.md
@@ -84,8 +86,21 @@ plugins:
         modules/08-solution-design.md: modules/managed-agents/solution-design.md
         modules/07-evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
         modules/failure-analysis/evaluate.md: modules/evaluators-and-experiments/prove-your-fix.md
-        own-your-agent.md: build/index.md
-        start/for-leaders.md: start/academy.md
+        own-your-agent.md: academy/build.md
+        start/for-leaders.md: academy/index.md
+        build/index.md: academy/build.md
+        route/index.md: academy/route.md
+        trace/index.md: academy/trace.md
+        find-failures/index.md: academy/find-failures.md
+        evaluate/index.md: academy/evaluate.md
+        gate/index.md: academy/gate.md
+        start/academy.md: academy/index.md
+        start/core-path.md: workshop/index.md
+        start/for-engineers.md: workshop/index.md
+        start/already-on-orq.md: workshop/electives.md
+        start/index.md: index.md
+        start/wrap-up.md: workshop/wrap-up.md
+        start/orqi.md: workshop/orqi.md
   - glightbox:
       touchNavigation: true
       zoomable: true
@@ -130,59 +145,60 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Start here:
-      - start/index.md
-      - Academy: start/academy.md
-      - For engineers: start/for-engineers.md
-      - Already on orq.ai: start/already-on-orq.md
+  - Academy:
+      - academy/index.md
+      - Build: academy/build.md
+      - Route and protect: academy/route.md
+      - Trace: academy/trace.md
+      - Find failures: academy/find-failures.md
+      - Evaluate: academy/evaluate.md
+      - Gate and monitor: academy/gate.md
+  - Workshop:
+      - workshop/index.md
       - Setup: modules/setup.md
-      - The core path: start/core-path.md
+      - Build:
+          - Managed agents:
+              - Foundations: modules/managed-agents/concepts.md
+              - Use case: modules/managed-agents/logic.md
+              - Agent design: modules/managed-agents/solution-design.md
+              - Build: modules/managed-agents.md
+          - Knowledge base and RAG: modules/knowledge-base.md
+          - MCP servers and gateway: modules/mcp-gateway.md
+          - Advisor and sidekick: modules/advisor-and-sidekick.md
+      - Route and protect:
+          - Gateway: modules/gateway.md
+          - Smart routing and routing rules: modules/smart-routing.md
+          - Guardrails: modules/guardrails.md
+          - Budgets and keys: modules/budgets-and-keys.md
+      - Trace:
+          - Tracing: modules/tracing.md
+      - Find failures:
+          - Failure analysis:
+              - Concepts: modules/failure-analysis/concepts.md
+              - Find and fix: modules/failure-analysis.md
+          - Trace insights: modules/trace-insights.md
+          - Annotation queues and automations: modules/annotation-queues.md
+      - Evaluate:
+          - Evaluators and experiments:
+              - Run: modules/evaluators-and-experiments.md
+              - Prove your fix: modules/evaluators-and-experiments/prove-your-fix.md
+          - Agent simulation:
+              - Concepts: modules/simulation/concepts.md
+              - Run: modules/simulation.md
+          - Red teaming: modules/red-teaming.md
+      - Gate and monitor:
+          - Evals and agents in CI: modules/evals-in-ci.md
+          - Alerts and webhooks: modules/alerts-and-webhooks.md
       - Harnesses:
           - Coding agents: modules/coding-agents.md
-          - orqi harness: start/orqi.md
+          - orqi harness: workshop/orqi.md
           - Troubleshooting with orqi: modules/orqi.md
-      - Wrap-up: start/wrap-up.md
+      - Electives: workshop/electives.md
+      - Wrap-up: workshop/wrap-up.md
+  - Onboarding:
+      - onboarding/index.md
       - Past sessions:
           - TechDays 15 Oct: sessions/techdays-2026.md
-  - Build:
-      - build/index.md
-      - Managed agents:
-          - Foundations: modules/managed-agents/concepts.md
-          - Use case: modules/managed-agents/logic.md
-          - Agent design: modules/managed-agents/solution-design.md
-          - Build: modules/managed-agents.md
-      - Knowledge base and RAG: modules/knowledge-base.md
-      - MCP servers and gateway: modules/mcp-gateway.md
-      - Advisor and sidekick: modules/advisor-and-sidekick.md
-  - Route and protect:
-      - route/index.md
-      - Gateway: modules/gateway.md
-      - Smart routing and routing rules: modules/smart-routing.md
-      - Guardrails: modules/guardrails.md
-      - Budgets and keys: modules/budgets-and-keys.md
-  - Trace:
-      - trace/index.md
-      - Tracing: modules/tracing.md
-  - Find failures:
-      - find-failures/index.md
-      - Failure analysis:
-          - Concepts: modules/failure-analysis/concepts.md
-          - Find and fix: modules/failure-analysis.md
-      - Trace insights: modules/trace-insights.md
-      - Annotation queues and automations: modules/annotation-queues.md
-  - Evaluate:
-      - evaluate/index.md
-      - Evaluators and experiments:
-          - Run: modules/evaluators-and-experiments.md
-          - Prove your fix: modules/evaluators-and-experiments/prove-your-fix.md
-      - Agent simulation:
-          - Concepts: modules/simulation/concepts.md
-          - Run: modules/simulation.md
-      - Red teaming: modules/red-teaming.md
-  - Gate and monitor:
-      - gate/index.md
-      - Evals and agents in CI: modules/evals-in-ci.md
-      - Alerts and webhooks: modules/alerts-and-webhooks.md
   - Reference:
       - Cheat sheet: reference/cheat-sheet.md
       - Troubleshooting: reference/troubleshooting.md

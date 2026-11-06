@@ -6,6 +6,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ORDER = ["Starting point", "Goal", "Why", "The one concept to understand first", "Steps", "Proof", "With your coding agent", "Done when", "Gotchas", "Go further", "End state", "Official docs"]
 REQUIRED = {"Starting point", "Goal", "Why", "The one concept to understand first", "Steps", "With your coding agent", "Done when", "Gotchas", "End state", "Official docs"}
+# Modules re-cut to the exercise template (one change per step, four tabs, an "On your app" tail).
+NEW_TEMPLATE = {"tracing"}
+NEW_ORDER = ["Starting point", "Goal", "Why this matters", "How it works", "Steps", "Done when", "On your app", "Gotchas", "For instructors", "End state", "Official docs"]
 
 
 def sections(text: str) -> list[str]:
@@ -20,6 +23,9 @@ def sections(text: str) -> list[str]:
 
 def test_every_module_readme_follows_the_template():
     for readme in sorted((ROOT / "modules").glob("*/README.md")):
+        if readme.parent.name in NEW_TEMPLATE:
+            assert sections(readme.read_text()) == NEW_ORDER, (readme, sections(readme.read_text()))
+            continue
         found = [s for s in sections(readme.read_text()) if s in ORDER or s == "New in orq.ai"]
         assert REQUIRED <= set(found), (readme, REQUIRED - set(found))
         order = ORDER[:9] + ["New in orq.ai"] + ORDER[9:]
