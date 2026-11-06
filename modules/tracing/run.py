@@ -201,10 +201,26 @@ def step_5_annotation(trace_id: str, span_id: str) -> None:
         print("fix      : Studio > Optimization > Annotations > Create, key `rating`, type Categorical, values good/bad, then rerun")
 
 
+def steps_to_run(argv: list[str]) -> set[int]:
+    """All five steps, or the one after `--step`; step 5 annotates step 3's trace, so it brings step 3 along."""
+    if "--step" not in argv:
+        return {1, 2, 3, 4, 5}
+    step = int(argv[argv.index("--step") + 1])
+    return {3, 5} if step == 5 else {step}
+
+
 if __name__ == "__main__":
-    step_1_name()
-    step_2_conversation()
-    trace_id, span_id = step_3_sdk()
-    step_4_framework()
-    step_5_annotation(trace_id, span_id)
+    import sys
+
+    steps = steps_to_run(sys.argv[1:])
+    if 1 in steps:
+        step_1_name()
+    if 2 in steps:
+        step_2_conversation()
+    if 3 in steps:
+        trace_id, span_id = step_3_sdk()
+    if 4 in steps:
+        step_4_framework()
+    if 5 in steps:
+        step_5_annotation(trace_id, span_id)
     print(f"open {TRACES_URL} and search the trace ids above")

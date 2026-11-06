@@ -73,14 +73,15 @@ def _branch() -> str:
     return subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
 
 
-def _starter_source(refs: list[str]) -> str | None:
-    """The starter run.py from the first ref that has the exercise version (with # CHANGE: lines), or None."""
+def _starter_sources(refs: list[str]) -> list[str]:
+    """The starter run.py from every ref that has the exercise version (with # CHANGE: lines)."""
     import subprocess
+    found = []
     for ref in refs:
         shown = subprocess.run(["git", "show", f"{ref}:modules/tracing/run.py"], cwd=ROOT, capture_output=True, text=True)
         if shown.returncode == 0 and "# CHANGE:" in shown.stdout:
-            return shown.stdout
-    return None
+            found.append(shown.stdout)
+    return found
 
 
 def test_solution_differs_by_the_changes_only():
@@ -92,8 +93,8 @@ def test_solution_differs_by_the_changes_only():
 
     if _branch() != "solution":
         pytest.skip("runs on the solution branch")
-    starter = _starter_source(["origin/main", "main", "arianpasquali/academy-slice"])
-    if starter is None:
+    starters = _starter_sources(["origin/main", "main", "arianpasquali/academy-slice"])
+    if not starters:
         pytest.skip("no starter ref in this checkout (shallow clone); fetch main to run it")
 
     def code(text: str) -> list[str]:
@@ -108,9 +109,14 @@ def test_solution_differs_by_the_changes_only():
             out.append(line)
         return out
 
-    changed = [line for line in difflib.unified_diff(code(starter), code(RUN.read_text()), lineterm="", n=0) if line[:1] in "+-" and not line.startswith(("+++", "---"))]
-    assert len(changed) == 10, changed
-    assert all("# CHANGE:" in line for line in changed), changed
+    def changed(starter: str) -> list[str]:
+        diff = difflib.unified_diff(code(starter), code(RUN.read_text()), lineterm="", n=0)
+        return [line for line in diff if line[:1] in "+-" and not line.startswith(("+++", "---"))]
+
+    # Any ref the solution was merged from may be the starter it builds on (a local branch can be ahead of origin/main).
+    diffs = sorted((changed(s) for s in starters), key=len)
+    assert len(diffs[0]) == 10, diffs[0]
+    assert all("# CHANGE:" in line for line in diffs[0]), diffs[0]
 
 
 def test_studio_tabs_have_screenshot():
@@ -142,4 +148,16 @@ def test_runner_import_fails_cleanly_without_the_extra(monkeypatch):
 
 def test_starter_source_is_none_when_no_ref_resolves():
     """A shallow CI checkout has no main or slice ref; the diff test must skip, not compare against nothing."""
-    assert _starter_source(["no-such-ref-a", "no-such-ref-b"]) is None
+    assert _starter_sources(["no-such-ref-a", "no-such-ref-b"]) == []
+
+
+def test_step_option_picks_steps():
+    """`run.py --step N` runs one step; step 5 needs step 3's trace, so it pulls step 3 in."""
+    source = RUN.read_text()
+    node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == "steps_to_run")
+    scope: dict = {}
+    exec(compile(ast.Module([node], []), "run.py", "exec"), scope)
+    steps_to_run = scope["steps_to_run"]
+    assert steps_to_run([]) == {1, 2, 3, 4, 5}
+    assert steps_to_run(["--step", "1"]) == {1}
+    assert steps_to_run(["--step", "5"]) == {3, 5}

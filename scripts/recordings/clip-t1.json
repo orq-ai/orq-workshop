@@ -1,0 +1,11 @@
+{
+ "in": ".context/recordings/clip-t1.raw.mp4",
+ "out": "modules/tracing/assets/tracing-clip-t1.mp4",
+ "holds": [{"at": 4.2, "add": 3.5}, {"at": 13.8, "add": 3.0}, {"at": 21.7, "add": 2.5}],
+ "captions": [
+  {"from": 0, "to": 7.7, "text": "The script tells you which line to change."},
+  {"from": 7.7, "to": 11.9, "text": "One value."},
+  {"from": 11.9, "to": 20.3, "text": "Rerun: the newest traces are named refund-turn."},
+  {"from": 20.3, "to": 30.5, "text": "Same result from the CLI."}
+ ]
+}
