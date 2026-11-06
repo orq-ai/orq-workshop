@@ -87,8 +87,11 @@ def _models_api(monkeypatch, status: int, body) -> None:
     monkeypatch.setattr(web.httpx, "get", lambda *args, **kwargs: response)
     monkeypatch.setattr(web, "_hosted_agent_exists", lambda: False)
     monkeypatch.setattr(web, "_workspace_agents", list)
+    # A fixed key, so the fake /v2/models is reached without real credentials (CI has none).
     monkeypatch.setattr(
-        web, "settings", dataclasses.replace(web.settings, model="openai/gpt-5.4-nano")
+        web,
+        "settings",
+        dataclasses.replace(web.settings, model="openai/gpt-5.4-nano", api_key="test-key"),
     )
 
 
