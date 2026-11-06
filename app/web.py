@@ -1,14 +1,14 @@
-"""make chat: talk to the refund agent in a browser, one link to the trace per answer.
+"""make agent-chat-ui: talk to the refund agent in a browser, one link to the trace per answer.
 
 What: four routes. `GET /` serves `web/index.html`; `GET /api/models` lists the models the
 picker offers; `GET /api/backend` is the read-only orders and policies for the sidebar;
 `POST /api/chat` runs one turn and returns the answer, the tools called, the trace id and a
 Studio link to that trace. A plain model id runs the same local `chat()` every module
 uses (our loop, our tools); `agent/<prefix>-refund-agent` is one call to the agent that
-`make seed` provisions in orq, where orq runs the loop and the tools as code tools.
+`make seed-workspace` provisions in orq, where orq runs the loop and the tools as code tools.
 Why: a transcript in a browser is easier to read than a terminal, and the trace link closes the
 loop from "what did the agent say" to "what did it do".
-How: `make chat` (or `uv run python -m app.web`), then open http://127.0.0.1:8002. Stateless like
+How: `make agent-chat-ui` (or `uv run python -m app.web`), then open http://127.0.0.1:8002. Stateless like
 the rest of the repo (Factor 12): the browser sends back the full `history` it got last time. The
 one thing kept server-side is an `OrderStore` per `conversation_id`, so a refund issued in turn 1
 is still refunded in turn 2; it lives in memory and resets when the server restarts.
@@ -557,7 +557,7 @@ async def _chat_context(request: Request) -> tuple[dict[str, Any] | None, JSONRe
         return None, _error(422, f"guardrails must be one of {sorted(channels)} or empty")
     if choice:
         # Responses ignores request-level `guardrails`; a rule matching this tag guards the call.
-        # `make seed` / `make seed-insurance` create the rules; they are admin-only, so a workshop
+        # `make seed-workspace` / `make seed-insurance` create the rules; they are admin-only, so a workshop
         # key cannot read them back.
         extra_body["metadata"] = {"channel": channels[choice]}
     snapshot = None

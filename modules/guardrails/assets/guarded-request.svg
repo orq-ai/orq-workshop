@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 960" width="1920" height="960" role="img" aria-labelledby="guarded-request-title guarded-request-desc">
+  <title id="guarded-request-title">The guarded request path through the orq gateway</title>
+  <desc id="guarded-request-desc">Process diagram showing a refund app request passing through PII redaction and input guardrails in the orq gateway, reaching the provider with placeholders only, then an output guardrail that either lets PII restore return the answer or blocks with HTTP 400 and hands the case to a human.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="960" class="bg"/>
+  <!-- Zone: orq AI Gateway (plugin, guardrails, restore) -->
+  <rect x="432" y="48" width="1120" height="544" rx="20" class="zone"/>
+  <rect x="464" y="56" width="208" height="24" rx="4" class="mask"/>
+  <text x="568" y="74" text-anchor="middle" class="zone-title">ORQ AI GATEWAY</text>
+  <!-- Arrows first: request path (row 1), response path (row 2), block path (down) -->
+  <line x1="320" y1="192" x2="464" y2="192" class="link"/>
+  <line x1="752" y1="192" x2="896" y2="192" class="arrow"/>
+  <line x1="1232" y1="192" x2="1616" y2="192" class="link"/>
+  <path d="M 1728 272 V 464 Q 1728 480 1712 480 H 1504" class="link"/>
+  <line x1="1232" y1="480" x2="752" y2="480" class="arrow"/>
+  <path d="M 464 480 H 216 Q 200 480 200 464 V 272" class="link"/>
+  <line x1="1368" y1="560" x2="1368" y2="656" class="accent"/>
+  <!-- Arrow labels (opaque mask, 8px clear of the stroke) -->
+  <rect x="336" y="152" width="112" height="24" rx="4" class="mask"/>
+  <text x="392" y="170" text-anchor="middle" class="lbl">REQUEST</text>
+  <rect x="768" y="152" width="112" height="24" rx="4" class="mask"/>
+  <text x="824" y="170" text-anchor="middle" class="lbl">REDACTED</text>
+  <rect x="1344" y="152" width="160" height="24" rx="4" class="mask"/>
+  <text x="1424" y="170" text-anchor="middle" class="lbl">PLACEHOLDERS</text>
+  <rect x="1744" y="352" width="128" height="24" rx="4" class="mask"/>
+  <text x="1752" y="370" class="lbl">RESPONSE</text>
+  <rect x="944" y="440" width="96" height="24" rx="4" class="mask"/>
+  <text x="992" y="458" text-anchor="middle" class="lbl">PASSED</text>
+  <rect x="216" y="352" width="104" height="24" rx="4" class="mask"/>
+  <text x="224" y="370" class="lbl">ANSWER</text>
+  <rect x="1384" y="592" width="120" height="24" rx="4" class="mask"/>
+  <text x="1392" y="610" class="lbl t-accent">HTTP 400</text>
+  <!-- Node: Refund app (input) -->
+  <rect x="80" y="112" width="240" height="160" rx="16" class="mask"/>
+  <rect x="80" y="112" width="240" height="160" rx="16" class="alt"/>
+  <rect x="96" y="128" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="124" y="146" text-anchor="middle" class="tag t-mute">APP</text>
+  <text x="200" y="200" text-anchor="middle" class="name">Refund app</text>
+  <text x="200" y="232" text-anchor="middle" class="sub">chat.completions</text>
+  <text x="200" y="256" text-anchor="middle" class="sub">+ extra_body</text>
+  <!-- Node: PII redaction plugin (rewrites) -->
+  <rect x="464" y="112" width="288" height="160" rx="16" class="mask"/>
+  <rect x="464" y="112" width="288" height="160" rx="16" class="node"/>
+  <rect x="480" y="128" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="508" y="146" text-anchor="middle" class="tag t-ink">PLG</text>
+  <text x="608" y="200" text-anchor="middle" class="name">PII redaction</text>
+  <text x="608" y="232" text-anchor="middle" class="sub">plugin · rewrites</text>
+  <text x="608" y="256" text-anchor="middle" class="sub">pii.redact span</text>
+  <!-- Node: Input guardrails (judges) -->
+  <rect x="896" y="112" width="336" height="160" rx="16" class="mask"/>
+  <rect x="896" y="112" width="336" height="160" rx="16" class="soft"/>
+  <rect x="912" y="128" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="940" y="146" text-anchor="middle" class="tag">GRD</text>
+  <text x="1064" y="200" text-anchor="middle" class="name">Input guardrails</text>
+  <text x="1064" y="232" text-anchor="middle" class="sub">secret · pii · CEL rule</text>
+  <text x="1064" y="256" text-anchor="middle" class="sub">judge · never rewrite</text>
+  <!-- Node: Provider (external) -->
+  <rect x="1616" y="112" width="224" height="160" rx="16" class="mask"/>
+  <rect x="1616" y="112" width="224" height="160" rx="16" class="ghost"/>
+  <rect x="1632" y="128" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1660" y="146" text-anchor="middle" class="tag t-mute">EXT</text>
+  <text x="1728" y="200" text-anchor="middle" class="name">Provider</text>
+  <text x="1728" y="232" text-anchor="middle" class="sub">sees placeholders</text>
+  <text x="1728" y="256" text-anchor="middle" class="sub">never the email</text>
+  <!-- Node: Output guardrail (judges) -->
+  <rect x="1232" y="400" width="272" height="160" rx="16" class="mask"/>
+  <rect x="1232" y="400" width="272" height="160" rx="16" class="soft"/>
+  <rect x="1248" y="416" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="1276" y="434" text-anchor="middle" class="tag">GRD</text>
+  <text x="1368" y="488" text-anchor="middle" class="name">Output guardrail</text>
+  <text x="1368" y="520" text-anchor="middle" class="sub">ws-refund-limit-guard</text>
+  <text x="1368" y="544" text-anchor="middle" class="sub">span.evaluator</text>
+  <!-- Node: PII restore (rewrites) -->
+  <rect x="464" y="400" width="288" height="160" rx="16" class="mask"/>
+  <rect x="464" y="400" width="288" height="160" rx="16" class="node"/>
+  <rect x="480" y="416" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="508" y="434" text-anchor="middle" class="tag t-ink">PLG</text>
+  <text x="608" y="488" text-anchor="middle" class="name">PII restore</text>
+  <text x="608" y="520" text-anchor="middle" class="sub">originals back</text>
+  <text x="608" y="544" text-anchor="middle" class="sub">pii.restore span</text>
+  <!-- Node: Human hand-off (focal, Factor 7) -->
+  <rect x="1232" y="656" width="272" height="128" rx="16" class="mask"/>
+  <rect x="1232" y="656" width="272" height="128" rx="16" class="focal"/>
+  <rect x="1248" y="672" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="1276" y="690" text-anchor="middle" class="tag t-accent">F7</text>
+  <text x="1368" y="728" text-anchor="middle" class="name">Human hand-off</text>
+  <text x="1368" y="760" text-anchor="middle" class="sub">except branch · ticket</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="848" x2="1840" y2="848" class="hair"/>
+  <text x="80" y="880" class="legend-title">LEGEND</text>
+  <rect x="80" y="912" width="28" height="20" rx="4" class="node"/>
+  <text x="120" y="928" class="msg">Plugin: rewrites</text>
+  <rect x="328" y="912" width="28" height="20" rx="4" class="soft"/>
+  <text x="368" y="928" class="msg">Guardrail: judges, pass or block</text>
+  <rect x="720" y="912" width="28" height="20" rx="4" class="focal"/>
+  <text x="760" y="928" class="msg">Escalation path</text>
+  <rect x="960" y="912" width="28" height="20" rx="4" class="alt"/>
+  <text x="1000" y="928" class="msg">Your app</text>
+  <rect x="1144" y="912" width="28" height="20" rx="4" class="ghost"/>
+  <text x="1184" y="928" class="msg">Provider</text>
+  <line x1="1328" y1="924" x2="1384" y2="924" class="link"/>
+  <text x="1400" y="928" class="msg">HTTP hop</text>
+  <line x1="1560" y1="924" x2="1616" y2="924" class="accent"/>
+  <text x="1632" y="928" class="msg">Block, 400</text>
+    
+</svg>

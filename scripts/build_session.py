@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 def module_info(name: str) -> dict:
     readme = (ROOT / "modules" / name / "README.md").read_text()
     title = re.search(r"^# (.+)$", readme, re.MULTILINE).group(1)
-    leave = re.search(r"^\| \*\*You will have\*\* \| (.+) \|$", readme, re.MULTILINE)
-    return {"title": title, "command": f"make m{name[:2]}", "leave_with": leave.group(1) if leave else ""}
+    leave = re.search(r"^## Goal\n\n(.+?)\.?\n", readme, re.MULTILINE)
+    return {"title": title, "command": f"make module M={name}", "leave_with": leave.group(1) if leave else ""}
 
 
 def run_of_show(folder: Path, docs: bool = False, day: int | None = None) -> str:
@@ -35,7 +35,7 @@ def run_of_show(folder: Path, docs: bool = False, day: int | None = None) -> str
         info.update({k: v for k, v in b.items() if k in ("title", "command", "leave_with")})
         link = info["title"]
         if "module" in b:
-            href = f"../modules/{b['module'][:2]}.md" if docs else f"../../modules/{b['module']}/README.md"
+            href = f"../modules/{b['module']}.md" if docs else f"../../modules/{b['module']}/README.md"
             link = f"[{link}]({href})"
         cmd = f"`{info['command']}`" if info.get("command") else ""
         at = "" if docs else f"{(start + clock).strftime('%H:%M')} | "  # the public page frames a session in minutes, no clock

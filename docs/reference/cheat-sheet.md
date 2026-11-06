@@ -30,7 +30,7 @@ orq budgets list               # needs a Management Key
 orq alerts list | list-triggers <alert_id>   # project alerts and their incidents
 orq annotation-queues query-items <queue_id>
 orq webhooks generate-secret | list | get <id>   # event subscriptions to your HTTPS endpoint
-orq request POST /v2/reporting --stdin      # metrics; body: {"metric":"genai.cost","from":...,"to":...,"mode":"scalar"}
+orq request POST /v3/telemetry/query --stdin   # body: {"source":"TELEMETRY_SOURCE_TRACES","compute":[{"metric":"genai.cost","op":"sum"}],"from":...,"to":...,"mode":"scalar"}
 orq pii redact --text "..."
 orq request GET /v2/routing-rules   # raw escape hatch for anything without a command
 orq orqi "why did my agent fail today?"
@@ -65,14 +65,14 @@ orq.annotations.create(trace_id=..., span_id=..., annotations=[{"key": "rating",
 ## Makefile
 
 ```bash
-make setup doctor smoke test    # day 0
-make seed                       # every prerequisite entity, idempotent
-make traffic                    # 20 traced conversations for failure analysis
-make m01 ... make m17           # run a module's solution
-make eval                       # regression gate, exit 1 on failure
+make setup orq-doctor gateway-check test    # first run
+make seed-workspace                       # every prerequisite entity, idempotent
+make generate-traffic                    # 20 traced conversations for failure analysis
+make module M=<name>            # run a module's run.py; make modules lists the names
+make regression-eval                       # regression gate, exit 1 on failure
 make redteam-gate               # static red team gate
-make edge                       # modules 09 + 14: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
-make reset                      # delete everything with WS_PREFIX
+make edge                       # knowledge base + alerts modules: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
+make reset-workspace                      # delete everything with WS_PREFIX
 make docs-serve slides          # docs site, deck
 ```
 

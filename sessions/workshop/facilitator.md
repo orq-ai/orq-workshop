@@ -31,12 +31,12 @@ The appendix opens with one slide per module (00 to 17): abstract, time, prerequ
 
 ## Before the session
 
-- `make reset && make seed && make traffic` from a clean clone in the demo workspace.
+- `make reset-workspace && make seed-workspace && make generate-traffic` from a clean clone in the demo workspace.
 - Annotations `rating` and `defects` created in the Studio.
 - `uv sync --extra langgraph`, then `uv run python examples/own-your-agent.py` once: block 1 needs all three legs green, and the LangGraph leg waits ~10s for its trace to index.
 - A Management Key only if you plan to fall back to appendix block A, exported in the demo shell.
 - `app/mcp_server.py` deployed to a public URL, `MCP_SERVER_URL` set, for block 4.
-- `orqi` installed and pinned; `orq` 11.x; `claude` or `opencode` on the demo machine.
+- `orqi` installed and pinned; `orq` 12.x; `claude` or `opencode` on the demo machine.
 - Every `make mNN` run once today; keep the terminal output in a scratch file as fallback.
 
 ## Demo fallbacks
@@ -52,7 +52,7 @@ Every module README has real expected-output blocks. If a live command fails, sh
 ## Reset after the session
 
 ```bash
-make reset
+make reset-workspace
 ```
 
 Traces stay. Use a new `WS_PREFIX` per cohort if they must not mix.

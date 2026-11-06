@@ -36,5 +36,6 @@ def test_policy_judge_reads_the_verdict_and_fails_closed(monkeypatch):
         ({"value": True}, True),  # some evaluator replies carry `value` instead of `passed`
         ({}, False),  # no verdict at all is a fail, not a pass
     ]:
-        monkeypatch.setattr(scorers, "rest_post", lambda client, path, body, v=verdict: v)
+        reply = SimpleNamespace(passed=verdict.get("passed"), value=verdict.get("value"), explanation=verdict.get("explanation"))
+        monkeypatch.setattr(scorers, "orq_client", lambda r=reply: SimpleNamespace(evals=SimpleNamespace(invoke=lambda **kw: r)))
         assert run(scorers.policy_judge, _params(answer="Refunded EUR 24.99.")) is expected, verdict

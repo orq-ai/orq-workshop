@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 960" width="1920" height="960" role="img" aria-labelledby="s11-step1-title s11-step1-desc">
+  <title id="s11-step1-title">Two personas crossed with two scenarios, four scored conversations</title>
+  <desc id="s11-step1-desc">Matrix of two simulated customer personas crossed with two refund scenarios, giving four conversations against the local agent. Both in-window ord_a1 conversations end with the goal achieved in one turn. Both post-window ord_a3 conversations end with the goal not achieved after four turns, which is the agent correctly refusing an out-of-window refund, so the run is gated on the rules-broken criteria rather than on whether the persona reached its goal.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="960" class="bg"/>
+  <!-- Corner label -->
+  <text x="80" y="148" class="zone-title">PERSONA  ×  SCENARIO</text>
+  <text x="80" y="176" class="lbl t-mute">simulate() · max_turns = 4</text>
+  <!-- Column header: in-window -->
+  <rect x="512" y="112" width="640" height="80" rx="16" class="soft"/>
+  <text x="832" y="148" text-anchor="middle" class="name">In-window refund ord_a1</text>
+  <text x="832" y="176" text-anchor="middle" class="sub">EUR 24.99 · delivered 3 days ago</text>
+  <!-- Column header: post-window -->
+  <rect x="1184" y="112" width="640" height="80" rx="16" class="soft"/>
+  <text x="1504" y="148" text-anchor="middle" class="name">Post-window refund ord_a3</text>
+  <text x="1504" y="176" text-anchor="middle" class="sub">EUR 42.50 · delivered 45 days ago</text>
+  <!-- Row header: impatient -->
+  <rect x="80" y="224" width="400" height="168" rx="16" class="alt"/>
+  <text x="280" y="296" text-anchor="middle" class="name">Impatient repeat buyer</text>
+  <text x="280" y="328" text-anchor="middle" class="sub">patience 0.2 · terse</text>
+  <text x="280" y="356" text-anchor="middle" class="sub">threatens chargebacks</text>
+  <!-- Row header: polite -->
+  <rect x="80" y="424" width="400" height="168" rx="16" class="alt"/>
+  <text x="280" y="496" text-anchor="middle" class="name">Polite first-time customer</text>
+  <text x="280" y="528" text-anchor="middle" class="sub">patience 0.8 · verbose</text>
+  <text x="280" y="556" text-anchor="middle" class="sub">apologises a lot</text>
+  <!-- Cell 1,1 -->
+  <rect x="512" y="224" width="640" height="168" rx="16" class="mask"/>
+  <rect x="512" y="224" width="640" height="168" rx="16" class="node"/>
+  <text x="832" y="288" text-anchor="middle" class="name">goal achieved</text>
+  <text x="832" y="328" text-anchor="middle" class="sub">score 1.00 · 1 turn · ended by judge</text>
+  <text x="832" y="360" text-anchor="middle" class="sub">rules broken: none</text>
+  <!-- Cell 1,2 (focal) -->
+  <rect x="1184" y="224" width="640" height="168" rx="16" class="mask"/>
+  <rect x="1184" y="224" width="640" height="168" rx="16" class="focal"/>
+  <text x="1504" y="288" text-anchor="middle" class="name">goal not achieved</text>
+  <text x="1504" y="328" text-anchor="middle" class="sub">score 0.20 · 4 turns · ended by max_turns</text>
+  <text x="1504" y="360" text-anchor="middle" class="sub">rules broken: none</text>
+  <!-- Cell 2,1 -->
+  <rect x="512" y="424" width="640" height="168" rx="16" class="mask"/>
+  <rect x="512" y="424" width="640" height="168" rx="16" class="node"/>
+  <text x="832" y="488" text-anchor="middle" class="name">goal achieved</text>
+  <text x="832" y="528" text-anchor="middle" class="sub">score 1.00 · 1 turn · ended by judge</text>
+  <text x="832" y="560" text-anchor="middle" class="sub">rules broken: none</text>
+  <!-- Cell 2,2 (focal) -->
+  <rect x="1184" y="424" width="640" height="168" rx="16" class="mask"/>
+  <rect x="1184" y="424" width="640" height="168" rx="16" class="focal"/>
+  <text x="1504" y="488" text-anchor="middle" class="name">goal not achieved</text>
+  <text x="1504" y="528" text-anchor="middle" class="sub">score 0.35 · 4 turns · ended by max_turns</text>
+  <text x="1504" y="560" text-anchor="middle" class="sub">rules broken: none</text>
+  <!-- Experiment node -->
+  <rect x="80" y="664" width="560" height="144" rx="16" class="mask"/>
+  <rect x="80" y="664" width="560" height="144" rx="16" class="soft"/>
+  <rect x="96" y="680" width="56" height="24" rx="4" class="tag-box"/>
+  <text x="124" y="698" text-anchor="middle" class="tag">EXP</text>
+  <text x="360" y="730" text-anchor="middle" class="name">Experiment · ws-sim-local</text>
+  <text x="360" y="762" text-anchor="middle" class="sub">one row per conversation</text>
+  <text x="360" y="788" text-anchor="middle" class="sub">summary: goal achieved 2/4</text>
+  <!-- Callout under the focal column -->
+  <path d="M 1504 592 V 664" class="faint dash"/>
+  <circle cx="1504" cy="592" r="4" class="dot"/>
+  <text x="1504" y="712" text-anchor="middle" class="note">The persona wanted a refund it should</text>
+  <text x="1504" y="748" text-anchor="middle" class="note">not get. Gate on rules broken,</text>
+  <text x="1504" y="784" text-anchor="middle" class="note">not on goal achieved.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="856" x2="1840" y2="856" class="hair"/>
+  <text x="80" y="888" class="legend-title">LEGEND</text>
+  <rect x="80" y="920" width="28" height="20" rx="4" class="alt"/>
+  <text x="120" y="936" class="msg">Simulated persona</text>
+  <rect x="360" y="920" width="28" height="20" rx="4" class="node"/>
+  <text x="400" y="936" class="msg">Conversation the persona won</text>
+  <rect x="800" y="920" width="28" height="20" rx="4" class="focal"/>
+  <text x="840" y="936" class="msg">Refusal — reads as a failure, is the agent working</text>
+  <rect x="1480" y="920" width="28" height="20" rx="4" class="soft"/>
+  <text x="1520" y="936" class="msg">orq entity</text>
+    
+</svg>
