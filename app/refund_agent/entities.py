@@ -43,7 +43,7 @@ def ensure_dataset(
 
     Idempotency key: `display_name`. An existing dataset with rows is returned as is; an existing
     *empty* one (a seed that failed after creating it) is filled when `rows` is given.
-    `rows=None` creates an empty dataset (module 17 fills `ws-review-dataset` from reviewed traces).
+    `rows=None` creates an empty dataset (the annotation-queues module fills `ws-review-dataset` from reviewed traces).
     """
     orq = orq or make_orq()
     key = K(name)
@@ -326,7 +326,7 @@ def agent_payload(
 
     `tool_kind="code"` (the default) gives the agent remote Python tools: orq runs the loop AND
     the tools, one Responses call per turn. `"function"` gives it function tools: orq runs the
-    model and your code runs the tools (the hybrid method, module 08 step 2b). Pure apart from
+    model and your code runs the tools (the hybrid method, the managed-agents module step 2b). Pure apart from
     `ensure_code_tools()` / `ensure_tools()` when `tool_keys` is not given. The fixed code agent
     is keyed `ws-refund-agent`, every other one `ws-refund-agent-<variant>`, and a function-tool
     agent adds `-function`.
@@ -501,7 +501,7 @@ def ensure_delegating_agent(
     advisor_model: str = "openai/gpt-5.6-sol",
     sidekick_model: str = "openai/gpt-5.4-nano",
 ) -> str:
-    """A copy of the fixed agent with the two delegation tools (module 15). Returns the agent key.
+    """A copy of the fixed agent with the two delegation tools (the advisor-and-sidekick module). Returns the agent key.
 
     Idempotency key: the agent `key`. Also ensures the knowledge base and the tools it needs.
     advisor: consults a stronger model mid-turn, the decision stays with the agent.
@@ -551,7 +551,7 @@ def ensure_delegating_agent(
     return key
 
 
-# ---------------------------------------------------------------- observability (module 14)
+# ---------------------------------------------------------------- observability (the alerts-and-webhooks module)
 
 
 def ensure_notifier(orq=None, name: str = "alert-notifier", url: str | None = None) -> str:
@@ -612,7 +612,7 @@ def ensure_alert(orq=None, name: str = "cost-alert", notifier_id: str | None = N
 
 
 def ensure_annotation_queue(orq=None, name: str = "review-queue") -> str:
-    """The queue the trace automation in module 17 fills; module 14 only points at it. Returns its id.
+    """The queue the trace automation in the annotation-queues module fills; the alerts-and-webhooks module only points at it. Returns its id.
 
     Idempotency key: `display_name`.
     """

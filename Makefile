@@ -31,6 +31,9 @@ seed-insurance: ## Create the insurance claims demo (agents, evaluators, 15 test
 generate-traffic: ## Generate 20 mixed good/bad conversations so traces exist for failure analysis
 	$(RUN) python -m app.traffic
 
+generate-recording-traffic: ## Send the scripted conversations the recordings show (use ORQ_ENV_FILE=.env.academy)
+	$(RUN) python -m app.recording_traffic
+
 reset-workspace: ## Delete every entity this repo created (by WS_PREFIX)
 	$(RUN) python -m app.refund_agent.entities reset
 
@@ -67,10 +70,10 @@ diagrams: ## Re-export the diagram SVGs (modules/*/assets, docs/assets/diagrams)
 	$(UV) run --with playwright python scripts/export_diagrams.py
 
 # Solutions written in Jupytext percent format (`# %%` cells) double as notebook sources.
-NB_SOURCES := $(shell grep -l "^\# %%" modules/*/solution/run.py 2>/dev/null)
+NB_SOURCES := $(shell grep -l "^\# %%" modules/*/run.py 2>/dev/null)
 
-notebooks: ## Generate modules/NN-*/notebook.ipynb from every percent-format solution
-	@for src in $(NB_SOURCES); do dir=$${src%/solution/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
+notebooks: ## Generate modules/*/notebook.ipynb from every percent-format run.py (on the solution branch)
+	@for src in $(NB_SOURCES); do dir=$${src%/run.py}; $(RUN) jupytext --quiet --to ipynb -o $$dir/notebook.ipynb $$src && echo "  $$dir/notebook.ipynb"; done
 
 lab: notebooks ## Generate the notebooks and open JupyterLab at the repo root
 	$(RUN) jupyter lab
@@ -96,19 +99,27 @@ deck: ## Serve a reveal.js deck: make deck [D=kickstart|october-insurance] [PORT
 handout: ## Build slides/handout.html (QR codes, commands; A4, white) and open it to print
 	uvx --with segno python slides/handout.py && open slides/handout.html
 
-modules: ## List modules
-	@printf '  %s\n' $(MODULES)
+modules: ## List modules by name, with what each leaves you with
+	@for d in modules/*/; do n=$$(basename $$d); printf '  %-28s %s\n' "$$n" "$$(grep -m1 -A1 '^!!! abstract' $$d/README.md | tail -1 | sed 's/^ *//' | cut -c1-90)"; done
 
-# m00 .. m17: run a module's solution, e.g. `make m01`
-m%: ## Run the solution of module NN (e.g. make m03)
-	@dir=$$(ls -d modules/$*-* 2>/dev/null | head -1); test -n "$$dir" || { echo "no module $*"; exit 1; }; \
-	echo "Module dir:  $$dir"; \
-	echo "Source file: $$dir/solution/run.py"; \
-	echo "Full command: $(RUN) python $$dir/solution/run.py"; \
-	echo; \
-	$(RUN) python $$dir/solution/run.py
+module: ## Run modules/$(M)/run.py (starter on main, finished file on the solution branch), e.g. make module M=tracing
+	@test -n "$(M)" -a -d "modules/$(M)" || { echo "no module '$(M)'. make modules lists them"; exit 1; }
+	@echo "Source file: modules/$(M)/run.py"; echo "Full command: $(RUN) python modules/$(M)/run.py"; echo
+	$(RUN) python modules/$(M)/run.py
 
-.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+check: ## Verify a module's Done when list against orq.ai, e.g. make check M=tracing
+	@test -n "$(M)" || { echo "usage: make check M=<module>"; exit 1; }
+	$(RUN) python -m app.checks $(M)
+
+# ponytail: the old numbered names (make m07) stay as aliases because printed handouts and private
+# run-of-shows use them. Drop after the next client run.
+OLD_NUMBERS := 00=setup 01=gateway 02=tracing 03=smart-routing 04=guardrails 05=budgets-and-keys 06=orqi 08=managed-agents 09=knowledge-base 10=mcp-gateway 11=simulation 12=evals-in-ci 13=coding-agents 14=alerts-and-webhooks 15=advisor-and-sidekick 16=red-teaming 17=annotation-queues 18=trace-insights
+m%:
+	@test "$*" != 07 || { echo "module 07 became two modules: make module M=failure-analysis, then make module M=evaluators-and-experiments"; exit 1; }
+	@slug=$$(echo "$(OLD_NUMBERS)" | tr ' ' '\n' | sed -n 's/^$*=//p'); test -n "$$slug" || { echo "no module $*"; exit 1; }; \
+	echo "make m$* is now: make module M=$$slug"; $(MAKE) --no-print-directory module M=$$slug
+
+.PHONY: evaluatorq-dashboard help setup orq-doctor gateway-check test seed-workspace seed-insurance generate-traffic generate-recording-traffic reset-workspace regression-eval regression-eval-vulnerable redteam-gate mcp-server edge edge-docker agent-chat-ui og-card diagrams docs-serve docs-build session session-pdf deck handout modules module check
 
 # ponytail: old target names, kept because private run-of-shows and printed handouts still say them.
 # Drop after the next client run. Hidden from `make help` (no `##`).

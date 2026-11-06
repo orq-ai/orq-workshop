@@ -1,6 +1,6 @@
 # Terraform
 
-Everything the workshop creates by hand or with `make seed-workspace` can also be declared as code. The official [orq.ai Terraform provider](https://registry.terraform.io/providers/orq-ai/orq/latest/docs) manages projects, model access, credentials, budgets, guardrails, evaluators and routing rules, with Terraform or OpenTofu. It is the Admin track's "day 2": module 05 mints the Management Key the provider authenticates with.
+Everything the workshop creates by hand or with `make seed-workspace` can also be declared as code. The official [orq.ai Terraform provider](https://registry.terraform.io/providers/orq-ai/orq/latest/docs) manages projects, model access, credentials, budgets, guardrails, evaluators and routing rules, with Terraform or OpenTofu. It is the Admin track's "day 2": the budgets-and-keys module mints the Management Key the provider authenticates with.
 
 ```hcl
 terraform {
@@ -25,7 +25,7 @@ Read the absences as carefully as the list: agents, knowledge bases, deployments
 
 Adoption does not require starting over. Every managed resource can be imported, one `import` block at a time with `terraform plan -generate-config-out=generated.tf`, or a whole existing workspace at once. See [Supported resources](https://docs.orq.ai/reference/terraform/resources) and [Importing an existing workspace](https://docs.orq.ai/reference/terraform/importing) for the current list and syntax.
 
-A key with permission mode `ALL` manages every supported resource, including further API keys and Management Keys; a `RESTRICTED` key manages only the domains it was granted. This workshop does not run Terraform: the entities are created through the SDK so every module stays runnable from one `.env`. If your platform team keeps workspaces in code, the module 05 budget, the module 03 routing rule and the module 04 guardrail rule are the first three resources to move.
+A key with permission mode `ALL` manages every supported resource, including further API keys and Management Keys; a `RESTRICTED` key manages only the domains it was granted. This workshop does not run Terraform: the entities are created through the SDK so every module stays runnable from one `.env`. If your platform team keeps workspaces in code, the budgets-and-keys module budget, the smart-routing module routing rule and the guardrails module guardrail rule are the first three resources to move.
 
 ## Official docs
 
