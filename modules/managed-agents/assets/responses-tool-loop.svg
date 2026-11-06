@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1264" width="1920" height="1264" role="img" aria-labelledby="responses-tool-loop-title responses-tool-loop-desc">
+  <title id="responses-tool-loop-title">Responses API tool loop with a managed agent</title>
+  <desc id="responses-tool-loop-desc">Sequence diagram showing your app calling a managed agent through the Responses API, receiving a function_call item, executing the tool locally, sending function_call_output with previous_response_id, and looping until a message item with a trace id comes back.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1264" class="bg"/>
+  <!-- Lifelines: Tools 120 · App 336 · Agent 600 · Model 840 -->
+  <line x1="240" y1="192" x2="240" y2="1000" class="faint dash"/>
+  <line x1="672" y1="192" x2="672" y2="1000" class="faint dash"/>
+  <line x1="1200" y1="192" x2="1200" y2="1000" class="faint dash"/>
+  <line x1="1680" y1="192" x2="1680" y2="1000" class="faint dash"/>
+  <!-- Loop fragment frame (spans all four lifelines) -->
+  <rect x="216" y="512" width="1488" height="384" rx="8" class="zone"/>
+  <rect x="216" y="512" width="80" height="32" rx="4" class="tag-box mute"/>
+  <text x="256" y="536" text-anchor="middle" class="lbl">LOOP</text>
+  <rect x="304" y="540" width="392" height="28" rx="4" class="mask"/>
+  <text x="312" y="560" class="lbl">[while output has function_call]</text>
+  <!-- Activation bars -->
+  <rect x="1192" y="272" width="16" height="192" class="bar"/>
+  <rect x="232" y="608" width="16" height="56" class="bar"/>
+  <rect x="1192" y="736" width="16" height="232" class="bar"/>
+  <!-- Messages (time flows down) -->
+  <!-- M1 App → Agent: responses.create(input=...) -->
+  <line x1="672" y1="272" x2="1192" y2="272" class="link"/>
+  <!-- M2 Agent → Model -->
+  <line x1="1208" y1="336" x2="1680" y2="336" class="arrow"/>
+  <!-- M3 Model → Agent (return) -->
+  <line x1="1680" y1="400" x2="1208" y2="400" class="arrow dash"/>
+  <!-- M4 Agent → App (return: status completed, function_call item) -->
+  <line x1="1192" y1="464" x2="672" y2="464" class="arrow dash"/>
+  <!-- M5 App → Tools: dispatch(name, args) -->
+  <line x1="672" y1="608" x2="248" y2="608" class="arrow"/>
+  <!-- M6 Tools → App (return dict) -->
+  <line x1="248" y1="664" x2="672" y2="664" class="arrow dash"/>
+  <!-- M7 App → Agent: responses.create(previous_response_id, function_call_output) -->
+  <line x1="672" y1="736" x2="1192" y2="736" class="link"/>
+  <!-- M8 Agent → Model -->
+  <line x1="1208" y1="800" x2="1680" y2="800" class="arrow"/>
+  <!-- M9 Model → Agent (return) -->
+  <line x1="1680" y1="856" x2="1208" y2="856" class="arrow dash"/>
+  <!-- M10 Agent → App: message item (headline success) -->
+  <line x1="1192" y1="968" x2="672" y2="968" class="accent"/>
+  <!-- Message labels (mask + 6–8px gap above the stroke) -->
+  <rect x="848" y="236" width="176" height="24" rx="4" class="mask"/>
+  <text x="936" y="254" text-anchor="middle" class="lbl">CREATE INPUT</text>
+  <rect x="1376" y="300" width="128" height="24" rx="4" class="mask"/>
+  <text x="1440" y="318" text-anchor="middle" class="lbl">RUN MODEL</text>
+  <rect x="1352" y="364" width="176" height="24" rx="4" class="mask"/>
+  <text x="1440" y="382" text-anchor="middle" class="lbl">FUNCTION_CALL</text>
+  <rect x="840" y="428" width="192" height="24" rx="4" class="mask"/>
+  <text x="936" y="446" text-anchor="middle" class="lbl">ITEM + CALL_ID</text>
+  <rect x="360" y="572" width="192" height="24" rx="4" class="mask"/>
+  <text x="456" y="590" text-anchor="middle" class="lbl">DISPATCH(NAME)</text>
+  <rect x="376" y="628" width="160" height="24" rx="4" class="mask"/>
+  <text x="456" y="646" text-anchor="middle" class="lbl">RESULT DICT</text>
+  <rect x="840" y="700" width="192" height="24" rx="4" class="mask"/>
+  <text x="936" y="718" text-anchor="middle" class="lbl">FN_CALL_OUTPUT</text>
+  <rect x="848" y="748" width="176" height="24" rx="4" class="mask"/>
+  <text x="936" y="766" text-anchor="middle" class="lbl">+ PREVIOUS_ID</text>
+  <rect x="1384" y="764" width="112" height="24" rx="4" class="mask"/>
+  <text x="1440" y="782" text-anchor="middle" class="lbl">CONTINUE</text>
+  <rect x="1376" y="820" width="128" height="24" rx="4" class="mask"/>
+  <text x="1440" y="838" text-anchor="middle" class="lbl">NEXT ITEM</text>
+  <rect x="840" y="932" width="192" height="24" rx="4" class="mask"/>
+  <text x="936" y="950" text-anchor="middle" class="lbl t-accent">MSG + TRACE_ID</text>
+  <!-- Actor: Your tools (local, store) -->
+  <rect x="96" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="96" y="80" width="288" height="112" rx="16" class="soft"/>
+  <rect x="112" y="96" width="72" height="24" rx="4" class="tag-box"/>
+  <text x="148" y="114" text-anchor="middle" class="tag">LOCAL</text>
+  <text x="240" y="144" text-anchor="middle" class="name">Your tools</text>
+  <text x="240" y="174" text-anchor="middle" class="sub">tools.dispatch</text>
+  <!-- Actor: Your app (backend) -->
+  <rect x="528" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="528" y="80" width="288" height="112" rx="16" class="node"/>
+  <rect x="544" y="96" width="56" height="24" rx="4" class="tag-box ink"/>
+  <text x="572" y="114" text-anchor="middle" class="tag t-ink">APP</text>
+  <text x="672" y="144" text-anchor="middle" class="name">Your app</text>
+  <text x="672" y="174" text-anchor="middle" class="sub">run_agent loop</text>
+  <!-- Actor: Managed agent (focal) -->
+  <rect x="1040" y="80" width="320" height="112" rx="16" class="mask"/>
+  <rect x="1040" y="80" width="320" height="112" rx="16" class="focal"/>
+  <rect x="1056" y="96" width="56" height="24" rx="4" class="tag-box accent"/>
+  <text x="1084" y="114" text-anchor="middle" class="tag t-accent">AGT</text>
+  <text x="1200" y="144" text-anchor="middle" class="name">Managed agent</text>
+  <text x="1200" y="174" text-anchor="middle" class="sub fit">agent/ws-refund-agent-function</text>
+  <!-- Actor: Model (external) -->
+  <rect x="1536" y="80" width="288" height="112" rx="16" class="mask"/>
+  <rect x="1536" y="80" width="288" height="112" rx="16" class="ghost"/>
+  <rect x="1552" y="96" width="56" height="24" rx="4" class="tag-box mute"/>
+  <text x="1580" y="114" text-anchor="middle" class="tag t-mute">LLM</text>
+  <text x="1680" y="144" text-anchor="middle" class="name">Model</text>
+  <text x="1680" y="174" text-anchor="middle" class="sub">openai/gpt-5.6-luna</text>
+  <!-- Callouts (italic aside, dashed leader, landing dot on the lifeline end) -->
+  <path d="M 464 1032 Q 584 1024 672 1000" class="faint dash"/>
+  <circle cx="672" cy="1000" r="4" class="dot"/>
+  <text x="80" y="1064" class="note">Match on call_id, not id. Answer only the</text>
+  <text x="80" y="1100" class="note">function_call items that name one of your tools.</text>
+  <path d="M 1424 1032 Q 1304 1024 1200 1000" class="faint dash"/>
+  <circle cx="1200" cy="1000" r="4" class="dot"/>
+  <text x="1840" y="1064" text-anchor="end" class="note">Server tools (memory, advisor) also emit function_call,</text>
+  <text x="1840" y="1100" text-anchor="end" class="note">then an orq:&lt;tool&gt; item with the result. Not yours to answer.</text>
+  <!-- Legend strip -->
+  <line x1="80" y1="1144" x2="1840" y2="1144" class="hair"/>
+  <text x="80" y="1176" class="legend-title">LEGEND</text>
+  <rect x="80" y="1208" width="28" height="20" rx="4" class="focal"/>
+  <text x="120" y="1224" class="msg">Managed agent (state lives here)</text>
+  <rect x="472" y="1200" width="8" height="36" class="bar"/>
+  <text x="496" y="1224" class="msg">Holds control</text>
+  <line x1="688" y1="1220" x2="744" y2="1220" class="link"/>
+  <text x="760" y="1224" class="msg">responses.create (one trace each)</text>
+  <line x1="1120" y1="1220" x2="1176" y2="1220" class="arrow dash"/>
+  <text x="1192" y="1224" class="msg">Return</text>
+  <line x1="1328" y1="1220" x2="1384" y2="1220" class="accent"/>
+  <text x="1400" y="1224" class="msg">Final message item + telemetry.trace_id</text>
+    
+</svg>

@@ -1,0 +1,1 @@
+Read AGENTS.md and app/refund_agent/agent.py. Run `make gateway-check`. Explain in five lines what happened, which tool calls the model made, and where the trace id came from. Then use the orq.ai MCP `list_traces` tool to find that trace and tell me its total cost.

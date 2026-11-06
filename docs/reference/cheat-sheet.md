@@ -20,7 +20,7 @@ orq doctor                     # health check
 orq status / orq switch        # active workspace and project
 orq launch claude|opencode|pi|codex [-p "prompt"]   # agent through the gateway, session only
 orq connect --local [--dry-run|--status]            # permanent wiring for this project
-orq chat create --model openai/gpt-5.6-luna --messages '[{"role":"user","content":"hi"}]'
+orq chat create --model "$MODEL" --messages '[{"role":"user","content":"hi"}]'
 orq traces search --from 1h --to now   # recent traces; add `-o json`
 orq traces conversation <trace_id>   # readable transcript
 orq agents list | retrieve <key> | invoke <key>
@@ -30,7 +30,7 @@ orq budgets list               # needs a Management Key
 orq alerts list | list-triggers <alert_id>   # project alerts and their incidents
 orq annotation-queues query-items <queue_id>
 orq webhooks generate-secret | list | get <id>   # event subscriptions to your HTTPS endpoint
-orq request POST /v2/reporting --stdin      # metrics; body: {"metric":"genai.cost","from":...,"to":...,"mode":"scalar"}
+orq request POST /v3/telemetry/query --stdin   # body: {"source":"TELEMETRY_SOURCE_TRACES","compute":[{"metric":"genai.cost","op":"sum"}],"from":...,"to":...,"mode":"scalar"}
 orq pii redact --text "..."
 orq request GET /v2/routing-rules   # raw escape hatch for anything without a command
 orq orqi "why did my agent fail today?"
@@ -42,7 +42,7 @@ orq orqi "why did my agent fail today?"
 from openai import OpenAI
 client = OpenAI(api_key=ORQ_API_KEY, base_url="https://my.orq.ai/v3/router")
 client.responses.create(                      # /v3/router/responses; chat.completions works too (GPT-5.x: reasoning_effort "none" with tools)
-    model="openai/gpt-5.6-luna",
+    model=MODEL,
     instructions="...", input=[...], tools=[...], store=False,
     extra_body={
         "fallbacks": [{"model": "anthropic/claude-haiku-4-5"}],
@@ -65,26 +65,26 @@ orq.annotations.create(trace_id=..., span_id=..., annotations=[{"key": "rating",
 ## Makefile
 
 ```bash
-make setup doctor smoke test    # day 0
-make seed                       # every prerequisite entity, idempotent
-make traffic                    # 20 traced conversations for failure analysis
-make m01 ... make m17           # run a module's solution
-make eval                       # regression gate, exit 1 on failure
+make setup orq-doctor gateway-check test    # first run
+make seed-workspace                       # every prerequisite entity, idempotent
+make generate-traffic                    # 20 traced conversations for failure analysis
+make module M=<name>            # run a module's run.py; make modules lists the names
+make regression-eval                       # regression gate, exit 1 on failure
 make redteam-gate               # static red team gate
-make edge                       # modules 09 + 14: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
-make reset                      # delete everything with WS_PREFIX
+make edge                       # knowledge base + alerts modules: external KB + webhook receiver on :8001 (expose it, set WS_EDGE_URL)
+make reset-workspace                      # delete everything with WS_PREFIX
 make docs-serve slides          # docs site, deck
 ```
 
-## Docs
+## Official docs
 
 | Topic | Page |
 |---|---|
-| Gateway request fields | [Retries and fallbacks](https://docs.orq.ai/docs/ai-gateway/features/retries) · [Timeouts](https://docs.orq.ai/docs/ai-gateway/features/timeouts) · [Cache](https://docs.orq.ai/docs/ai-gateway/features/cache) · [Load balancing](https://docs.orq.ai/docs/ai-gateway/features/load-balancing) · [Request metadata](https://docs.orq.ai/docs/ai-gateway/request-metadata) |
-| Control plane | [Smart Router](https://docs.orq.ai/docs/ai-gateway/smart-router) · [Routing rules](https://docs.orq.ai/docs/ai-gateway/configuration/routing-rules) · [Guardrails](https://docs.orq.ai/docs/ai-gateway/configuration/guardrails) · [Guardrail rules](https://docs.orq.ai/docs/ai-gateway/configuration/guardrail-rules) · [PII redaction](https://docs.orq.ai/docs/ai-gateway/features/plugins/pii-redaction) · [Budgets](https://docs.orq.ai/docs/ai-gateway/budgets) |
-| Observability | [Traces](https://docs.orq.ai/docs/ai-studio/observability/traces) · [Span attributes](https://docs.orq.ai/docs/ai-studio/observability/span-attributes) · [Identities](https://docs.orq.ai/docs/ai-studio/observability/identities) · [Annotations](https://docs.orq.ai/docs/ai-studio/observability/annotations) · [Reporting API](https://docs.orq.ai/docs/ai-studio/observability/reporting-api) · [Alerts](https://docs.orq.ai/docs/ai-studio/observability/alerts) · [Automations](https://docs.orq.ai/docs/ai-studio/observability/automations) · [Webhooks](https://docs.orq.ai/docs/ai-studio/organization/webhooks) |
-| Admin as code | [Terraform provider](https://docs.orq.ai/reference/terraform) · [Management keys](https://docs.orq.ai/docs/ai-studio/organization/management-keys) |
-| Quality | [Evaluators](https://docs.orq.ai/docs/ai-studio/optimize/evaluators) · [Datasets](https://docs.orq.ai/docs/ai-studio/optimize/datasets) · [Experiments](https://docs.orq.ai/docs/ai-studio/optimize/experiments) · [Agent simulations](https://docs.orq.ai/docs/ai-studio/optimize/agent-simulations) · [Red teaming](https://docs.orq.ai/docs/ai-studio/optimize/red-teaming) |
-| Agents | [Build agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/build-agents) · [Run agents](https://docs.orq.ai/docs/ai-studio/ai-engineering/run-agents) · [Responses API](https://docs.orq.ai/docs/ai-gateway/features/responses-api) · [Memory stores](https://docs.orq.ai/docs/ai-studio/ai-engineering/memory-stores) · [Knowledge bases](https://docs.orq.ai/docs/ai-studio/ai-engineering/knowledge-bases) |
-| MCP and coding agents | [MCP Servers](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-servers) · [MCP Gateways](https://docs.orq.ai/docs/ai-gateway/mcp-portal/mcp-gateways) · [orq.ai MCP server](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-mcp) · [orq.ai skills](https://docs.orq.ai/docs/ai-studio/integrations/code-assistants/orq-skills) · [CLI](https://docs.orq.ai/reference/cli) |
-| API and SDK | [REST reference](https://docs.orq.ai/reference/client-libraries) · [Python SDK: traces](https://docs.orq.ai/reference/sdk/traces) · [Changelog](https://docs.orq.ai/docs/changelog) |
+| Gateway request fields | [Retries and fallbacks](https://docs.orq.ai/ai-gateway/features/retries) · [Timeouts](https://docs.orq.ai/ai-gateway/features/timeouts) · [Cache](https://docs.orq.ai/ai-gateway/features/cache) · [Load balancing](https://docs.orq.ai/ai-gateway/features/load-balancing) · [Request metadata](https://docs.orq.ai/ai-gateway/request-metadata) |
+| Control plane | [Smart Router](https://docs.orq.ai/ai-gateway/smart-router) · [Routing rules](https://docs.orq.ai/ai-gateway/configuration/routing-rules) · [Guardrails](https://docs.orq.ai/ai-gateway/configuration/guardrails) · [Guardrail rules](https://docs.orq.ai/ai-gateway/configuration/guardrail-rules) · [PII redaction](https://docs.orq.ai/ai-gateway/features/plugins/pii-redaction) · [Budgets](https://docs.orq.ai/ai-gateway/budgets) |
+| Observability | [Traces](https://docs.orq.ai/ai-studio/observability/traces) · [Span attributes](https://docs.orq.ai/ai-studio/observability/span-attributes) · [Identities](https://docs.orq.ai/ai-studio/observability/identities) · [Annotations](https://docs.orq.ai/ai-studio/observability/annotations) · [Reporting API](https://docs.orq.ai/ai-studio/observability/reporting-api) · [Alerts](https://docs.orq.ai/ai-studio/observability/alerts) · [Automations](https://docs.orq.ai/ai-studio/observability/automations) · [Webhooks](https://docs.orq.ai/ai-studio/organization/webhooks) |
+| Admin as code | [Terraform provider](https://docs.orq.ai/reference/terraform) · [Management keys](https://docs.orq.ai/ai-studio/organization/management-keys) |
+| Quality | [Evaluators](https://docs.orq.ai/ai-studio/optimize/evaluators) · [Datasets](https://docs.orq.ai/ai-studio/optimize/datasets) · [Experiments](https://docs.orq.ai/ai-studio/optimize/experiments) · [Agent simulations](https://docs.orq.ai/ai-studio/optimize/agent-simulations) · [Red teaming](https://docs.orq.ai/ai-studio/optimize/red-teaming) |
+| Agents | [Build agents](https://docs.orq.ai/ai-studio/ai-engineering/build-agents) · [Run agents](https://docs.orq.ai/ai-studio/ai-engineering/run-agents) · [Responses API](https://docs.orq.ai/ai-gateway/features/responses-api) · [Memory stores](https://docs.orq.ai/ai-studio/ai-engineering/memory-stores) · [Knowledge bases](https://docs.orq.ai/ai-studio/ai-engineering/knowledge-bases) |
+| MCP and coding agents | [MCP Servers](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-servers) · [MCP Gateways](https://docs.orq.ai/ai-gateway/mcp-portal/mcp-gateways) · [orq.ai MCP server](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-mcp) · [orq.ai skills](https://docs.orq.ai/ai-studio/integrations/code-assistants/orq-skills) · [CLI](https://docs.orq.ai/reference/cli) |
+| API and SDK | [REST reference](https://docs.orq.ai/reference/client-libraries) · [Python SDK: traces](https://docs.orq.ai/reference/sdk/traces) · [Changelog](https://docs.orq.ai/changelog) |

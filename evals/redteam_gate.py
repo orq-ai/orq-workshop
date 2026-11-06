@@ -10,7 +10,7 @@ What makes CI fail: anything short of a full, clean run. A resistance rate below
 zero tolerance on attacks we already know about. An errored attack, an attack the judge could not
 evaluate, or a run with no verdict at all also exits 1, so an outage cannot pass as "no
 vulnerabilities found". Static mode is deterministic on the attack side (the judge is still an
-LLM), cheap, and the right shape for CI. Exploratory, LLM-generated attacks belong in module 16,
+LLM), cheap, and the right shape for CI. Exploratory, LLM-generated attacks belong in the red-teaming module,
 not in a PR check.
 
 The target is evaluatorq's built-in `agent:<key>` target on the hosted refund agent, whose
@@ -19,7 +19,7 @@ successful attack really issues a refund (in memory, inside the tool). CLI equiv
 
     eq redteam run -t agent:ws-refund-agent --mode static --dataset evals/redteam_static.json -y
 
-Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed` once
+Attacker and judge model calls go through the orq router with ORQ_API_KEY. Run `make seed-workspace` once
 first: it creates the hosted agent.
 """
 

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" width="1920" height="1200" role="img" aria-labelledby="routing-decision-title routing-decision-desc">
+  <title id="routing-decision-title">Routing decision: rule, Smart Router, or the requested model</title>
+  <desc id="routing-decision-desc">Flowchart showing how the gateway picks the model for a request: a matching routing rule replaces the request entirely, otherwise a Smart Router reference lets the router pick a band, otherwise the requested model is used, and in every case span.responses names the winner.</desc>
+  <style>@import url("../../../scripts/diagram.css");</style>
+  <defs><marker id="a" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 14 6 0 12z" fill="context-stroke"/></marker></defs>
+  <rect width="1920" height="1200" class="bg"/>
+  <!-- Arrows first -->
+  <!-- start -> D1 -->
+  <line x1="960" y1="160" x2="960" y2="224" class="arrow"/>
+  <!-- D1 yes -> R1 (focal path) -->
+  <line x1="1184" y1="304" x2="1312" y2="304" class="accent"/>
+  <!-- D1 no -> D2 -->
+  <line x1="960" y1="384" x2="960" y2="480" class="arrow"/>
+  <!-- D2 yes -> R2 -->
+  <line x1="1184" y1="560" x2="1312" y2="560" class="arrow"/>
+  <!-- D2 no -> R3 -->
+  <line x1="960" y1="640" x2="960" y2="736" class="arrow"/>
+  <!-- R3 -> merge -->
+  <line x1="960" y1="832" x2="960" y2="888" class="arrow nm"/>
+  <!-- R2 -> merge (from the right) -->
+  <path d="M 1536 624 V 880 Q 1536 896 1520 896 H 976" class="arrow"/>
+  <!-- merge -> end -->
+  <line x1="960" y1="904" x2="960" y2="960" class="arrow"/>
+  <!-- R1 -> end (right of everything, into the oval's right edge) -->
+  <path d="M 1760 304 H 1808 Q 1824 304 1824 320 V 984 Q 1824 1000 1808 1000 H 1248" class="arrow"/>
+  <!-- Branch labels -->
+  <rect x="1216" y="264" width="64" height="24" rx="4" class="mask"/>
+  <text x="1248" y="282" text-anchor="middle" class="lbl t-accent">YES</text>
+  <rect x="984" y="416" width="48" height="24" rx="4" class="mask"/>
+  <text x="1008" y="434" text-anchor="middle" class="lbl">NO</text>
+  <rect x="1216" y="520" width="64" height="24" rx="4" class="mask"/>
+  <text x="1248" y="538" text-anchor="middle" class="lbl">YES</text>
+  <rect x="984" y="672" width="48" height="24" rx="4" class="mask"/>
+  <text x="1008" y="690" text-anchor="middle" class="lbl">NO</text>
+  <!-- Start oval -->
+  <rect x="672" y="80" width="576" height="80" rx="40" class="mask"/>
+  <rect x="672" y="80" width="576" height="80" rx="40" class="soft"/>
+  <text x="960" y="112" text-anchor="middle" class="name">Request arrives</text>
+  <text x="960" y="140" text-anchor="middle" class="sub">model · metadata · identity · headers</text>
+  <!-- D1: routing rule matches? (focal decision) -->
+  <path d="M 960 224 L 1184 304 L 960 384 L 736 304 Z" class="mask"/>
+  <path d="M 960 224 L 1184 304 L 960 384 L 736 304 Z" class="focal"/>
+  <text x="960" y="300" text-anchor="middle" class="name">Routing rule matches?</text>
+  <text x="960" y="332" text-anchor="middle" class="sub t-accent">CEL on metadata · model</text>
+  <!-- R1: rule replaces the request -->
+  <rect x="1312" y="240" width="448" height="128" rx="16" class="mask"/>
+  <rect x="1312" y="240" width="448" height="128" rx="16" class="node"/>
+  <text x="1536" y="288" text-anchor="middle" class="name">Rule replaces the request</text>
+  <text x="1536" y="320" text-anchor="middle" class="sub">model · load_balancer · fallbacks</text>
+  <text x="1536" y="348" text-anchor="middle" class="sub">span.load_balancer</text>
+  <!-- D2: smart router ref? -->
+  <path d="M 960 480 L 1184 560 L 960 640 L 736 560 Z" class="mask"/>
+  <path d="M 960 480 L 1184 560 L 960 640 L 736 560 Z" class="node"/>
+  <text x="960" y="556" text-anchor="middle" class="name">Smart Router ref?</text>
+  <text x="960" y="588" text-anchor="middle" class="sub">&lt;ws&gt;@orq/&lt;key&gt;</text>
+  <!-- R2: router picks the band -->
+  <rect x="1312" y="496" width="448" height="128" rx="16" class="mask"/>
+  <rect x="1312" y="496" width="448" height="128" rx="16" class="node"/>
+  <text x="1536" y="544" text-anchor="middle" class="name">Router picks a pool model</text>
+  <text x="1536" y="576" text-anchor="middle" class="sub">profile COST · BALANCED · QUALITY</text>
+  <text x="1536" y="604" text-anchor="middle" class="sub">span.auto_router</text>
+  <!-- R3: requested model as-is -->
+  <rect x="736" y="736" width="448" height="96" rx="16" class="mask"/>
+  <rect x="736" y="736" width="448" height="96" rx="16" class="node"/>
+  <text x="960" y="776" text-anchor="middle" class="name">Requested model, as-is</text>
+  <text x="960" y="808" text-anchor="middle" class="sub">e.g. openai/gpt-5.6-luna</text>
+  <!-- Merge dot -->
+  <circle cx="960" cy="896" r="8" class="dot"/>
+  <!-- End oval -->
+  <rect x="672" y="960" width="576" height="80" rx="40" class="mask"/>
+  <rect x="672" y="960" width="576" height="80" rx="40" class="soft"/>
+  <text x="960" y="992" text-anchor="middle" class="name">span.responses names the winner</text>
+  <text x="960" y="1020" text-anchor="middle" class="sub">every path leaves its decision in the trace</text>
+  <!-- Editorial callout (left margin) -->
+  <text x="96" y="528" class="note">A matching rule does not merge:</text>
+  <text x="96" y="564" class="note">it replaces model, load balancer</text>
+  <text x="96" y="600" class="note">and fallbacks from the request.</text>
+  <path d="M 400 496 Q 520 360 736 304" class="accent nm dash"/>
+  <circle cx="736" cy="304" r="4" class="dot-accent"/>
+  <!-- Legend strip -->
+  <line x1="80" y1="1088" x2="1840" y2="1088" class="hair"/>
+  <text x="80" y="1120" class="legend-title">LEGEND</text>
+  <path d="M 94 1152 L 122 1166 L 94 1180 L 66 1166 Z" transform="translate(16,0)" class="focal"/>
+  <text x="152" y="1172" class="msg">The decision that overrides everything</text>
+  <path d="M 504 1152 L 532 1166 L 504 1180 L 476 1166 Z" class="node"/>
+  <text x="552" y="1172" class="msg">Decision</text>
+  <rect x="704" y="1156" width="28" height="20" rx="4" class="node"/>
+  <text x="744" y="1172" class="msg">Gateway step, with its span</text>
+  <rect x="1056" y="1156" width="40" height="20" rx="10" class="soft"/>
+  <text x="1112" y="1172" class="msg">Start / end</text>
+  <circle cx="1288" cy="1166" r="8" class="dot"/>
+  <text x="1312" y="1172" class="msg">Paths rejoin</text>
+    
+</svg>
