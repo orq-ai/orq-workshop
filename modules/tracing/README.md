@@ -73,9 +73,11 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
     > Run `modules/tracing/run.py`, find the `# CHANGE:` line of step 1, make that change, rerun, and show me the names of the last five traces.
 
-<section class="storyboard" data-clip="t1" data-status="awaiting" markdown>
+<section class="storyboard" data-clip="t1" data-status="recorded" markdown>
 
 <p class="storyboard-title"><strong>Clip T1 · One changed line, a named trace</strong></p>
+
+<video class="clip" controls muted playsinline preload="metadata" poster="assets/tracing-clip-t1.png" src="assets/tracing-clip-t1.mp4"></video>
 
 <ul class="storyboard-meta">
 <li><strong>Audience:</strong> engineers, step 1 of the tracing module</li>
@@ -87,12 +89,12 @@ The finished file is at the same path on the [`solution` branch](https://github.
 
 | # | Time | On screen | Caption |
 |---|---|---|---|
-| 1 | 0:00-0:08 | `uv run python modules/tracing/run.py`, step 1 output with the `CHANGE :` hint | The script tells you which line to change. |
+| 1 | 0:00-0:08 | `uv run python modules/tracing/run.py --step 1`, step 1 output with the `CHANGE :` hint | The script tells you which line to change. |
 | 2 | 0:08-0:15 | The editor: `trace_name = None` becomes `trace_name = "refund-turn"` | One value. |
 | 3 | 0:15-0:25 | The rerun: the recent list shows `refund-turn` at the top | The trace now has a name. |
 | 4 | 0:25-0:30 | `orq traces search --from now-10m --to now` shows the same name | Same result from the CLI. |
 
-**To approve:** say "approve clip T1", or change any row.
+Approved and recorded on 6 November 2026 with `scripts/recordings/clip-t1.tape`. `--step 1` runs only this step.
 
 </section>
 

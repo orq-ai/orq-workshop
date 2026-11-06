@@ -104,9 +104,11 @@ Which one fits depends on how your app talks to models today. Most teams combine
 </div>
 </div>
 
-<section class="storyboard" data-clip="3" data-status="awaiting" markdown>
+<section class="storyboard" data-clip="3" data-status="recorded" markdown>
 
 <p class="storyboard-title"><strong>Clip 3 · From a complaint to the cause</strong></p>
+
+<video class="clip" controls muted playsinline preload="metadata" poster="../../assets/videos/clip-3.png" src="../../assets/videos/clip-3.mp4"></video>
 
 <ul class="storyboard-meta">
 <li><strong>Audience:</strong> team leaders, in the stage walk of the leaders' session</li>
@@ -119,13 +121,13 @@ Which one fits depends on how your app talks to models today. Most teams combine
 | # | Time | On screen | Caption |
 |---|---|---|---|
 | 1 | 0:00-0:08 | The complaint: "Your chat said my refund for ord_a3 was approved, then it said refused." | A customer complains. Which answer was right, and why did it change? |
-| 2 | 0:08-0:20 | Studio, Traces, filtered on the customer's identity: one conversation, two turns | Every conversation is recorded, grouped by customer. |
-| 3 | 0:20-0:40 | Turn 1 opened: the agent span and one model span, no tool span | The first answer came without looking at the order. |
-| 4 | 0:40-0:58 | Turn 2 opened: the `lookup_order` tool span and its output, zoomed on `delivered_days_ago: 45` | The order is outside the 30-day window. The second answer was right. |
-| 5 | 0:58-1:15 | Back to turn 1, the gap highlighted | The bug: turn 1 skipped the lookup. Found in under a minute. |
-| 6 | 1:15-1:30 | Cost and latency in the trace header; end card "Workshop: tracing" | Cost and speed come with every trace. Engineers build this in the tracing module. |
+| 2 | 0:08-0:20 | Studio, Traces, searched on the conversation's thread id: one conversation, two turns | Every conversation is recorded: both of her turns, found by the conversation. |
+| 3 | 0:20-0:40 | Turn 1 opened: the agent span and one model span, no tool span | Her first turn: the agent answered with no order lookup at all. |
+| 4 | 0:40-0:58 | Turn 2 opened: the `lookup_order` tool span and its output, zoomed on `delivered_days_ago: 45` | Her second turn looked the order up: delivered 45 days ago, outside the 30-day window. |
+| 5 | 0:58-1:15 | Back to turn 1, the gap highlighted | So the second answer was right. The bug: turn 1 skipped the lookup. Found in under a minute. |
+| 6 | 1:15-1:30 | Cost and latency in the trace header; end card "Workshop: tracing" | Cost and duration come with every trace. End card: "Tracing, in 30 minutes". |
 
-**To approve:** say "approve clip 3", or change any row. Nothing is recorded before that.
+Approved and recorded on 6 November 2026, from the scripted traffic in the orq-academy project. Scene 2 searches the thread id: the Studio search does not match identities.
 
 </section>
 
