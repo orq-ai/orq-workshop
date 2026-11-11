@@ -43,4 +43,7 @@ Para mostrar defesa em camadas na persona Comprador:
 
 ## Vercel
 
-O app não guarda estado (o navegador reenvia `history`), então roda no Vercel sem mudanças: root dir `toqan-chat/`, env `TOQAN_API_KEY` e Deployment Protection ligado, para que a chave não vire um proxy público.
+No ar em **https://toqan-chat.vercel.app** (projeto `toqan-chat`, time `arianpasquali-4998s-projects`), com Vercel Authentication em todas as URLs, inclusive a de produção: só abre logado no time. `TOQAN_API_KEY` está guardada como variável sensível em Production e Preview. O push não faz deploy; o deploy é manual, de dentro da pasta: `cd toqan-chat && vercel deploy --prod`.
+
+
+O app não guarda estado (o navegador reenvia `history`), então roda no Vercel sem mudanças. Não desligue a proteção: sem ela, a URL vira um proxy público para a chave do Toqan.
