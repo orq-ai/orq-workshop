@@ -3,42 +3,60 @@
     make toqan-chat-test
 """
 
+import copy
 from types import SimpleNamespace as NS
 
 import app
 from personas import comprador_dispatch, lojista_dispatch
 
 
-def chunk(content=None, tool=None, model="fake/model", usage=None):
-    calls = [NS(index=0, id=tool[0], function=NS(name=tool[1], arguments=tool[2]))] if tool else None
-    return NS(model=model, usage=usage, choices=[NS(delta=NS(content=content, tool_calls=calls))])
+class Item:
+    """An output item as the SDK hands it over: attributes, `model_extra` for router-specific fields, `model_dump`."""
+    def __init__(self, model_extra=None, **fields):
+        self.__dict__.update(fields)
+        self.model_extra = model_extra or {}
+
+    def model_dump(self, exclude_none=True):
+        return {k: v for k, v in self.__dict__.items() if k != "model_extra" and v is not None}
+
+
+def completed(*items, usage=None):
+    return NS(type="response.completed", response=NS(output=list(items), model="fake/model", usage=usage or NS(total_tokens=1, model_extra={})))
 
 
 class FakeRouter:
     def __init__(self, rounds):
         self.rounds, self.sent = list(rounds), []
-        self.chat = NS(completions=NS(with_raw_response=NS(create=self.create)))
+        self.responses = NS(with_raw_response=NS(create=self.create))
 
     def create(self, **kwargs):
-        self.sent.append(kwargs)
-        return NS(headers={app.TRACE_HEADER: f"t{len(self.sent)}"}, parse=lambda chunks=self.rounds.pop(0): iter(chunks))
+        self.sent.append(copy.deepcopy(kwargs))  # the SDK serializes at call time; the loop keeps growing `input`
+        return NS(headers={app.TRACE_HEADER: f"t{len(self.sent)}"}, parse=lambda events=self.rounds.pop(0): iter(events))
 
 
-def test_turn_joins_streamed_arguments_runs_tool_and_streams_answer():
+def test_turn_runs_our_tool_reports_server_tools_and_streams_answer():
+    call = Item(type="function_call", call_id="c1", name="calcular_carrinho", arguments='{"skus": ["CAN-01"]}')
+    python = Item(type="orq:code_interpreter", model_extra={"call_id": "s1", "arguments": '{"code": "print(1)"}', "result": {"stdout": "1"}})
+    message = Item(type="message", content=[NS(type="output_text", text="Total R$ 108,90.")])
     router = FakeRouter([
-        [chunk(tool=("c1", "calcular_carrinho", '{"skus": ["CAN')), chunk(tool=(None, None, '-01"]}'))],
-        [chunk("Total "), chunk("R$ 108,90.", usage=NS(total_tokens=42, model_extra={"server_tool_use": {"advisor_requests": 1}}))],
+        [NS(type="response.output_item.added", item=call), NS(type="response.output_item.done", item=python), completed(call, python)],
+        [NS(type="response.output_text.delta", delta="Total "), NS(type="response.output_text.delta", delta="R$ 108,90."),
+         completed(message, usage=NS(total_tokens=42, model_extra={"server_tool_use": {"advisor_requests": 1}}))],
     ])
-    events = list(app.run_turn(router, "toqan@orq/menor-custo", "quanto fica a caneca?", [], "atendimento", stream=True))
+    events = list(app.run_turn(router, "toqan@orq/menor-custo", "quanto fica a caneca?", [], "atendimento", stream=True, conversation="abc123"))
     kinds = [e["type"] for e in events]
-    assert kinds == ["step", "round", "step", "delta", "delta", "round", "done"], kinds
-    assert events[2] == {**events[2], "tool": "calcular_carrinho", "ok": True, "state": "done"}
-    assert events[5]["tokens"] == 42 and events[5]["server_tools"] == {"advisor_requests": 1}
-    assert events[5]["trace_url"].endswith("(trace:t2)")
-    headers = router.sent[0]["extra_headers"]
-    assert headers["X-Toqan-Metadata-Usecase"] == "atendimento" and headers["X-Toqan-Metadata-Persona"] == "comprador"
-    assert router.sent[0]["reasoning_effort"] == "none"
-    assert events[-1]["answer"] == "Total R$ 108,90." and events[-1]["history"][-2]["role"] == "tool"
+    assert kinds == ["step", "server", "round", "step", "delta", "delta", "round", "done"], kinds
+    assert events[1]["tool"] == "orq:code_interpreter" and "stdout" in events[1]["result"]
+    assert events[3] == {**events[3], "tool": "calcular_carrinho", "ok": True, "state": "done"}
+    assert events[6]["tokens"] == 42 and events[6]["server_tools"] == {"advisor_requests": 1} and events[6]["trace_url"].endswith("(trace:t2)")
+    sent = router.sent[0]
+    assert sent["extra_headers"]["X-Toqan-Metadata-App"] == "toqan-router-demo" and sent["extra_headers"]["X-Toqan-Metadata-Usecase"] == "atendimento"
+    assert sent["extra_body"] == {"name": "toqan-router-demo", "thread": {"id": "toqan-router-demo-abc123"}}
+    assert sent["store"] is False and sent["tools"][0]["name"] == "buscar_produtos"  # flat Responses function tools
+    # round 2 gets every output item back (the orq:* result too) plus our tool's output
+    second = router.sent[1]["input"]
+    assert [i.get("type") for i in second[1:]] == ["function_call", "orq:code_interpreter", "function_call_output"]
+    assert events[-1]["answer"] == "Total R$ 108,90."
 
 
 def test_mandate_is_enforced_by_the_tool():
@@ -59,16 +77,17 @@ def test_merchant_tools():
 
 
 def test_faq_is_one_cacheable_call():
-    router = FakeRouter([[chunk("1,99% ao mês.")], [chunk("1,99% ao mês.")]])
+    answer = lambda: [completed(Item(type="message", content=[NS(type="output_text", text="1,99% ao mês.")]))]
+    router = FakeRouter([answer(), answer()])
     history = [{"role": "user", "content": "oi"}, {"role": "assistant", "content": "olá"}]
     for h in ([], history):  # with or without a conversation around it, the request is the same
         done = list(app.run_turn(router, "aws/x", "Qual a taxa?", h, "faq", stream=True, persona="lojista"))[-1]
-    assert router.sent[0]["messages"] == router.sent[1]["messages"] and "tools" not in router.sent[0]
-    assert done["history"][:2] == history and done["history"][-1]["content"] == "1,99% ao mês."
+    assert router.sent[0]["input"] == router.sent[1]["input"] and "tools" not in router.sent[0]
+    assert done["history"][:2] == history and done["answer"] == "1,99% ao mês."
 
 
 def test_server_tools_skip_smart_routers():
-    router = FakeRouter([[chunk("ok")]])
+    router = FakeRouter([[completed()]])
     list(app.run_turn(router, "toqan@orq/menor-custo", "calcule", [], "ferramentas", stream=True))
     sent = router.sent[0]
     assert sent["model"] == app.DEFAULT_MODEL and {"type": "orq:code_interpreter"} in sent["tools"]
@@ -80,4 +99,4 @@ def test_public_request_limits(monkeypatch):
     assert app.request_problem("oi", [], "toqan@orq/menor-custo") is None
     assert app.request_problem("oi", [], "openai/o9-ultra") == "modelo fora da lista da demo"
     assert app.request_problem("x" * 2001, [], "aws/x")
-    assert app.request_problem("oi", [{"role": "user", "content": "x"}] * 61, "aws/x")
+    assert app.request_problem("oi", [{"role": "user", "content": "x"}] * 151, "aws/x")

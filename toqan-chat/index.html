@@ -97,16 +97,21 @@
   .item .facts { color:var(--fg2); margin-top:2px; }
   .run { grid-area:run; min-height:0; overflow-y:auto; background:var(--card); border-left:1px solid var(--rule); padding:16px 20px; }
   .run .empty { color:var(--fg2); font-size:13px; }
+  .sub-link { margin:6px 0 0; font-size:13px; } .sub-link a, #settings a { color:var(--blue); }
+  .budget { font:12px "Geist Mono", monospace; color:var(--fg); background:var(--canvas); border:1px solid var(--rule); border-radius:6px; padding:6px 8px; margin:8px 0 0; }
+  .budget b { color:var(--blue); font-weight:500; } .budget-note { color:var(--fg) !important; font-family:"Geist Mono", monospace; }
   .turn { margin-top:16px; } .turn > .eyebrow { display:block; margin-bottom:6px; }
   .chain { list-style:none; margin:0; padding:0 0 0 14px; border-left:2px solid var(--muted); display:grid; gap:8px; }
-  .chain li { position:relative; font-size:13px; }
+  .chain li { position:relative; font-size:13px; min-width:0; overflow-wrap:anywhere; }
+  .chain .chip { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; }
   .chain li::before { content:""; position:absolute; left:-20px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--muted); border:2px solid var(--card); }
   .chain li.model::before { background:var(--blue); } .chain li.tool::before { background:var(--sand); }
   .chain li.tool.ok::before { background:var(--green); } .chain li.tool.fail::before, .chain li.blocked::before { background:var(--coral); }
   .chain li.tool.running::before { background:var(--sky); animation:pulse 1s infinite; }
   @keyframes pulse { 50% { opacity:.3; } }
   .chain .sub { color:var(--fg2); font:12px "Geist Mono", monospace; overflow-wrap:anywhere; }
-  .chain .name { font:500 13px "Geist Mono", monospace; } .chain .server { margin-top:4px; }
+  .chain .name { font:500 13px "Geist Mono", monospace; }
+  .chain pre.code { margin:2px 0 6px; padding:6px 8px; background:var(--canvas); border:1px solid var(--rule); border-radius:4px; font:11.5px/1.4 "Geist Mono", monospace; white-space:pre-wrap; max-height:180px; overflow:auto; }
   .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
   @media (max-width: 1000px) { body, body.show-rail, body.show-run, body.show-rail.show-run { grid-template-columns:minmax(0,1fr); grid-template-areas:"chat" "run" "rail"; height:auto; } .chat { min-height:100vh; } }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
@@ -136,6 +141,8 @@
         <button type="button" id="mode-stream" aria-pressed="true">Stream</button>
         <button type="button" id="mode-full" aria-pressed="false">Completa</button>
       </div></div>
+    <div class="field" id="budget-field" hidden><span class="label">Chave da demo</span><div class="note budget-note" id="budget-settings"></div></div>
+    <div class="field"><a id="all-traces-settings" target="_blank" rel="noopener">Todos os traces da demo no Toqan ↗</a></div>
     <button type="button" class="toggle" id="detail" aria-pressed="false"><span>Detalhado<small>modelos, tempos, tokens e argumentos</small></span><span class="knob" aria-hidden="true"></span></button>
     <button type="button" class="toggle" id="toggle-run" aria-pressed="false"><span>Painel de execução<small>cada chamada e cada ferramenta</small></span><span class="knob" aria-hidden="true"></span></button>
     <button type="button" class="toggle" id="toggle-rail" aria-pressed="false"><span>Dados de teste<small>catálogo ou transações</small></span><span class="knob" aria-hidden="true"></span></button>
@@ -161,6 +168,8 @@
 <section class="run" aria-labelledby="run-title">
   <span class="eyebrow">execução</span>
   <h2 id="run-title">O que aconteceu</h2>
+  <p class="sub-link"><a id="all-traces" target="_blank" rel="noopener">Todos os traces da demo no Toqan ↗</a></p>
+  <p class="budget" id="budget" hidden></p>
   <p class="empty" id="run-empty">Cada chamada ao router e cada ferramenta aparecem aqui, na ordem.</p>
   <div id="turns"></div>
 </section>
@@ -169,14 +178,14 @@
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const md = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");  // the answer's light markdown
-const SERVER_TOOL = {  // usage.server_tool_use counters -> what the router did by itself
-  code_interpreter_sessions: ["orq:code_interpreter", "Rodou Python"], advisor_requests: ["orq:advisor", "Pediu conselho ao Opus"],
-  datetime_requests: ["orq:datetime", "Consultou a data"] };
+const SERVER_TOOL = { "orq:code_interpreter": "Rodou Python", "orq:advisor": "Pediu conselho ao Opus", "orq:datetime": "Consultou a data" };  // what the router ran by itself
 const TOOL = {  // tool -> [while running, done]
   buscar_produtos: ["Buscando no catálogo…", "Buscou no catálogo"], calcular_carrinho: ["Calculando o carrinho…", "Calculou o carrinho"],
   pagar: ["Pagando…", "Pagou"], ver_politica: ["Lendo a política…", "Leu a política"],
   resumo_vendas: ["Somando as vendas…", "Somou as vendas"], consultar_transacao: ["Consultando a transação…", "Consultou a transação"],
   agenda_recebiveis: ["Vendo os recebíveis…", "Viu os recebíveis"], gerar_link_pagamento: ["Gerando o link…", "Gerou o link de pagamento"] };
+const newId = () => crypto.randomUUID().replaceAll("-", "").slice(0, 12);  // one conversation = one thread in Toqan
+let conversation = newId();
 let options = null, persona = "comprador", cenario = "livre", stream = true, wantStream = true, history = [], busy = false, turnNo = 0;
 
 // what the presenter chose is remembered per browser; ?modo=detalhado|simples presets a demo link
@@ -205,7 +214,7 @@ function setStream(on) { stream = on; $("mode-stream").setAttribute("aria-presse
 $("mode-stream").onclick = () => setStream(wantStream = true);
 $("mode-full").onclick = () => setStream(wantStream = false);
 
-function reset() { history = []; turnNo = 0; $("log").innerHTML = ""; $("turns").innerHTML = ""; $("welcome").hidden = false; $("run-empty").hidden = false; }
+function reset() { conversation = newId(); history = []; turnNo = 0; $("log").innerHTML = ""; $("turns").innerHTML = ""; $("welcome").hidden = false; $("run-empty").hidden = false; }
 $("reset").onclick = () => { if (!busy) reset(); };
 
 function render() {
@@ -234,6 +243,7 @@ $("prompts").onclick = (e) => { const b = e.target.closest("button"); if (b && !
 
 fetch("/api/options").then((r) => r.json()).then((data) => {
   options = data;
+  $("all-traces").href = $("all-traces-settings").href = data.traces_url;
   const g1 = document.createElement("optgroup"); g1.label = "Smart routers";
   data.routers.forEach((r) => g1.append(new Option(r.label, r.id)));
   const g2 = document.createElement("optgroup"); g2.label = "Modelos";
@@ -242,7 +252,24 @@ fetch("/api/options").then((r) => r.json()).then((data) => {
   render();
 });
 
+// what a server tool got and gave back: Python code and output, the question to the advisor and its advice, the date
+function serverDetail(ev) {
+  const parse = (t) => { try { return JSON.parse(t); } catch { return t; } };
+  const input = parse(ev.input), result = parse(ev.result);
+  const pre = (label, v) => v ? `<div class="sub">${label}</div><pre class="code">${esc(typeof v === "string" ? v : JSON.stringify(v, null, 1))}</pre>` : "";
+  if (ev.tool === "orq:code_interpreter") return pre("código", input?.code || input) + pre("saída", result?.stdout || result?.result || result);
+  if (ev.tool === "orq:advisor") return pre("pergunta", input?.question || input) + pre("conselho", result?.advice || result?.text || result);
+  return pre("entrada", input) + pre("resultado", result);
+}
 function add(cls, html) { const el = document.createElement("li"); el.className = cls; el.innerHTML = html; $("log").append(el); $("scroll").scrollTop = 1e9; return el; }
+const brl = (usd) => "US$ " + (usd && usd < 0.01 ? usd.toLocaleString("pt-BR", { maximumSignificantDigits: 2 }) : usd.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+function showBudget(b) {  // the key's budget and rate limit, as the router reports them on every call
+  if (!b) return;
+  const used = b.limit - b.remaining;
+  const html = `budget da chave: <b>${brl(used)}</b> de ${brl(b.limit)} hoje · ${b.rpm - b.rpm_remaining}/${b.rpm} req/min`;
+  $("budget").innerHTML = html; $("budget").hidden = false;
+  $("budget-settings").innerHTML = html; $("budget-field").hidden = false;
+}
 const link = (url) => url ? `<a href="${esc(url)}" target="_blank" rel="noopener">Ver no Toqan</a>` : "";
 
 // one handler for both modes: the stream sends these events live, /api/chat returns the same list
@@ -253,16 +280,14 @@ function makeTurn(bubble, chain, asked, thinking) {
   const callLi = () => { if (!pending) { pending = document.createElement("li"); pending.className = "model";
     pending.innerHTML = `<span class="name">chamada ${rounds.length + 1}</span> <span class="sub">no router…</span>`; chain.append(pending); } return pending; };
   return function (ev) {
-    if ((ev.type === "delta" || (ev.type === "step" && ev.state === "running")) && !steps[ev.id]) callLi();
+    if ((ev.type === "delta" || ev.type === "server" || (ev.type === "step" && ev.state === "running")) && !steps[ev.id]) callLi();
     if (ev.type === "delta") { text.textContent += ev.text; $("scroll").scrollTop = 1e9; }
     else if (ev.type === "round") {
       rounds.push(ev);
       const li = callLi(); pending = null;
-      const st = Object.entries(ev.server_tools || {}).filter(([k, n]) => n && SERVER_TOOL[k]);
-      ev.did = st.map(([k]) => SERVER_TOOL[k][1]);
-      li.innerHTML = `<span class="name">chamada ${ev.n}</span> <span class="chip adv">${esc(pretty(ev.asked))}</span><span class="adv"> → </span><span class="chip blue">${esc(pretty(ev.answered))}</span>
-        <div class="sub"><span class="adv">${ev.seconds}s${ev.tokens ? " · " + ev.tokens + " tokens" : ""} · </span>${link(ev.trace_url)}</div>`
-        + st.map(([k, n]) => `<div class="server"><span class="name adv">${SERVER_TOOL[k][0]}${n > 1 ? " ×" + n : ""}</span><span class="simple-only">${SERVER_TOOL[k][1]}</span> <span class="chip sky">no router</span></div>`).join("");
+      showBudget(ev.budget);
+      li.innerHTML = `<span class="name">chamada ${ev.n}</span> <span class="chip adv">${esc(pretty(ev.asked))}</span><span class="adv"> → </span><span class="chip blue">${esc(pretty(ev.answered))}</span>${ev.cached ? ' <span class="chip sand">do cache</span>' : ""}
+        <div class="sub"><span class="adv">${ev.seconds}s${ev.tokens ? " · " + ev.tokens + " tokens" : ""}${ev.cost ? " · " + brl(ev.cost) : ""} · </span>${link(ev.trace_url)}</div>`;
     } else if (ev.type === "step") {
       let li = steps[ev.id];
       if (!li) { li = steps[ev.id] = document.createElement("li"); chain.append(li); }
@@ -277,6 +302,14 @@ function makeTurn(bubble, chain, asked, thinking) {
         text.dataset.status = thinking;
         chain.append(callLi());  // (re)placed after this tool, so the chain keeps its order
       }
+    } else if (ev.type === "server") {  // a tool the router ran inside the call, with its input and result
+      const li = document.createElement("li"); li.className = "tool ok server-tool";
+      const label = SERVER_TOOL[ev.tool] || ev.tool;
+      li.dataset.done = label; steps["server-" + (ev.id || Math.random())] = li;
+      text.dataset.status = label + "…";
+      li.innerHTML = `<span class="name adv">${esc(ev.tool)}</span><span class="simple-only">${esc(label)}</span> <span class="chip sky">no router</span>`
+        + `<div class="adv">${serverDetail(ev)}</div>`;
+      chain.append(li);
     } else if (ev.type === "blocked") {
       const why = ev.failures.map((f) => `${esc(f.reason)} <span class="chip adv">${esc(f.stage)}</span>`).join("<br>");
       bubble.className = "msg blocked";
@@ -293,11 +326,12 @@ function makeTurn(bubble, chain, asked, thinking) {
       text.innerHTML = md(ev.answer);
       const answered = [...new Set(rounds.map((r) => pretty(r.answered)))];
       const total = rounds.reduce((s, r) => s + r.seconds, 0).toFixed(1);
-      const did = [...new Set([...Object.values(steps).map((li) => li.dataset.done), ...rounds.flatMap((r) => r.did || [])])];
+      const did = [...new Set(Object.values(steps).map((li) => li.dataset.done))];
       bubble.insertAdjacentHTML("beforeend", `<div class="route">
         <span class="simple-only">Respondido por</span><span class="chip adv">${esc(pretty(asked))}</span><span class="adv">→</span> ${answered.map((a) => `<span class="chip blue">${esc(a)}</span>`).join(" ")}
         <span class="simple-only">${did.length ? "· " + esc(did.join(", ").toLowerCase()) : ""}</span>
-        <span class="adv">${rounds.length} chamada${rounds.length > 1 ? "s" : ""} · ${total}s</span>${link(rounds.at(-1)?.trace_url)}</div>`);
+        ${rounds.some((r) => r.cached) ? '<span class="chip sand">do cache · sem custo</span>' : ""}
+        <span class="adv">${rounds.length} chamada${rounds.length > 1 ? "s" : ""} · ${total}s · ${brl(rounds.reduce((s, r) => s + (r.cost || 0), 0))}</span>${link(rounds.at(-1)?.trace_url)}</div>`);
     }
   };
 }
@@ -318,7 +352,7 @@ $("form").addEventListener("submit", async (e) => {
   const thinking = c.server_tools ? "Pensando… o router pode rodar Python ou consultar o Opus" : "Pensando…";
   bubble.querySelector(".text").dataset.status = thinking;
   const handle = makeTurn(bubble, turn.querySelector(".chain"), c.model || model, thinking);
-  const body = JSON.stringify({ message, history, model, cenario, persona });
+  const body = JSON.stringify({ message, history, model, cenario, persona, conversation });
   try {
     const res = await fetch(stream ? "/api/chat/stream" : "/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body });
     if (!res.ok) { const d = await res.json().catch(() => ({})); handle({ type: "error", message: d.detail || res.statusText }); }
