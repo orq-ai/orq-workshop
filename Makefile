@@ -56,6 +56,13 @@ edge-docker: ## The same as a container (what the instructor hosts for the room)
 chat: ## Run the refund agent chat UI on :8002
 	$(RUN) python -m app.web
 
+toqan-chat-ui: ## Run the Toqan Router chat demo on :8003 (toqan-chat/, key in toqan-chat/.env)
+	$(UV) run --no-project $(if $(wildcard toqan-chat/.env),--env-file toqan-chat/.env) --with-requirements toqan-chat/requirements.txt \
+	  uvicorn app:app --app-dir toqan-chat --host 127.0.0.1 --port 8003 --reload --reload-dir toqan-chat
+
+toqan-chat-test: ## Unit checks of the Toqan chat demo (fake router, no network)
+	$(UV) run --no-project --with-requirements toqan-chat/requirements.txt --with pytest pytest -q toqan-chat
+
 og-card: ## Regenerate the splash card in docs/assets/og-image.png (README + link unfurls)
 	$(UV) run --with "fonttools[woff]" --with pillow python scripts/gen_og_card.py
 
@@ -104,4 +111,4 @@ m%: ## Run the solution of module NN (e.g. make m03)
 	echo; \
 	$(RUN) python $$dir/solution/run.py
 
-.PHONY: help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat og-card diagrams docs-serve docs-build session session-pdf deck handout modules
+.PHONY: help setup doctor smoke test seed seed-insurance traffic reset eval eval-vulnerable redteam-gate mcp-server edge edge-docker chat toqan-chat-ui toqan-chat-test og-card diagrams docs-serve docs-build session session-pdf deck handout modules

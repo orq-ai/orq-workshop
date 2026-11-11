@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toqan Router · chat demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 137'%3E%3Cpath d='M0 71.2373L24.4406 24.3855C46.8143 8.03559 69.9957 3.10318 100.57 0L143.686 50.3413L127.389 103.084C105.446 121.638 88.0581 126.883 57.4088 136.608C29.6789 113.217 16.416 99.1845 0 71.2373Z' fill='%23252BDD'/%3E%3Cpath d='M41.8987 40.1511L46.1886 91.1172C67.5006 96.9195 79.7541 95.9192 97.502 95.4069C99.8003 73.7109 100.581 57.1138 99.812 35.3419L90.4136 35L86.0825 70.7952L55.3512 69.4186L51.0338 37.9551L41.8987 40.1511Z' fill='%233078FF'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* toqan tokens, from orquesta-web documentation/toqan/branding.json (same as the enablement site) */
+  :root { --canvas:#F4F1EC; --card:#FFFFFF; --muted:#E9E5DE; --fg:#211D1D; --fg2:#6B6460; --rule:#DDD7CE;
+          --blue:#252BDD; --sky:#3078FF; --coral:#FF4D4D; --sand:#EDD1AA; --green:#2E8B57;
+          color:var(--fg); background:var(--canvas); font:15px/1.45 Geist, system-ui, sans-serif; }
+  * { box-sizing:border-box; }
+  body { margin:0; height:100vh; height:100dvh; display:grid; grid-template-columns:0 minmax(0,1fr) 0; grid-template-areas:"rail chat run"; }
+  body.show-rail { grid-template-columns:300px minmax(0,1fr) 0; }
+  body.show-run { grid-template-columns:0 minmax(0,1fr) 360px; }
+  body.show-rail.show-run { grid-template-columns:300px minmax(0,1fr) 360px; }
+  body:not(.show-rail) .rail, body:not(.show-run) .run { display:none; }
+  /* simple mode (default) hides what only a technical audience wants; "Detalhado" shows it */
+  body:not(.detailed) .adv, body.detailed .simple-only { display:none !important; }
+  :focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+  button, select, textarea { font:inherit; color:inherit; }
+  button { cursor:pointer; }
+  button:disabled, select:disabled, textarea:disabled { opacity:.5; cursor:not-allowed; }
+  .eyebrow { font:11px "Geist Mono", ui-monospace, monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--fg2); }
+  h1, h2, h3 { font-weight:400; margin:0; }
+  code { font-family:"Geist Mono", monospace; font-size:.92em; }
+
+  /* header: brand, persona, new chat, settings. Nothing else. */
+  .chat { grid-area:chat; min-width:0; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+  header { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--rule); }
+  .brand { display:flex; align-items:center; gap:8px; font-weight:500; margin-right:auto; }
+  .brand svg { width:24px; height:23px; }
+  .seg { display:inline-flex; border:1px solid var(--rule); border-radius:999px; padding:3px; background:var(--card); }
+  .seg button { border:0; background:transparent; border-radius:999px; padding:6px 16px; font-size:14px; }
+  .seg button[aria-pressed=true] { background:var(--blue); color:#fff; }
+  .icon { min-width:38px; height:38px; padding:0 10px; border:1px solid var(--rule); border-radius:8px; background:transparent; font-size:16px; }
+
+  /* settings popover: everything a presenter rarely touches */
+  #settings { margin:0; inset:auto; top:58px; right:16px; position:fixed; width:320px; padding:16px; border:1px solid var(--rule); border-radius:12px;
+              background:var(--card); box-shadow:0 12px 40px rgb(33 29 29 / 14%); color:var(--fg); }
+  #settings h2 { font-size:16px; margin:0 0 12px; }
+  .field { margin:0 0 14px; }
+  .field > label, .field > .label { display:block; font:11px "Geist Mono", monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--fg2); margin:0 0 4px; }
+  .field .note { color:var(--fg2); font-size:12px; margin-top:4px; }
+  select { width:100%; min-height:38px; padding:6px 34px 6px 10px; border:1px solid var(--rule); border-radius:6px; appearance:none;
+    background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m3 6 5 5 5-5' stroke='%23211D1D' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center / 12px; }
+  .seg.small button { padding:4px 12px; font-size:13px; }
+  .seg.small button[aria-pressed=true] { background:var(--fg); }
+  .toggle { display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; padding:8px 0; border:0; background:transparent; text-align:left; font-size:14px; }
+  .toggle .knob { flex:none; width:32px; height:18px; border-radius:9px; background:var(--muted); position:relative; transition:background .15s; }
+  .toggle .knob::after { content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--card); transition:left .15s; }
+  .toggle[aria-pressed=true] .knob { background:var(--blue); } .toggle[aria-pressed=true] .knob::after { left:16px; }
+  .toggle small { display:block; color:var(--fg2); font-size:12px; }
+
+  #scroll { overflow-y:auto; padding:24px; }
+  .welcome { max-width:680px; margin:8vh auto 0; text-align:center; }
+  .welcome h2 { font-size:44px; line-height:1.08; letter-spacing:-.01em; margin:10px 0 0; }
+  #log { list-style:none; margin:0 auto; padding:0; max-width:780px; display:grid; gap:14px; }
+  .msg { max-width:88%; padding:12px 14px; border-radius:12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .msg.user { justify-self:end; background:var(--fg); color:var(--canvas); border-bottom-right-radius:4px; }
+  .msg.bot { justify-self:start; background:var(--card); border:1px solid var(--rule); border-bottom-left-radius:4px; }
+  .msg.bot.working .text:empty::before { content:attr(data-status); color:var(--fg2); }
+  .route { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:10px; padding-top:8px; border-top:1px dashed var(--rule); font:12px "Geist Mono", monospace; color:var(--fg2); white-space:normal; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:4px; background:var(--muted); color:var(--fg); }
+  .chip.blue { background:var(--blue); color:#fff; } .chip.sky { background:var(--sky); color:#fff; } .chip.sand { background:var(--sand); }
+  .route a, .run a { color:var(--blue); }
+  .msg.blocked { justify-self:start; background:color-mix(in oklab, var(--coral) 14%, var(--card)); border:1px solid var(--coral); }
+  .msg.blocked b { color:#B3261E; font-weight:500; }
+  .msg.error { justify-self:start; background:var(--muted); border:1px solid var(--rule); color:var(--fg2); }
+
+  /* dock: scenario chips, one-click examples, composer */
+  .dock { padding:10px 20px 16px; border-top:1px solid var(--rule); }
+  .dock > * { max-width:780px; margin-left:auto; margin-right:auto; }
+  .scenarios { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+  .scenarios button { flex:none; border:1px solid var(--rule); background:var(--card); border-radius:999px; padding:5px 12px; font-size:13px; }
+  .scenarios button[aria-pressed=true] { background:var(--fg); color:var(--canvas); border-color:var(--fg); }
+  .desc { color:var(--fg2); font-size:13px; margin:8px auto 6px; min-height:1.2em; }
+  .prompts { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .prompts button { border:1px solid color-mix(in oklab, var(--blue) 35%, transparent); background:color-mix(in oklab, var(--blue) 5%, var(--card)); color:var(--blue);
+                    border-radius:10px; padding:6px 12px; font-size:13.5px; text-align:left; }
+  .composer { display:flex; gap:8px; align-items:flex-end; background:var(--card); border:1px solid var(--rule); border-radius:12px; padding:8px; }
+  .composer:focus-within { border-color:var(--blue); }
+  textarea { flex:1; border:0; resize:none; outline:none; background:transparent; padding:6px; max-height:160px; }
+  textarea:focus-visible { outline:none; }
+  #send { border:0; background:var(--blue); color:#fff; border-radius:8px; padding:8px 18px; }
+
+  /* side panels (off by default, from the settings) */
+  .rail { grid-area:rail; min-height:0; overflow-y:auto; background:var(--card); border-right:1px solid var(--rule); padding:16px 18px; }
+  .rail h2, .run h2 { font-size:18px; margin:4px 0 4px; }
+  .rail .note { color:var(--blue); font-size:13px; margin:0 0 10px; }
+  .item { padding:8px 10px; border:1px solid var(--rule); border-radius:6px; font-size:12.5px; margin-bottom:6px; }
+  .item .top { display:flex; justify-content:space-between; gap:8px; }
+  .item .top b { font:500 12px "Geist Mono", monospace; }
+  .item .facts { color:var(--fg2); margin-top:2px; }
+  .run { grid-area:run; min-height:0; overflow-y:auto; background:var(--card); border-left:1px solid var(--rule); padding:16px 20px; }
+  .run .empty { color:var(--fg2); font-size:13px; }
+  .turn { margin-top:16px; } .turn > .eyebrow { display:block; margin-bottom:6px; }
+  .chain { list-style:none; margin:0; padding:0 0 0 14px; border-left:2px solid var(--muted); display:grid; gap:8px; }
+  .chain li { position:relative; font-size:13px; }
+  .chain li::before { content:""; position:absolute; left:-20px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--muted); border:2px solid var(--card); }
+  .chain li.model::before { background:var(--blue); } .chain li.tool::before { background:var(--sand); }
+  .chain li.tool.ok::before { background:var(--green); } .chain li.tool.fail::before, .chain li.blocked::before { background:var(--coral); }
+  .chain li.tool.running::before { background:var(--sky); animation:pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity:.3; } }
+  .chain .sub { color:var(--fg2); font:12px "Geist Mono", monospace; overflow-wrap:anywhere; }
+  .chain .name { font:500 13px "Geist Mono", monospace; } .chain .server { margin-top:4px; }
+  .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  @media (max-width: 1000px) { body, body.show-rail, body.show-run, body.show-rail.show-run { grid-template-columns:minmax(0,1fr); grid-template-areas:"chat" "run" "rail"; height:auto; } .chat { min-height:100vh; } }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<aside class="rail" aria-labelledby="rail-title">
+  <span class="eyebrow">dados de teste · só leitura</span>
+  <h2 id="rail-title">Dados</h2>
+  <p class="note" id="rail-note"></p>
+  <div id="rail-items"></div>
+</aside>
+
+<div class="chat">
+  <header>
+    <div class="brand"><svg viewBox="0 0 144 137" aria-hidden="true"><path d="M0 71.2373L24.4406 24.3855C46.8143 8.03559 69.9957 3.10318 100.57 0L143.686 50.3413L127.389 103.084C105.446 121.638 88.0581 126.883 57.4088 136.608C29.6789 113.217 16.416 99.1845 0 71.2373Z" fill="#252BDD"/><path d="M41.8987 40.1511L46.1886 91.1172C67.5006 96.9195 79.7541 95.9192 97.502 95.4069C99.8003 73.7109 100.581 57.1138 99.812 35.3419L90.4136 35L86.0825 70.7952L55.3512 69.4186L51.0338 37.9551L41.8987 40.1511Z" fill="#3078FF"/></svg>toqan router</div>
+    <div class="seg" role="group" aria-label="Quem fala com o agente" id="personas"></div>
+    <button type="button" class="icon" id="reset" title="Nova conversa" aria-label="Nova conversa">↺</button>
+    <button type="button" class="icon" popovertarget="settings" title="Ajustes" aria-label="Ajustes">⚙</button>
+  </header>
+
+  <div popover id="settings" aria-labelledby="settings-title">
+    <h2 id="settings-title">Ajustes</h2>
+    <div class="field"><label for="model">Modelo</label><select id="model"></select><div class="note" id="model-note"></div></div>
+    <div class="field"><span class="label" id="mode-label">Resposta</span>
+      <div class="seg small" role="group" aria-labelledby="mode-label">
+        <button type="button" id="mode-stream" aria-pressed="true">Stream</button>
+        <button type="button" id="mode-full" aria-pressed="false">Completa</button>
+      </div></div>
+    <button type="button" class="toggle" id="detail" aria-pressed="false"><span>Detalhado<small>modelos, tempos, tokens e argumentos</small></span><span class="knob" aria-hidden="true"></span></button>
+    <button type="button" class="toggle" id="toggle-run" aria-pressed="false"><span>Painel de execução<small>cada chamada e cada ferramenta</small></span><span class="knob" aria-hidden="true"></span></button>
+    <button type="button" class="toggle" id="toggle-rail" aria-pressed="false"><span>Dados de teste<small>catálogo ou transações</small></span><span class="knob" aria-hidden="true"></span></button>
+  </div>
+
+  <div id="scroll">
+    <section class="welcome" id="welcome"><span class="eyebrow" id="welcome-eyebrow"></span><h2 id="welcome-title"></h2></section>
+    <ol id="log" role="log" aria-live="polite" aria-label="Conversa"></ol>
+  </div>
+
+  <form class="dock" id="form">
+    <div class="scenarios" id="scenarios" role="group" aria-label="Cenário"></div>
+    <p class="desc" id="desc"></p>
+    <div class="prompts" id="prompts" aria-label="Mensagens de exemplo"></div>
+    <div class="composer">
+      <label for="message" class="visually-hidden">Mensagem</label>
+      <textarea id="message" rows="1" placeholder="Escreva uma mensagem…" autocomplete="off" required></textarea>
+      <button id="send" type="submit">Enviar</button>
+    </div>
+  </form>
+</div>
+
+<section class="run" aria-labelledby="run-title">
+  <span class="eyebrow">execução</span>
+  <h2 id="run-title">O que aconteceu</h2>
+  <p class="empty" id="run-empty">Cada chamada ao router e cada ferramenta aparecem aqui, na ordem.</p>
+  <div id="turns"></div>
+</section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");  // the answer's light markdown
+const SERVER_TOOL = {  // usage.server_tool_use counters -> what the router did by itself
+  code_interpreter_sessions: ["orq:code_interpreter", "Rodou Python"], advisor_requests: ["orq:advisor", "Pediu conselho ao Opus"],
+  datetime_requests: ["orq:datetime", "Consultou a data"] };
+const TOOL = {  // tool -> [while running, done]
+  buscar_produtos: ["Buscando no catálogo…", "Buscou no catálogo"], calcular_carrinho: ["Calculando o carrinho…", "Calculou o carrinho"],
+  pagar: ["Pagando…", "Pagou"], ver_politica: ["Lendo a política…", "Leu a política"],
+  resumo_vendas: ["Somando as vendas…", "Somou as vendas"], consultar_transacao: ["Consultando a transação…", "Consultou a transação"],
+  agenda_recebiveis: ["Vendo os recebíveis…", "Viu os recebíveis"], gerar_link_pagamento: ["Gerando o link…", "Gerou o link de pagamento"] };
+let options = null, persona = "comprador", cenario = "livre", stream = true, wantStream = true, history = [], busy = false, turnNo = 0;
+
+// what the presenter chose is remembered per browser; ?modo=detalhado|simples presets a demo link
+const view = Object.assign({ detailed: false, rail: false, run: false }, JSON.parse(localStorage.getItem("toqan-chat-view") || "{}"));
+const modo = new URLSearchParams(location.search).get("modo");
+if (modo === "detalhado" || modo === "simples") Object.assign(view, { detailed: modo === "detalhado", run: modo === "detalhado" });
+function applyView() {
+  for (const [cls, on] of [["detailed", view.detailed], ["show-rail", view.rail], ["show-run", view.run]]) document.body.classList.toggle(cls, on);
+  $("detail").setAttribute("aria-pressed", view.detailed);
+  $("toggle-run").setAttribute("aria-pressed", view.run);
+  $("toggle-rail").setAttribute("aria-pressed", view.rail);
+  localStorage.setItem("toqan-chat-view", JSON.stringify(view));
+}
+$("detail").onclick = () => { view.detailed = !view.detailed; view.run = view.detailed; applyView(); };
+$("toggle-run").onclick = () => { view.run = !view.run; applyView(); };
+$("toggle-rail").onclick = () => { view.rail = !view.rail; applyView(); };
+applyView();
+
+function pretty(id) {  // "aws/us.anthropic.claude-haiku-5-5" -> "claude-haiku-5-5"; smart routers keep their name
+  if (!id) return "?";
+  if (id.startsWith("toqan@")) return id.split("/").pop() + " · smart router";
+  return id.split("/").pop().replace(/^((us|eu|global|us-east-1)\.)/, "").replace(/^(anthropic|openai|moonshotai|google)\./, "")
+    .replace(/^deepseek\./, "deepseek-").replace(/-v?1:0$/, "").replace(/-20\d{6}$/, "");
+}
+function setStream(on) { stream = on; $("mode-stream").setAttribute("aria-pressed", on); $("mode-full").setAttribute("aria-pressed", !on); }
+$("mode-stream").onclick = () => setStream(wantStream = true);
+$("mode-full").onclick = () => setStream(wantStream = false);
+
+function reset() { history = []; turnNo = 0; $("log").innerHTML = ""; $("turns").innerHTML = ""; $("welcome").hidden = false; $("run-empty").hidden = false; }
+$("reset").onclick = () => { if (!busy) reset(); };
+
+function render() {
+  const p = options.personas[persona], c = options.cenarios.find((x) => x.id === cenario);
+  $("personas").innerHTML = Object.entries(options.personas).map(([id, x]) => `<button type="button" data-id="${id}" aria-pressed="${id === persona}">${esc(x.nome)}</button>`).join("");
+  $("scenarios").innerHTML = options.cenarios.map((x) => `<button type="button" data-id="${x.id}" aria-pressed="${x.id === cenario}">${esc(x.nome)}</button>`).join("");
+  $("desc").textContent = c.desc;
+  $("prompts").innerHTML = (p.exemplos[cenario] || []).map((e) => `<button type="button">${esc(e)}</button>`).join("");
+  [$("welcome-eyebrow").textContent, $("welcome-title").textContent] = p.welcome;
+  $("rail-title").textContent = p.rail.titulo; $("rail-note").textContent = p.rail.nota;
+  $("rail-items").innerHTML = p.rail.itens.map((i) => `<div class="item"><div class="top"><b>${esc(i.id)}</b><span>${esc(i.valor)}</span></div><div>${esc(i.titulo)}</div><div class="facts">${esc(i.detalhe)}</div></div>`).join("");
+  // a scenario can pin the model (fallback) or rule out smart routers (server tools); the firewall needs full answers
+  const sel = $("model");
+  for (const o of sel.querySelectorAll("optgroup:first-child option")) o.disabled = c.server_tools;
+  if (c.model && ![...sel.options].some((o) => o.value === c.model)) sel.add(new Option(pretty(c.model) + " (falha de propósito)", c.model));
+  if (c.model) sel.value = c.model;
+  else if (sel.value === "aws/global.anthropic.claude-haiku-4-5-20251001-v1:0" || (c.server_tools && sel.value.startsWith("toqan@"))) sel.value = options.default;
+  sel.disabled = !!c.model;
+  $("model-note").textContent = c.model ? "Este cenário usa um modelo que falha de propósito." : c.server_tools ? "Ferramentas do router pedem um modelo, não um smart router." : "";
+  $("mode-stream").disabled = !!c.guarded;
+  setStream(c.guarded ? false : wantStream);  // the firewall needs full answers; leaving it restores the choice
+}
+$("personas").onclick = (e) => { const b = e.target.closest("button"); if (b && !busy && b.dataset.id !== persona) { persona = b.dataset.id; reset(); render(); } };
+$("scenarios").onclick = (e) => { const b = e.target.closest("button"); if (b && !busy) { cenario = b.dataset.id; render(); } };
+$("prompts").onclick = (e) => { const b = e.target.closest("button"); if (b && !busy) { $("message").value = b.textContent; $("form").requestSubmit(); } };
+
+fetch("/api/options").then((r) => r.json()).then((data) => {
+  options = data;
+  const g1 = document.createElement("optgroup"); g1.label = "Smart routers";
+  data.routers.forEach((r) => g1.append(new Option(r.label, r.id)));
+  const g2 = document.createElement("optgroup"); g2.label = "Modelos";
+  data.models.forEach((m) => g2.append(new Option(pretty(m) + "  ·  " + m.split("/")[0], m)));
+  $("model").append(g1, g2); $("model").value = data.default;
+  render();
+});
+
+function add(cls, html) { const el = document.createElement("li"); el.className = cls; el.innerHTML = html; $("log").append(el); $("scroll").scrollTop = 1e9; return el; }
+const link = (url) => url ? `<a href="${esc(url)}" target="_blank" rel="noopener">Ver no Toqan</a>` : "";
+
+// one handler for both modes: the stream sends these events live, /api/chat returns the same list
+function makeTurn(bubble, chain, asked, thinking) {
+  const steps = {}, rounds = []; let pending = null;
+  const text = bubble.querySelector(".text");
+  // a model call shows up as soon as it starts (stream), and gets its route when its `round` event lands
+  const callLi = () => { if (!pending) { pending = document.createElement("li"); pending.className = "model";
+    pending.innerHTML = `<span class="name">chamada ${rounds.length + 1}</span> <span class="sub">no router…</span>`; chain.append(pending); } return pending; };
+  return function (ev) {
+    if ((ev.type === "delta" || (ev.type === "step" && ev.state === "running")) && !steps[ev.id]) callLi();
+    if (ev.type === "delta") { text.textContent += ev.text; $("scroll").scrollTop = 1e9; }
+    else if (ev.type === "round") {
+      rounds.push(ev);
+      const li = callLi(); pending = null;
+      const st = Object.entries(ev.server_tools || {}).filter(([k, n]) => n && SERVER_TOOL[k]);
+      ev.did = st.map(([k]) => SERVER_TOOL[k][1]);
+      li.innerHTML = `<span class="name">chamada ${ev.n}</span> <span class="chip adv">${esc(pretty(ev.asked))}</span><span class="adv"> → </span><span class="chip blue">${esc(pretty(ev.answered))}</span>
+        <div class="sub"><span class="adv">${ev.seconds}s${ev.tokens ? " · " + ev.tokens + " tokens" : ""} · </span>${link(ev.trace_url)}</div>`
+        + st.map(([k, n]) => `<div class="server"><span class="name adv">${SERVER_TOOL[k][0]}${n > 1 ? " ×" + n : ""}</span><span class="simple-only">${SERVER_TOOL[k][1]}</span> <span class="chip sky">no router</span></div>`).join("");
+    } else if (ev.type === "step") {
+      let li = steps[ev.id];
+      if (!li) { li = steps[ev.id] = document.createElement("li"); chain.append(li); }
+      const [doing, done] = TOOL[ev.tool] || ["Usando uma ferramenta…", ev.tool];
+      li.className = "tool " + (ev.state === "running" ? "running" : ev.ok ? "ok" : "fail");
+      li.dataset.done = done;
+      text.dataset.status = doing;
+      li.innerHTML = `<span class="name adv">${esc(ev.tool)}</span><span class="simple-only">${esc(done)}</span>`
+        + (ev.state === "done" ? ` <span class="chip ${ev.ok ? "" : "sand"}">${ev.ok ? "ok" : esc((ev.error || "erro").replaceAll("_", " "))}</span>` : "")
+        + (ev.input ? `<div class="sub adv">${esc(ev.input)}</div>` : "");
+      if (ev.state === "done") {  // the tool answered: the next model call starts now
+        text.dataset.status = thinking;
+        chain.append(callLi());  // (re)placed after this tool, so the chain keeps its order
+      }
+    } else if (ev.type === "blocked") {
+      const why = ev.failures.map((f) => `${esc(f.reason)} <span class="chip adv">${esc(f.stage)}</span>`).join("<br>");
+      bubble.className = "msg blocked";
+      bubble.innerHTML = `<b>Bloqueado pelo firewall de IA.</b><br>${why}<div class="route">${link(ev.trace_url)}</div>`;
+      const li = callLi(); pending = null; li.className = "blocked";
+      li.innerHTML = `<span class="name">guardrail</span> <span class="chip sand">bloqueou</span><div class="sub">${why}</div>`;
+    } else if (ev.type === "error") {
+      bubble.className = "msg error";
+      bubble.innerHTML = `Erro do router: ${esc(ev.message)}${ev.trace_url ? " · " + link(ev.trace_url) : ""}`;
+    } else if (ev.type === "done") {
+      if (pending) pending.remove();  // a call announced after the last tool that never came (hand-off)
+      history = ev.history;
+      bubble.classList.remove("working");
+      text.innerHTML = md(ev.answer);
+      const answered = [...new Set(rounds.map((r) => pretty(r.answered)))];
+      const total = rounds.reduce((s, r) => s + r.seconds, 0).toFixed(1);
+      const did = [...new Set([...Object.values(steps).map((li) => li.dataset.done), ...rounds.flatMap((r) => r.did || [])])];
+      bubble.insertAdjacentHTML("beforeend", `<div class="route">
+        <span class="simple-only">Respondido por</span><span class="chip adv">${esc(pretty(asked))}</span><span class="adv">→</span> ${answered.map((a) => `<span class="chip blue">${esc(a)}</span>`).join(" ")}
+        <span class="simple-only">${did.length ? "· " + esc(did.join(", ").toLowerCase()) : ""}</span>
+        <span class="adv">${rounds.length} chamada${rounds.length > 1 ? "s" : ""} · ${total}s</span>${link(rounds.at(-1)?.trace_url)}</div>`);
+    }
+  };
+}
+
+$("message").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); } });
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = $("message").value.trim();
+  if (!message || busy || !options) return;
+  busy = true; $("send").disabled = true; $("message").value = "";
+  $("welcome").hidden = true; $("run-empty").hidden = true;
+  const model = $("model").value, c = options.cenarios.find((x) => x.id === cenario);
+  add("msg user", esc(message));
+  const bubble = add("msg bot working", '<span class="text" data-status="Pensando…"></span>');
+  const turn = document.createElement("div"); turn.className = "turn";
+  turn.innerHTML = `<span class="eyebrow">turno ${++turnNo} · ${esc(c.nome)}</span><ol class="chain"></ol>`;
+  $("turns").prepend(turn);
+  const thinking = c.server_tools ? "Pensando… o router pode rodar Python ou consultar o Opus" : "Pensando…";
+  bubble.querySelector(".text").dataset.status = thinking;
+  const handle = makeTurn(bubble, turn.querySelector(".chain"), c.model || model, thinking);
+  const body = JSON.stringify({ message, history, model, cenario, persona });
+  try {
+    const res = await fetch(stream ? "/api/chat/stream" : "/api/chat", { method: "POST", headers: { "content-type": "application/json" }, body });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); handle({ type: "error", message: d.detail || res.statusText }); }
+    else if (!stream) (await res.json()).forEach(handle);
+    else {
+      const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n"); buf = parts.pop();
+        parts.forEach((p) => p.startsWith("data: ") && handle(JSON.parse(p.slice(6))));
+      }
+    }
+  } catch (err) { handle({ type: "error", message: String(err) }); }
+  bubble.classList.remove("working");
+  busy = false; $("send").disabled = false; $("message").focus();
+});
+</script>
+</body>
+</html>
