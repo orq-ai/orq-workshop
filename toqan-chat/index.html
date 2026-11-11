@@ -29,7 +29,7 @@
   code { font-family:"Geist Mono", monospace; font-size:.92em; }
 
   /* header: brand, persona, new chat, settings. Nothing else. */
-  .chat { grid-area:chat; min-width:0; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+  .chat { grid-area:chat; min-width:0; min-height:0; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr) auto; }
   header { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--rule); }
   .brand { display:flex; align-items:center; gap:8px; font-weight:500; margin-right:auto; }
   .brand svg { width:24px; height:23px; }
@@ -41,6 +41,10 @@
   /* settings popover: everything a presenter rarely touches */
   #settings { margin:0; inset:auto; top:58px; right:16px; position:fixed; width:320px; padding:16px; border:1px solid var(--rule); border-radius:12px;
               background:var(--card); box-shadow:0 12px 40px rgb(33 29 29 / 14%); color:var(--fg); }
+  #qr { margin:auto; padding:28px 32px 22px; border:0; border-radius:16px; background:var(--card); text-align:center; box-shadow:0 20px 60px rgb(33 29 29 / 25%); }
+  #qr::backdrop { background:rgb(33 29 29 / 55%); }
+  #qr img { display:block; width:min(420px, 78vw); height:auto; }
+  #qr p { margin:14px 0 0; color:var(--fg2); font-size:15px; } #qr b { color:var(--fg); font-size:20px; font-weight:500; }
   #settings h2 { font-size:16px; margin:0 0 12px; }
   .field { margin:0 0 14px; }
   .field > label, .field > .label { display:block; font:11px "Geist Mono", monospace; text-transform:uppercase; letter-spacing:.08em; color:var(--fg2); margin:0 0 4px; }
@@ -113,6 +117,7 @@
   .chain .name { font:500 13px "Geist Mono", monospace; }
   .chain pre.code { margin:2px 0 6px; padding:6px 8px; background:var(--canvas); border:1px solid var(--rule); border-radius:4px; font:11.5px/1.4 "Geist Mono", monospace; white-space:pre-wrap; max-height:180px; overflow:auto; }
   .visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  @media (max-width: 560px) { button[popovertarget=qr] { display:none; } header { gap:8px; padding:10px 12px; } .brand span { display:none; } .seg button { padding:6px 12px; } #scroll { padding:16px 12px; } .dock { padding:8px 12px 12px; } .welcome h2 { font-size:32px; } }
   @media (max-width: 1000px) { body, body.show-rail, body.show-run, body.show-rail.show-run { grid-template-columns:minmax(0,1fr); grid-template-areas:"chat" "run" "rail"; height:auto; } .chat { min-height:100vh; } }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
 </style>
@@ -127,11 +132,17 @@
 
 <div class="chat">
   <header>
-    <div class="brand"><svg viewBox="0 0 144 137" aria-hidden="true"><path d="M0 71.2373L24.4406 24.3855C46.8143 8.03559 69.9957 3.10318 100.57 0L143.686 50.3413L127.389 103.084C105.446 121.638 88.0581 126.883 57.4088 136.608C29.6789 113.217 16.416 99.1845 0 71.2373Z" fill="#252BDD"/><path d="M41.8987 40.1511L46.1886 91.1172C67.5006 96.9195 79.7541 95.9192 97.502 95.4069C99.8003 73.7109 100.581 57.1138 99.812 35.3419L90.4136 35L86.0825 70.7952L55.3512 69.4186L51.0338 37.9551L41.8987 40.1511Z" fill="#3078FF"/></svg>toqan router</div>
+    <div class="brand"><svg viewBox="0 0 144 137" aria-hidden="true"><path d="M0 71.2373L24.4406 24.3855C46.8143 8.03559 69.9957 3.10318 100.57 0L143.686 50.3413L127.389 103.084C105.446 121.638 88.0581 126.883 57.4088 136.608C29.6789 113.217 16.416 99.1845 0 71.2373Z" fill="#252BDD"/><path d="M41.8987 40.1511L46.1886 91.1172C67.5006 96.9195 79.7541 95.9192 97.502 95.4069C99.8003 73.7109 100.581 57.1138 99.812 35.3419L90.4136 35L86.0825 70.7952L55.3512 69.4186L51.0338 37.9551L41.8987 40.1511Z" fill="#3078FF"/></svg><span>toqan router</span></div>
     <div class="seg" role="group" aria-label="Quem fala com o agente" id="personas"></div>
     <button type="button" class="icon" id="reset" title="Nova conversa" aria-label="Nova conversa">↺</button>
+    <button type="button" class="icon" popovertarget="qr" title="Abrir no celular" aria-label="QR code para abrir no celular">QR</button>
     <button type="button" class="icon" popovertarget="settings" title="Ajustes" aria-label="Ajustes">⚙</button>
   </header>
+
+  <div popover id="qr" aria-label="Abrir no celular">
+    <img src="/qr.svg" alt="QR code de toqan-router-demo.vercel.app" width="420" height="420">
+    <p><b>toqan-router-demo.vercel.app</b><br>Aponte a câmera do celular</p>
+  </div>
 
   <div popover id="settings" aria-labelledby="settings-title">
     <h2 id="settings-title">Ajustes</h2>

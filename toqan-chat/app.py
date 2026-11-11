@@ -334,6 +334,7 @@ async def chat_stream(request: Request) -> Response:
 
 app = Starlette(routes=[
     Route("/", lambda request: FileResponse(HERE / "index.html")),
+    Route("/qr.svg", lambda request: FileResponse(HERE / "qr.svg", media_type="image/svg+xml")),  # this demo's public URL
     Route("/api/options", options),
     Route("/api/chat", chat, methods=["POST"]),
     Route("/api/chat/stream", chat_stream, methods=["POST"]),
