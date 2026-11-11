@@ -72,3 +72,12 @@ def test_server_tools_skip_smart_routers():
     list(app.run_turn(router, "toqan@orq/menor-custo", "calcule", [], "ferramentas", stream=True))
     sent = router.sent[0]
     assert sent["model"] == app.DEFAULT_MODEL and {"type": "orq:code_interpreter"} in sent["tools"]
+
+
+def test_public_request_limits(monkeypatch):
+    monkeypatch.setattr(app, "workspace_models", lambda: ["aws/x"])
+    assert app.request_problem("oi", [], "aws/x") is None
+    assert app.request_problem("oi", [], "toqan@orq/menor-custo") is None
+    assert app.request_problem("oi", [], "openai/o9-ultra") == "modelo fora da lista da demo"
+    assert app.request_problem("x" * 2001, [], "aws/x")
+    assert app.request_problem("oi", [{"role": "user", "content": "x"}] * 61, "aws/x")

@@ -37,6 +37,8 @@ BASE_URL = os.environ.get("TOQAN_BASE_URL", "https://router.toqan.ai/br").rstrip
 WORKSPACE = os.environ.get("TOQAN_WORKSPACE", "toqan")
 TRACE_HEADER = "x-orq-trace-id"  # the router's trace header; never shown in the page
 MAX_TOOL_ROUNDS = 6
+# The page is public: keep it a demo, not a free proxy to the key (the workspace budgets cap the rest).
+MAX_MESSAGE_CHARS, MAX_HISTORY_ITEMS, MAX_HISTORY_CHARS = 2000, 60, 60000
 HANDOFF = "Não consegui concluir. Vou te passar para uma pessoa da equipe."
 
 ROUTERS = ["menor-custo", "maxima-qualidade", "equilibrado"]  # smart routers in the `toqan` workspace
@@ -71,6 +73,18 @@ CENARIOS = {
                                      {"type": "orq:datetime", "timezone": "America/Sao_Paulo"}],
                     "desc": "O router roda ferramentas sozinho: Python num sandbox, um conselheiro (Claude Opus) e a data de hoje."},
 }
+
+
+def request_problem(message: str, history: list, model: str) -> str | None:
+    """Why a public request is refused, or None: unknown model, oversized message or history."""
+    allowed = {*workspace_models(), *(f"toqan@orq/{r}" for r in ROUTERS), FALLBACK_MODEL}
+    if model not in allowed:
+        return "modelo fora da lista da demo"
+    if len(message) > MAX_MESSAGE_CHARS:
+        return f"mensagem acima de {MAX_MESSAGE_CHARS} caracteres"
+    if len(history) > MAX_HISTORY_ITEMS or len(json.dumps(history, ensure_ascii=False)) > MAX_HISTORY_CHARS:
+        return "conversa longa demais: comece uma nova conversa"
+    return None
 
 
 def faq_instructions(persona: dict) -> str:
@@ -234,6 +248,9 @@ async def _turn(request: Request, stream: bool):
     if not isinstance(message, str) or not message.strip() or not isinstance(history, list) or not isinstance(model, str) \
             or cenario not in CENARIOS or persona not in PERSONAS or not all(isinstance(m, dict) for m in history):
         return None, JSONResponse({"detail": "esperado {message, history: list, model, cenario, persona}"}, status_code=422)
+    problem = await run_in_threadpool(request_problem, message, history, model)
+    if problem:
+        return None, JSONResponse({"detail": problem}, status_code=422)
     if stream and CENARIOS[cenario].get("guarded"):
         return None, JSONResponse({"detail": "guardrail de saída não roda em stream: use o modo Completa"}, status_code=422)
     try:
